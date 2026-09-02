@@ -13,3 +13,10 @@ export function getMasterModuleSystemEditHref(recordId: string | number) {
 export function getMasterModuleSystemSidebarHref(recordId: string | number) {
 	return `${MasterModuleSystemsHref}/sidebar/${recordId}`;
 }
+
+export const MasterModuleSystemSidebarItemTypes = {
+	SECTION: "SECTION",
+	CONTAINER: "CONTAINER",
+	LINK: "LINK",
+} as const;
+

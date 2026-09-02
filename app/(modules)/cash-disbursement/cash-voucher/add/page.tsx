@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
+import { AppName } from "@/app/src/constants/shared/app/AppConstants";
 import { CashVoucherActionPage } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/action/CashVoucherActionPage";
 
 const PageTitle = "Add Cash Voucher";
 
-export const metadata: Metadata = { title: PageTitle };
+export const metadata: Metadata = {
+  title: `${PageTitle} | ${AppName}`,
+  description: `${PageTitle} page for ${AppName}.`,
+};
 
-export default function Page() {
+export default function CashDisbursementCashVoucherAddPage() {
   return <CashVoucherActionPage mode="add" />;
 }

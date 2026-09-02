@@ -20,6 +20,7 @@ import type {
   DefaultAccountDrawerProps,
   DefaultAccountExpenseParentOption,
 } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { QuickAddDialog } from "@/app/src/ui/shared/module/QuickAddDialog";
@@ -44,6 +45,7 @@ export function DefaultAccountDrawer({ defaultAccount, isOpen, mode, permissions
 function DefaultAccountDrawerPanel({ defaultAccount, isOpen, mode, permissions, onClose }: DefaultAccountDrawerProps) {
   const page = useDefaultAccountFormPage({
     existingDefaultAccount: defaultAccount,
+    isOpen,
     mode,
     onSaved: onClose,
   });
@@ -67,6 +69,16 @@ function DefaultAccountDrawerPanel({ defaultAccount, isOpen, mode, permissions, 
     page.values.type === "EXPENSE" &&
     Boolean(selectedExpenseParentAccount && nextExpenseSubAccountLevel);
 
+  function handleClose() {
+    page.saveDraft();
+    onClose();
+  }
+
+  function handleCancel() {
+    page.discardDraft();
+    onClose();
+  }
+
   return (
     <>
       <ModuleDrawer
@@ -77,7 +89,8 @@ function DefaultAccountDrawerPanel({ defaultAccount, isOpen, mode, permissions, 
         isReadonly={page.isReadonly}
         isSaving={page.isSubmitting}
         onBeforeSaveConfirm={page.validateBeforeSubmit}
-        onClose={onClose}
+        onCancel={handleCancel}
+        onClose={handleClose}
         savingLabel={getModuleSavePendingLabel(mode)}
         submitLabel={mode === "edit" ? "Update Default Account" : "Save Default Account"}
         title={copy.title}
@@ -85,7 +98,8 @@ function DefaultAccountDrawerPanel({ defaultAccount, isOpen, mode, permissions, 
         <form id={DefaultAccountDrawerFormId} onSubmit={page.handleSubmit} className="grid gap-5 px-6 py-5">
           <label className="grid gap-2">
             <span className="text-sm font-semibold text-darknavy">
-              Default Account Name <span className="text-coralpink">*</span>
+              Default Account Name
+              <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label="Default Account Name" leadingSpace />
             </span>
             <input
               name="defaultAccountName"
@@ -113,7 +127,8 @@ function DefaultAccountDrawerPanel({ defaultAccount, isOpen, mode, permissions, 
           </label>
           <label className="grid gap-2">
             <span className="text-sm font-semibold text-darknavy">
-              Type <span className="text-coralpink">*</span>
+              Type
+              <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label="Type" leadingSpace />
             </span>
             <select
               name="type"
@@ -314,7 +329,8 @@ function ExpenseSubAccountDialog({
     >
       <label className="grid gap-2">
         <span className="text-sm font-semibold text-darknavy">
-          Service Type Name <span className="text-coralpink">*</span>
+          Service Type Name
+          <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label="Service Type Name" leadingSpace />
         </span>
         <input
           value={accountName}

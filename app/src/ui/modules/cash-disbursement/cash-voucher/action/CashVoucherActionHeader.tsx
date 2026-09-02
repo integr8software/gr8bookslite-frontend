@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Edit3 } from "lucide-react";
 import {
   CashVoucherLink,
+  CashVoucherStatuses,
+  canEditCashVoucherStatus,
+  getCashVoucherEditLink,
   getCashVoucherStatusDialogCopy,
   getCashVoucherSubmitDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
@@ -13,19 +16,23 @@ import type {
   CashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
+import { ModuleDraftDiscardAction } from "@/app/src/ui/shared/module/ModuleDraftDiscardAction";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { VoucherReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
-import { CashVoucherViewActions } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/action/CashVoucherViewActions";
+import { CashVoucherStatusActions } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/action/CashVoucherStatusActions";
 
 export function CashVoucherActionHeader({
   mode,
+  hasDiscardableChanges,
   isSubmitting,
   pendingSubmitStatus,
   transaction,
   voucher,
+  onBack,
+  onDiscard,
   onUpdateStatus,
   onPreview,
   onSubmit,
@@ -38,29 +45,29 @@ export function CashVoucherActionHeader({
   returnLink = CashVoucherLink,
 }: CashVoucherActionHeaderProps) {
   const [statusToConfirm, setStatusToConfirm] = useState<CashVoucherStatus | null>(null);
-  const titleLabel =
-    mode === "view"
-      ? voucher?.voucherNo
-        ? `View Cash Voucher | ${voucher.voucherNo}`
-        : "View Cash Voucher"
-      : mode === "edit"
-        ? voucher?.voucherNo
-          ? `Edit Cash Voucher | ${voucher.voucherNo}`
-          : "Edit Cash Voucher"
-        : "Add Cash Voucher";
-  const title = (
-    <span className="inline-flex flex-wrap items-center gap-2">
-      <span>{titleLabel}</span>
-      {voucher?.status ? <ModuleStatusBadge status={voucher.status} /> : null}
-    </span>
-  );
+  const transactionLabel = transaction?.transactionNo ?? "Cash Voucher";
+  const recordLabel = voucher?.voucherNo ?? transaction?.transactionNo ?? "this cash voucher";
+  const editableRecordId = voucher?.id ?? transaction?.id;
+  const isDraftEdit = mode === "edit" && (voucher?.status ?? transaction?.status) === CashVoucherStatuses.draft;
+  const isSaveAction = mode === "add" || isDraftEdit;
+  const title =
+    mode === "add" ? (
+      "Add Cash Voucher"
+    ) : (
+      <span className="inline-flex flex-wrap items-center gap-2">
+        <span>
+          {mode === "view" ? "View" : "Edit"} Cash Voucher | {recordLabel}
+        </span>
+        {voucher?.status ? <ModuleStatusBadge status={voucher.status} /> : null}
+      </span>
+    );
   const helperText =
     mode === "view"
       ? "Review the transaction source and choose whether to create or update a voucher."
       : "Complete the voucher header and accounting entries on one page before saving.";
-  const transactionLabel = transaction?.transactionNo ?? "CashVoucher voucher";
-  const recordLabel = voucher?.voucherNo ?? transaction?.transactionNo ?? "this cash voucher";
-  const submitDialogCopy = pendingSubmitStatus ? getCashVoucherSubmitDialogCopy(mode, pendingSubmitStatus) : null;
+  const submitDialogCopy = pendingSubmitStatus
+    ? getCashVoucherSubmitDialogCopy(isDraftEdit ? "add" : mode, pendingSubmitStatus, recordLabel)
+    : null;
   const statusDialogCopy = statusToConfirm
     ? getCashVoucherStatusDialogCopy(statusToConfirm, recordLabel, voucher?.status ?? transaction?.status)
     : null;
@@ -68,51 +75,67 @@ export function CashVoucherActionHeader({
   return (
     <>
       <ModuleHeader
-      variant="panel"
-      titleAs="h1"
-      eyebrow={transactionLabel}
-      title={title}
-      description={helperText}
-      actionsClassName="items-center justify-end gap-2"
-      actions={
-        <>
-          <Link href={returnLink} className={moduleHeaderActionClassNames.secondary}>
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Back
-          </Link>
-          {mode === "view" ? (
-            <CashVoucherViewActions
-              transaction={transaction}
-              voucher={voucher}
-              onRequestStatusConfirmation={setStatusToConfirm}
-              onUpdateStatus={onUpdateStatus}
-              onPreview={onPreview}
-            />
-          ) : (
-            <span className="inline-flex shrink-0 items-center gap-2">
-              {onPreview ? <VoucherReportPreviewAction onPreview={onPreview} /> : null}
-              {mode === "add" && onCopyFrom ? (
-                <AppCopyFromDropdown records={copyFromRecords} sources={copyFromSources} onApply={onCopyFrom} />
-              ) : null}
-              <ModuleActionButton
-                disabled={isSubmitting}
-                label={isSubmitting ? "Saving..." : "Save"}
-                onAction={onSubmit}
-                menuItems={
-                  mode === "add" && onSaveDraft
-                    ? [
-                        {
-                          label: "Save As Draft",
-                          onSelect: onSaveDraft,
-                        },
-                      ]
-                    : []
-                }
+        variant="panel"
+        titleAs="h1"
+        eyebrow={transactionLabel}
+        title={title}
+        description={helperText}
+        actionsClassName="items-center justify-end gap-2"
+        actions={
+          <>
+            <Link href={returnLink} className={moduleHeaderActionClassNames.secondary} onClick={onBack}>
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+              Back
+            </Link>
+            {mode !== "view" && onDiscard ? (
+              <ModuleDraftDiscardAction
+                hasChanges={hasDiscardableChanges}
+                href={returnLink}
+                mode={mode}
+                onDiscard={onDiscard}
               />
-            </span>
-          )}
-        </>
-      }
+            ) : null}
+            {mode === "view" ? (
+              <>
+                <CashVoucherStatusActions
+                  transaction={transaction}
+                  voucher={voucher}
+                  onRequestStatusConfirmation={setStatusToConfirm}
+                  onUpdateStatus={onUpdateStatus}
+                  onPreview={onPreview}
+                />
+                {voucher && editableRecordId && canEditCashVoucherStatus(voucher.status) ? (
+                  <Link href={getCashVoucherEditLink(editableRecordId)} className={moduleHeaderActionClassNames.primary}>
+                    <Edit3 className="h-4 w-4" aria-hidden="true" />
+                    Edit
+                  </Link>
+                ) : null}
+              </>
+            ) : (
+              <span className="inline-flex shrink-0 items-center gap-2">
+                {onPreview ? <VoucherReportPreviewAction onPreview={onPreview} /> : null}
+                {mode === "add" && onCopyFrom ? (
+                  <AppCopyFromDropdown enableSourceSearch records={copyFromRecords} sources={copyFromSources} onApply={onCopyFrom} />
+                ) : null}
+                <ModuleActionButton
+                  disabled={isSubmitting}
+                  label={isSaveAction ? "Save" : "Update"}
+                  onAction={onSubmit}
+                  menuItems={
+                    isSaveAction && onSaveDraft
+                      ? [
+                          {
+                            label: "Save As Draft",
+                            onSelect: onSaveDraft,
+                          },
+                        ]
+                      : []
+                  }
+                />
+              </span>
+            )}
+          </>
+        }
       />
       {submitDialogCopy ? (
         <AppDialog
@@ -120,9 +143,11 @@ export function CashVoucherActionHeader({
           title={submitDialogCopy.title}
           description={submitDialogCopy.description}
           confirmLabel={submitDialogCopy.confirmLabel}
-          cancelLabel="Continue Editing"
+          cancelLabel="Cancel"
+          iconTone={submitDialogCopy.iconTone}
+          isPending={isSubmitting}
           pendingLabel={submitDialogCopy.pendingLabel}
-          tone="question"
+          tone="default"
           onCancel={onCancelSubmit}
           onConfirm={onConfirmSubmit}
         />
@@ -147,5 +172,3 @@ export function CashVoucherActionHeader({
     </>
   );
 }
-
-

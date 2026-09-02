@@ -107,30 +107,6 @@ export function MasterAddOnFormPage({
 				</h2>
 				<div className="mt-5 grid gap-5 sm:grid-cols-2">
 					<label className={FieldLabelClassName}>
-						<span className="flex items-center gap-1.5">
-							<span>Code</span>
-							<span className="text-xs font-normal text-darknavy/40">
-								(Uppercase)
-							</span>
-						</span>
-						<input
-							type="text"
-							value={page.values.code}
-							onChange={(e) =>
-								page.updateValues({
-									code: e.target.value.toUpperCase(),
-								})
-							}
-							className={ControlClassName}
-							placeholder="e.g. ADV_REPORTING"
-						/>
-						{page.errors.code ? (
-							<p className="text-xs font-medium text-coralpink">
-								{page.errors.code}
-							</p>
-						) : null}
-					</label>
-					<label className={FieldLabelClassName}>
 						<span>Name</span>
 						<input
 							type="text"
@@ -166,7 +142,6 @@ export function MasterAddOnFormPage({
 							))}
 						</select>
 					</label>
-					<div className="hidden sm:block" />
 					<label
 						className={joinClasses(
 							FieldLabelClassName,
@@ -190,6 +165,7 @@ export function MasterAddOnFormPage({
 						/>
 					</label>
 				</div>
+
 			</div>
 
 			{/* Pricing */}

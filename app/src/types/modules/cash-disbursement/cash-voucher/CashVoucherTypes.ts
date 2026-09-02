@@ -2,11 +2,13 @@ import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup
 import type { VoucherReportPreviewFormat } from "@/app/src/types/shared/reports/ReportTypes";
 import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import type { useCashVoucherPreviewTable } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucher";
 import type { useCashVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherActionPage";
 
 export type CashVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 
 export type CashVoucherDisplayStatus = CashVoucherStatus;
+export type CashVoucherPreviewTableState = ReturnType<typeof useCashVoucherPreviewTable>;
 
 export type CashVoucherTableColumnKey =
   | "voucherNo"
@@ -15,7 +17,9 @@ export type CashVoucherTableColumnKey =
   | "partyName"
   | "remarks"
   | "currency"
+  | "exchangeRate"
   | "amount"
+  | "disburseAmount"
   | "status"
   | "createdBy"
   | "createdAt"
@@ -40,6 +44,15 @@ export type CashVoucherActionTab = "details" | "attachments";
 
 export type CashVoucherStatusFilter = "all" | Exclude<CashVoucherStatus, "Open">;
 
+export type CashVoucherPartyDropdownOption = AppAdvancedDropdownOption & {
+  defaultPurchaseInputVatTaxSourceKey?: string;
+  defaultPurchaseEwtTaxSourceKey?: string;
+  defaultSalesOutputVatTaxSourceKey?: string;
+  defaultSalesCwtTaxSourceKey?: string;
+  vatCode?: string;
+  ewtCode?: string;
+};
+
 export type CashVoucherHistoryEntry = {
   id: string;
   action: string;
@@ -50,12 +63,17 @@ export type CashVoucherHistoryEntry = {
 };
 
 export type CashVoucherCopySource =
-  | "Account Payable Voucher"
+  | "Accounts Payable Voucher"
   | "Advances to Suppliers"
   | "Cash Advance"
+  | "Cash Advance Liquidation"
   | "Cash Advance Multiple Entry"
+  | "Cash Advance Multiple Entry Liquidation"
+  | "Petty Cash Fund"
+  | "Petty Cash Replenishment"
   | "Revolving Fund"
-  | "Petty Cash Fund Replenishment"
+  | "Revolving Fund Replenishment"
+  | "Revolving Fund Return"
   | "Purchase Order"
   | "Purchase Journal"
   | "Receiving Report"
@@ -105,12 +123,15 @@ export type CashVoucherTransactionRecord = {
   payee: string;
   purpose: string;
   department: string;
+  projectCode?: string;
   projectName?: string;
   requestedBy: string;
   transactionDate: string;
   paymentDueDate: string;
   amount: number;
+  disburseAmount?: number;
   currency: VoucherCurrency;
+  fxRate?: string;
   paymentMethod: CashVoucherPaymentMethod;
   disbursementType: CashVoucherType;
   status: CashVoucherStatus;
@@ -134,8 +155,9 @@ export type CashVoucherLineEntry = {
   responsibilityCenter?: string;
   refId?: string;
   vatType?: string;
-  atcCode?: string;
+  ewtCode?: string;
   particulars: string;
+  remarks?: string;
   debit: number;
   credit: number;
   taxRate: string;
@@ -149,7 +171,6 @@ export type CashVoucherTaxDetails = {
   responsibilityCenter: string;
   refId: string;
   vatType: string;
-  atcCode: string;
   grossAmount: number;
   netAmount: number;
   vatCode: string;
@@ -181,10 +202,12 @@ export type CashVoucherRecord = {
   currency: VoucherCurrency;
   fxRate: string;
   costCenter: string;
+  projectCode?: string;
   projectName?: string;
   partyCode: string;
   partyName: string;
   amount: number;
+  disburseAmount?: number;
   taxRate: string;
   taxDetails: CashVoucherTaxDetails;
   remarks: string;
@@ -221,6 +244,7 @@ export type CashVoucherStoreState = {
   isLoading: boolean;
   lastSyncedAt: number;
   isMutating: boolean;
+  refreshRecords: () => void;
 };
 
 export type CashVoucherFormValues = {
@@ -232,6 +256,7 @@ export type CashVoucherFormValues = {
   currency: VoucherCurrency;
   fxRate: string;
   costCenter: string;
+  projectCode: string;
   projectName: string;
   partyCode: string;
   partyName: string;
@@ -258,8 +283,9 @@ export type CashVoucherEntryDraft = {
   responsibilityCenter?: string;
   refId?: string;
   vatType?: string;
-  atcCode?: string;
-  particulars: string;
+  ewtCode?: string;
+  particulars?: string;
+  remarks?: string;
   debit: string;
   credit: string;
   taxRate: string;
@@ -273,7 +299,13 @@ export type CashVoucherAccountingGridSession = {
 };
 
 export type CashVoucherFormErrors = Partial<
-  Record<keyof Omit<CashVoucherFormValues, "lineEntries" | "attachments"> | "lineEntries" | "entryDraft", string>
+  Record<
+    | keyof Omit<CashVoucherFormValues, "lineEntries" | "attachments">
+    | "attachments"
+    | "lineEntries"
+    | "entryDraft",
+    string
+  >
 >;
 
 export type CashVoucherCopyFromRecord = {
@@ -294,12 +326,15 @@ export type CashVoucherFieldUpdater<TValues> = <TKey extends keyof TValues>(fiel
 export type CashVoucherActionHeaderProps = {
   copyFromRecords?: AppCopyFromRecord[];
   copyFromSources?: string[];
+  hasDiscardableChanges: boolean;
   mode: CashVoucherActionMode;
   isSubmitting?: boolean;
   returnLink?: string;
   transaction?: CashVoucherTransactionRecord;
   voucher?: CashVoucherRecord;
   pendingSubmitStatus: CashVoucherStatus | null;
+  onBack?: () => void;
+  onDiscard?: () => void;
   onCancelSubmit: () => void;
   onConfirmSubmit: () => void;
   onCopyFrom?: (recordIds: string[]) => void;
@@ -332,5 +367,3 @@ export type CashVoucherReportPreviewProps = {
 };
 
 export type CashVoucherPdfText = string | Array<string | { text: string; bold?: boolean }>;
-
-

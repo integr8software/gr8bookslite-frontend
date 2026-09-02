@@ -1,0 +1,249 @@
+name: Weekly Frontend Architecture Review
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every Monday at 01:00 UTC = 09:00 Asia/Manila
+    - cron: "0 1 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  weekly-frontend-architecture:
+    name: Weekly Frontend Architecture Review
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout frontend develop
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 1
+
+      - name: Checkout QA automation
+        uses: actions/checkout@v4
+        with:
+          repository: integr8software/gr8booksneo-automation
+          ref: develop
+          path: qa-automation
+          fetch-depth: 1
+          token: ${{ secrets.QA_AUTOMATION_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: qa-automation/package-lock.json
+
+      - name: Install QA automation dependencies
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          Push-Location ".\qa-automation"
+
+          try {
+            npm ci
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "QA automation npm ci failed with exit code $LASTEXITCODE."
+            }
+          }
+          finally {
+            Pop-Location
+          }
+
+      - name: Run full frontend architecture scan
+        id: architecture
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $outputDirectory = Join-Path `
+            $env:GITHUB_WORKSPACE `
+            "reports\weekly-architecture"
+
+          New-Item `
+            -ItemType Directory `
+            -Path $outputDirectory `
+            -Force |
+            Out-Null
+
+          Push-Location ".\qa-automation"
+
+          try {
+            node .\scripts\frontend\analyze-frontend.mjs `
+              --repository-root $env:GITHUB_WORKSPACE `
+              --all-files `
+              --output-directory $outputDirectory `
+              --output frontend-architecture-results.json `
+              --maximum-findings-per-rule 100 `
+              --no-fail-on-blockers `
+              --no-fail-on-warnings `
+              --verbose
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "Frontend architecture analyzer failed with exit code $LASTEXITCODE."
+            }
+          }
+          finally {
+            Pop-Location
+          }
+
+          $reportPath = Join-Path `
+            $outputDirectory `
+            "frontend-architecture-results.json"
+
+          if (-not (Test-Path -LiteralPath $reportPath -PathType Leaf)) {
+            throw "Frontend architecture report was not generated: $reportPath"
+          }
+
+          "report-path=$reportPath" >> $env:GITHUB_OUTPUT
+
+      - name: Write architecture summary
+        if: always()
+        shell: pwsh
+        env:
+          REPORT_PATH: ${{ steps.architecture.outputs.report-path }}
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          if (
+            [string]::IsNullOrWhiteSpace($env:REPORT_PATH) -or
+            -not (Test-Path -LiteralPath $env:REPORT_PATH -PathType Leaf)
+          ) {
+            @"
+          # Weekly Frontend Architecture Review
+
+          The architecture report was not generated. Review the workflow logs for the analyzer failure.
+          "@ >> $env:GITHUB_STEP_SUMMARY
+
+            exit 0
+          }
+
+          $report = Get-Content `
+            -LiteralPath $env:REPORT_PATH `
+            -Raw `
+            -Encoding UTF8 |
+            ConvertFrom-Json
+
+          # Weekly architecture review deliberately focuses on structural
+          # architecture signals. The full detector output is still preserved
+          # in the uploaded JSON artifact for QA investigation.
+          $architectureRulePrefixes = @(
+            "structure.",
+            "hooks.",
+            "types.",
+            "ui.",
+            "fetching."
+          )
+
+          $architectureFindings = @(
+            $report.findings |
+              Where-Object {
+                $ruleId = [string]$_.ruleId
+
+                $architectureRulePrefixes |
+                  Where-Object { $ruleId.StartsWith($_) } |
+                  Select-Object -First 1
+              }
+          )
+
+          $otherFindings = @(
+            $report.findings |
+              Where-Object {
+                $ruleId = [string]$_.ruleId
+
+                -not (
+                  $architectureRulePrefixes |
+                    Where-Object { $ruleId.StartsWith($_) } |
+                    Select-Object -First 1
+                )
+              }
+          )
+
+          $architectureBlockers = @(
+            $architectureFindings |
+              Where-Object { $_.severity -eq "blocker" }
+          ).Count
+
+          $architectureWarnings = @(
+            $architectureFindings |
+              Where-Object { $_.severity -eq "warning" }
+          ).Count
+
+          $architectureInfo = @(
+            $architectureFindings |
+              Where-Object { $_.severity -eq "info" }
+          ).Count
+
+          $architectureTotal = @($architectureFindings).Count
+          $otherTotal = @($otherFindings).Count
+          $scannedFiles = [int]$report.analysis.changedFileCount
+          $fullFindingCount = [int]$report.summary.total
+
+          @"
+          # Weekly Frontend Architecture Review
+
+          This is an **advisory full-codebase architecture review of `develop`**.
+          It does **not** block PRs or merges.
+
+          ## Architecture Signal
+
+          | Metric | Count |
+          |---|---:|
+          | Files scanned | $scannedFiles |
+          | Architecture findings | $architectureTotal |
+          | Blocker-class architecture findings | $architectureBlockers |
+          | Architecture warnings | $architectureWarnings |
+          | Architecture information | $architectureInfo |
+          | Other QA observations kept in artifact | $otherTotal |
+          | Full detector findings | $fullFindingCount |
+
+          ## Interpretation
+
+          - `Blocker-class` is the severity inherited from the normal PR detector. In this weekly review it is **advisory only**.
+          - An unfinished module is **not** a failure merely because future files or features are missing.
+          - Review existing structural violations before changing code.
+          - Preserve intentional legacy patterns and approved exceptions unless there is evidence they are causing a real problem.
+          - Repeated literals, hardcoded constants, and similar lower-level PR observations are retained in the JSON artifact but are not promoted into the weekly architecture list.
+          - The existing frontend PR quality gate remains the merge gate.
+          "@ >> $env:GITHUB_STEP_SUMMARY
+
+          if ($architectureTotal -gt 0) {
+            "" >> $env:GITHUB_STEP_SUMMARY
+            "## Architecture Findings" >> $env:GITHUB_STEP_SUMMARY
+            "" >> $env:GITHUB_STEP_SUMMARY
+
+            $architectureFindings |
+              ForEach-Object {
+                $location = if ([string]::IsNullOrWhiteSpace([string]$_.file)) {
+                  ""
+                }
+                elseif ($null -ne $_.line) {
+                  " — ``$($_.file):$($_.line)``"
+                }
+                else {
+                  " — ``$($_.file)``"
+                }
+
+                "- **$($_.severity.ToUpper())** ``$($_.ruleId)``$location — $($_.message)" >> $env:GITHUB_STEP_SUMMARY
+              }
+
+          }
+          else {
+            "" >> $env:GITHUB_STEP_SUMMARY
+            "No configured architecture findings were detected." >> $env:GITHUB_STEP_SUMMARY
+          }
+
+      - name: Upload weekly architecture report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-weekly-architecture-${{ github.run_number }}
+          path: reports/weekly-architecture/frontend-architecture-results.json
+          if-no-files-found: warn
+          retention-days: 30

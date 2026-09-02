@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import type { OnboardingValues } from "@/app/src/types/onboarding/OnboardingTypes";
-import type { BillingCycle, PricingPlan } from "@/app/src/data/pricing/PricingTypes";
+import type { BillingCycle, PricingPlan } from "@/app/src/types/pricing/PricingTypes";
 import type { OnboardingDraft } from "@/app/src/types/onboarding/OnboardingApiModels";
 import { GetOnboardingDraft } from "@/app/src/services/onboarding/OnboardingApi";
 import { MapOnboardingPlanToPricingPlan } from "@/app/src/services/onboarding/OnboardingPlanMapper";

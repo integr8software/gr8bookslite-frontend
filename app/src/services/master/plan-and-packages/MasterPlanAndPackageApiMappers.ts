@@ -1,16 +1,19 @@
+import { MasterPlanAndPackageScopes } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
+import type { CreateMasterPlanAndPackageDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
-	MasterPlanAndPackageFormValues,
-	MasterPlanAndPackageRecord,
-	MasterPlanAndPackageScaleRule,
-	MasterPlanAndPackageStatus,
-} from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
-import type {
-	CreateMasterPlanAndPackageRequest,
+	MasterPlanAndPackageApiMetric,
 	MasterPlanAndPackageApiPrice,
 	MasterPlanAndPackageApiRecord,
 	MasterPlanAndPackageApiStatus,
-	MasterPlanAndPackagesResponse,
-} from "@/app/src/services/master/plan-and-packages/MasterPlanAndPackageApiTypes";
+	MasterPlanAndPackageFormValues,
+	MasterPlanAndPackageRecord,
+	MasterPlanAndPackageScaleRule,
+	MasterPlanAndPackagesData,
+	MasterPlanAndPackageStatus,
+} from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
+
+const ScaleMetricBranch: MasterPlanAndPackageApiMetric = "BRANCH";
+const ScaleMetricUser: MasterPlanAndPackageApiMetric = "USER";
 
 const StatusByApiStatus = {
 	ACTIVE: "Active",
@@ -31,7 +34,7 @@ const ApiStatusByStatus = {
 >;
 
 export function mapMasterPlanAndPackagesResponse(
-	response: MasterPlanAndPackagesResponse,
+	response: MasterPlanAndPackagesData,
 ) {
 	return {
 		plans: response.plans.map(mapMasterPlanAndPackageRecord),
@@ -51,40 +54,58 @@ export function mapMasterPlanAndPackageRecord(
 		id: String(plan.id),
 		name: plan.name,
 		pricing: {
-			monthlyBasePrice: centsToAmount(
-				monthlyPrice?.compareAtInCents ?? monthlyPrice?.priceInCents ?? 0,
-			),
+			monthlyBasePrice: centsToAmount(monthlyPrice?.priceInCents ?? 0),
 			monthlyPercentOff: calculatePercentOff(monthlyPrice),
-			yearlyBasePrice: centsToAmount(
-				yearlyPrice?.compareAtInCents ?? yearlyPrice?.priceInCents ?? 0,
-			),
+			yearlyBasePrice: centsToAmount(yearlyPrice?.priceInCents ?? 0),
 			yearlyPercentOff: calculatePercentOff(yearlyPrice),
 		},
 		scalePricing: {
-			branch: mapScaleRule(plan, "BRANCH"),
-			user: mapScaleRule(plan, "USER"),
+			branch: mapScaleRule(plan, ScaleMetricBranch),
+			user: mapScaleRule(plan, ScaleMetricUser),
 		},
 		scope: plan.scope,
 		status: StatusByApiStatus[plan.status],
 		trialDays: plan.trialDays,
+		trialPrice: centsToAmount(plan.trialPriceInCents ?? 0),
 	};
 }
 
-export function mapCreateMasterPlanAndPackageRequest(
+export function mapCreateMasterPlanAndPackageDto(
 	values: MasterPlanAndPackageFormValues,
-): CreateMasterPlanAndPackageRequest {
+): CreateMasterPlanAndPackageDto {
+	const code = values.code?.trim()
+		? values.code.trim().toUpperCase().replace(/\s+/g, "_")
+		: values.name.trim().toUpperCase().replace(/\s+/g, "_");
+
+	const scope =
+		values.scopes && values.scopes.length > 0
+			? values.scopes.includes(MasterPlanAndPackageScopes.ALL) ||
+			  (values.scopes.includes(MasterPlanAndPackageScopes.ONBOARDING) &&
+					values.scopes.includes(MasterPlanAndPackageScopes.ADDITIONAL_COMPANY))
+				? MasterPlanAndPackageScopes.ONBOARDING
+				: values.scopes[0] === MasterPlanAndPackageScopes.ALL
+				? MasterPlanAndPackageScopes.ONBOARDING
+				: values.scopes[0]
+			: values.scope === MasterPlanAndPackageScopes.ALL
+			? MasterPlanAndPackageScopes.ONBOARDING
+			: values.scope ?? MasterPlanAndPackageScopes.ONBOARDING;
+
+	const isTrial = Boolean(values.hasTrial || values.trialDays > 0);
+	const trialDays = isTrial ? values.trialDays : 0;
+	const trialPriceInCents = isTrial ? amountToCents(values.trialPrice ?? 0) : 0;
+
 	return {
-		code: values.code.trim().toUpperCase().replace(/\s+/g, "_"),
+		code,
 		description: values.description.trim() || null,
 		discountTiers: [
-			...values.branchReductionTiers.map((tier) => ({
+			...(values.branchReductionTiers ?? []).map((tier) => ({
 				discountPercent: tier.reductionPercent,
-				metric: "BRANCH" as const,
+				metric: ScaleMetricBranch,
 				thresholdCount: tier.thresholdCount,
 			})),
-			...values.userReductionTiers.map((tier) => ({
+			...(values.userReductionTiers ?? []).map((tier) => ({
 				discountPercent: tier.reductionPercent,
-				metric: "USER" as const,
+				metric: ScaleMetricUser,
 				thresholdCount: tier.thresholdCount,
 			})),
 		],
@@ -104,27 +125,36 @@ export function mapCreateMasterPlanAndPackageRequest(
 				percentOff: values.yearlyPercentOff,
 			}),
 		],
-		scope: values.scope,
-		status: ApiStatusByStatus[values.status],
-		trialDays: values.trialDays,
+		scope: scope as CreateMasterPlanAndPackageDto["scope"],
+		status: ApiStatusByStatus[values.status] as CreateMasterPlanAndPackageDto["status"],
+		trialDays,
+		trialPriceInCents,
 		usageRules: [
-			{
-				freeCount: values.branchIncludedFree,
-				metric: "BRANCH",
-				unitPriceInCents: amountToCents(values.branchAddOnPrice),
-			},
-			{
-				freeCount: values.userIncludedFree,
-				metric: "USER",
-				unitPriceInCents: amountToCents(values.userAddOnPrice),
-			},
+			...(values.branchIncludedFree !== undefined || values.branchAddOnPrice !== undefined
+				? [
+						{
+							freeCount: values.branchIncludedFree ?? 0,
+							metric: ScaleMetricBranch,
+							unitPriceInCents: amountToCents(values.branchAddOnPrice ?? 0),
+						},
+				  ]
+				: []),
+			...(values.userIncludedFree !== undefined || values.userAddOnPrice !== undefined
+				? [
+						{
+							freeCount: values.userIncludedFree ?? 0,
+							metric: ScaleMetricUser,
+							unitPriceInCents: amountToCents(values.userAddOnPrice ?? 0),
+						},
+				  ]
+				: []),
 		],
 	};
 }
 
 function mapScaleRule(
 	plan: MasterPlanAndPackageApiRecord,
-	metric: "BRANCH" | "USER",
+	metric: MasterPlanAndPackageApiMetric,
 ): MasterPlanAndPackageScaleRule {
 	const usageRule = plan.usageRules.find((rule) => rule.metric === metric);
 	const reductionTiers = plan.discountTiers
@@ -152,12 +182,16 @@ function createPrice({
 	intervalUnit: "MONTH" | "YEAR";
 	percentOff: number;
 }): MasterPlanAndPackageApiPrice {
-	const compareAtInCents = amountToCents(basePrice);
-	const priceInCents = amountToCents(basePrice * (1 - percentOff / 100));
+	const compareAtInCents =
+		percentOff > 0 ? amountToCents(basePrice) : null;
+	const priceInCents =
+		percentOff > 0
+			? amountToCents(basePrice * (1 - percentOff / 100))
+			: amountToCents(basePrice);
 
 	return {
 		billingCycle,
-		compareAtInCents: percentOff > 0 ? compareAtInCents : null,
+		compareAtInCents,
 		intervalCount: 1,
 		intervalUnit,
 		priceInCents,

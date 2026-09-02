@@ -49,6 +49,8 @@ import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchang
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { getEwtPercentFromCode, getVatPercentFromRate, getVatRateFromCode } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
 import { isActiveStatus } from "@/app/src/utils/status.util";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { useModuleFieldVisibility } from "@/app/src/hooks/shared/field-management/useCurrentModuleFieldManagement";
 
 const fieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-white disabled:text-darknavy disabled:opacity-60";
@@ -72,9 +74,7 @@ export function AccountsPayableVoucherFormPage() {
   const projectOptionsQuery = useAccountsPayableVoucherResponsibilityCenterOptions();
   const termOptionsQuery = useAccountsPayableVoucherTermOptions();
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
-  const [partyAddTarget, setPartyAddTarget] = useState<
-    "header" | AccountsPayableVoucherPartyAddTarget | null
-  >(null);
+  const [partyAddTarget, setPartyAddTarget] = useState<"header" | AccountsPayableVoucherPartyAddTarget | null>(null);
   const [isProjectNameDialogOpen, setIsProjectNameDialogOpen] = useState(false);
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const [isTermsDialogOpen, setIsTermsDialogOpen] = useState(false);
@@ -104,11 +104,7 @@ export function AccountsPayableVoucherFormPage() {
     [page.values.termId, page.values.terms, termRecords],
   );
   const projectInitialValues = useMemo(
-    () =>
-      createProjectResponsibilityCenterInitialValues(
-        responsibilityCenterStore.classifications,
-        responsibilityCenterStore.types,
-      ),
+    () => createProjectResponsibilityCenterInitialValues(responsibilityCenterStore.classifications, responsibilityCenterStore.types),
     [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
   );
   if (page.needsRecord && page.isRecordLoading) {
@@ -267,7 +263,12 @@ export function AccountsPayableVoucherFormPage() {
         <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
           <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-2 2xl:grid-cols-3">
             <div className="grid min-w-0 gap-4">
-              <FieldShell controlId="accounts-payable-voucher-party" label="Party Name" error={page.errors.partyName || page.errors.partyCode} isRequired>
+              <FieldShell
+                controlId="accounts-payable-voucher-party"
+                label="Party Name"
+                error={page.errors.partyName || page.errors.partyCode}
+                isRequired
+              >
                 <div className="min-w-0">
                   <AppAdvancedDropdown
                     id="accounts-payable-voucher-party"
@@ -324,28 +325,6 @@ export function AccountsPayableVoucherFormPage() {
                 disabled={page.isReadonly}
                 onChange={page.handleInputChange}
               />
-
-              <FieldShell controlId="accounts-payable-voucher-projectName" label="Project Name" error={page.errors.projectName}>
-                <AppAdvancedDropdown
-                  id="accounts-payable-voucher-projectName"
-                  className={AttachedDropdownClassName}
-                  value={page.values.projectName}
-                  readOnly={page.isReadonly}
-                  addAction={
-                    !page.isReadonly && responsibilityCenterStore.permissions.canCreate
-                      ? {
-                          label: "Add Project",
-                          onClick: () => setIsProjectNameDialogOpen(true),
-                        }
-                      : undefined
-                  }
-                  options={projectOptions}
-                  placeholder="Select Project Name"
-                  searchPlaceholder="Search Project Name"
-                  emptyMessage={getProjectDropdownEmptyMessage(projectOptionsQuery)}
-                  onChange={(value) => selectProject(String(value))}
-                />
-              </FieldShell>
 
               <TextareaField
                 label="Remarks"
@@ -479,6 +458,27 @@ export function AccountsPayableVoucherFormPage() {
                 isRequired
                 onChange={(event) => updateDocumentDate(event.target.value)}
               />
+              <FieldShell controlId="accounts-payable-voucher-projectName" label="Project Name" error={page.errors.projectName}>
+                <AppAdvancedDropdown
+                  id="accounts-payable-voucher-projectName"
+                  className={AttachedDropdownClassName}
+                  value={page.values.projectName}
+                  readOnly={page.isReadonly}
+                  addAction={
+                    !page.isReadonly && responsibilityCenterStore.permissions.canCreate
+                      ? {
+                          label: "Add Project",
+                          onClick: () => setIsProjectNameDialogOpen(true),
+                        }
+                      : undefined
+                  }
+                  options={projectOptions}
+                  placeholder="Select Project Name"
+                  searchPlaceholder="Search Project Name"
+                  emptyMessage={getProjectDropdownEmptyMessage(projectOptionsQuery)}
+                  onChange={(value) => selectProject(String(value))}
+                />
+              </FieldShell>
               <TextField
                 label="Status"
                 name="status"
@@ -505,7 +505,8 @@ export function AccountsPayableVoucherFormPage() {
         title="Save accounts payable voucher?"
         description="Are you sure you want to save?"
         confirmLabel="Save"
-        tone="question"
+        iconTone="save"
+        tone="default"
         onCancel={page.handleCancelSaveVoucher}
         onConfirm={page.handleConfirmSaveVoucher}
       />
@@ -644,12 +645,17 @@ function FieldShell({
   isRequired?: boolean;
   label: string;
 }) {
+  const isVisible = useModuleFieldVisibility([label]);
   const labelContent = (
     <>
       {label}
-      {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
+      <ModuleFieldRequiredMark fallbackRequired={isRequired} label={label} />
     </>
   );
+
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <div className="grid min-w-0 gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">

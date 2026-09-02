@@ -13,6 +13,7 @@ import {
 } from "@tanstack/react-table";
 import {
 	ApprovalAmountConditionLimit,
+	ApprovalManagementActiveStatus,
 	ApprovalManagementTableColumns,
 } from "@/app/src/constants/modules/approval-management/ApprovalManagementConstants";
 import {
@@ -115,7 +116,7 @@ export function useApprovalManagementListPage() {
 		[moduleOptions, workflowByModuleCode],
 	);
 	const activeWorkflowCount = workflowRecords.filter(
-		(workflow) => workflow.status === "Active",
+		(workflow) => workflow.status === ApprovalManagementActiveStatus,
 	).length;
 	const [selectedModuleCode, setSelectedModuleCode] =
 		useState<ApprovalManagementModuleCode | null>(
@@ -182,13 +183,13 @@ export function useApprovalManagementListPage() {
 		? derivedApprovalLevelCount
 		: null;
 	const approverNameById = useMemo(() => {
-		const approvers = (approverSetupsQuery.data ?? []).flatMap((record) =>
+		const approvers = (approverSetupsQuery.data ?? []).flatMap((record: ApproverSetupRecord) =>
 			(record.approverUsers ?? []).map((approver) => ({
 				email: approver.email,
 				id: approver.id,
 				name: approver.name,
 				role: "",
-				status: "Active",
+				status: ApprovalManagementActiveStatus,
 			})),
 		);
 
@@ -286,7 +287,7 @@ export function useApprovalManagementListPage() {
 				)
 				.filter((setupId): setupId is string => Boolean(setupId)),
 		);
-		const sourceSetup = (approverSetupsQuery.data ?? []).find((record) =>
+		const sourceSetup = (approverSetupsQuery.data ?? []).find((record: ApproverSetupRecord) =>
 			sourceSetupIds.has(record.id),
 		);
 
@@ -607,7 +608,7 @@ export function useApprovalManagementListPage() {
 			id,
 			name,
 			role: "",
-			status: "Active",
+			status: ApprovalManagementActiveStatus,
 		})),
 		errors,
 		handleConfirmInactive,
@@ -700,7 +701,7 @@ function getVisibleApproverSetupRecords({
 
 			return (
 				record.assignmentType === selectedApproverType &&
-				record.status === "Active" &&
+				record.status === ApprovalManagementActiveStatus &&
 				(normalizedModuleScope === normalizedModuleCode ||
 					normalizedModuleScope === normalizedModuleName)
 			);
@@ -748,26 +749,6 @@ function clearStageError<TKey extends keyof ApprovalStageFormValues>(
 	};
 }
 
-function clearRoutingRuleError<TKey extends keyof ApprovalRoutingRuleFormValues>(
-	errors: ApprovalManagementFormErrors,
-	routingRuleId: string,
-	field: TKey,
-): ApprovalManagementFormErrors {
-	if (!errors.routingRules?.[routingRuleId]) {
-		return errors;
-	}
-
-	return {
-		...errors,
-		routingRules: {
-			...errors.routingRules,
-			[routingRuleId]: {
-				...errors.routingRules[routingRuleId],
-				[field]: undefined,
-			},
-		},
-	};
-}
 
 function createApprovalManagementColumn({
 	approverNameById,

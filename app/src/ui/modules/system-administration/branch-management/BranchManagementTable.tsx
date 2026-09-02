@@ -1,6 +1,6 @@
 import { Building2, GitBranch } from "lucide-react";
 import { getBranchDisplayLabel } from "@/app/src/data/shared/branch/BranchDisplayData";
-import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainBranch } from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import { BranchManagementHref } from "@/app/src/constants/modules/system-administration/branch-manager/BranchManagementConstants";
 import {
 	ModuleTableActionButton,

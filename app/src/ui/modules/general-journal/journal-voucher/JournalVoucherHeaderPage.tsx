@@ -9,12 +9,15 @@ import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 type JournalVoucherHeaderPageProps = {
+  onPreview?: () => void;
   page: ReturnType<typeof useJournalVoucherFormPage>;
 };
 
 export function JournalVoucherHeaderPage({
+  onPreview,
   page,
 }: JournalVoucherHeaderPageProps) {
   const copy = JournalVoucherActionCopy[page.mode];
@@ -50,6 +53,7 @@ export function JournalVoucherHeaderPage({
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back
           </Link>
+          {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
           {page.mode === "view" && page.existingRecord ? (
             <Link
               href={`${JournalVoucherHref}/edit/${page.existingRecord.id}`}

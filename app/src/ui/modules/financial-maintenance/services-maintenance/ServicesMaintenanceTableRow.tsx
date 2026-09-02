@@ -46,6 +46,8 @@ function ServicesMaintenanceCellContent({
   switch (columnId) {
     case "serviceName":
       return <span className="font-medium text-darknavy">{service.serviceName}</span>;
+    case "serviceType":
+      return <span>{service.serviceType}</span>;
     case "description":
       return (
         <span className="block truncate text-darknavy/70" title={service.description}>

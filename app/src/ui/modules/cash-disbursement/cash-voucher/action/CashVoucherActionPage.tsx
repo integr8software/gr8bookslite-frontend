@@ -7,7 +7,6 @@ import {
   CashVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
 import {
-  CashVoucherCopyFromRecords,
   CashVoucherCopySources,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import { createProjectResponsibilityCenterInitialValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
@@ -36,6 +35,10 @@ export function CashVoucherActionPage({ mode }: { mode: CashVoucherActionMode })
 
 function CashVoucherActionInner({ mode }: { mode: CashVoucherActionMode }) {
   const voucherAction = useCashVoucherActionPage(mode);
+
+  if (voucherAction.isLoading) {
+    return <CashVoucherActionSkeleton />;
+  }
 
   if (voucherAction.isRecordMissing) {
     return <CashVoucherNotFound />;
@@ -70,17 +73,29 @@ function CashVoucherActionShell({
 }
 
 function CashVoucherActionContent({ voucherAction }: { voucherAction: CashVoucherActionPageState }) {
+  const hasDetailsError = Object.entries(voucherAction.errors).some(
+    ([field, error]) => Boolean(error) && field !== "attachments",
+  );
+  const hasAttachmentsError = Boolean(voucherAction.errors.attachments);
+  const actionTabs = CashVoucherActionTabs.map((tab) => ({
+    ...tab,
+    hasError: tab.id === "details" ? hasDetailsError : tab.id === "attachments" ? hasAttachmentsError : false,
+  }));
+
   return (
     <>
       <CashVoucherActionHeader
-        copyFromRecords={CashVoucherCopyFromRecords}
+        copyFromRecords={voucherAction.copyFromRecords}
         copyFromSources={CashVoucherCopySources}
+        hasDiscardableChanges={voucherAction.hasDiscardableChanges}
         mode={voucherAction.isReadonly ? "view" : voucherAction.mode}
         isSubmitting={voucherAction.isSubmitting}
         pendingSubmitStatus={voucherAction.pendingSubmitStatus}
         returnLink={voucherAction.returnLink}
         transaction={voucherAction.selectedTransaction}
         voucher={voucherAction.existingVoucher}
+        onBack={voucherAction.saveDraft}
+        onDiscard={voucherAction.discardDraft}
         onCancelSubmit={voucherAction.cancelCashVoucherSubmit}
         onConfirmSubmit={voucherAction.confirmCashVoucherSubmit}
         onCopyFrom={voucherAction.handleCopyFrom}
@@ -92,7 +107,7 @@ function CashVoucherActionContent({ voucherAction }: { voucherAction: CashVouche
       <ModuleTabs
         activeTab={voucherAction.activeTab}
         ariaLabel="Cash voucher sections"
-        tabs={CashVoucherActionTabs}
+        tabs={actionTabs}
         onTabChange={voucherAction.setActiveTab}
       />
       {voucherAction.activeTab === "details" ? (
@@ -135,8 +150,10 @@ function CashVoucherDetailsSection({ voucherAction }: { voucherAction: CashVouch
         entries={values.lineEntries}
         errors={voucherAction.errors}
         isReadonly={voucherAction.isReadonly}
+        partyOptions={voucherAction.partyOptions}
         partyCode={values.partyCode}
         partyName={values.partyName}
+        responsibilityCenterOptions={voucherAction.responsibilityCenterOptions}
         totalCredit={voucherAction.totalCredit}
         totalDebit={voucherAction.totalDebit}
         onAddEntries={voucherAction.handleAddEntries}
@@ -221,5 +238,3 @@ function CashVoucherActionSkeleton() {
     </section>
   );
 }
-
-

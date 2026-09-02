@@ -18,13 +18,16 @@ export const RevolvingFundPaginationStorageKey = "cash-disbursement-revolving-fu
 export const RevolvingFundTransactionPrefix = "RF";
 export const RevolvingFundCopyFromSources = ["Disbursement Voucher"] as const;
 export const RevolvingFundColumnLabels = {
-  transactionNo: "Revolving Fund No.",
+  transactionNo: "Fund No.",
   documentDate: "Document Date",
   partyCode: "Party Code",
   partyName: "Party Name",
   accountCode: "Default Account Code",
   accountTitle: "Default Account Title",
+  currency: "Currency",
+  exchangeRate: "Exchange Rate",
   amount: "Total Amount",
+  disburseAmount: "Disburse Amount",
   remarks: "Remarks",
   createdBy: "Created By",
   createdAt: "Date Created",
@@ -33,7 +36,15 @@ export const RevolvingFundColumnLabels = {
   status: "Status",
   actions: "Actions",
 } as const;
-export const RevolvingFundDefaultVisibleColumnIds = ["transactionNo", "documentDate", "partyName", "amount", "status", "actions"] as const;
+export const RevolvingFundDefaultVisibleColumnIds = [
+  "transactionNo",
+  "documentDate",
+  "partyName",
+  "amount",
+  "disburseAmount",
+  "status",
+  "actions",
+] as const;
 export const RevolvingFundDefaultColumnVisibility = Object.fromEntries(
   Object.keys(RevolvingFundColumnLabels).map((columnId) => [
     columnId,
@@ -50,7 +61,7 @@ export const RevolvingFundStatuses = {
 } as const;
 export const RevolvingFundConfirmationDialogTitles: Record<RevolvingFundConfirmationAction, string> = {
   save: "Save Revolving Fund?",
-  draft: "Save as Draft?",
+  draft: "Save Revolving Fund as Draft?",
   approve: "Approve Revolving Fund?",
   disapprove: "Disapprove Revolving Fund?",
   cancel: "Cancel Revolving Fund?",
@@ -63,73 +74,89 @@ export const RevolvingFundConfirmationDialogConfirmLabels: Record<RevolvingFundC
   cancel: "Cancel",
 };
 export const RevolvingFundRecordStatuses = [
-  "Draft",
-  "For Approval",
   "Posted",
+  "For Approval",
+  "Draft",
   "Disapproved",
   "Cancelled",
 ] as const satisfies readonly RevolvingFundStatus[];
 export const RevolvingFundStatusOptions = ["All", ...RevolvingFundRecordStatuses] as const;
 export const RevolvingFundActionTabs: { id: RevolvingFundActionTab; label: string }[] = [
-  { id: "details", label: "Revolving Fund Details" },
+  { id: "details", label: "Fund Details" },
   { id: "attachments", label: "File Attachments" },
 ];
 export const RevolvingFundEntryTabs: { id: RevolvingFundEntryTab; label: string }[] = [
   { id: "items", label: "Items" },
   { id: "accounting", label: "Accounting Entries" },
 ];
+export const RevolvingFundAccountingEntryTab: RevolvingFundEntryTab = "accounting";
 export const RevolvingFundDefaultItemColumnIds: RevolvingFundItemColumnId[] = [
   "date",
-  "payeeCode",
-  "payeeName",
-  "orNo",
-  "tinNo",
-  "particulars",
+  "supplierCode",
+  "supplierName",
   "amount",
-  "netAmount",
-  "vatAmount",
-  "type",
   "vatType",
-  "vatable",
-  "vatInclusive",
-  "grossAmount",
-  "responsibilityCenter",
+  "vatPercent",
+  "vatAmount",
+  "netAmount",
+  "ewtCode",
+  "ewtPercent",
+  "ewtAmount",
+  "disburseAmount",
+  "responsibilityCenterCode",
+  "responsibilityCenterName",
+  "particulars",
+  "orNo",
+];
+export const RevolvingFundDefaultVisibleItemColumnIds: RevolvingFundItemColumnId[] = [
+  "date",
+  "supplierName",
+  "amount",
+  "disburseAmount",
 ];
 export const RevolvingFundItemColumnLabels: Record<RevolvingFundItemColumnId, string> = {
   date: "Date",
-  payeeCode: "Payee Code",
-  payeeName: "Payee",
-  orNo: "OR No.",
+  supplierCode: "Supplier Code",
+  supplierName: "Supplier Name",
+  orNo: "Reference No.",
   tinNo: "TIN No.",
   particulars: "Particulars",
-  amount: "Amount",
-  netAmount: "Net Amount",
-  vatAmount: "VAT Amount",
+  amount: "Gross Amount",
   type: "Type",
   vatType: "VAT Type",
-  vatable: "VATable",
-  vatInclusive: "VATInc",
+  vatPercent: "VAT Rate",
+  vatAmount: "VAT Amount",
+  netAmount: "NET Amount",
+  ewtCode: "EWT Code",
+  ewtPercent: "EWT Rate",
+  ewtAmount: "EWT Amount",
+  disburseAmount: "Disburse Amount",
   grossAmount: "Gross Amount",
-  responsibilityCenter: "Responsibility Center",
+  responsibilityCenterCode: "Responsibility Center Code",
+  responsibilityCenterName: "Responsibility Center",
 };
 export const RevolvingFundItemColumnWidths: Record<RevolvingFundItemColumnId, number> = {
-  date: 145,
-  payeeCode: 140,
-  payeeName: 220,
-  orNo: 135,
-  tinNo: 160,
-  particulars: 260,
-  amount: 140,
-  netAmount: 140,
-  vatAmount: 140,
-  type: 150,
-  vatType: 150,
-  vatable: 125,
-  vatInclusive: 125,
-  grossAmount: 150,
-  responsibilityCenter: 210,
+  date: 140,
+  supplierCode: 190,
+  supplierName: 230,
+  orNo: 190,
+  tinNo: 150,
+  particulars: 240,
+  amount: 185,
+  type: 140,
+  vatType: 175,
+  vatPercent: 160,
+  vatAmount: 175,
+  netAmount: 180,
+  ewtCode: 175,
+  ewtPercent: 160,
+  ewtAmount: 175,
+  disburseAmount: 165,
+  grossAmount: 185,
+  responsibilityCenterCode: 250,
+  responsibilityCenterName: 240,
 };
-export const RevolvingFundProtectedItemColumnIds = new Set<RevolvingFundItemColumnId>(["date", "amount"]);
+export const RevolvingFundProtectedItemColumnIds = new Set<RevolvingFundItemColumnId>(["supplierName", "amount"]);
 export const RevolvingFundDefaultAccountingColumnIds: RevolvingFundAccountingColumnId[] = [
   "accountCode",
   "accountTitle",
@@ -144,17 +171,17 @@ export const RevolvingFundAccountingColumnLabels: Record<RevolvingFundAccounting
   accountTitle: "Account Title",
   debit: "Debit",
   credit: "Credit",
-  partyCode: "Party Code",
-  partyName: "Party Name",
+  partyCode: "Supplier Code",
+  partyName: "Supplier Name",
   particulars: "Particulars",
 };
 export const RevolvingFundAccountingColumnWidths: Record<RevolvingFundAccountingColumnId, number> = {
-  accountCode: 150,
+  accountCode: 175,
   accountTitle: 240,
-  debit: 140,
-  credit: 140,
-  partyCode: 150,
-  partyName: 220,
+  debit: 150,
+  credit: 150,
+  partyCode: 190,
+  partyName: 230,
   particulars: 260,
 };
 export const RevolvingFundProtectedAccountingColumnIds = new Set<RevolvingFundAccountingColumnId>(["accountCode", "debit", "credit"]);
@@ -164,6 +191,12 @@ export const RevolvingFundPartyOptions: AppAdvancedDropdownOption[] = [
   { label: "E000102", name: "Raymark B. Arsicolo", value: "E000102" },
   { label: "E000117", name: "Maria L. Dela Cruz", value: "E000117" },
   { label: "E000145", name: "Jose P. Santos", value: "E000145" },
+];
+export const RevolvingFundSupplierOptions: AppAdvancedDropdownOption[] = [
+  { label: "V100006", name: "All4U Restaurant", value: "V100006" },
+  { label: "S000041", name: "Pacific Office Solutions, Inc.", value: "S000041" },
+  { label: "S000058", name: "Metro Industrial Trading", value: "S000058" },
+  { label: "S000073", name: "Northstar Equipment Supply", value: "S000073" },
 ];
 export const RevolvingFundAccountOptions: AppAdvancedDropdownOption[] = [
   { label: "101-200", name: "Revolving Fund", value: "101-200" },
@@ -184,20 +217,24 @@ export const RevolvingFundEntryTypeOptions: AppAdvancedDropdownOption[] = [
   { name: "Other", value: "Other" },
 ];
 export const RevolvingFundEntryVatTypeOptions: AppAdvancedDropdownOption[] = [
-  { name: "VAT 12%", value: "VAT 12%" },
-  { name: "Zero Rated", value: "Zero Rated" },
-  { name: "Exempt", value: "Exempt" },
+  { label: "", name: "VAT (12%)", selectedDetails: "VAT (12%)", value: "VAT 12%" },
+  { label: "", name: "Zero Rated (0%)", selectedDetails: "Zero Rated (0%)", value: "Zero Rated" },
+  { label: "", name: "Exempt (0%)", selectedDetails: "Exempt (0%)", value: "Exempt" },
+];
+export const RevolvingFundEntryEwtCodeOptions: AppAdvancedDropdownOption[] = [
+  { description: "Professional Fees - 10%", label: "", name: "W10 (10%)", selectedDetails: "W10 (10%)", value: "W10" },
+  { description: "Professional Fees - 5%", label: "", name: "W05 (5%)", selectedDetails: "W05 (5%)", value: "W05" },
+  { description: "Goods - 1%", label: "", name: "WV01 (1%)", selectedDetails: "WV01 (1%)", value: "WV01" },
+  { description: "Services - 2%", label: "", name: "WV02 (2%)", selectedDetails: "WV02 (2%)", value: "WV02" },
 ];
 export const RevolvingFundResponsibilityCenterOptions: AppAdvancedDropdownOption[] = [
-  { label: "RC-ADM", name: "Administration", value: "Administration" },
-  { label: "RC-OPS", name: "Operations", value: "Operations" },
-  { label: "RC-SAL", name: "Sales", value: "Sales" },
+  { label: "RC-ADM", name: "Administration", value: "RC-ADM" },
+  { label: "RC-OPS", name: "Operations", value: "RC-OPS" },
+  { label: "RC-SAL", name: "Sales", value: "RC-SAL" },
 ];
 
 export function canEditRevolvingFund(status: RevolvingFundStatus) {
-  return (
-    status === RevolvingFundStatuses.draft || status === RevolvingFundStatuses.forApproval || status === RevolvingFundStatuses.disapproved
-  );
+  return status === RevolvingFundStatuses.draft || status === RevolvingFundStatuses.disapproved;
 }
 export const RevolvingFundEntryDropdownClassName =
   "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";

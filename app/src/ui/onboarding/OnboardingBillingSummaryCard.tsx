@@ -3,7 +3,7 @@
 import type {
 	BillingCycle,
 	PricingPlan,
-} from "@/app/src/data/pricing/PricingData";
+} from "@/app/src/types/pricing/PricingTypes";
 import type { BillingMode } from "@/app/src/data/billing/BillingTypes";
 
 type OnboardingBillingSummaryCardProps = {
@@ -17,6 +17,7 @@ export function OnboardingBillingSummaryCard({
 	selectedPlan,
 	selectedBillingCycle,
 }: OnboardingBillingSummaryCardProps) {
+	const isManualBilling = billingMode === "MANUAL";
 	const selectedPrice = selectedPlan
 		? selectedBillingCycle === "monthly"
 			? selectedPlan.monthlyPrice
@@ -31,7 +32,7 @@ export function OnboardingBillingSummaryCard({
 			? "Charged once a year"
 			: "Charged every month";
 	const renewalLabel =
-		billingMode === "MANUAL"
+		isManualBilling
 			? "You will renew manually through hosted checkout."
 			: selectedBillingCycle === "yearly"
 			? "Renews yearly after your free trial ends."
@@ -79,7 +80,7 @@ export function OnboardingBillingSummaryCard({
 					<div className="flex items-start justify-between gap-5 pt-4 text-sm">
 						<dt className="text-darknavy/45">Billing method</dt>
 						<dd className="max-w-52 text-right font-semibold text-darknavy">
-							{billingMode === "MANUAL"
+							{isManualBilling
 								? "Manual payment"
 								: "Auto renewal"}
 						</dd>
@@ -93,7 +94,7 @@ export function OnboardingBillingSummaryCard({
 				</dl>
 
 				<p className="mt-6 rounded-xl bg-skyblue/10 p-4 text-xs leading-5 text-darknavy/60">
-					{billingMode === "MANUAL"
+					{isManualBilling
 						? "No payment method is saved. Manual checkout is confirmed by backend webhook in Phase 2."
 						: "No charge today. Your card is charged only after the free trial ends."}
 				</p>

@@ -120,28 +120,41 @@ function createItemsTable(record: PurchaseRequestRecord): TableCell {
 	const totalCost = getPurchaseRequestCostTotal(record);
 	const totalQuantity = getPurchaseRequestQuantityTotal(record);
 	const hasCost = purchaseRequestReportHasCost(record);
+	const isServices = record.purchaseType?.toLowerCase() === "services";
+
+	const headers: TableCell[] = isServices
+		? [
+				headerCell("Description"),
+				headerCell("Qty", "right"),
+				...(hasCost
+					? [headerCell("Cost", "right"), headerCell("Amount", "right")]
+					: []),
+			]
+		: [
+				headerCell("ItemCode"),
+				headerCell("BarCode"),
+				headerCell("ItemName"),
+				headerCell("UOM"),
+				headerCell("Qty", "right"),
+				...(hasCost
+					? [headerCell("Cost", "right"), headerCell("Amount", "right")]
+					: []),
+			];
+
+	const totalColSpan = isServices ? 1 : 4;
+	const emptyCellsCount = totalColSpan - 1;
+
 	const body: TableCell[][] = [
-		[
-			headerCell("ItemCode"),
-			headerCell("BarCode"),
-			headerCell("ItemName"),
-			headerCell("UOM"),
-			headerCell("Qty", "right"),
-			...(hasCost
-				? [headerCell("Cost", "right"), headerCell("Amount", "right")]
-				: []),
-		],
-		...record.items.map((item) => createItemRow(item, hasCost)),
+		headers,
+		...record.items.map((item) => createItemRow(item, hasCost, isServices)),
 		[
 			{
 				text: "Total :",
 				bold: true,
 				alignment: "right",
-				colSpan: 4,
+				colSpan: totalColSpan,
 			},
-			{},
-			{},
-			{},
+			...Array.from({ length: emptyCellsCount }, () => ({})),
 			{
 				text: formatPurchaseRequestQuantity(totalQuantity),
 				bold: true,
@@ -166,12 +179,18 @@ function createItemsTable(record: PurchaseRequestRecord): TableCell {
 		],
 	];
 
+	const widths = isServices
+		? hasCost
+			? ["*", 60, 90, 100]
+			: ["*", 60]
+		: hasCost
+			? [70, 70, "*", 44, 48, 76, 86]
+			: [70, 70, "*", 44, 48];
+
 	return {
 		table: {
 			headerRows: 1,
-			widths: hasCost
-				? [70, 70, "*", 44, 48, 76, 86]
-				: [70, 70, "*", 44, 48],
+			widths,
 			body,
 		},
 		layout: thinGridLayout,
@@ -181,7 +200,24 @@ function createItemsTable(record: PurchaseRequestRecord): TableCell {
 function createItemRow(
 	item: PurchaseRequestItem,
 	hasCost: boolean,
+	isServices = false,
 ): TableCell[] {
+	if (isServices) {
+		return [
+			bodyCell(item.description),
+			bodyCell(formatPurchaseRequestQuantity(item.quantity), "right"),
+			...(hasCost
+				? [
+						bodyCell(formatPurchaseRequestCurrency(item.cost), "right"),
+						bodyCell(
+							formatPurchaseRequestCurrency(getPurchaseRequestItemAmount(item)),
+							"right",
+						),
+					]
+				: []),
+		];
+	}
+
 	return [
 		bodyCell(item.itemCode),
 		bodyCell(item.barcode),

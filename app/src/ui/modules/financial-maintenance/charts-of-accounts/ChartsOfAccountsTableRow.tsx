@@ -117,8 +117,6 @@ function ChartsOfAccountsTableRowView({
 }: ChartsOfAccountsTableRowViewProps) {
   const accountIsSpecific = isSpecificAccountLevel(account);
   const renderedColumnIds = visibleColumnIds.filter((columnId) => showParentColumn || columnId !== "parentPath");
-  const hasChildren = Boolean(account.children?.length);
-  const isCollapsedParent = hasChildren && !expandedIds.has(account.id);
   const firstRenderedColumnId = renderedColumnIds[0];
   const addTitleParentAccount = accountIsSpecific ? parentAccount : account;
   const canAddAccountTitle = !activeDragAccount && permissions.canCreate && Boolean(addTitleParentAccount);
@@ -194,7 +192,7 @@ function ChartsOfAccountsTableRowView({
       case "status":
         return (
           <td key={columnId} className="px-5 py-4 text-center">
-            {isCollapsedParent ? null : <Badge variant={account.status === "Active" ? "green" : "gray"}>{account.status}</Badge>}
+            <Badge variant={account.status === "Active" ? "green" : "gray"}>{account.status}</Badge>
           </td>
         );
       case "createdBy":
@@ -335,12 +333,17 @@ function AccountNameCell({
         <button
           type="button"
           onClick={() => onToggleExpanded(account.id)}
-          aria-label={`Toggle ${account.accountName}`}
+          aria-expanded={expandedIds.has(account.id)}
+          aria-label={`${expandedIds.has(account.id) ? "Collapse" : "Expand"} ${account.accountName}`}
           className="flex h-7 w-7 items-center justify-center rounded-md text-darknavy/50 transition hover:bg-white hover:text-skyblue"
         >
           <ChevronRight className={joinClasses("h-4 w-4 transition", expandedIds.has(account.id) && "rotate-90")} aria-hidden="true" />
         </button>
-      ) : null}
+      ) : canDrag ? null : (
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center" aria-hidden="true">
+          <span className="h-1.5 w-1.5 rounded-full bg-darknavy/25" />
+        </span>
+      )}
       <div className="flex min-h-9 min-w-0 flex-1 flex-col justify-center">
         <p className="truncate font-semibold text-darknavy">{account.accountName}</p>
         {account.description ? <p className="truncate text-sm text-darknavy/60">{account.description}</p> : null}

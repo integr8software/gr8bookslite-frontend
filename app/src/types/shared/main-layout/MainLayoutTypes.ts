@@ -1,4 +1,4 @@
-import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainBranch } from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 
 export type MainNotificationTab = "all" | "unread" | "read";
 

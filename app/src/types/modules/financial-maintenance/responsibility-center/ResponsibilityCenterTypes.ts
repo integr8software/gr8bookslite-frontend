@@ -123,6 +123,18 @@ export type ResponsibilityCenterFormValues = {
 
 export type ResponsibilityCenterFormErrors = Partial<Record<keyof ResponsibilityCenterFormValues, string>>;
 
+export type ResponsibilityCenterFormPageOptions = {
+  center?: ResponsibilityCenter;
+  initialValues?: ResponsibilityCenterFormValues;
+  isOpen?: boolean;
+  mode: ResponsibilityCenterActionMode;
+  onSaved?: (center: ResponsibilityCenter) => void;
+};
+
+export type ResponsibilityCenterStoreOptions = {
+  refetchOnMount?: boolean | "always";
+};
+
 export type ResponsibilityCenterTableColumnKey =
   | "name"
   | "code"

@@ -12,8 +12,8 @@ import { usePartyManagementStore } from "@/app/src/hooks/modules/party-managemen
 import type { AdvancesToSuppliersActionMode } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { AdvancesToSuppliersActionHeader } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/action/AdvancesToSuppliersActionHeader";
-import { AdvancesToSuppliersAttachmentsTab } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/action/AdvancesToSuppliersAttachmentsTab";
-import { AdvancesToSuppliersDetailsTab } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/action/AdvancesToSuppliersDetailsTab";
+import { AdvancesToSuppliersFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/action/AdvancesToSuppliersFileAttachmentFields";
+import { AdvancesToSuppliersDetailsFields } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/action/AdvancesToSuppliersDetailsFields";
 import { AdvancesToSuppliersNotFound } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/action/AdvancesToSuppliersNotFound";
 import { AdvancesToSuppliersReportPreview } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/reports/AdvancesToSuppliersReportPreview";
 import { openAdvancesToSuppliersPdf } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/reports/AdvancesToSuppliersPdf";
@@ -48,14 +48,14 @@ export function AdvancesToSuppliersActionPage({ mode }: { mode: AdvancesToSuppli
           onTabChange={page.setActiveTab}
         />
         {page.activeTab === "details" ? (
-          <AdvancesToSuppliersDetailsTab
+          <AdvancesToSuppliersDetailsFields
             page={page}
             onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
             onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
             onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
           />
         ) : (
-          <AdvancesToSuppliersAttachmentsTab page={page} />
+          <AdvancesToSuppliersFileAttachmentFields page={page} />
         )}
       </section>
       <PartyManagementDrawer

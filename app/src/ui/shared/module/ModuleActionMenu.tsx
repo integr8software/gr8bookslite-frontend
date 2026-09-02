@@ -16,7 +16,7 @@ import {
 	moduleAccentClassNames,
 } from "@/app/src/ui/shared/module/module-table/utils";
 
-type ModuleActionMenuTone = "default" | "danger" | "primary";
+type ModuleActionMenuTone = "default" | "danger" | "primary" | "warning";
 
 type BaseModuleActionMenuItem = {
 	icon: LucideIcon;
@@ -185,6 +185,8 @@ function ModuleActionMenuItemView({
 		moduleAccentClassNames.focusRing,
 		item.tone === "danger" &&
 			"text-coralpink hover:bg-coralpink/10",
+		item.tone === "warning" &&
+			"text-amber-700 hover:bg-amber-50",
 		item.tone === "primary" &&
 			"bg-emerald-50 text-darknavy hover:bg-emerald-100",
 		(!item.tone || item.tone === "default") &&
@@ -198,7 +200,11 @@ function ModuleActionMenuItemView({
 	);
 	const iconClassName = joinClasses(
 		"h-4 w-4 shrink-0",
-		item.tone === "danger" ? "text-coralpink" : "text-darknavy/50",
+		item.tone === "danger"
+			? "text-coralpink"
+			: item.tone === "warning"
+				? "text-amber-700"
+				: "text-darknavy/50",
 	);
 
 	if (item.type === "link") {

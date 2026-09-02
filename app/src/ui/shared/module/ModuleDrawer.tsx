@@ -38,6 +38,7 @@ type ModuleDrawerProps = {
 	isSaving?: boolean;
 	maxWidthClassName?: string;
 	onBeforeSaveConfirm?: () => boolean;
+	onCancel?: () => void;
 	onClose: () => void;
 	position?: ModuleDrawerPosition;
 	savingLabel?: string;
@@ -93,6 +94,7 @@ export function ModuleDrawer({
 	isSaving = false,
 	maxWidthClassName = "max-w-2xl",
 	onBeforeSaveConfirm,
+	onCancel,
 	onClose,
 	position = "right",
 	savingLabel = ModuleSavingLabel,
@@ -124,6 +126,11 @@ export function ModuleDrawer({
 			onClose();
 		}
 	}, [isSaving, onClose]);
+	const handleCancel = useCallback(() => {
+		if (!isSaving) {
+			(onCancel ?? onClose)();
+		}
+	}, [isSaving, onCancel, onClose]);
 	const handleSaveRequest = useCallback(() => {
 		if (isSaving || !formId) {
 			return;
@@ -139,7 +146,7 @@ export function ModuleDrawer({
 		<div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 			<button
 				type="button"
-				onClick={handleClose}
+				onClick={isReadonly ? handleClose : handleCancel}
 				disabled={isSaving}
 				className={`${moduleHeaderActionClassNames.secondary} disabled:cursor-not-allowed disabled:opacity-60`}
 			>
@@ -262,12 +269,12 @@ export function ModuleDrawer({
 				<AppDialog
 					confirmLabel="Confirm"
 					description="This will save the details entered in this module form."
-					iconTone="question"
+					iconTone="save"
 					isOpen={isSaveDialogOpen}
 					isPending={isConfirmSubmitPending}
 					pendingLabel={savingLabel}
 					title={`${submitLabel}?`}
-					tone="success"
+					tone="default"
 					onCancel={closeSaveDialog}
 					onConfirm={submitFromDialog}
 				/>

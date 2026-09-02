@@ -14,6 +14,8 @@ import { PettyCashVoucherActionHeader } from "@/app/src/ui/modules/cash-disburse
 import { PettyCashVoucherDetailsFields } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherDetailsFields";
 import { PettyCashVoucherFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherFileAttachmentFields";
 import { PettyCashVoucherNotFound } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherNotFound";
+import { PettyCashVoucherReportPreview } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/reports/PettyCashVoucherReportPreview";
+import { openPettyCashVoucherPdf } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/reports/PettyCashVoucherPdf";
 
 export function PettyCashVoucherActionPage({ mode }: { mode: PettyCashVoucherFormMode }) {
   const router = useRouter();
@@ -25,27 +27,29 @@ export function PettyCashVoucherActionPage({ mode }: { mode: PettyCashVoucherFor
   }
 
   return (
-    <section className="grid gap-5">
-      <PettyCashVoucherActionHeader page={page} />
+    <>
+      <section className="grid gap-5">
+        <PettyCashVoucherActionHeader page={page} />
 
-      <ModuleTabs
-        activeTab={page.activeTab}
-        ariaLabel="Petty cash voucher sections"
-        tabs={PettyCashVoucherActionTabs}
-        onTabChange={page.setActiveTab}
-      />
-
-      {page.activeTab === "details" ? (
-        <PettyCashVoucherDetailsFields
-          canAddParty={page.partyStore.permissions.canCreate}
-          canAddResponsibilityCenter={page.responsibilityCenterStore.permissions.canCreate}
-          page={page}
-          onOpenPartyDrawer={page.openPartyDrawer}
-          onOpenResponsibilityCenterDrawer={page.openResponsibilityCenterDrawer}
+        <ModuleTabs
+          activeTab={page.activeTab}
+          ariaLabel="Petty cash voucher sections"
+          tabs={PettyCashVoucherActionTabs}
+          onTabChange={page.setActiveTab}
         />
-      ) : (
-        <PettyCashVoucherFileAttachmentFields page={page} />
-      )}
+
+        {page.activeTab === "details" ? (
+          <PettyCashVoucherDetailsFields
+            canAddParty={page.partyStore.permissions.canCreate}
+            canAddResponsibilityCenter={page.responsibilityCenterStore.permissions.canCreate}
+            page={page}
+            onOpenPartyDrawer={page.openPartyDrawer}
+            onOpenResponsibilityCenterDrawer={page.openResponsibilityCenterDrawer}
+          />
+        ) : (
+          <PettyCashVoucherFileAttachmentFields page={page} />
+        )}
+      </section>
       <PartyManagementDrawer
         isOpen={!page.isReadonly && page.isPartyDrawerOpen}
         isPending={page.partyStore.isMutating}
@@ -61,6 +65,12 @@ export function PettyCashVoucherActionPage({ mode }: { mode: PettyCashVoucherFor
         onClose={page.closeResponsibilityCenterDrawer}
         onSaved={page.handleSaveResponsibilityCenter}
       />
-    </section>
+      <PettyCashVoucherReportPreview
+        isOpen={page.isReportPreviewOpen}
+        page={page}
+        onClose={page.closeReportPreview}
+        onGeneratePdf={() => openPettyCashVoucherPdf(page.values)}
+      />
+    </>
   );
 }

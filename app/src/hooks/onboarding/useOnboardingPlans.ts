@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import type { PricingPlan } from "@/app/src/data/pricing/PricingTypes";
+import type { PricingPlan } from "@/app/src/types/pricing/PricingTypes";
 import { GetOnboardingPlans } from "@/app/src/services/onboarding/OnboardingApi";
 import { MapOnboardingPlanToPricingPlan } from "@/app/src/services/onboarding/OnboardingPlanMapper";
 import { IsIntentionalLogoutInProgress } from "@/app/src/services/auth/AuthSessionExpired";

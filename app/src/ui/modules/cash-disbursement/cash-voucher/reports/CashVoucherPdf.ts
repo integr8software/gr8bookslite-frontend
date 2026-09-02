@@ -114,7 +114,7 @@ function createTitleAndDateRow(values: CashVoucherFormValues): TableCell {
             margin: [6, 7, 0, 6],
           },
           {
-            text: [{ text: "Cash Voucher Date: ", bold: true }, formatShortDateLabel(values.voucherDate)],
+            text: [{ text: "Document Date: ", bold: true }, formatShortDateLabel(values.voucherDate)],
             margin: [4, 8, 4, 4],
           },
         ],
@@ -184,7 +184,7 @@ function createEntriesTable(values: CashVoucherFormValues): TableCell {
     [
       headerCell("Account"),
       headerCell("Payee"),
-      headerCell("Remarks"),
+      headerCell("Particulars"),
       headerCell("Cost Center"),
       headerCell("Debit", "right"),
       headerCell("Credit", "right"),
@@ -230,7 +230,7 @@ function createEntryRow(entry: CashVoucherLineEntry, values: CashVoucherFormValu
   return [
     bodyCell(formatAccountLabel(entry.accountCode, entry.accountName)),
     bodyCell(entry.partyName || entry.partyCode || values.partyName || "-"),
-    bodyCell(entry.particulars || "-"),
+    bodyCell(entry.particulars || entry.remarks || "-"),
     bodyCell(entry.responsibilityCenter || values.costCenter || "-"),
     bodyCell(entry.debit ? formatCurrency(entry.debit) : "", "right"),
     bodyCell(entry.credit ? formatCurrency(entry.credit) : "", "right"),

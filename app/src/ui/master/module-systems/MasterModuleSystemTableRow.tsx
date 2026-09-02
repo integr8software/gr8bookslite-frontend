@@ -1,5 +1,4 @@
 import Link from "next/link";
-import type { Row } from "@tanstack/react-table";
 import type { ReactNode } from "react";
 import {
 	CheckCircle2,
@@ -16,13 +15,9 @@ import {
 	getMasterModuleSystemViewHref,
 } from "@/app/src/constants/master/module-systems/MasterModuleSystemConstants";
 import type { MasterModuleSystem } from "@/app/src/services/master/module-systems/MasterModuleSystemApi";
+import type { MasterModuleSystemTableRowProps } from "@/app/src/types/master/module-systems/MasterModuleSystemTypes";
 import { ModuleActionMenu } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-
-type MasterModuleSystemTableRowProps = {
-	row: Row<MasterModuleSystem>;
-	onToggleStatus: (record: MasterModuleSystem) => void;
-};
 
 export function MasterModuleSystemTableRow({
 	row,

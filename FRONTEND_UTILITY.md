@@ -65,10 +65,19 @@ Import from `@/app/src/utils/date.util`.
 - `endOfYear(date)`: returns the last day of the year.
 - `addDays(date, days)`: returns a local date moved by day count.
 - `addMonths(date, months)`: returns the first day of a shifted month.
+- `formatDate(value, options)`: formats a date for display (e.g. `Jan 22, 2026`)
+  with configurable empty, invalid, and locale values (default `en-PH`). Handles
+  `Date | string | undefined` gracefully and returns an empty string when falsy.
 - `formatDateTime(value, options)`: formats a date/time for display with
   configurable empty, invalid, and locale values.
 
-Use this for date parsing, date range boundaries, ISO date inputs, and display
+Use `formatDate` for all date-only displays across modules, including transaction
+dates, document dates, and audit dates (`createdAt`, `updatedAt`, `dateCreated`,
+`dateModified`). Do not create feature-local or component-level date wrappers
+such as `formatAuditDate`, `formatDateLabel`, or custom `Intl`/`toLocaleDateString`
+helpers.
+
+Use `date.util.ts` for date parsing, date range boundaries, ISO date inputs, and display
 date/time formatting.
 
 ### `file.util.ts`

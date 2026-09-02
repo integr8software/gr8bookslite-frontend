@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
 import {
   PartyClassificationOptions,
   PartyCivilStatusOptions,
@@ -13,10 +13,7 @@ import {
   PartyManagementFieldControlSelector,
   PartyManagementSelectClassName,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
-import {
-  DefaultPhilippineContactNumber,
-  PhilippineContactNumberPlaceholder,
-} from "@/app/src/data/shared/contact/ContactData";
+import { DefaultPhilippineContactNumber, PhilippineContactNumberPlaceholder } from "@/app/src/data/shared/contact/ContactData";
 import type {
   PartyAccountingAccountOptions,
   PartyAccountingAccountField,
@@ -36,10 +33,15 @@ import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { PartyAddressContainer } from "@/app/src/ui/modules/party-management/PartyAddressContainer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
-import {
-  MaintenanceActiveStatusSwitchOption,
-  MaintenanceInactiveStatusSwitchOption,
-} from "@/app/src/utils/status.util";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
+
+const PartyInformationTabOrder: readonly PartyInformationTabId[] = [
+  "basic-information",
+  "contact-information",
+  "tax-information",
+  "accounting-information",
+];
 
 export function PartyInformationDetailsFields({
   accountOptions,
@@ -74,14 +76,11 @@ export function PartyInformationDetailsFields({
   const isPartyTypeSelected = values.partyTypes.length > 0;
   const isDetailsDisabled = isReadonly || !isClassificationSelected || !isPartyTypeSelected;
   const showBusinessNameFields = values.classification !== "Individual";
-  const showPersonalInfoFields =
-    values.partyTypes.includes("Employee") || values.partyTypes.includes("Member");
+  const showPersonalInfoFields = values.partyTypes.includes("Employee") || values.partyTypes.includes("Member");
   const showMemberRegistrationDate = values.partyTypes.includes("Member");
   const isMember = values.partyTypes.includes("Member");
-  const showPartyEntityTypeField =
-    values.classification === "Non-Individual" && isPartyTypeSelected;
-  const showWithholdingDefaults =
-    isPartyEntityTypeWithholdingDefaultEnabled(values.partyEntityType);
+  const showPartyEntityTypeField = values.classification === "Non-Individual" && isPartyTypeSelected;
+  const showWithholdingDefaults = isPartyEntityTypeWithholdingDefaultEnabled(values.partyEntityType);
   const visiblePartyTypeOptions =
     values.classification === "Non-Individual"
       ? partyTypeOptions.filter((type) => type !== "Employee" && type !== "Member")
@@ -91,10 +90,7 @@ export function PartyInformationDetailsFields({
     value: type,
   }));
   const partyEntityTypeSelectOptions = [...PartyEntityTypeOptions]
-    .filter(
-      (option) =>
-        option.classificationScope === values.classification,
-    )
+    .filter((option) => option.classificationScope === values.classification)
     .sort((leftOption, rightOption) => leftOption.sortOrder - rightOption.sortOrder)
     .map((option) => ({
       description: option.description,
@@ -153,21 +149,40 @@ export function PartyInformationDetailsFields({
     "employeePayableAccount",
     "cashAdvanceLimit",
   ]);
+  const tabErrorCounts = useMemo(
+    () =>
+      ({
+        "basic-information": basicErrorCount,
+        "contact-information": contactErrorCount,
+        "tax-information": taxErrorCount,
+        "accounting-information": accountingErrorCount,
+      }) satisfies Record<PartyInformationTabId, number>,
+    [accountingErrorCount, basicErrorCount, contactErrorCount, taxErrorCount],
+  );
+  const totalErrorCount = basicErrorCount + contactErrorCount + taxErrorCount + accountingErrorCount;
+  const previousTotalErrorCountRef = useRef(totalErrorCount);
+
+  useEffect(() => {
+    if (previousTotalErrorCountRef.current === 0 && totalErrorCount > 0) {
+      const firstTabWithErrors = PartyInformationTabOrder.find((tabId) => tabErrorCounts[tabId] > 0);
+
+      if (firstTabWithErrors) {
+        queueMicrotask(() => setActiveTab(firstTabWithErrors));
+      }
+    }
+
+    previousTotalErrorCountRef.current = totalErrorCount;
+  }, [tabErrorCounts, totalErrorCount]);
 
   const tabs: PartyInformationTab[] = [
     {
       id: "basic-information",
       label: "Basic Information",
       badge: basicErrorCount,
+      badgeTone: basicErrorCount > 0 ? "error" : "info",
       content: (
         <div className="grid gap-5">
-          <div
-            className={
-              showPartyEntityTypeField
-                ? "grid gap-4 lg:grid-cols-4"
-                : "grid gap-4 lg:grid-cols-3"
-            }
-          >
+          <div className={showPartyEntityTypeField ? "grid gap-4 lg:grid-cols-4" : "grid gap-4 lg:grid-cols-3"}>
             <Field label="Party Code" error={errors.partyCodeNo} required>
               <input
                 name="partyCodeNo"
@@ -198,11 +213,7 @@ export function PartyInformationDetailsFields({
                 disabled={isReadonly || !isClassificationSelected}
                 isSearchable={false}
                 options={partyTypeSelectOptions}
-                placeholder={
-                  isClassificationSelected
-                    ? "--Select Party Type--"
-                    : "--Select Classification First--"
-                }
+                placeholder={isClassificationSelected ? "--Select Party Type--" : "--Select Classification First--"}
                 removeSelectionOnSelectedOptionClick
                 selectionMode="multiple"
                 showSelectionRemoveButton={false}
@@ -219,12 +230,7 @@ export function PartyInformationDetailsFields({
                   placeholder="--Select Entity Type--"
                   searchPlaceholder="Search entity type"
                   value={values.partyEntityType}
-                  onChange={(value) =>
-                    onUpdateField(
-                      "partyEntityType",
-                      getSingleSelectedValue(value) as PartyEntityType | "",
-                    )
-                  }
+                  onChange={(value) => onUpdateField("partyEntityType", getSingleSelectedValue(value) as PartyEntityType | "")}
                 />
               </Field>
             ) : null}
@@ -361,11 +367,7 @@ export function PartyInformationDetailsFields({
 
           {showMemberRegistrationDate ? (
             <div className="grid gap-4 lg:grid-cols-3">
-              <Field
-                label="Member Registration Date"
-                error={errors.memberRegistrationDate}
-                required
-              >
+              <Field label="Member Registration Date" error={errors.memberRegistrationDate} required>
                 <input
                   name="memberRegistrationDate"
                   type="date"
@@ -402,6 +404,7 @@ export function PartyInformationDetailsFields({
       id: "contact-information",
       label: "Contact Information",
       badge: contactErrorCount,
+      badgeTone: contactErrorCount > 0 ? "error" : "info",
       content: (
         <div className="grid gap-5">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -482,6 +485,7 @@ export function PartyInformationDetailsFields({
       id: "tax-information",
       label: "Tax Information",
       badge: taxErrorCount,
+      badgeTone: taxErrorCount > 0 ? "error" : "info",
       content: (
         <div className="grid gap-5">
           <div className="grid gap-4 lg:grid-cols-2">
@@ -590,6 +594,7 @@ export function PartyInformationDetailsFields({
       id: "accounting-information",
       label: "Accounting Information",
       badge: accountingErrorCount,
+      badgeTone: accountingErrorCount > 0 ? "error" : "info",
       content: (
         <div className="grid gap-5">
           <AccountFields
@@ -613,12 +618,7 @@ export function PartyInformationDetailsFields({
 
   return (
     <div className="grid gap-5">
-      <ModuleTabs
-        activeTab={activeTab}
-        ariaLabel="Party information sections"
-        tabs={tabs}
-        onTabChange={setActiveTab}
-      />
+      <ModuleTabs activeTab={activeTab} ariaLabel="Party information sections" tabs={tabs} onTabChange={setActiveTab} />
       <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
         {activeTabContent}
       </section>
@@ -626,13 +626,7 @@ export function PartyInformationDetailsFields({
   );
 }
 
-function TaxDefaultGroup({
-  children,
-  title,
-}: {
-  children: ReactNode;
-  title: string;
-}) {
+function TaxDefaultGroup({ children, title }: { children: ReactNode; title: string }) {
   return (
     <div className="grid gap-3">
       <h3 className="text-sm font-semibold text-darknavy">{title}</h3>
@@ -660,10 +654,7 @@ function TaxDefaultField({
   value: string;
   onUpdateField: PartyInformationFieldUpdateHandler;
 }) {
-  const showOptionViewToggle = ![
-    "defaultPurchaseInputVatTaxSourceKey",
-    "defaultSalesOutputVatTaxSourceKey",
-  ].includes(field);
+  const showOptionViewToggle = !["defaultPurchaseInputVatTaxSourceKey", "defaultSalesOutputVatTaxSourceKey"].includes(field);
 
   return (
     <Field label={label} error={error}>
@@ -743,12 +734,7 @@ function AccountFields({
       {isCustomer ? (
         <Field label="Default Receivable Account" error={errors.defaultReceivableAccount} required>
           <ChartAccountDropdown
-            addAction={createAccountAddAction(
-              "defaultReceivableAccount",
-              canAddAccountTitle,
-              isAccountingDisabled,
-              onAddAccountTitle,
-            )}
+            addAction={createAccountAddAction("defaultReceivableAccount", canAddAccountTitle, isAccountingDisabled, onAddAccountTitle)}
             accounts={accountOptions.defaultReceivableAccount}
             disabled={isAccountingDisabled}
             valueField="id"
@@ -758,18 +744,9 @@ function AccountFields({
         </Field>
       ) : null}
       {isCustomer ? (
-        <Field
-          label="Default Customer Advance Account"
-          error={errors.customerAdvanceAccount}
-          required
-        >
+        <Field label="Default Customer Advance Account" error={errors.customerAdvanceAccount} required>
           <ChartAccountDropdown
-            addAction={createAccountAddAction(
-              "customerAdvanceAccount",
-              canAddAccountTitle,
-              isAccountingDisabled,
-              onAddAccountTitle,
-            )}
+            addAction={createAccountAddAction("customerAdvanceAccount", canAddAccountTitle, isAccountingDisabled, onAddAccountTitle)}
             accounts={accountOptions.customerAdvanceAccount}
             disabled={isAccountingDisabled}
             valueField="id"
@@ -781,12 +758,7 @@ function AccountFields({
       {isVendor ? (
         <Field label="Default Payable Account" error={errors.defaultPayableAccount} required>
           <ChartAccountDropdown
-            addAction={createAccountAddAction(
-              "defaultPayableAccount",
-              canAddAccountTitle,
-              isAccountingDisabled,
-              onAddAccountTitle,
-            )}
+            addAction={createAccountAddAction("defaultPayableAccount", canAddAccountTitle, isAccountingDisabled, onAddAccountTitle)}
             accounts={accountOptions.defaultPayableAccount}
             disabled={isAccountingDisabled}
             valueField="id"
@@ -798,12 +770,7 @@ function AccountFields({
       {isVendor ? (
         <Field label="Default Vendor Advance Account" error={errors.vendorAdvanceAccount} required>
           <ChartAccountDropdown
-            addAction={createAccountAddAction(
-              "vendorAdvanceAccount",
-              canAddAccountTitle,
-              isAccountingDisabled,
-              onAddAccountTitle,
-            )}
+            addAction={createAccountAddAction("vendorAdvanceAccount", canAddAccountTitle, isAccountingDisabled, onAddAccountTitle)}
             accounts={accountOptions.vendorAdvanceAccount}
             disabled={isAccountingDisabled}
             valueField="id"
@@ -813,18 +780,9 @@ function AccountFields({
         </Field>
       ) : null}
       {isEmployee ? (
-        <Field
-          label="Default Employee Advance Account"
-          error={errors.employeeAdvanceAccount}
-          required
-        >
+        <Field label="Default Employee Advance Account" error={errors.employeeAdvanceAccount} required>
           <ChartAccountDropdown
-            addAction={createAccountAddAction(
-              "employeeAdvanceAccount",
-              canAddAccountTitle,
-              isAccountingDisabled,
-              onAddAccountTitle,
-            )}
+            addAction={createAccountAddAction("employeeAdvanceAccount", canAddAccountTitle, isAccountingDisabled, onAddAccountTitle)}
             accounts={accountOptions.employeeAdvanceAccount}
             disabled={isAccountingDisabled}
             valueField="id"
@@ -834,18 +792,9 @@ function AccountFields({
         </Field>
       ) : null}
       {isEmployee ? (
-        <Field
-          label="Default Employee Payable Account"
-          error={errors.employeePayableAccount}
-          required
-        >
+        <Field label="Default Employee Payable Account" error={errors.employeePayableAccount} required>
           <ChartAccountDropdown
-            addAction={createAccountAddAction(
-              "employeePayableAccount",
-              canAddAccountTitle,
-              isAccountingDisabled,
-              onAddAccountTitle,
-            )}
+            addAction={createAccountAddAction("employeePayableAccount", canAddAccountTitle, isAccountingDisabled, onAddAccountTitle)}
             accounts={accountOptions.employeePayableAccount}
             disabled={isAccountingDisabled}
             valueField="id"
@@ -905,10 +854,7 @@ function createAccountAddAction(
     : undefined;
 }
 
-function countErrors(
-  errors: PartyInformationFormErrors,
-  fields: Array<keyof PartyInformationFormErrors>,
-) {
+function countErrors(errors: PartyInformationFormErrors, fields: Array<keyof PartyInformationFormErrors>) {
   return fields.filter((field) => Boolean(errors[field])).length;
 }
 
@@ -940,17 +886,7 @@ function StatusField({
   );
 }
 
-function Field({
-  children,
-  error,
-  label,
-  required,
-}: {
-  children: ReactNode;
-  error?: string;
-  label: string;
-  required?: boolean;
-}) {
+function Field({ children, error, label, required }: { children: ReactNode; error?: string; label: string; required?: boolean }) {
   function handleFieldMouseDown(event: ReactMouseEvent<HTMLDivElement>) {
     const target = event.target;
 
@@ -958,15 +894,9 @@ function Field({
       return;
     }
 
-    const control = event.currentTarget.querySelector<HTMLElement>(
-      PartyManagementFieldControlSelector,
-    );
+    const control = event.currentTarget.querySelector<HTMLElement>(PartyManagementFieldControlSelector);
 
-    if (
-      !control ||
-      control.matches(":disabled") ||
-      control.getAttribute("aria-disabled") === "true"
-    ) {
+    if (!control || control.matches(":disabled") || control.getAttribute("aria-disabled") === "true") {
       return;
     }
 
@@ -982,12 +912,10 @@ function Field({
     <div onMouseDown={handleFieldMouseDown}>
       <span className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
-        {required ? <span className="text-coralpink"> *</span> : null}
+        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
       </span>
       {children}
-      {error ? (
-        <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span>
-      ) : null}
+      {error ? <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span> : null}
     </div>
   );
 }

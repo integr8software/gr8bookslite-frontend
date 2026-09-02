@@ -1,8 +1,4 @@
 import { useMemo } from "react";
-import {
-  DisbursementVoucherPartyOptions,
-  DisbursementVoucherProjectOptions,
-} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type { DisbursementVoucherDetailsFormProps } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
@@ -32,7 +28,9 @@ export function DisbursementVoucherDetailsFields({
   onPartyChange,
   onPaymentTypeChange,
   onUpdateField,
+  partyOptions: maintenancePartyOptions,
   paymentTypeRecords,
+  projectOptions: maintenanceProjectOptions,
   values,
 }: DisbursementVoucherDetailsFormProps) {
   const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
@@ -40,17 +38,19 @@ export function DisbursementVoucherDetailsFields({
       createVoucherPartyOptions({
         currentPartyCode: values.partyCode,
         currentPartyName: values.partyName,
+        options: maintenancePartyOptions,
       }),
-    [values.partyCode, values.partyName],
+    [maintenancePartyOptions, values.partyCode, values.partyName],
   );
 
   const projectOptions = useMemo<AppAdvancedDropdownOption[]>(
     () =>
       createVoucherProjectOptions({
-        currentProjectCode: values.costCenter,
+        currentProjectCode: values.projectCode || values.costCenter,
         currentProjectName: values.projectName,
+        options: maintenanceProjectOptions,
       }),
-    [values.costCenter, values.projectName],
+    [maintenanceProjectOptions, values.costCenter, values.projectCode, values.projectName],
   );
 
   const paymentTypeOptions = useMemo<AppAdvancedDropdownOption[]>(
@@ -82,9 +82,10 @@ export function DisbursementVoucherDetailsFields({
                   : undefined
               }
               onChange={(code, name) => {
-                const party = partyOptions.find((option) => option.value === code);
+                const party = partyOptions.find((option) => option.value === code || option.label === code);
                 const partyName = party?.name ?? name ?? values.partyName;
-                onPartyChange(code, partyName);
+                const partyCode = party?.label ?? code ?? values.partyCode;
+                onPartyChange(partyCode, partyName);
               }}
             />
           </TransactionField>
@@ -105,9 +106,10 @@ export function DisbursementVoucherDetailsFields({
                   : undefined
               }
               onChange={(projectName) => {
-                const project = projectOptions.find((option) => option.value === projectName);
+                const project = projectOptions.find((option) => option.value === projectName || option.name === projectName);
                 onUpdateField("projectName", projectName);
                 onUpdateField("costCenter", project?.label === projectName ? "" : (project?.label ?? ""));
+                onUpdateField("projectCode", project?.label === projectName ? "" : (project?.label ?? ""));
               }}
             />
           </TransactionField>
@@ -156,19 +158,26 @@ export function DisbursementVoucherDetailsFields({
           />
 
           <TransactionTextField
-            value={values.costCenter}
+            value={values.projectCode || values.costCenter}
             isReadonly
             label="Project Code"
-            onValueChange={(value) => onUpdateField("costCenter", value)}
+            onValueChange={(value) => {
+              onUpdateField("projectCode", value);
+              onUpdateField("costCenter", value);
+            }}
             placeholder="Project Code"
           />
 
           <CurrencyExchangeRateRow
-            currencyControlId="disbursement-voucher-currency"
             currencyLabel="Currency"
+            currencyControlId="disbursement-voucher-currency"
+            currencyError={errors.currency}
+            exchangeRateControlId="disbursement-voucher-fx-rate"
+            exchangeRateError={errors.fxRate}
             currencyControl={
               <AppAdvancedDropdown
                 id="disbursement-voucher-currency"
+                className="w-full min-w-0"
                 value={values.currency}
                 readOnly={isReadonly}
                 isClearable={false}
@@ -179,7 +188,6 @@ export function DisbursementVoucherDetailsFields({
                 onChange={(value) => onCurrencyChange(String(value))}
               />
             }
-            exchangeRateControlId="disbursement-voucher-fx-rate"
             exchangeRateControl={
               <input
                 id="disbursement-voucher-fx-rate"
@@ -189,7 +197,8 @@ export function DisbursementVoucherDetailsFields({
                 readOnly={isReadonly}
                 disabled={isReadonly || isExchangeRateLoading}
                 onChange={(event) => onUpdateField("fxRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
+                className={`${TransactionFieldClassName} text-right tabular-nums${isReadonly || isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
               />
             }
           />
@@ -201,29 +210,23 @@ export function DisbursementVoucherDetailsFields({
             value={values.voucherNo}
             isReadonly
             isRequired
-            label="Disbursement Voucher No."
+            label="DV No."
             error={errors.voucherNo}
             onValueChange={(value) => onUpdateField("voucherNo", value)}
-            placeholder="Auto Generated Disbursement Voucher Transaction Number"
+            placeholder="Auto Generated DV Transaction Number"
           />
 
           <TransactionTextField
             value={values.voucherDate}
             isReadonly={isReadonly}
             isRequired
-            label="Disbursement Voucher Date"
+            label="DV Date"
             error={errors.voucherDate}
             type="date"
             onValueChange={(value) => onUpdateField("voucherDate", value)}
           />
 
-          <TransactionTextField
-            value={values.status}
-            isReadonly
-            label="Status"
-            error={errors.status}
-            onValueChange={() => undefined}
-          />
+          <TransactionTextField value={values.status} isReadonly label="Status" error={errors.status} onValueChange={() => undefined} />
         </div>
       </div>
     </section>
@@ -236,7 +239,11 @@ function createVoucherPaymentTypeOptions({
   paymentTypeRecords: AppPaymentTypeRecord[];
 }): AppAdvancedDropdownOption[] {
   return paymentTypeRecords
-    .filter((record) => record.status === "Active" && (record.type === "Bank Transfer" || record.type === "Check"))
+    .filter(
+      (record) =>
+        record.status === "Active" &&
+        (record.type === "Bank Transfer" || record.type === "Check" || record.type === "Debit Memo"),
+    )
     .map((record) => ({
       label: record.type,
       name: record.paymentType,
@@ -247,11 +254,13 @@ function createVoucherPaymentTypeOptions({
 function createVoucherPartyOptions({
   currentPartyCode,
   currentPartyName,
+  options: sourceOptions,
 }: {
   currentPartyCode: string;
   currentPartyName: string;
+  options: AppAdvancedDropdownOption[];
 }): AppAdvancedDropdownOption[] {
-  const options: AppAdvancedDropdownOption[] = [...DisbursementVoucherPartyOptions];
+  const options: AppAdvancedDropdownOption[] = [...sourceOptions];
 
   if (currentPartyCode.trim() || currentPartyName.trim()) {
     addUniqueDropdownOption(options, {
@@ -268,11 +277,13 @@ function createVoucherPartyOptions({
 function createVoucherProjectOptions({
   currentProjectCode,
   currentProjectName,
+  options: sourceOptions,
 }: {
   currentProjectCode: string;
   currentProjectName: string;
+  options: AppAdvancedDropdownOption[];
 }): AppAdvancedDropdownOption[] {
-  const options: AppAdvancedDropdownOption[] = [...DisbursementVoucherProjectOptions];
+  const options: AppAdvancedDropdownOption[] = [...sourceOptions];
 
   if (currentProjectName.trim()) {
     addUniqueDropdownOption(options, {

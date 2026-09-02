@@ -5,18 +5,14 @@ import {
   BankMasterfileDrawerFormId,
   BankMasterfileTitle,
 } from "@/app/src/constants/modules/financial-maintenance/bank-masterfile/BankMasterfileConstants";
-import {
-  DefaultPreferredBaseCurrencyCode,
-  findCurrencyByCode,
-} from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
+import { createBankCurrencyOptions } from "@/app/src/data/modules/financial-maintenance/bank-masterfile/BankMasterfileData";
 import { useBankMasterfileFormPage } from "@/app/src/hooks/modules/financial-maintenance/bank-masterfile/useBankMasterfileFormPage";
 import { useMultiCurrencySetupStore } from "@/app/src/hooks/modules/system-administration/multi-currency-setup/useMultiCurrencySetup";
 import type {
   BankMasterfile,
   BankMasterfileDrawerProps,
 } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
-import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
-import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { ModuleDrawer, getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { BankMasterfileFields } from "@/app/src/ui/modules/financial-maintenance/bank-masterfile/BankMasterfileFields";
 
 export function BankMasterfileDrawer({ bank, isOpen, mode, onClose }: BankMasterfileDrawerProps) {
@@ -36,6 +32,7 @@ function BankMasterfileDrawerPanel({
 }) {
   const page = useBankMasterfileFormPage({
     existingBank: bank,
+    isOpen,
     mode,
     onSaved: onClose,
   });
@@ -43,6 +40,16 @@ function BankMasterfileDrawerPanel({
   const copy = BankMasterfileActionCopy[mode];
   const accountCode = mode === "add" ? page.nextAccountCode : (bank?.accountCode ?? "");
   const currencyOptions = createBankCurrencyOptions(currencySetupRecords);
+
+  function handleClose() {
+    page.saveDraft();
+    onClose();
+  }
+
+  function handleCancel() {
+    page.discardDraft();
+    onClose();
+  }
 
   return (
     <ModuleDrawer
@@ -54,7 +61,8 @@ function BankMasterfileDrawerPanel({
       isSaving={page.isSubmitting}
       maxWidthClassName="max-w-4xl"
       onBeforeSaveConfirm={page.validateBeforeSubmit}
-      onClose={onClose}
+      onCancel={handleCancel}
+      onClose={handleClose}
       savingLabel={getModuleSavePendingLabel(mode)}
       submitLabel={mode === "edit" ? "Update Bank" : "Save Bank"}
       title={copy.title}
@@ -76,31 +84,4 @@ function BankMasterfileDrawerPanel({
       </form>
     </ModuleDrawer>
   );
-}
-
-function createBankCurrencyOptions(
-  records: Array<{
-    baseCurrencyCode: string;
-    status: string;
-    targetCurrencyCode: string;
-  }>,
-) {
-  const currencyCodes = new Set<string>([DefaultPreferredBaseCurrencyCode]);
-
-  records
-    .filter((record) => record.status === "Active")
-    .forEach((record) => {
-      currencyCodes.add(record.baseCurrencyCode);
-      currencyCodes.add(record.targetCurrencyCode);
-    });
-
-  return [...currencyCodes].sort().map((code) => {
-    const currency = findCurrencyByCode(code);
-
-    return {
-      code,
-      country: currency?.country ?? "",
-      name: currency?.name ?? code,
-    };
-  });
 }

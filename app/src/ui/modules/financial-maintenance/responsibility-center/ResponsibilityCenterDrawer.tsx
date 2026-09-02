@@ -22,6 +22,7 @@ import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDraw
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 export function ResponsibilityCenterDrawer(props: ResponsibilityCenterDrawerProps) {
   return (
@@ -36,6 +37,7 @@ function ResponsibilityCenterDrawerPanel({ center, initialValues, isOpen, mode, 
   const page = useResponsibilityCenterFormPage({
     center,
     initialValues,
+    isOpen,
     mode,
     onSaved: (savedCenter) => {
       onSaved?.(savedCenter);
@@ -43,6 +45,16 @@ function ResponsibilityCenterDrawerPanel({ center, initialValues, isOpen, mode, 
     },
   });
   const copy = ResponsibilityCenterActionCopy[mode];
+
+  function handleClose() {
+    page.saveDraft();
+    onClose();
+  }
+
+  function handleCancel() {
+    page.discardDraft();
+    onClose();
+  }
 
   return (
     <ModuleDrawer
@@ -53,7 +65,8 @@ function ResponsibilityCenterDrawerPanel({ center, initialValues, isOpen, mode, 
       isReadonly={page.isReadonly}
       isSaving={page.isSubmitting}
       onBeforeSaveConfirm={page.validateBeforeSubmit}
-      onClose={onClose}
+      onCancel={handleCancel}
+      onClose={handleClose}
       savingLabel={getModuleSavePendingLabel(mode)}
       submitLabel={mode === "edit" ? "Update Responsibility Center" : "Save Responsibility Center"}
       title={copy.title}
@@ -228,7 +241,7 @@ function DrawerField({
     <label className={className}>
       <span className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
-        {required ? <span className="text-coralpink"> *</span> : null}
+        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
       </span>
       {children}
       {error ? <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span> : null}

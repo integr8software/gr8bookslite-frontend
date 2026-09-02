@@ -11,12 +11,13 @@ import {
   fetchPaymentTypes,
   importPaymentTypes,
   updatePaymentType,
-} from "@/app/src/services/modules/financial-maintenance/payment-type/PaymentTypeService";
+} from "@/app/src/services/modules/financial-maintenance/payment-type/PaymentTypeApi";
 import { PaymentTypeQueryKeys } from "@/app/src/services/modules/financial-maintenance/payment-type/PaymentTypeQueryKeys";
 import type {
   PaymentTypePermissions,
   PaymentTypeRecord,
   PaymentTypeStatistics,
+  PaymentTypeStoreOptions,
 } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 
 type PaymentTypeStoreState = {
@@ -54,20 +55,23 @@ const EmptyPaymentTypeStatistics: PaymentTypeStatistics = {
   totalPaymentTypes: 0,
   activePaymentTypes: 0,
   inactivePaymentTypes: 0,
-  cashPaymentTypes: 0,
   bankTransferPaymentTypes: 0,
   checkPaymentTypes: 0,
   digitalWalletPaymentTypes: 0,
-  nonCashSettlementPaymentTypes: 0,
+  debitMemoPaymentTypes: 0,
 };
 
-export function usePaymentTypeStore<TSelected = PaymentTypeStoreState>(selector?: (state: PaymentTypeStoreState) => TSelected) {
+export function usePaymentTypeStore<TSelected = PaymentTypeStoreState>(
+  selector?: (state: PaymentTypeStoreState) => TSelected,
+  options: PaymentTypeStoreOptions = {},
+) {
   const queryClient = useQueryClient();
   const accessToken = useAppStore((state) => state.accessToken);
   const authProfileQuery = useAuthProfileQuery({ accessToken });
   const paymentTypesQuery = useQuery({
     queryKey: PaymentTypeQueryKeys.paymentTypes(),
     queryFn: () => fetchPaymentTypes(),
+    refetchOnMount: options.refetchOnMount,
     retry: false,
   });
   const refreshPaymentTypes = useCallback(() => {

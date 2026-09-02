@@ -1,4 +1,4 @@
-import type { PricingPlan } from "@/app/src/data/pricing/PricingTypes";
+import type { PricingPlan } from "@/app/src/types/pricing/PricingTypes";
 import type { OnboardingPlan } from "@/app/src/types/onboarding/OnboardingApiModels";
 
 type OnboardingDraftPlan = OnboardingPlan;
@@ -75,6 +75,7 @@ export function MapOnboardingPlanToPricingPlan(
   return {
     code: plan.code,
     name: plan.name,
+    description: plan.description ?? undefined,
     monthlyPrice: plan.pricing.monthly.display,
     yearlyPrice: plan.pricing.yearly.display,
     monthlyCompareAtPrice: plan.pricing.monthlyCompareAt?.display,
@@ -91,5 +92,6 @@ export function MapOnboardingPlanToPricingPlan(
       plan.name.toLowerCase().includes("inventory") ||
       index === 1,
     trialDays: plan.trialDays,
+    trialPrice: plan.trialPriceDisplay ?? (plan.trialPriceInCents ? `₱${(plan.trialPriceInCents / 100).toFixed(2)}` : "₱0.00"),
   };
 }

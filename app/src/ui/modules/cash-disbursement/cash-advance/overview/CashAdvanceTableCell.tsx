@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { CashAdvanceAccountOptions } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import { formatCashAdvanceCurrency } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import type { CashAdvanceRecord } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
@@ -14,7 +13,7 @@ export function renderCashAdvanceTableCell(
     case "transNo":
       return <span className="font-semibold text-skyblue">{record.transNo}</span>;
     case "documentDate":
-      return formatDate(record.documentDate, { locale: "en-US" });
+      return formatDate(record.documentDate);
     case "partyName":
       return record.partyName;
     case "partyCode":
@@ -22,34 +21,28 @@ export function renderCashAdvanceTableCell(
     case "accountCode":
       return record.accountCode || "";
     case "accountTitle":
-      return <span className="text-darknavy">{getCashAdvanceAccountTitle(record.accountCode)}</span>;
+      return <span className="text-darknavy">{record.accountTitle || record.accountCode || ""}</span>;
     case "remarks":
       return <span className="line-clamp-2 text-sm text-darknavy/80">{record.remarks || ""}</span>;
     case "amount":
       return <span className="font-semibold text-darknavy">{formatCashAdvanceCurrency(record.amount)}</span>;
     case "currency":
-      return record.formValues?.currency ?? "PHP";
+      return record.currency ?? record.formValues?.currency ?? "PHP";
+    case "fxRate":
+      return record.fxRate ?? record.formValues?.fxRate ?? "1.00";
     case "status":
       return <div className="flex w-full justify-center"><ModuleStatusBadge status={record.status} /></div>;
     case "createdBy":
       return record.createdBy ?? "";
     case "createdAt":
-      return formatAuditDate(record.createdAt);
+      return formatDate(record.createdAt);
     case "updatedBy":
       return record.updatedBy ?? "";
     case "updatedAt":
-      return formatAuditDate(record.updatedAt);
+      return formatDate(record.updatedAt);
     case "actions":
       return renderActions();
     default:
       return null;
   }
-}
-
-function formatAuditDate(value?: string) {
-  return formatDate(value, { locale: "en-US" });
-}
-
-function getCashAdvanceAccountTitle(accountCode: string) {
-  return CashAdvanceAccountOptions.find((option) => option.value === accountCode)?.label ?? accountCode;
 }

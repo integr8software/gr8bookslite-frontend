@@ -33,9 +33,14 @@ import {
   UpdateChartAccountStatus,
 } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsQueryKeys";
+import { DefaultAccountQueryKeys } from "@/app/src/services/modules/financial-maintenance/default-account/DefaultAccountQueryKeys";
+import { ServicesMaintenanceQueryKeys } from "@/app/src/services/modules/financial-maintenance/services-maintenance/ServicesMaintenanceQueryKeys";
+import { PartyManagementQueryKeys } from "@/app/src/services/modules/party-management/PartyManagementQueryKeys";
+import { TaxDefinitionQueryKeys } from "@/app/src/services/shared/tax/TaxDefinitionApi";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
 import type {
   AccountStatus,
@@ -111,6 +116,12 @@ export function useChartsOfAccounts() {
       await queryClient.invalidateQueries({
         queryKey: ChartsOfAccountsQueryKeys.tree(companyId),
       });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: DefaultAccountQueryKeys.expenseParentOptions(companyId) }),
+        queryClient.invalidateQueries({ queryKey: ServicesMaintenanceQueryKeys.accountOptions(companyId) }),
+        queryClient.invalidateQueries({ queryKey: PartyManagementQueryKeys.accountingOptions() }),
+        queryClient.invalidateQueries({ queryKey: TaxDefinitionQueryKeys.lookup(companyId) }),
+      ]);
       setExpandedIds(
         (current) =>
           new Set([...current, ...getAccountAncestorIds(accounts, account.parentId), ...(account.parentId ? [account.parentId] : [])]),
@@ -133,6 +144,12 @@ export function useChartsOfAccounts() {
       await queryClient.invalidateQueries({
         queryKey: ChartsOfAccountsQueryKeys.tree(companyId),
       });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: DefaultAccountQueryKeys.expenseParentOptions(companyId) }),
+        queryClient.invalidateQueries({ queryKey: ServicesMaintenanceQueryKeys.accountOptions(companyId) }),
+        queryClient.invalidateQueries({ queryKey: PartyManagementQueryKeys.accountingOptions() }),
+        queryClient.invalidateQueries({ queryKey: TaxDefinitionQueryKeys.lookup(companyId) }),
+      ]);
       toast.success("Chart account status updated.");
     },
     onError: (error) => {
@@ -354,17 +371,36 @@ export function useChartsOfAccounts() {
 
   const saveAccount = useCallback(
     (values: ChartAccountFormValues) => {
-      saveAccountMutation.mutate(values);
+      const releaseLock = acquireModuleActionLock(
+        `financial-maintenance:charts-of-accounts:submit:${drawerMode}:${drawerAccount?.id ?? values.accountNumber ?? "new"}`,
+      );
+      if (!releaseLock) return;
+
+      saveAccountMutation.mutate(values, {
+        onError: () => {
+          releaseLock();
+        },
+      });
     },
-    [saveAccountMutation],
+    [drawerAccount?.id, drawerMode, saveAccountMutation],
   );
 
   const updateAccountStatus = useCallback(
     (account: ChartAccount) => {
-      updateStatusMutation.mutate({
-        accountId: account.id,
-        status: account.status === "Active" ? "Inactive" : "Active",
-      });
+      const releaseLock = acquireModuleActionLock(`financial-maintenance:charts-of-accounts:status:${account.id}`);
+      if (!releaseLock) return;
+
+      updateStatusMutation.mutate(
+        {
+          accountId: account.id,
+          status: account.status === "Active" ? "Inactive" : "Active",
+        },
+        {
+          onError: () => {
+            releaseLock();
+          },
+        },
+      );
     },
     [updateStatusMutation],
   );

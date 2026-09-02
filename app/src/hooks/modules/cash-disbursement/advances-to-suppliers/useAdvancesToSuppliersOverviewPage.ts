@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -12,6 +12,7 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table";
 import { ReceiptText } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   AdvancesToSuppliersColumnLabels,
@@ -21,9 +22,11 @@ import {
   AdvancesToSuppliersStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
 import {
-  getAdvancesToSuppliersRecords,
-  saveAdvancesToSuppliersRecords,
+  fetchAdvancesToSuppliersList,
+  submitAdvancesToSuppliersApprovalApi,
+  updateAdvancesToSuppliersStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersService";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import type {
   AdvancesToSuppliersRecord,
   AdvancesToSuppliersStatus,
@@ -36,19 +39,52 @@ import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 
 const columnHelper = createColumnHelper<AdvancesToSuppliersRecord>();
-const emptyDateRange: DateRangeValue = { from: "", to: "" };
-const emptyAmountRange: AmountRangeValue = { from: "", to: "" };
+const EmptyAdvancesToSuppliersRecords: AdvancesToSuppliersRecord[] = [];
 
 export function useAdvancesToSuppliersOverviewPage() {
-  const [records, setRecords] = useState(getAdvancesToSuppliersRecords);
+  const queryClient = useQueryClient();
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [dateRange, setDateRange] = useState<DateRangeValue>(emptyDateRange);
-  const [amountRange, setAmountRange] = useState<AmountRangeValue>(emptyAmountRange);
-  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 5 });
+  const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
+  const [amountRange, setAmountRange] = useState<AmountRangeValue>({ from: "", to: "" });
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => AdvancesToSuppliersDefaultColumnVisibility);
-  const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
+  const recordsQueryKey = useMemo(() => ["advances-to-suppliers", "records", activeCompanyId] as const, [activeCompanyId]);
+  const allQueryKey = useMemo(() => ["advances-to-suppliers"] as const, []);
+  const recordsQuery = useQuery({
+    queryKey: recordsQueryKey,
+    queryFn: async () => {
+      try {
+        const response = await fetchAdvancesToSuppliersList({ limit: 100 });
+        return response.data ?? [];
+      } catch {
+        toast.error("Could not load Advances to Suppliers records.");
+        return [];
+      }
+    },
+    enabled: activeCompanyId !== null,
+  });
+  const records = recordsQuery.data ?? EmptyAdvancesToSuppliersRecords;
+  const refreshRecords = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: allQueryKey });
+  }, [allQueryKey, queryClient]);
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: AdvancesToSuppliersStatus }) => {
+      return status === AdvancesToSuppliersStatuses.forApproval
+        ? await submitAdvancesToSuppliersApprovalApi(id)
+        : await updateAdvancesToSuppliersStatusApi(id, status);
+    },
+    onSuccess: (updatedRecord, variables) => {
+      queryClient.setQueryData<AdvancesToSuppliersRecord[]>(recordsQueryKey, (currentRecords = []) =>
+        currentRecords.map((item) => (item.id === updatedRecord.id ? updatedRecord : item)),
+      );
+      refreshRecords();
+      toast.success(`Advances to Suppliers Marked as ${variables.status}.`);
+    },
+    onError: () => toast.error("Could not update the Advances to Suppliers status."),
+  });
   const filteredRecords = useMemo(() => {
     const needle = normalizeLowercaseWhitespace(query);
     return records.filter((record) => {
@@ -59,6 +95,10 @@ export function useAdvancesToSuppliersOverviewPage() {
           record.partyName,
           record.accountCode,
           record.accountTitle,
+          record.currency,
+          record.exchangeRate,
+          record.formValues?.currency,
+          record.formValues?.exchangeRate,
           record.poReference,
           record.remarks,
         ].join(" "),
@@ -104,6 +144,18 @@ export function useAdvancesToSuppliersOverviewPage() {
         header: AdvancesToSuppliersColumnLabels.accountTitle,
         size: AdvancesToSuppliersOverviewColumnWidths.accountTitle,
         meta: { label: AdvancesToSuppliersColumnLabels.accountTitle },
+      }),
+      columnHelper.accessor((record) => record.currency ?? record.formValues?.currency ?? "PHP", {
+        id: "currency",
+        header: AdvancesToSuppliersColumnLabels.currency,
+        size: AdvancesToSuppliersOverviewColumnWidths.currency,
+        meta: { label: AdvancesToSuppliersColumnLabels.currency },
+      }),
+      columnHelper.accessor((record) => record.exchangeRate ?? record.formValues?.exchangeRate ?? "1.00", {
+        id: "exchangeRate",
+        header: AdvancesToSuppliersColumnLabels.exchangeRate,
+        size: AdvancesToSuppliersOverviewColumnWidths.exchangeRate,
+        meta: { label: AdvancesToSuppliersColumnLabels.exchangeRate },
       }),
       columnHelper.accessor("amount", {
         header: AdvancesToSuppliersColumnLabels.amount,
@@ -191,25 +243,14 @@ export function useAdvancesToSuppliersOverviewPage() {
   );
 
   function updateStatus(record: AdvancesToSuppliersRecord, status: AdvancesToSuppliersStatus) {
-    const next = records.map((item) =>
-      item.id === record.id ? { ...item, status, updatedAt: new Date().toISOString(), updatedBy: "Current User" } : item,
-    );
-    setRecords(next);
-    saveAdvancesToSuppliersRecords(next);
-    setLastSyncedAt(Date.now());
-    toast.success(`Advances to Suppliers marked as ${status}.`);
-  }
-
-  function refreshRecords() {
-    setRecords(getAdvancesToSuppliersRecords());
-    setLastSyncedAt(Date.now());
+    updateStatusMutation.mutate({ id: record.id, status });
   }
 
   return {
     amountRange,
     dateRange,
-    isLoading: false,
-    lastSyncedAt,
+    isLoading: recordsQuery.isLoading,
+    lastSyncedAt: recordsQuery.dataUpdatedAt,
     query,
     refreshRecords,
     setAmountRange,
@@ -230,5 +271,3 @@ function getMetricTone(status: AdvancesToSuppliersStatus) {
   if (status === AdvancesToSuppliersStatuses.cancelled) return "slate" as const;
   return "blue" as const;
 }
-
-export type { AdvancesToSuppliersOverviewPageState } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";

@@ -25,6 +25,8 @@ export type BillingStatementItem = {
   ewtAmount: number;
   discountPercent: string;
   discountAmount: number;
+  grossAfterDiscount: number;
+  netOfVatAmount: number;
   grossAmount: number;
   vatType: string;
   vatable: string;

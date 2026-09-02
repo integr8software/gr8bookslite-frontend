@@ -1,20 +1,8 @@
 "use client";
 
 import { Check, LoaderCircle, MoveRight } from "lucide-react";
-import {
-	type BillingCycle,
-	type PricingPlan,
-} from "@/app/src/data/pricing/PricingTypes";
 import { OnboardingPlanComparisonRows } from "@/app/src/data/onboarding/OnboardingData";
-
-type OnboardingPricingMobilePlansProps = {
-	plans: PricingPlan[];
-	billingCycle: BillingCycle;
-	isSubmitting: boolean;
-	submittingPlanCode: string | null;
-	onReviewPlans: () => void;
-	onSelectPlan: (plan: PricingPlan, billingCycle: BillingCycle) => void;
-};
+import type { OnboardingPricingMobilePlansProps } from "@/app/src/types/onboarding/OnboardingTypes";
 
 export function OnboardingPricingMobilePlans({
 	plans,
@@ -24,6 +12,7 @@ export function OnboardingPricingMobilePlans({
 	onReviewPlans,
 	onSelectPlan,
 }: OnboardingPricingMobilePlansProps) {
+	const isMonthlyBillingCycle = billingCycle === "monthly";
 	const visiblePlans = plans.filter(
 		(plan) => plan.name !== "Additional Company",
 	);
@@ -53,11 +42,11 @@ export function OnboardingPricingMobilePlans({
 				{visiblePlans.map((plan, planIndex) => {
 					const isHighlighted = plan.highlighted;
 					const price =
-						billingCycle === "monthly"
+						isMonthlyBillingCycle
 							? plan.monthlyPrice
 							: plan.yearlyPrice;
 					const compareAtPrice =
-						billingCycle === "monthly"
+						isMonthlyBillingCycle
 							? plan.monthlyCompareAtPrice
 							: plan.yearlyCompareAtPrice;
 					const billingLabel = plan.billingLabel[billingCycle];
@@ -75,7 +64,7 @@ export function OnboardingPricingMobilePlans({
 						>
 							{isHighlighted ? (
 								<div
-									className="absolute right-4 top-0 flex h-16 w-12 flex-col items-center justify-center bg-citron pt-1 text-[10px] font-black uppercase leading-tight tracking-[0.08em] text-darknavy"
+									className="absolute right-3 top-0 flex h-13 w-10 flex-col items-center justify-center bg-citron pt-0.5 text-[9px] font-black uppercase leading-tight tracking-[0.06em] text-darknavy shadow-xs"
 									style={{
 										clipPath:
 											"polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%)",
@@ -85,32 +74,65 @@ export function OnboardingPricingMobilePlans({
 									<span>Off</span>
 								</div>
 							) : (
-								<div className="mb-6 h-10" />
+								<div className="mb-4 h-6" />
 							)}
 
 							<div className="mt-4 text-center">
-								<h4 className="text-2xl font-semibold text-darknavy">
+								<h4 className="px-7 text-2xl font-semibold text-darknavy">
 									{plan.name}
 								</h4>
-								<div className="mt-4">
-									{compareAtPrice ? (
-										<p className="text-sm text-darknavy/35 line-through">
-											{compareAtPrice}
-										</p>
-									) : null}
-									<div className="mt-1 flex items-end justify-center gap-1 whitespace-nowrap">
-										<p className="text-4xl font-semibold tracking-tight text-darknavy">
-											{price}
-										</p>
-										<span className="pb-1 text-sm font-medium text-darknavy/65">
-											{billingCycle === "monthly"
-												? "/month"
-												: "/year"}
-										</span>
-									</div>
-									<p className="mt-1 text-sm text-darknavy/60">
-										{billingLabel}
+								{plan.description ? (
+									<p className="mt-2 text-xs leading-relaxed text-darknavy/60">
+										{plan.description}
 									</p>
+								) : null}
+								<div className="mt-4">
+									{plan.trialDays && plan.trialDays > 0 ? (
+										<>
+											<p className="text-sm font-medium text-emerald-600">
+												{plan.trialPrice && plan.trialPrice !== "₱0.00"
+													? `${plan.trialPrice} for ${plan.trialDays} days`
+													: `Free for ${plan.trialDays} days`}
+											</p>
+											<div className="mt-1 flex items-end justify-center gap-1 whitespace-nowrap">
+												<p className="text-4xl font-semibold tracking-tight text-darknavy">
+													{plan.trialPrice ?? "₱0.00"}
+												</p>
+												<span className="pb-1 text-sm font-medium text-darknavy/65">
+													{isMonthlyBillingCycle
+														? "/month"
+														: "/year"}
+												</span>
+											</div>
+											<p className="mt-1 text-sm text-darknavy/60">
+												then {price}
+												{isMonthlyBillingCycle
+													? "/month"
+													: "/year"}
+											</p>
+										</>
+									) : (
+										<>
+											{compareAtPrice ? (
+												<p className="text-sm text-darknavy/35 line-through">
+													{compareAtPrice}
+												</p>
+											) : null}
+											<div className="mt-1 flex items-end justify-center gap-1 whitespace-nowrap">
+												<p className="text-4xl font-semibold tracking-tight text-darknavy">
+													{price}
+												</p>
+												<span className="pb-1 text-sm font-medium text-darknavy/65">
+													{isMonthlyBillingCycle
+														? "/month"
+														: "/year"}
+												</span>
+											</div>
+											<p className="mt-1 text-sm text-darknavy/60">
+												{billingLabel}
+											</p>
+										</>
+									)}
 								</div>
 							</div>
 
@@ -124,7 +146,11 @@ export function OnboardingPricingMobilePlans({
 
 							<div className="mt-6 space-y-3 rounded-2xl bg-offwhite/60 p-4 text-center">
 								{OnboardingPlanComparisonRows.map((row) => {
-									const value = row.values[planIndex];
+									const fallbackValue = row.values[planIndex];
+									const value =
+										row.label === "Best for" && plan.description
+											? plan.description
+											: fallbackValue;
 
 									return (
 										<div
@@ -146,7 +172,7 @@ export function OnboardingPricingMobilePlans({
 														</span>
 													)
 												) : (
-													value
+													value ?? "-"
 												)}
 											</span>
 										</div>

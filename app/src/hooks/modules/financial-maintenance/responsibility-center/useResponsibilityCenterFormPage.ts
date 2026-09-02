@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import toast from "react-hot-toast";
 import {
   ResponsibilityCenterInitialFormValues,
   createResponsibilityCenterFormValues,
@@ -6,32 +7,49 @@ import {
   updateResponsibilityCenterFromForm,
 } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { fetchResponsibilityCenterCodeSuggestion } from "@/app/src/services/modules/financial-maintenance/responsibility-center/ResponsibilityCenterApi";
 import type {
-  ResponsibilityCenter,
-  ResponsibilityCenterActionMode,
   ResponsibilityCenterClassification,
   ResponsibilityCenterFormErrors,
+  ResponsibilityCenterFormPageOptions,
   ResponsibilityCenterFormValues,
   ResponsibilityCenterTypeOption,
 } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import { validateResponsibilityCenterForm } from "@/app/src/validations/modules/financial-maintenance/responsibility-center/ResponsibilityCenterValidation";
 
-type ResponsibilityCenterFormPageOptions = {
-  center?: ResponsibilityCenter;
-  initialValues?: ResponsibilityCenterFormValues;
-  mode: ResponsibilityCenterActionMode;
-  onSaved?: (center: ResponsibilityCenter) => void;
-};
-
-export function useResponsibilityCenterFormPage({ center, initialValues, mode, onSaved }: ResponsibilityCenterFormPageOptions) {
-  const store = useResponsibilityCenterStore();
+export function useResponsibilityCenterFormPage({
+  center,
+  initialValues,
+  isOpen = true,
+  mode,
+  onSaved,
+}: ResponsibilityCenterFormPageOptions) {
+  const store = useResponsibilityCenterStore(undefined, { refetchOnMount: false });
   const isReadonly = mode === "view";
+  const defaultInitialValues = center
+    ? createResponsibilityCenterFormValues(center)
+    : (initialValues ?? ResponsibilityCenterInitialFormValues);
+  const initialValuesRef = useRef<ResponsibilityCenterFormValues>(defaultInitialValues);
   const [errors, setErrors] = useState<ResponsibilityCenterFormErrors>({});
-  const [values, setValues] = useState(() =>
-    center ? createResponsibilityCenterFormValues(center) : (initialValues ?? ResponsibilityCenterInitialFormValues),
-  );
+  const [values, setValues] = useState<ResponsibilityCenterFormValues>(defaultInitialValues);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
   const [hasManualCode, setHasManualCode] = useState(Boolean(center?.code));
+
+  const draft = useModuleDraft({
+    enabled: isOpen && !isReadonly,
+    initialValues: defaultInitialValues,
+    key: createModuleDraftKey({
+      mode,
+      moduleId: "financial-maintenance:responsibility-center",
+      recordId: center?.id,
+    }),
+    setValues,
+    values,
+  });
+
   const parentOptions = useMemo(
     () => store.centers.filter(({ id, status }) => id !== center?.id && status === "Active"),
     [store.centers, center?.id],
@@ -134,30 +152,65 @@ export function useResponsibilityCenterFormPage({ center, initialValues, mode, o
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (isReadonly || isSubmittingRef.current) {
+      return;
+    }
+
+    const isDirty = JSON.stringify(values) !== JSON.stringify(initialValuesRef.current);
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return;
+    }
+
+    const releaseSubmitLock = acquireModuleActionLock(
+      `financial-maintenance:responsibility-center:submit:${mode}:${center?.id ?? values.code ?? "new"}`,
+    );
+
+    if (!releaseSubmitLock) {
+      return;
+    }
+
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+
     if (!validateBeforeSubmit()) {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
       return;
     }
 
     try {
-      if (mode === "edit" && center) {
-        const savedCenter = await store.updateCenter(updateResponsibilityCenterFromForm(center, values));
+      const savedCenter =
+        mode === "edit" && center
+          ? await store.updateCenter(updateResponsibilityCenterFromForm(center, values))
+          : await store.addCenter(createResponsibilityCenterFromForm(values));
 
-        onSaved?.(savedCenter);
-      } else {
-        const savedCenter = await store.addCenter(createResponsibilityCenterFromForm(values));
-
-        onSaved?.(savedCenter);
+      draft.clearDraft();
+      if (mode === "add") {
+        setValues(defaultInitialValues);
+        setErrors({});
+        setHasManualCode(false);
       }
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+      onSaved?.(savedCenter);
     } catch {
-      // Mutation handlers surface the error toast.
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
     }
   }
 
   return {
+    clearDraft: draft.clearDraft,
+    discardDraft: draft.discardDraft,
+    saveDraft: draft.saveDraft,
     errors,
     classifications: store.classifications,
     isReadonly,
-    isSubmitting: store.isMutating,
+    isSubmitting: isSubmitting || store.isMutating,
     nameLabel,
     codePlaceholder,
     parentOptions,

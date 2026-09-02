@@ -8,9 +8,11 @@ import {
 	BillingOptions,
 	PricingHeader,
 	PricingPlans,
-	type BillingCycle,
-	type PricingPlan,
 } from "@/app/src/data/pricing/PricingData";
+import type {
+	BillingCycle,
+	PricingPlan,
+} from "@/app/src/types/pricing/PricingTypes";
 
 type PricingPageProps = {
 	onGetStarted?: (plan: PricingPlan, billingCycle: BillingCycle) => void;

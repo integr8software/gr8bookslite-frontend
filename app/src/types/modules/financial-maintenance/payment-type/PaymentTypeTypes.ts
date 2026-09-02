@@ -9,11 +9,12 @@ export type PaymentTypeClassification = DisbursementPaymentClassification;
 export type PaymentTypeStatusFilter = "" | PaymentTypeStatus;
 export type PaymentTypeClassificationFilter = "" | PaymentTypeClassification;
 export type PaymentTypeSortKey = "paymentType" | "sortOrder" | "type" | "status";
+export type PaymentTypeSortDirection = "asc" | "desc";
 
 export type PaymentTypeListParams = {
   search?: string;
   sortBy?: PaymentTypeSortKey;
-  sortDirection?: "asc" | "desc";
+  sortDirection?: PaymentTypeSortDirection;
   status?: "" | PaymentTypeStatus;
   type?: "" | PaymentTypeClassification;
 };
@@ -42,6 +43,19 @@ export type PaymentTypeFormValues = {
 export type PaymentTypeFormErrors = Partial<Record<keyof PaymentTypeFormValues, string>>;
 
 export type PaymentTypeActionMode = "add" | "edit" | "view";
+
+export type PaymentTypeFormPageOptions = {
+  existingPaymentType?: PaymentTypeRecord;
+  isOpen?: boolean;
+  mode: PaymentTypeActionMode;
+  onSaved: () => void;
+};
+
+export type PaymentTypeStoreOptions = {
+  refetchOnMount?: boolean | "always";
+};
+
+export type PaymentTypeActionPageOptions = PaymentTypeFormPageOptions;
 
 export type DrawerState = { mode: "add" | "edit" | "view"; paymentType?: PaymentTypeRecord } | null;
 
@@ -100,11 +114,10 @@ export type PaymentTypeStatistics = {
   totalPaymentTypes: number;
   activePaymentTypes: number;
   inactivePaymentTypes: number;
-  cashPaymentTypes: number;
   bankTransferPaymentTypes: number;
   checkPaymentTypes: number;
   digitalWalletPaymentTypes: number;
-  nonCashSettlementPaymentTypes: number;
+  debitMemoPaymentTypes?: number;
 };
 
 export type PaymentTypeListResult = {

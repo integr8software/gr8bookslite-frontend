@@ -1,10 +1,7 @@
-import { useMemo } from "react";
-import {
-  CashVoucherPartyOptions,
-  CashVoucherProjectOptions,
-} from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
+"use client";
+
 import type { CashVoucherDetailsFormProps } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import { useCashVoucherDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherDetailsLookups";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -30,23 +27,7 @@ export function CashVoucherDetailsFields({
   onUpdateField,
   values,
 }: CashVoucherDetailsFormProps) {
-  const partyOptions = useMemo<AppAdvancedDropdownOption[]>(
-    () =>
-      createVoucherPartyOptions({
-        currentPartyCode: values.partyCode,
-        currentPartyName: values.partyName,
-      }),
-    [values.partyCode, values.partyName],
-  );
-
-  const projectOptions = useMemo<AppAdvancedDropdownOption[]>(
-    () =>
-      createVoucherProjectOptions({
-        currentProjectCode: values.costCenter,
-        currentProjectName: values.projectName,
-      }),
-    [values.costCenter, values.projectName],
-  );
+  const { isPartyLookupLoading, isProjectLookupLoading, partyOptions, projectOptions } = useCashVoucherDetailsLookups(values);
 
   return (
     <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
@@ -60,6 +41,7 @@ export function CashVoucherDetailsFields({
               readOnly={isReadonly}
               placeholder="Select Party Name"
               searchPlaceholder="Search Party Name"
+              emptyMessage={isPartyLookupLoading ? "Loading Party Name options..." : "No Party Name options found."}
               addAction={
                 !isReadonly && canAddPartyName
                   ? {
@@ -69,9 +51,10 @@ export function CashVoucherDetailsFields({
                   : undefined
               }
               onChange={(code, name) => {
-                const party = partyOptions.find((option) => option.value === code);
+                const party = partyOptions.find((option) => option.value === code || option.label === code);
                 const partyName = party?.name ?? name ?? values.partyName;
-                onPartyChange(code, partyName);
+                const partyCode = party?.label ?? code ?? values.partyCode;
+                onPartyChange(partyCode, partyName);
               }}
             />
           </TransactionField>
@@ -83,6 +66,7 @@ export function CashVoucherDetailsFields({
               readOnly={isReadonly}
               placeholder="Select Project Name"
               searchPlaceholder="Search Project Name"
+              emptyMessage={isProjectLookupLoading ? "Loading Project Name options..." : "No Project Name options found."}
               addAction={
                 !isReadonly && canAddProjectName
                   ? {
@@ -92,9 +76,10 @@ export function CashVoucherDetailsFields({
                   : undefined
               }
               onChange={(projectName) => {
-                const project = projectOptions.find((option) => option.value === projectName);
+                const project = projectOptions.find((option) => option.value === projectName || option.name === projectName);
                 onUpdateField("projectName", projectName);
                 onUpdateField("costCenter", project?.label === projectName ? "" : (project?.label ?? ""));
+                onUpdateField("projectCode", project?.label === projectName ? "" : (project?.label ?? ""));
               }}
             />
           </TransactionField>
@@ -124,19 +109,26 @@ export function CashVoucherDetailsFields({
           />
 
           <TransactionTextField
-            value={values.costCenter}
+            value={values.projectCode || values.costCenter}
             isReadonly
             label="Project Code"
-            onValueChange={(value) => onUpdateField("costCenter", value)}
+            onValueChange={(value) => {
+              onUpdateField("projectCode", value);
+              onUpdateField("costCenter", value);
+            }}
             placeholder="Project Code"
           />
 
           <CurrencyExchangeRateRow
-            currencyControlId="cash-voucher-currency"
             currencyLabel="Currency"
+            currencyControlId="cash-voucher-currency"
+            currencyError={errors.currency}
+            exchangeRateControlId="cash-voucher-fx-rate"
+            exchangeRateError={errors.fxRate}
             currencyControl={
               <AppAdvancedDropdown
                 id="cash-voucher-currency"
+                className="w-full min-w-0"
                 value={values.currency}
                 readOnly={isReadonly}
                 isClearable={false}
@@ -147,7 +139,6 @@ export function CashVoucherDetailsFields({
                 onChange={(value) => onCurrencyChange(String(value))}
               />
             }
-            exchangeRateControlId="cash-voucher-fx-rate"
             exchangeRateControl={
               <input
                 id="cash-voucher-fx-rate"
@@ -157,7 +148,8 @@ export function CashVoucherDetailsFields({
                 readOnly={isReadonly}
                 disabled={isReadonly || isExchangeRateLoading}
                 onChange={(event) => onUpdateField("fxRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
+                className={`${TransactionFieldClassName} text-right tabular-nums${isReadonly || isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
               />
             }
           />
@@ -169,17 +161,17 @@ export function CashVoucherDetailsFields({
             value={values.voucherNo}
             isReadonly
             isRequired
-            label="Cash Voucher No."
+            label="CV No."
             error={errors.voucherNo}
             onValueChange={(value) => onUpdateField("voucherNo", value)}
-            placeholder="Auto Generated Cash Voucher Transaction Number"
+            placeholder="Auto Generated CV Transaction Number"
           />
 
           <TransactionTextField
             value={values.voucherDate}
             isReadonly={isReadonly}
             isRequired
-            label="Cash Voucher Date"
+            label="CV Date"
             error={errors.voucherDate}
             type="date"
             onValueChange={(value) => onUpdateField("voucherDate", value)}
@@ -190,6 +182,7 @@ export function CashVoucherDetailsFields({
             isReadonly
             label="Status"
             error={errors.status}
+            placeholder="Open"
             onValueChange={() => undefined}
           />
         </div>
@@ -198,55 +191,3 @@ export function CashVoucherDetailsFields({
   );
 }
 
-function createVoucherPartyOptions({
-  currentPartyCode,
-  currentPartyName,
-}: {
-  currentPartyCode: string;
-  currentPartyName: string;
-}): AppAdvancedDropdownOption[] {
-  const options: AppAdvancedDropdownOption[] = [...CashVoucherPartyOptions];
-
-  if (currentPartyCode.trim() || currentPartyName.trim()) {
-    addUniqueDropdownOption(options, {
-      description: "Current voucher value",
-      label: currentPartyCode || "Current voucher",
-      name: currentPartyName || currentPartyCode,
-      value: currentPartyCode || currentPartyName,
-    });
-  }
-
-  return options;
-}
-
-function createVoucherProjectOptions({
-  currentProjectCode,
-  currentProjectName,
-}: {
-  currentProjectCode: string;
-  currentProjectName: string;
-}): AppAdvancedDropdownOption[] {
-  const options: AppAdvancedDropdownOption[] = [...CashVoucherProjectOptions];
-
-  if (currentProjectName.trim()) {
-    addUniqueDropdownOption(options, {
-      label: currentProjectCode || "Current project",
-      name: currentProjectName,
-      value: currentProjectName,
-    });
-  }
-
-  return options;
-}
-
-function addUniqueDropdownOption(options: AppAdvancedDropdownOption[], option: AppAdvancedDropdownOption) {
-  if (!option.value.trim()) {
-    return;
-  }
-
-  if (options.some((currentOption) => currentOption.value === option.value)) {
-    return;
-  }
-
-  options.push(option);
-}

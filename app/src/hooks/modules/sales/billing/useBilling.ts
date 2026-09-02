@@ -24,6 +24,7 @@ import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
 	createBilling,
 	fetchBilling,
+	fetchBillingNumberSuggestion,
 	fetchBillings,
 	updateBilling,
 	updateBillingStatus,
@@ -54,6 +55,8 @@ type BillingStoreState = {
 		status: BillingStatus,
 	) => void;
 };
+
+const AddMode: BillingActionMode = "add";
 
 export function useBillingStore<TSelected = BillingStoreState>(
 	selector?: (state: BillingStoreState) => TSelected,
@@ -155,7 +158,7 @@ export function useBillingActionForm(
 	const activeCompanyId = useAppStore((state) => state.activeCompanyId);
 	const recordQuery = useQuery({
 		enabled:
-			mode !== "add" &&
+			mode !== AddMode &&
 			Boolean(recordId) &&
 			activeCompanyId !== null &&
 			activeBranchId !== null,
@@ -187,7 +190,16 @@ export function useBillingActionForm(
 		),
 		retry: false,
 	});
-	const initialRecord = mode === "add" ? null : recordQuery.data ?? null;
+	const numberSuggestionQuery = useQuery({
+		enabled:
+			mode === AddMode &&
+			activeCompanyId !== null &&
+			activeBranchId !== null,
+		queryFn: () => fetchBillingNumberSuggestion(activeBranchId),
+		queryKey: BillingQueryKeys.numberSuggestion(activeCompanyId, activeBranchId),
+		retry: false,
+	});
+	const initialRecord = mode === AddMode ? null : recordQuery.data ?? null;
 	const [loadedRecord, setLoadedRecord] = useState<BillingRecord | null>(
 		initialRecord,
 	);
@@ -252,6 +264,22 @@ export function useBillingActionForm(
 		setErrors({ isValid: true });
 	}, [recordQuery.data]);
 
+	useEffect(() => {
+		if (mode !== AddMode || !numberSuggestionQuery.data?.transactionNo) {
+			return;
+		}
+
+		const transactionNo = numberSuggestionQuery.data.transactionNo;
+
+		setValues((current) => ({
+			...current,
+			invoiceNo: current.invoiceNo.trim() ? current.invoiceNo : transactionNo,
+			transactionNo: current.transactionNo.trim()
+				? current.transactionNo
+				: transactionNo,
+		}));
+	}, [mode, numberSuggestionQuery.data?.transactionNo]);
+
 	function updateField<Key extends keyof BillingFormValues>(
 		key: Key,
 		value: BillingFormValues[Key],
@@ -298,7 +326,7 @@ export function useBillingActionForm(
 
 	return {
 		isRecordMissing:
-			mode !== "add" &&
+			mode !== AddMode &&
 			recordQuery.isFetched &&
 			!recordQuery.isLoading &&
 			!recordQuery.data,

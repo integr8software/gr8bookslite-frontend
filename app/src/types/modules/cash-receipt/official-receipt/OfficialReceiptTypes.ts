@@ -1,8 +1,13 @@
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
+
 export type OfficialReceiptActionMode = "add" | "edit" | "view";
+
+export type OfficialReceiptActionTab = "details" | "attachments";
 
 export type OfficialReceiptEntryView = "collection" | "accounting";
 
-export type OfficialReceiptStatus = "Active" | "Approved" | "Cancelled" | "Closed" | "Disapproved" | "Draft" | "Pending";
+export type OfficialReceiptStatus = "Cancelled" | "Disapproved" | "Draft" | "For Approval" | "Posted";
 
 export type OfficialReceiptRecord = {
   id: string;
@@ -24,7 +29,17 @@ export type OfficialReceiptLineEntry = {
   collectionType: string;
   customerName: string;
   partyCode: string;
+  partyName: string;
+  bankName: string;
+  checkNo: string;
+  checkDate: string;
   grossReceipt: string;
+  vatType: string;
+  vatPercent: string;
+  cwtCode: string;
+  cwtPercent: string;
+  particulars: string;
+  responsibilityCenter: string;
   vatExempt: string;
   vat: string;
   ewt: string;
@@ -40,11 +55,16 @@ export type OfficialReceiptFormValues = {
   customerName: string;
   partyCode: string;
   paymentType: string;
+  paymentId: string;
+  bankName: string;
+  checkNo: string;
+  checkDate: string;
   currency: string;
   exchangeRate: string;
   status: string;
   remarks: string;
   lineEntries: OfficialReceiptLineEntry[];
+  attachments?: TransactionAttachment[];
 };
 
 export type OfficialReceiptTotals = {
@@ -54,4 +74,31 @@ export type OfficialReceiptTotals = {
   grossReceipt: number;
   vat: number;
   vatExempt: number;
+};
+
+export type OfficialReceiptCopyFromRecord = AppCopyFromRecord & {
+  customerName?: string;
+  partyCode?: string;
+  paymentType?: string;
+  bankName?: string;
+  checkNo?: string;
+  checkDate?: string;
+  currency?: string;
+  exchangeRate?: string;
+  collectionType?: string;
+  grossReceipt?: string;
+  vatExempt?: string;
+  vat?: string;
+  ewt?: string;
+  vatType?: string;
+  vatPercent?: string;
+  cwtCode?: string;
+  cwtPercent?: string;
+  particulars?: string;
+  responsibilityCenter?: string;
+  debit?: string;
+  credit?: string;
+  accountCode?: string;
+  accountTitle?: string;
+  lineEntries?: OfficialReceiptLineEntry[];
 };

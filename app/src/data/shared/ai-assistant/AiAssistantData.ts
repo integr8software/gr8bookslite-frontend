@@ -3,6 +3,8 @@ import {
   AiAssistantChatOpenStorageKey,
   AiAssistantChatStorageVersion,
   AiAssistantChatStorageVersionKey,
+  AiAssistantLauncherCorner,
+  AiAssistantLauncherPositionStorageKey,
   AiAssistantMaxStoredMessages,
   AiAssistantPurchaseRequestPrefillStorageKey,
   AiAssistantTermsMaintenancePendingActionStorageKey,
@@ -10,6 +12,7 @@ import {
 } from "@/app/src/constants/shared/ai-assistant/AiAssistantConstants";
 import type {
   AiAssistantChatMessage,
+  AiAssistantLauncherCorner as AiAssistantLauncherCornerType,
   AiAssistantPurchaseRequestPrefill,
   AiAssistantTermsMaintenanceAction,
 } from "@/app/src/types/shared/ai-assistant/AiAssistantTypes";
@@ -46,9 +49,7 @@ export function LoadAiAssistantChatMessages() {
 
     const messages = parsed.filter(IsValidAiAssistantMessage);
 
-    return messages.length > 0
-      ? messages.slice(-AiAssistantMaxStoredMessages)
-      : AiAssistantInitialMessages;
+    return messages.length > 0 ? messages.slice(-AiAssistantMaxStoredMessages) : AiAssistantInitialMessages;
   } catch {
     return AiAssistantInitialMessages;
   }
@@ -60,10 +61,7 @@ export function SaveAiAssistantChatMessages(messages: AiAssistantChatMessage[]) 
   }
 
   window.localStorage.setItem(AiAssistantChatStorageVersionKey, AiAssistantChatStorageVersion);
-  window.localStorage.setItem(
-    AiAssistantChatMessagesStorageKey,
-    JSON.stringify(messages.slice(-AiAssistantMaxStoredMessages)),
-  );
+  window.localStorage.setItem(AiAssistantChatMessagesStorageKey, JSON.stringify(messages.slice(-AiAssistantMaxStoredMessages)));
 }
 
 export function LoadAiAssistantChatOpenState() {
@@ -82,30 +80,38 @@ export function SaveAiAssistantChatOpenState(isOpen: boolean) {
   window.localStorage.setItem(AiAssistantChatOpenStorageKey, isOpen ? "1" : "0");
 }
 
-export function SaveAiAssistantPurchaseRequestPrefill(
-  prefill: AiAssistantPurchaseRequestPrefill | undefined,
-) {
+export function LoadAiAssistantLauncherCorner(): AiAssistantLauncherCornerType | null {
   if (typeof window === "undefined") {
-    return;
+    return null;
   }
 
-  window.localStorage.setItem(
-    AiAssistantPurchaseRequestPrefillStorageKey,
-    JSON.stringify(prefill ?? {}),
-  );
+  const storedCorner = window.localStorage.getItem(AiAssistantLauncherPositionStorageKey);
+
+  return IsAiAssistantLauncherCorner(storedCorner) ? storedCorner : null;
 }
 
-export function SaveAiAssistantTermsMaintenancePendingAction(
-  action: AiAssistantTermsMaintenanceAction,
-) {
+export function SaveAiAssistantLauncherCorner(corner: AiAssistantLauncherCornerType) {
   if (typeof window === "undefined") {
     return;
   }
 
-  window.localStorage.setItem(
-    AiAssistantTermsMaintenancePendingActionStorageKey,
-    JSON.stringify(action),
-  );
+  window.localStorage.setItem(AiAssistantLauncherPositionStorageKey, corner);
+}
+
+export function SaveAiAssistantPurchaseRequestPrefill(prefill: AiAssistantPurchaseRequestPrefill | undefined) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(AiAssistantPurchaseRequestPrefillStorageKey, JSON.stringify(prefill ?? {}));
+}
+
+export function SaveAiAssistantTermsMaintenancePendingAction(action: AiAssistantTermsMaintenanceAction) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(AiAssistantTermsMaintenancePendingActionStorageKey, JSON.stringify(action));
 }
 
 export function LoadAiAssistantTermsMaintenancePendingAction() {
@@ -148,30 +154,26 @@ export function ClearAiAssistantStorage() {
   window.localStorage.removeItem(AiAssistantTermsMaintenancePendingActionStorageKey);
 }
 
-function IsValidAiAssistantMessage(
-  message: AiAssistantChatMessage,
-): message is AiAssistantChatMessage {
+function IsValidAiAssistantMessage(message: AiAssistantChatMessage): message is AiAssistantChatMessage {
   return (
-    (message.role === "user" || message.role === "assistant") &&
-    typeof message.content === "string" &&
-    message.content.trim().length > 0
+    (message.role === "user" || message.role === "assistant") && typeof message.content === "string" && message.content.trim().length > 0
   );
 }
 
 function IsAiAssistantStorageCurrent() {
-  return (
-    window.localStorage.getItem(AiAssistantChatStorageVersionKey) === AiAssistantChatStorageVersion
-  );
+  return window.localStorage.getItem(AiAssistantChatStorageVersionKey) === AiAssistantChatStorageVersion;
 }
 
-function IsTermsMaintenanceAssistantAction(
-  action: AiAssistantTermsMaintenanceAction,
-): action is AiAssistantTermsMaintenanceAction {
+function IsTermsMaintenanceAssistantAction(action: AiAssistantTermsMaintenanceAction): action is AiAssistantTermsMaintenanceAction {
   return (
     action?.type === "terms_maintenance" &&
     action.moduleCode === "TM" &&
     ["open", "search", "filter_status", "prepare_add", "preview_edit"].includes(action.command)
   );
+}
+
+function IsAiAssistantLauncherCorner(corner: string | null): corner is AiAssistantLauncherCornerType {
+  return Object.values(AiAssistantLauncherCorner).some((value) => value === corner);
 }
 
 function ResetAiAssistantStoredMessages() {

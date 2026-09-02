@@ -1,45 +1,56 @@
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
-import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type {
   CashVoucherActionMode,
   CashVoucherActionTab,
   CashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 
-export function getCashVoucherSubmitDialogCopy(mode: CashVoucherActionMode, status: CashVoucherStatus) {
+export function getCashVoucherSubmitDialogCopy(
+  mode: CashVoucherActionMode,
+  status: CashVoucherStatus,
+  recordLabel = "this cash voucher",
+) {
   const isDraft = status === CashVoucherStatuses.draft;
-  const confirmLabel = mode === "edit" ? "Update" : isDraft ? "Save as Draft" : "Save and Submit";
+  const isEdit = mode === "edit";
+  const title = isEdit
+    ? "Update Cash Voucher?"
+    : isDraft
+      ? "Save Cash Voucher as Draft?"
+      : "Save Cash Voucher?";
+  const description = isEdit
+    ? `This will update ${recordLabel}.`
+    : isDraft
+      ? `This will save ${recordLabel} as draft.`
+      : `This will save and submit ${recordLabel}.`;
+  const confirmLabel = isEdit ? "Update" : isDraft ? "Save as Draft" : "Save and Submit";
 
   return {
     confirmLabel,
-    description: `Confirm that you want to ${confirmLabel.toLowerCase()} this Cash Voucher.`,
-    pendingLabel: mode === "edit" ? "Updating..." : "Saving...",
-    title: `${confirmLabel} Cash Voucher?`,
+    description,
+    iconTone: isEdit ? ("update" as const) : ("save" as const),
+    pendingLabel: isEdit ? "Updating..." : "Saving...",
+    title,
   };
 }
 
 export const CashVoucherLink = getModuleRoute("CV");
 export const CashVoucherAddLink = `${CashVoucherLink}/add`;
 export const getCashVoucherEditLink = (recordId: string) => `${CashVoucherLink}/edit/${recordId}`;
+
 export const getCashVoucherViewLink = (recordId: string) => `${CashVoucherLink}/view/${recordId}`;
 
-export const CashVoucherQueryKeys = {
-  transactions: () => ["cash-disbursement", "cash-voucher", "transactions"] as const,
-  vouchers: () => ["cash-disbursement", "cash-voucher", "vouchers"] as const,
-};
+export { CashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherQueryKeys";
 
 export const CashVoucherTablePaginationStorageKey = "cash-disbursement-cash-voucher";
 
 export const CashVoucherTablePreferencesStorageKey = "gr8booksneo:cash-voucher:table-preferences";
 export const CashVoucherTablePreferencesModuleKey = "cash-disbursement:cash-voucher";
-export const CashVoucherTransactionStorageKey = "gr8books.cash-voucher.transactions";
-export const CashVoucherRecordStorageKey = "gr8books.cash-voucher.vouchers";
 export const CashVoucherAccountingGridSessionStorageKey = "gr8books.cashVoucher.accountingGrid";
 
 export const CashVoucherBankSelectPlaceholder = "--Select Bank--";
-export const CashVoucherBankSearchPlaceholder = "Search bank";
+export const CashVoucherBankSearchPlaceholder = "Search Bank";
 
 export const CashVoucherFieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
@@ -68,7 +79,7 @@ export const CashVoucherPdfThinGridLayout = {
 export const CashVoucherNotFoundCopy = {
   actionLabel: "Return to Cash Vouchers",
   description: "The selected transaction is no longer available, or the voucher link is no longer valid.",
-  title: "CashVoucher record not found",
+  title: "Cash Voucher Record Not Found",
 } as const;
 
 export const CashVoucherActionTabs: {
@@ -99,7 +110,7 @@ export const CashVoucherWorkflowSteps = [
   },
   {
     id: "entries",
-    title: "Line Entries",
+    title: "Disbursement Details",
     description: "Capture the debit and credit lines for the disbursement.",
   },
   {
@@ -111,9 +122,9 @@ export const CashVoucherWorkflowSteps = [
 
 export const CashVoucherStatusFilters = [
   CashVoucherAllStatusFilter,
-  CashVoucherStatuses.draft,
-  CashVoucherStatuses.forApproval,
   CashVoucherStatuses.posted,
+  CashVoucherStatuses.forApproval,
+  CashVoucherStatuses.draft,
   CashVoucherStatuses.disapproved,
   CashVoucherStatuses.cancelled,
   CashVoucherStatuses.closed,
@@ -122,16 +133,16 @@ export const CashVoucherStatusFilters = [
 export const CashVoucherStatusFilterOptions = [
   { label: "All statuses", value: CashVoucherAllStatusFilter },
   {
-    label: CashVoucherStatuses.draft,
-    value: CashVoucherStatuses.draft,
+    label: CashVoucherStatuses.posted,
+    value: CashVoucherStatuses.posted,
   },
   {
     label: CashVoucherStatuses.forApproval,
     value: CashVoucherStatuses.forApproval,
   },
   {
-    label: CashVoucherStatuses.posted,
-    value: CashVoucherStatuses.posted,
+    label: CashVoucherStatuses.draft,
+    value: CashVoucherStatuses.draft,
   },
   {
     label: CashVoucherStatuses.disapproved,
@@ -179,8 +190,20 @@ export const CashVoucherTableColumns = [
     size: TransactionOverviewColumnWidths.currency,
   },
   {
+    key: "exchangeRate",
+    label: "Exchange Rate",
+    className: "",
+    size: TransactionOverviewColumnWidths.exchangeRate,
+  },
+  {
     key: "amount",
     label: "Amount",
+    className: "",
+    size: TransactionOverviewColumnWidths.amount,
+  },
+  {
+    key: "disburseAmount",
+    label: "Disburse Amount",
     className: "",
     size: TransactionOverviewColumnWidths.amount,
   },
@@ -223,7 +246,7 @@ export const CashVoucherTableColumns = [
   {
     label: "Actions",
     className: "text-center",
-    size: CashDisbursementOverviewActionColumnWidth,
+    size: TransactionOverviewColumnWidths.actions,
   },
 ] as const;
 
@@ -233,18 +256,20 @@ export const CashVoucherDefaultColumnOrder = CashVoucherTableColumns.map((column
 
 export const CashVoucherDefaultColumnVisibility: VisibilityState = {
   currency: false,
+  exchangeRate: false,
   createdBy: false,
   createdAt: false,
   partyCode: false,
   remarks: false,
   updatedBy: false,
   updatedAt: false,
+  disburseAmount: false,
 };
 
 export const CashVoucherDefaultSorting: SortingState = [{ id: "documentDate", desc: true }];
 
 export function canEditCashVoucherStatus(status: CashVoucherStatus) {
-  return status === CashVoucherStatuses.draft || status === CashVoucherStatuses.forApproval;
+  return status === CashVoucherStatuses.draft;
 }
 
 export function canApproveCashVoucherStatus(status: CashVoucherStatus) {
@@ -272,7 +297,7 @@ export function getCashVoucherStatusDialogCopy(
     return {
       confirmLabel: "Undo Approved",
       description: `This will undo the approval of ${recordLabel} and return it to For Approval.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Approval...",
       title: "Undo Approved Cash Voucher?",
       tone: "question" as const,
@@ -283,7 +308,7 @@ export function getCashVoucherStatusDialogCopy(
     return {
       confirmLabel: "Undo Disapproved",
       description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Disapproval...",
       title: "Undo Disapproved Cash Voucher?",
       tone: "question" as const,
@@ -294,7 +319,7 @@ export function getCashVoucherStatusDialogCopy(
     return {
       confirmLabel: "Undo Cancelled",
       description: `This will undo the cancellation of ${recordLabel}.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Cancellation...",
       title: "Undo Cancelled Cash Voucher?",
       tone: "question" as const,
@@ -329,7 +354,7 @@ export function getCashVoucherStatusDialogCopy(
     iconTone: "cancel" as const,
     pendingLabel: "Cancelling...",
     title: "Make Cash Voucher as Cancelled",
-    tone: "danger" as const,
+    tone: "warning" as const,
   };
 }
 

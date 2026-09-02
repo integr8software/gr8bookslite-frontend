@@ -12,7 +12,12 @@ import type {
   BankNextAccountCodeResponseDto,
   CreateBankAccountDto,
   CreateBankAccountDtoStatus,
+  UpdateBankAccountDto,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import {
+  mapBankAccountTypeFromApi,
+  requireBankAccountTypeToApi,
+} from "@/app/src/services/modules/financial-maintenance/bank-masterfile/BankAccountTypeMapper";
 import type {
   BankMasterfile,
   BankMasterfileFormValues,
@@ -54,7 +59,7 @@ export async function createBank(values: BankMasterfileFormValues): Promise<Bank
 }
 
 export async function updateBank(bank: BankMasterfile): Promise<BankMasterfile> {
-  const response = await bankMasterfileControllerUpdateV1(bank.id, toApiBankPayload(bank));
+  const response = await bankMasterfileControllerUpdateV1(bank.id, toApiUpdateBankPayload(bank));
 
   return mapApiBank(response.bankAccount);
 }
@@ -83,7 +88,7 @@ function mapApiBank(bank: BankAccountResponseDto): BankMasterfile {
     branch: bank.branch ?? "",
     accountNumber: bank.accountNumber,
     accountName: bank.accountName,
-    accountType: bank.accountType ?? "",
+    accountType: bank.accountType ? mapBankAccountTypeFromApi(bank.accountType) : "",
     currencyCode: bank.currencyCode ?? "PHP",
     isDefault: bank.isDefault,
     seriesStart: bank.seriesStart ?? "",
@@ -97,15 +102,29 @@ function mapApiBank(bank: BankAccountResponseDto): BankMasterfile {
   };
 }
 
-function toApiBankPayload(bank: BankMasterfile | BankMasterfileFormValues): CreateBankAccountDto {
+function toApiBankPayload(bank: BankMasterfileFormValues): CreateBankAccountDto {
   return {
     bankName: bank.bankName.trim(),
     branch: cleanOptional(bank.branch),
     accountNumber: cleanOptional(bank.accountNumber),
-    accountName: "accountName" in bank ? cleanOptional(bank.accountName) : undefined,
-    accountType: cleanOptional(bank.accountType),
+    accountType: requireBankAccountTypeToApi(bank.accountType),
     currencyCode: cleanOptional(bank.currencyCode),
-    accountCode: "accountCode" in bank ? cleanOptional(bank.accountCode) : undefined,
+    seriesStart: bank.seriesStart.trim(),
+    seriesEnd: bank.seriesEnd.trim(),
+    seriesDigits: Number(bank.seriesDigits),
+    isDefault: bank.isDefault,
+    status: mapStatusToApi(bank.status),
+  };
+}
+
+function toApiUpdateBankPayload(bank: BankMasterfile): UpdateBankAccountDto {
+  return {
+    bankName: bank.bankName.trim(),
+    branch: cleanOptional(bank.branch),
+    accountNumber: cleanOptional(bank.accountNumber),
+    accountName: cleanOptional(bank.accountName),
+    accountType: requireBankAccountTypeToApi(bank.accountType),
+    currencyCode: cleanOptional(bank.currencyCode),
     seriesStart: bank.seriesStart.trim(),
     seriesEnd: bank.seriesEnd.trim(),
     seriesDigits: Number(bank.seriesDigits),

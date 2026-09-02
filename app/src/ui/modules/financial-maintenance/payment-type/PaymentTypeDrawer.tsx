@@ -3,18 +3,20 @@
 import {
   PaymentTypeDrawerFormId,
   PaymentTypeFieldClassName,
+  PaymentTypeParentLabel,
+  PaymentTypeTitle,
 } from "@/app/src/constants/modules/financial-maintenance/payment-type/PaymentTypeConstants";
 import { PaymentTypeOptions } from "@/app/src/data/modules/financial-maintenance/payment-type/PaymentTypeData";
-import { usePaymentTypeActionPage } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentTypeActionPage";
+import { usePaymentTypeFormPage } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentTypeFormPage";
 import type {
   PaymentTypeActionMode,
   PaymentTypeClassification,
   PaymentTypeDrawerProps,
 } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
-import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { ModuleDrawer, getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
 
 const PaymentTypeActionCopy = {
@@ -45,23 +47,35 @@ export function PaymentTypeDrawer({ isOpen, mode, onClose, paymentType }: Paymen
 }
 
 function PaymentTypeDrawerPanel({ isOpen, mode, onClose, paymentType }: PaymentTypeDrawerProps) {
-  const page = usePaymentTypeActionPage({
+  const page = usePaymentTypeFormPage({
     existingPaymentType: paymentType,
+    isOpen,
     mode,
     onSaved: onClose,
   });
   const copy = PaymentTypeActionCopy[mode];
 
+  function handleClose() {
+    page.saveDraft();
+    onClose();
+  }
+
+  function handleCancel() {
+    page.discardDraft();
+    onClose();
+  }
+
   return (
     <ModuleDrawer
       description={copy.description}
-      eyebrow="Accounting master data"
+      eyebrow={PaymentTypeParentLabel}
       formId={PaymentTypeDrawerFormId}
       isOpen={isOpen}
       isReadonly={page.isReadonly}
       isSaving={page.isSubmitting}
       onBeforeSaveConfirm={page.validateBeforeSubmit}
-      onClose={onClose}
+      onCancel={handleCancel}
+      onClose={handleClose}
       savingLabel={getModuleSavePendingLabel(mode)}
       submitLabel={mode === "edit" ? "Update Payment Type" : "Save Payment Type"}
       title={copy.title}
@@ -69,7 +83,8 @@ function PaymentTypeDrawerPanel({ isOpen, mode, onClose, paymentType }: PaymentT
       <form id={PaymentTypeDrawerFormId} onSubmit={page.handleSubmit} className="grid gap-5 px-6 py-5">
         <label className="grid gap-2">
           <span className="text-sm font-semibold text-darknavy">
-            Payment Type Name <span className="text-coralpink">*</span>
+            Payment Type Name
+            <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label="Payment Type Name" leadingSpace />
           </span>
           <input
             value={page.values.paymentType}
@@ -82,7 +97,8 @@ function PaymentTypeDrawerPanel({ isOpen, mode, onClose, paymentType }: PaymentT
 
         <label className="grid gap-2">
           <span className="text-sm font-semibold text-darknavy">
-            Category <span className="text-coralpink">*</span>
+            Category
+            <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label="Category" leadingSpace />
           </span>
           <select
             value={page.values.type}
@@ -114,7 +130,8 @@ function PaymentTypeDrawerPanel({ isOpen, mode, onClose, paymentType }: PaymentT
 
         <label className="grid max-w-xs gap-2">
           <span className="text-sm font-semibold text-darknavy">
-            Status <span className="text-coralpink">*</span>
+            Status
+            <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label="Status" leadingSpace />
           </span>
           <AppSwitch
             falseOption={MaintenanceInactiveStatusSwitchOption}

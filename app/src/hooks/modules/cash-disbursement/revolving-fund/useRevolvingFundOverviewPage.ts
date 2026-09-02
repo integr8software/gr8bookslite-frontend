@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -20,9 +21,12 @@ import {
   RevolvingFundStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import {
-  getRevolvingFundRecords,
-  saveRevolvingFundRecords,
-} from "@/app/src/services/modules/cash-disbursement/revolving-fund/RevolvingFundService";
+  CashDisbursementAllStatusFilter,
+  CashDisbursementAllTimeSummary,
+  CashDisbursementTotalEntriesLabel,
+  createCashDisbursementListQueryKey,
+  createCashDisbursementModuleQueryKey,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type { RevolvingFundRecord, RevolvingFundStatus } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
@@ -30,41 +34,81 @@ import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
-import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { parseAmount } from "@/app/src/utils/number.util";
+import {
+  deleteRevolvingFundApi,
+  fetchRevolvingFundList,
+  updateRevolvingFundStatusApi,
+} from "@/app/src/services/modules/cash-disbursement/revolving-fund/RevolvingFundApi";
 
 const columnHelper = createColumnHelper<RevolvingFundRecord>();
-const emptyDateRange: DateRangeValue = { from: "", to: "" };
-const emptyAmountRange: AmountRangeValue = { from: "", to: "" };
+const RevolvingFundQueryKey = "revolving-fund";
 
 export function useRevolvingFundOverviewPage() {
-  const [records, setRecords] = useState(getRevolvingFundRecords);
+  const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [dateRange, setDateRange] = useState<DateRangeValue>(emptyDateRange);
-  const [amountRange, setAmountRange] = useState<AmountRangeValue>(emptyAmountRange);
-  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 5 });
+  const [statusFilter, setStatusFilter] = useState<string>(CashDisbursementAllStatusFilter);
+  const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
+  const [amountRange, setAmountRange] = useState<AmountRangeValue>({ from: "", to: "" });
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => RevolvingFundDefaultColumnVisibility);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
-  const filteredRecords = useMemo(
-    () =>
-      records.filter((record) => {
-        const needle = query.trim().toLowerCase();
-        return (
-          (!needle ||
-            [record.transactionNo, record.partyCode, record.partyName, record.accountCode, record.accountTitle, record.remarks]
-              .join(" ")
-              .toLowerCase()
-              .includes(needle)) &&
-          (statusFilter === "All" || record.status === statusFilter) &&
-          (!dateRange.from || record.documentDate >= dateRange.from) &&
-          (!dateRange.to || record.documentDate <= dateRange.to) &&
-          (!amountRange.from || record.amount >= Number(amountRange.from)) &&
-          (!amountRange.to || record.amount <= Number(amountRange.to))
-        );
-      }),
-    [amountRange, dateRange, query, records, statusFilter],
-  );
+
+  const amountFrom = parseAmount(amountRange.from);
+  const amountTo = parseAmount(amountRange.to);
+
+  const fundQuery = useQuery({
+    queryKey: createCashDisbursementListQueryKey(RevolvingFundQueryKey, {
+      query,
+      statusFilter,
+      startDate: dateRange.from || undefined,
+      endDate: dateRange.to || undefined,
+      amountFrom: amountFrom !== null ? amountFrom : undefined,
+      amountTo: amountTo !== null ? amountTo : undefined,
+    }),
+    queryFn: async () => {
+      const res = await fetchRevolvingFundList({
+        search: query || undefined,
+        status: statusFilter !== CashDisbursementAllStatusFilter ? statusFilter : undefined,
+        startDate: dateRange.from || undefined,
+        endDate: dateRange.to || undefined,
+        amountFrom: amountFrom !== null ? amountFrom : undefined,
+        amountTo: amountTo !== null ? amountTo : undefined,
+      });
+      setLastSyncedAt(Date.now());
+      return res;
+    },
+  });
+
+  const records = useMemo(() => fundQuery.data?.data ?? [], [fundQuery.data?.data]);
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: RevolvingFundStatus }) => {
+      return await updateRevolvingFundStatusApi(id, status);
+    },
+    onSuccess: (_, { status }) => {
+      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(RevolvingFundQueryKey) });
+      toast.success(`Revolving Fund marked as ${status}.`);
+    },
+    onError: () => {
+      toast.error("Could not update the Revolving Fund status.");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await deleteRevolvingFundApi(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(RevolvingFundQueryKey) });
+      toast.success("Revolving Fund deleted successfully.");
+    },
+    onError: () => {
+      toast.error("Could not delete Revolving Fund.");
+    },
+  });
+
   const columns = useMemo(
     () => [
       columnHelper.accessor("transactionNo", {
@@ -102,6 +146,11 @@ export function useRevolvingFundOverviewPage() {
         size: TransactionOverviewColumnWidths.amount,
         meta: { label: RevolvingFundColumnLabels.amount },
       }),
+      columnHelper.accessor("disburseAmount", {
+        header: RevolvingFundColumnLabels.disburseAmount,
+        size: TransactionOverviewColumnWidths.amount,
+        meta: { label: RevolvingFundColumnLabels.disburseAmount },
+      }),
       columnHelper.accessor("remarks", {
         header: RevolvingFundColumnLabels.remarks,
         size: TransactionOverviewColumnWidths.remarks,
@@ -135,73 +184,88 @@ export function useRevolvingFundOverviewPage() {
       columnHelper.display({
         id: "actions",
         header: RevolvingFundColumnLabels.actions,
-        size: CashDisbursementOverviewActionColumnWidth,
+        size: TransactionOverviewColumnWidths.actions,
         meta: { className: "text-center", label: RevolvingFundColumnLabels.actions },
       }),
     ],
     [],
   );
-  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns its state handlers.
+
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns the table state lifecycle.
   const table = useReactTable({
+    data: records,
     columns,
-    data: filteredRecords,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     initialState: { columnVisibility: RevolvingFundDefaultColumnVisibility },
+    state: { columnVisibility, pagination, sorting },
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
-    state: { columnVisibility, pagination, sorting },
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   });
-  const statisticCards = useMemo<ModuleStatisticCardItem[]>(
-    () => [
+
+  const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => {
+    const total = records.length;
+    return [
       {
+        label: CashDisbursementTotalEntriesLabel,
+        value: total,
         icon: ReceiptText,
-        label: "Total Entries",
-        value: records.length,
-        summary: "All time",
         tone: "violet",
-        onClick: () => setStatusFilter("All"),
-        isActive: statusFilter === "All",
+        summary: CashDisbursementAllTimeSummary,
+        isActive: statusFilter === CashDisbursementAllStatusFilter,
+        onClick: () => setStatusFilter(CashDisbursementAllStatusFilter),
       },
       ...RevolvingFundRecordStatuses.map((status) => {
-        const count = records.filter((record) => record.status === status).length;
+        const count = records.filter((item) => item.status === status).length;
+        const tone =
+          status === RevolvingFundStatuses.posted
+            ? ("emerald" as const)
+            : status === RevolvingFundStatuses.forApproval
+              ? ("amber" as const)
+              : status === RevolvingFundStatuses.draft
+                ? ("blue" as const)
+                : status === RevolvingFundStatuses.disapproved
+                  ? ("red" as const)
+                  : ("slate" as const);
+
         return {
-          icon: getModuleStatusMetricIcon(status),
-          iconClassName: getModuleStatusMetricIconClassName(status),
           label: status,
           value: count,
-          summary: formatPartOfTotalPercentage(count, records.length),
-          tone: getMetricTone(status),
-          onClick: () => setStatusFilter(status),
+          icon: getModuleStatusMetricIcon(status),
+          iconClassName: getModuleStatusMetricIconClassName(status),
+          tone,
+          summary: formatPartOfTotalPercentage(count, total),
           isActive: statusFilter === status,
+          onClick: () => setStatusFilter(status),
         };
       }),
-    ],
-    [records, statusFilter],
-  );
+    ];
+  }, [records, statusFilter]);
 
-  function updateStatus(record: RevolvingFundRecord, status: RevolvingFundStatus) {
-    const next = records.map((item) =>
-      item.id === record.id ? { ...item, status, updatedAt: new Date().toISOString(), updatedBy: "Current User" } : item,
-    );
-    setRecords(next);
-    saveRevolvingFundRecords(next);
-    setLastSyncedAt(Date.now());
-    toast.success(`Revolving fund marked as ${status}.`);
-  }
+  const onUpdateStatus = (record: RevolvingFundRecord, status: RevolvingFundStatus) => {
+    updateStatusMutation.mutate({ id: record.id, status });
+  };
 
-  function refreshRecords() {
-    setRecords(getRevolvingFundRecords());
-    setLastSyncedAt(Date.now());
-  }
+  const onDeleteRecord = (record: RevolvingFundRecord) => {
+    deleteMutation.mutate(record.id);
+  };
+
+  const refreshRecords = () => {
+    fundQuery.refetch();
+  };
 
   return {
     amountRange,
     dateRange,
-    isLoading: false,
+    filteredRecords: records,
+    isLoading: fundQuery.isLoading,
+    isUpdatingStatus: updateStatusMutation.isPending || deleteMutation.isPending,
     lastSyncedAt,
+    onDeleteRecord,
+    onUpdateStatus,
+    updateStatus: onUpdateStatus,
     query,
     refreshRecords,
     setAmountRange,
@@ -209,18 +273,8 @@ export function useRevolvingFundOverviewPage() {
     setQuery,
     setStatusFilter,
     statisticCards,
+    statistics: statisticCards,
     statusFilter,
     table,
-    updateStatus,
   };
 }
-
-function getMetricTone(status: RevolvingFundStatus) {
-  if (status === RevolvingFundStatuses.posted) return "emerald" as const;
-  if (status === RevolvingFundStatuses.forApproval) return "amber" as const;
-  if (status === RevolvingFundStatuses.disapproved) return "red" as const;
-  if (status === RevolvingFundStatuses.cancelled) return "slate" as const;
-  return "blue" as const;
-}
-
-export type { RevolvingFundOverviewPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";

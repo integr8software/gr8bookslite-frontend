@@ -1,10 +1,7 @@
-import {
-  PettyCashFundAccountOptions,
-  PettyCashFundPartyOptions,
-  PettyCashFundProjectOptions,
-  PettyCashFundResponsibilityCenterLookupOptions,
-} from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
-import type { PettyCashFundActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundActionPage";
+"use client";
+
+import { usePettyCashFundDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundDetailsLookups";
+import type { PettyCashFundActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
@@ -19,12 +16,25 @@ import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 export function PettyCashFundDetailsFields({
   onOpenPartyDrawer,
   onOpenProjectDrawer,
+  onOpenResponsibilityCenterDrawer,
   page,
 }: {
   onOpenPartyDrawer: () => void;
   onOpenProjectDrawer: () => void;
+  onOpenResponsibilityCenterDrawer: () => void;
   page: PettyCashFundActionPageState;
 }) {
+  const {
+    accountOptions,
+    isAccountLookupLoading,
+    isPartyLookupLoading,
+    isProjectLookupLoading,
+    isResponsibilityCenterLookupLoading,
+    partyOptions,
+    projectOptions,
+    responsibilityCenterOptions,
+  } = usePettyCashFundDetailsLookups(page.values);
+
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid gap-5 xl:grid-cols-3">
@@ -33,10 +43,11 @@ export function PettyCashFundDetailsFields({
           <TransactionField label="Party Name" error={page.errors.partyName} isRequired>
             <AppLookupDropdown
               value={page.values.partyCode}
-              options={PettyCashFundPartyOptions}
+              options={partyOptions}
               readOnly={page.isReadonly}
               placeholder="Select Party Name"
               searchPlaceholder="Search Party Name"
+              emptyMessage={isPartyLookupLoading ? "Loading Party Name options..." : "No Party Name options found."}
               addAction={!page.isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("partyCode", code);
@@ -48,10 +59,16 @@ export function PettyCashFundDetailsFields({
           <TransactionField label="Responsibility Center">
             <AppLookupDropdown
               value={page.values.responsibilityCenterCode}
-              options={PettyCashFundResponsibilityCenterLookupOptions}
+              options={responsibilityCenterOptions}
               readOnly={page.isReadonly}
               placeholder="Select Responsibility Center"
               searchPlaceholder="Search Responsibility Center"
+              emptyMessage={
+                isResponsibilityCenterLookupLoading
+                  ? "Loading Responsibility Center options..."
+                  : "No Responsibility Center options found."
+              }
+              addAction={!page.isReadonly ? { label: "Add Responsibility Center", onClick: onOpenResponsibilityCenterDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("responsibilityCenterCode", code);
                 page.updateField("responsibilityCenter", name);
@@ -62,10 +79,11 @@ export function PettyCashFundDetailsFields({
           <TransactionField label="Project Name">
             <AppLookupDropdown
               value={page.values.projectCode}
-              options={PettyCashFundProjectOptions}
+              options={projectOptions}
               readOnly={page.isReadonly}
               placeholder="Select Project Name"
               searchPlaceholder="Search Project"
+              emptyMessage={isProjectLookupLoading ? "Loading Project options..." : "No Project options found."}
               addAction={!page.isReadonly ? { label: "Add Project", onClick: onOpenProjectDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("projectCode", code);
@@ -77,10 +95,11 @@ export function PettyCashFundDetailsFields({
           <TransactionField label="Default Account Title" error={page.errors.accountTitle} isRequired>
             <AppLookupDropdown
               value={page.values.accountCode}
-              options={PettyCashFundAccountOptions}
+              options={accountOptions}
               readOnly={page.isReadonly}
               placeholder="Select Default Account"
               searchPlaceholder="Search Account"
+              emptyMessage={isAccountLookupLoading ? "Loading Default Account options..." : "No Default Account options found."}
               onChange={(code, name) => {
                 page.updateField("accountCode", code);
                 page.updateField("accountTitle", name);
@@ -139,11 +158,15 @@ export function PettyCashFundDetailsFields({
           />
 
           <CurrencyExchangeRateRow
-            currencyControlId="pcf-currency"
             currencyLabel="Currency"
+            currencyControlId="pcf-currency"
+            currencyError={page.errors.currency}
+            exchangeRateControlId="pcf-exchange-rate"
+            exchangeRateError={page.errors.exchangeRate}
             currencyControl={
               <AppAdvancedDropdown
                 id="pcf-currency"
+                className="w-full min-w-0"
                 value={page.values.currency}
                 readOnly={page.isReadonly}
                 isClearable={false}
@@ -154,7 +177,6 @@ export function PettyCashFundDetailsFields({
                 onChange={(value) => page.updateCurrency(String(value))}
               />
             }
-            exchangeRateControlId="pcf-exchange-rate"
             exchangeRateControl={
               <input
                 id="pcf-exchange-rate"
@@ -164,7 +186,8 @@ export function PettyCashFundDetailsFields({
                 readOnly={page.isReadonly}
                 disabled={page.isReadonly || page.isExchangeRateLoading}
                 onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
+                className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
               />
             }
           />
@@ -176,16 +199,17 @@ export function PettyCashFundDetailsFields({
             value={page.values.transactionNo}
             isReadonly
             isRequired
-            label="Petty Cash Fund No."
+            label="PCF No."
             error={page.errors.transactionNo}
             onValueChange={(value) => page.updateField("transactionNo", value)}
-            placeholder="Auto Generated Petty Cash Fund Transaction Number"
+            placeholder="Auto Generated PCF Transaction Number"
           />
 
           <TransactionTextField
             value={page.values.documentDate}
             isReadonly={page.isReadonly}
-            label="Petty Cash Fund Date"
+            isRequired
+            label="PCF Date"
             error={page.errors.documentDate}
             type="date"
             onValueChange={(value) => page.updateField("documentDate", value)}

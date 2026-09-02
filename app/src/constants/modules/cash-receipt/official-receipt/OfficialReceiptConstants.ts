@@ -3,40 +3,41 @@ import type { OfficialReceiptStatus } from "@/app/src/types/modules/cash-receipt
 export const OfficialReceiptHref = "/cash-receipt/official-receipt";
 
 export const OfficialReceiptStatuses = {
-  Active: "Active",
-  Approved: "Approved",
   Cancelled: "Cancelled",
-  Closed: "Closed",
   Disapproved: "Disapproved",
   Draft: "Draft",
-  Pending: "Pending",
+  ForApproval: "For Approval",
+  Posted: "Posted",
 } as const satisfies Record<string, OfficialReceiptStatus>;
 
 export const EditableOfficialReceiptStatuses: readonly OfficialReceiptStatus[] = [
-  OfficialReceiptStatuses.Active,
   OfficialReceiptStatuses.Draft,
-  OfficialReceiptStatuses.Pending,
+  OfficialReceiptStatuses.ForApproval,
 ];
 
 export const OfficialReceiptStatusFilterOptions = [
   { label: "All statuses", value: "all" },
-  { label: "Active", value: OfficialReceiptStatuses.Active },
-  { label: "Pending", value: OfficialReceiptStatuses.Pending },
-  { label: "Approved", value: OfficialReceiptStatuses.Approved },
+  { label: "Draft", value: OfficialReceiptStatuses.Draft },
+  { label: "For Approval", value: OfficialReceiptStatuses.ForApproval },
+  { label: "Posted", value: OfficialReceiptStatuses.Posted },
   { label: "Disapproved", value: OfficialReceiptStatuses.Disapproved },
-  { label: "Closed", value: OfficialReceiptStatuses.Closed },
   { label: "Cancelled", value: OfficialReceiptStatuses.Cancelled },
 ] as const;
 
 export const OfficialReceiptStatusFilters = [
   "all",
-  OfficialReceiptStatuses.Active,
-  OfficialReceiptStatuses.Pending,
-  OfficialReceiptStatuses.Approved,
+  OfficialReceiptStatuses.Draft,
+  OfficialReceiptStatuses.ForApproval,
+  OfficialReceiptStatuses.Posted,
   OfficialReceiptStatuses.Disapproved,
-  OfficialReceiptStatuses.Closed,
   OfficialReceiptStatuses.Cancelled,
 ] as const;
 
 export const OfficialReceiptTablePaginationStorageKey =
   "cash-receipt-official-receipt";
+
+export const OfficialReceiptActionTabs = [
+  { id: "details", label: "Details" },
+  { id: "attachments", label: "Attachments" },
+] as const;
+

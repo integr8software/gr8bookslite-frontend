@@ -32,3 +32,8 @@ export function cleanOptional(value: string) {
 export function toOptionalNumber(value: string) {
 	return value.trim() ? Number(value) : undefined;
 }
+
+export function joinClasses(...classes: Array<false | null | string | undefined | 0 | "">) {
+	return classes.filter(Boolean).join(" ");
+}
+

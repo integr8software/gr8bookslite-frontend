@@ -5,10 +5,12 @@ import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleCh
 
 export type ServicesMaintenanceStatus = "Active" | "Inactive";
 export type ServicesMaintenanceAccountSetupMode = "Auto" | "Existing";
+export type ServicesMaintenanceServiceType = "Purchases" | "Sales";
 
 export type ServicesMaintenance = {
   id: string;
   serviceName: string;
+  serviceType: ServicesMaintenanceServiceType;
   description: string;
   status: ServicesMaintenanceStatus;
   accountSetupMode: ServicesMaintenanceAccountSetupMode;
@@ -24,6 +26,7 @@ export type ServicesMaintenance = {
 
 export type ServicesMaintenanceFormValues = {
   serviceName: string;
+  serviceType: ServicesMaintenanceServiceType;
   description: string;
   status: ServicesMaintenanceStatus;
   accountSetupMode: ServicesMaintenanceAccountSetupMode;
@@ -33,11 +36,24 @@ export type ServicesMaintenanceFormValues = {
 export type ServicesMaintenanceFormErrors = Partial<Record<keyof ServicesMaintenanceFormValues, string>>;
 
 export type ServicesMaintenanceActionMode = "add" | "edit" | "view";
+
+export type ServicesMaintenanceFormPageOptions = {
+  existingService?: ServicesMaintenance;
+  isOpen?: boolean;
+  mode?: ServicesMaintenanceActionMode;
+  onSaved?: () => void;
+};
+
+export type ServicesMaintenanceStoreOptions = {
+  refetchOnMount?: boolean | "always";
+};
+
 export type ServicesMaintenanceStatusFilter = "" | ServicesMaintenanceStatus;
 export type ServicesMaintenanceSetupModeFilter = "" | ServicesMaintenanceAccountSetupMode;
 
 export type ServicesMaintenanceTableColumnKey =
   | "serviceName"
+  | "serviceType"
   | "description"
   | "revenueAccountCode"
   | "revenueAccountTitle"
@@ -84,7 +100,7 @@ export type ServicesMaintenanceFieldsProps = {
   errors: ServicesMaintenanceFormErrors;
   isReadonly: boolean;
   values: ServicesMaintenanceFormValues;
-  onInputChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+  onInputChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
 };
 
 export type ServicesMaintenanceAccountingSetupTabProps = {
@@ -159,7 +175,7 @@ export type ServicesMaintenanceCellContentProps = {
   onViewService: (service: ServicesMaintenance) => void;
 };
 
-export type ServicesMaintenanceImportColumnId = "serviceName" | "description" | "accountSetupMode" | "revenueCoaId";
+export type ServicesMaintenanceImportColumnId = "serviceName" | "serviceType" | "description" | "accountSetupMode" | "revenueCoaId";
 
 export type ServicesMaintenanceImportColumnHeader = {
   className: string;

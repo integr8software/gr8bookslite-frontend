@@ -1,5 +1,5 @@
 import { CashAdvanceStatusFilterOptions } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
-import type { useCashAdvanceTable } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
+import type { CashAdvanceTableState } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 import {
@@ -10,12 +10,16 @@ import {
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
-type CashAdvanceTableState = ReturnType<typeof useCashAdvanceTable>;
-
-export function CashAdvanceTableToolbar({ tableState }: { tableState: CashAdvanceTableState }) {
+export function CashAdvanceTableToolbar({
+  onRefresh,
+  tableState,
+}: {
+  onRefresh: () => void;
+  tableState: CashAdvanceTableState;
+}) {
   return (
     <ModuleTableToolbar
-      className="!grid-cols-1 !gap-2 !p-3 sm:!gap-2 sm:!p-3 2xl:!grid-cols-[minmax(0,1fr)_auto]"
+      className="!grid-cols-1 !gap-2 rounded-none border-x-0 border-t-0 !p-3 shadow-none sm:!gap-2 sm:!p-3 2xl:!grid-cols-[minmax(0,1fr)_auto]"
       data-spotlight-id="maintenance-table-filters"
     >
       <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 2xl:grid-cols-[minmax(18rem,2fr)_minmax(14rem,1fr)_minmax(14rem,1fr)]">
@@ -38,9 +42,7 @@ export function CashAdvanceTableToolbar({ tableState }: { tableState: CashAdvanc
           onChange={(value) => tableState.setStatusFilter(value as Parameters<typeof tableState.setStatusFilter>[0])}
         />
         <ModuleTableColumnVisibilityButton table={tableState.table} />
-        <ModuleTableResetButton className="px-2" onClick={tableState.resetFilters}>
-          <span className="sr-only">Reset filters</span>
-        </ModuleTableResetButton>
+        <ModuleTableResetButton className="px-2" onClick={onRefresh} />
       </div>
     </ModuleTableToolbar>
   );

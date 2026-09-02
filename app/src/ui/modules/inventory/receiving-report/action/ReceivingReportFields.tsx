@@ -1,7 +1,12 @@
 import type { ChangeEvent } from "react";
-import { ReceivingReportCurrencyOptions, receivingReportFieldClassName, receivingReportFieldShellClassName } from "@/app/src/constants/modules/inventory/receiving-report/ReceivingReportConstants";
+import {
+  ReceivingReportCurrencyOptions,
+  receivingReportFieldClassName,
+  receivingReportFieldShellClassName,
+} from "@/app/src/constants/modules/inventory/receiving-report/ReceivingReportConstants";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import type { ReceivingReportSectionChangeHandler } from "@/app/src/types/modules/inventory/receiving-report/ReceivingReportTypes";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 type FieldProps = {
   disabled: boolean;
@@ -14,16 +19,7 @@ type FieldProps = {
   value: string;
 };
 
-export function TextField({
-  disabled,
-  error,
-  label,
-  name,
-  onChange,
-  required,
-  type = "text",
-  value,
-}: FieldProps) {
+export function TextField({ disabled, error, label, name, onChange, required, type = "text", value }: FieldProps) {
   return (
     <label className={receivingReportFieldShellClassName}>
       <FieldLabel label={label} required={required} controlName={name} />
@@ -43,15 +39,7 @@ export function TextField({
   );
 }
 
-export function TextAreaField({
-  disabled,
-  error,
-  label,
-  name,
-  onChange,
-  required,
-  value,
-}: FieldProps) {
+export function TextAreaField({ disabled, error, label, name, onChange, required, value }: FieldProps) {
   return (
     <label className={receivingReportFieldShellClassName}>
       <FieldLabel label={label} required={required} controlName={name} />
@@ -65,9 +53,7 @@ export function TextAreaField({
           aria-invalid={Boolean(error)}
         />
         {error ? <ErrorText message={error} /> : null}
-        <span className="mt-1 block text-xs font-medium text-darknavy/45">
-          Characters remaining: {Math.max(250 - value.length, 0)}
-        </span>
+        <span className="mt-1 block text-xs font-medium text-darknavy/45">Characters remaining: {Math.max(250 - value.length, 0)}</span>
       </span>
     </label>
   );
@@ -166,19 +152,11 @@ export function CurrencyExchangeRateField({
   );
 }
 
-export function FieldLabel({
-  controlName,
-  label,
-  required,
-}: {
-  controlName: string;
-  label: string;
-  required?: boolean;
-}) {
+export function FieldLabel({ controlName, label, required }: { controlName: string; label: string; required?: boolean }) {
   return (
     <span className="pt-2 text-sm font-semibold text-darknavy" id={`${controlName}-label`}>
       {label}
-      {required ? <span className="ml-1 text-coralpink">*</span> : null}
+      <ModuleFieldRequiredMark fallbackRequired={required} label={label} />
     </span>
   );
 }
@@ -190,8 +168,6 @@ export function ErrorText({ message }: { message: string }) {
 export function getReceivingReportFieldClassName(error?: string) {
   return joinClasses(
     receivingReportFieldClassName,
-    error
-      ? "border-red-400 bg-red-50/40 focus:border-red-500 focus:ring-2 focus:ring-red-200"
-      : undefined,
+    error ? "border-red-400 bg-red-50/40 focus:border-red-500 focus:ring-2 focus:ring-red-200" : undefined,
   );
 }

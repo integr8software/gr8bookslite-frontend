@@ -18,7 +18,7 @@ import type {
   DisbursementVoucherAccountingGridSession,
   DisbursementVoucherFormValues,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import { parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { formatAmount } from "@/app/src/utils/currency.util";
 import {
   formatRowsAsTabularText,

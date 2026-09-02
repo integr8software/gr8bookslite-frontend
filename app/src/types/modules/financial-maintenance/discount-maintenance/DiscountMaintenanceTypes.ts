@@ -2,7 +2,7 @@ import type { ChangeEventHandler } from "react";
 import type { Row, Table } from "@tanstack/react-table";
 
 export type DiscountType = "Percentage" | "Fixed";
-export type DiscountTransactionType = "Purchase" | "Sales";
+export type DiscountTransactionType = "Purchases" | "Sales";
 export type DiscountStatus = "Active" | "Inactive";
 export type DiscountTypeFilter = "All" | DiscountTransactionType;
 export type DiscountValueTypeFilter = "All" | DiscountType;
@@ -38,6 +38,17 @@ export type DiscountMaintenanceFormValues = {
 export type DiscountMaintenanceFormErrors = Partial<Record<keyof DiscountMaintenanceFormValues, string>>;
 
 export type DiscountMaintenanceActionMode = "add" | "edit" | "view";
+
+export type DiscountMaintenanceFormPageOptions = {
+  existingDiscount?: Discount;
+  isOpen?: boolean;
+  mode?: DiscountMaintenanceActionMode;
+  onSaved?: () => void;
+};
+
+export type DiscountStoreOptions = {
+  refetchOnMount?: boolean | "always";
+};
 
 export type DiscountMaintenanceDrawerState = {
   discount?: Discount;

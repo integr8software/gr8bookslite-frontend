@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import toast from "react-hot-toast";
 import {
   ServicesMaintenanceInitialFormValues,
@@ -8,21 +8,16 @@ import {
   updateServicesMaintenanceFromForm,
 } from "@/app/src/data/modules/financial-maintenance/services-maintenance/ServicesMaintenanceData";
 import { useServicesMaintenanceStore } from "@/app/src/hooks/modules/financial-maintenance/services-maintenance/useServicesMaintenance";
+import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import type {
-  ServicesMaintenance,
   ServicesMaintenanceAccountSetupMode,
-  ServicesMaintenanceActionMode,
   ServicesMaintenanceFormErrors,
+  ServicesMaintenanceFormPageOptions,
   ServicesMaintenanceFormValues,
   ServicesMaintenanceStatus,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
 import { validateServicesMaintenanceForm } from "@/app/src/validations/modules/financial-maintenance/services-maintenance/ServicesMaintenanceValidation";
-
-type ServicesMaintenanceFormPageOptions = {
-  existingService?: ServicesMaintenance;
-  mode?: ServicesMaintenanceActionMode;
-  onSaved?: () => void;
-};
 
 export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormPageOptions = {}) {
   const {
@@ -34,15 +29,28 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
     refreshSetup,
     services,
     updateService,
-  } = useServicesMaintenanceStore();
+  } = useServicesMaintenanceStore(undefined, { refetchOnMount: false });
   const mode = options.mode ?? "add";
   const existingService = options.existingService;
   const isReadonly = mode === "view";
-  const [values, setValues] = useState<ServicesMaintenanceFormValues>(() =>
-    existingService ? createServicesMaintenanceFormValues(existingService) : ServicesMaintenanceInitialFormValues,
-  );
+  const initialValues = existingService ? createServicesMaintenanceFormValues(existingService) : ServicesMaintenanceInitialFormValues;
+  const initialValuesRef = useRef<ServicesMaintenanceFormValues>(initialValues);
+  const [values, setValues] = useState<ServicesMaintenanceFormValues>(initialValues);
   const [errors, setErrors] = useState<ServicesMaintenanceFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
+
+  const draft = useModuleDraft({
+    enabled: (options.isOpen ?? true) && !isReadonly,
+    initialValues,
+    key: createModuleDraftKey({
+      mode,
+      moduleId: "financial-maintenance:services-maintenance",
+      recordId: existingService?.id,
+    }),
+    setValues,
+    values,
+  });
 
   function updateField<Key extends keyof ServicesMaintenanceFormValues>(field: Key, value: ServicesMaintenanceFormValues[Key]) {
     if (isReadonly) return;
@@ -55,7 +63,7 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
-  function handleInputChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+  function handleInputChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     const field = event.target.name as keyof ServicesMaintenanceFormValues;
 
     updateField(field, event.target.value as never);
@@ -79,18 +87,42 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!validateBeforeSubmit()) return;
-    void saveService();
-  }
+    if (isReadonly || isSubmittingRef.current) return;
 
-  async function saveService() {
+    const isDirty = JSON.stringify(values) !== JSON.stringify(initialValuesRef.current);
+    if (mode === "edit" && !isDirty) {
+      toast.error("No changes to save.");
+      return;
+    }
+
+    const releaseSubmitLock = acquireModuleActionLock(
+      `financial-maintenance:services-maintenance:submit:${mode}:${existingService?.id ?? values.serviceName ?? "new"}`,
+    );
+
+    if (!releaseSubmitLock) return;
+
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
 
+    if (!validateBeforeSubmit()) {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+      return;
+    }
+
+    void saveService(releaseSubmitLock);
+  }
+
+  async function saveService(releaseSubmitLock: () => void) {
     try {
       if (mode === "edit" && existingService) {
         await updateService(updateServicesMaintenanceFromForm(existingService, values));
       } else if (mode === "edit") {
         toast.error("Could not find the service to update.");
+        isSubmittingRef.current = false;
+        setIsSubmitting(false);
+        releaseSubmitLock();
         return;
       } else {
         await addService(values);
@@ -99,15 +131,22 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
         refreshSetup();
       }
 
+      draft.clearDraft();
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
       options.onSaved?.();
     } catch {
-      return;
-    } finally {
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
+      releaseSubmitLock();
     }
   }
 
   return {
+    clearDraft: draft.clearDraft,
+    discardDraft: draft.discardDraft,
+    saveDraft: draft.saveDraft,
     accountOptions,
     errors,
     existingService,

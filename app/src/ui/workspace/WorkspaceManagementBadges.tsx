@@ -62,24 +62,35 @@ export function WorkspaceManagementStatusBadge({
 }: {
 	status: WorkspaceCompanyStatus | WorkspaceUserStatus;
 }) {
-	const classes = {
+	const classes: Record<string, string> = {
 		Active: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+		Trialing: "bg-skyblue/12 text-darknavy ring-skyblue/22",
+		Trial: "bg-skyblue/12 text-darknavy ring-skyblue/22",
+		"Past Due": "bg-coralpink/12 text-coralpink ring-coralpink/20",
+		Incomplete: "bg-amber-50 text-amber-700 ring-amber-200",
+		Unpaid: "bg-coralpink/12 text-coralpink ring-coralpink/20",
+		"Incomplete Canceled": "bg-orange-50 text-orange-700 ring-orange-100",
+		Expired: "bg-orange-50 text-orange-700 ring-orange-100",
+		Canceled: "bg-orange-50 text-orange-700 ring-orange-100",
+		Scheduled: "bg-skyblue/12 text-darknavy ring-skyblue/22",
 		Inactive: "bg-orange-50 text-orange-700 ring-orange-100",
 		Pending: "bg-citron/25 text-darknavy ring-citron/40",
 		Suspended: "bg-rose-50 text-rose-700 ring-rose-100",
-	} satisfies Record<WorkspaceCompanyStatus | WorkspaceUserStatus, string>;
+	};
 
 	return (
 		<span
 			className={joinClasses(
 				"inline-flex min-h-7 items-center rounded-md px-3 text-sm font-semibold ring-1",
-				classes[status],
+				classes[status] ?? "bg-offwhite text-darknavy/70 ring-darknavy/10",
 			)}
 		>
 			{status}
 		</span>
 	);
 }
+
+
 
 export function WorkspaceManagementPlanBadge({
 	plan,

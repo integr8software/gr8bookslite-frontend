@@ -1,4 +1,4 @@
-import type { VisibilityState } from "@tanstack/react-table";
+import type { ColumnOrderState, SortingState, VisibilityState } from "@tanstack/react-table";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   CashAdvanceDetailsSection,
@@ -6,12 +6,12 @@ import type {
   CashAdvanceSubmitConfirmationAction,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import type { ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
+import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 
 export const CashAdvanceLink = getModuleRoute("CA");
 export const CashAdvanceAddLink = `${CashAdvanceLink}/add`;
 export const getCashAdvanceEditLink = (recordId: string) => `${CashAdvanceLink}/edit/${recordId}`;
 export const getCashAdvanceViewLink = (recordId: string) => `${CashAdvanceLink}/view/${recordId}`;
-export const CashAdvanceStorageKey = "gr8books.cash-advance.records";
 export const CashAdvanceTransactionNumberPrefix = "CA-";
 export const CashAdvanceTransactionNumberPadding = 6;
 
@@ -57,7 +57,7 @@ export const CashAdvanceStatuses = {
 
 export const CashAdvanceSubmitConfirmationDialogTitles: Record<CashAdvanceSubmitConfirmationAction, string> = {
   save: "Save Cash Advance?",
-  draft: "Save as Draft?",
+  draft: "Save Cash Advance as Draft?",
 };
 
 export const CashAdvanceSubmitConfirmationDialogConfirmLabels: Record<CashAdvanceSubmitConfirmationAction, string> = {
@@ -69,12 +69,12 @@ export const CashAdvanceAllStatusFilter = "all";
 
 export const CashAdvanceStatusFilterOptions = [
   { label: "All statuses", value: CashAdvanceAllStatusFilter },
-  { label: CashAdvanceStatuses.draft, value: CashAdvanceStatuses.draft },
+  { label: CashAdvanceStatuses.posted, value: CashAdvanceStatuses.posted },
   {
     label: CashAdvanceStatuses.forApproval,
     value: CashAdvanceStatuses.forApproval,
   },
-  { label: CashAdvanceStatuses.posted, value: CashAdvanceStatuses.posted },
+  { label: CashAdvanceStatuses.draft, value: CashAdvanceStatuses.draft },
   {
     label: CashAdvanceStatuses.disapproved,
     value: CashAdvanceStatuses.disapproved,
@@ -87,48 +87,63 @@ export const CashAdvanceStatusFilterOptions = [
 
 export const CashAdvanceStatusFilters = [
   CashAdvanceAllStatusFilter,
-  CashAdvanceStatuses.draft,
-  CashAdvanceStatuses.forApproval,
   CashAdvanceStatuses.posted,
+  CashAdvanceStatuses.forApproval,
+  CashAdvanceStatuses.draft,
   CashAdvanceStatuses.disapproved,
   CashAdvanceStatuses.cancelled,
 ] as const;
 
 export const CashAdvanceTablePaginationStorageKey = "cash-disbursement-cash-advance";
+export const CashAdvanceTablePreferencesModuleKey = "cash-disbursement:cash-advance";
+export const CashAdvanceTablePreferencesStorageKey = "cash-disbursement:cash-advance:table-preferences";
+
+export const CashAdvanceOverviewColumnWidths = {
+  ...TransactionOverviewColumnWidths,
+  partyName: 220,
+} as const;
+
+export const CashAdvanceDefaultColumnOrder: ColumnOrderState = [
+  "transNo",
+  "documentDate",
+  "partyCode",
+  "partyName",
+  "accountCode",
+  "accountTitle",
+  "currency",
+  "fxRate",
+  "amount",
+  "remarks",
+  "createdBy",
+  "createdAt",
+  "updatedBy",
+  "updatedAt",
+  "status",
+  "actions",
+];
 
 export const CashAdvanceDefaultColumnVisibility: VisibilityState = {
   accountCode: false,
   createdAt: false,
   createdBy: false,
   currency: false,
+  fxRate: false,
   partyCode: false,
   remarks: false,
   updatedAt: false,
   updatedBy: false,
 };
 
+export const CashAdvanceDefaultSorting: SortingState = [{ id: "createdAt", desc: true }];
+
 export function getCashAdvanceTableMinWidthClassName(visibleColumnCount: number) {
   if (visibleColumnCount >= 13) return "min-w-[150rem]";
   if (visibleColumnCount >= 10) return "min-w-[122rem]";
-  return "min-w-[86rem]";
+  return "min-w-[76rem]";
 }
 
-export const CashAdvanceAccountOptions = [
-  { label: "Select Account", value: "" },
-  { label: "Cash Advance", value: "1130-CA" },
-  { label: "Employee Advance", value: "1130-EA" },
-  { label: "Officer Advance", value: "1135-OA" },
-] as const;
-
-export const CashAdvanceCostCenterOptions = [
-  { label: "Select Cost Center", value: "" },
-  { label: "Operations", value: "Operations" },
-  { label: "Admin", value: "Admin" },
-  { label: "Sales", value: "Sales" },
-] as const;
-
 export function canEditCashAdvanceStatus(status: CashAdvanceStatus) {
-  return status === CashAdvanceStatuses.draft || status === CashAdvanceStatuses.forApproval;
+  return status === CashAdvanceStatuses.draft;
 }
 
 export function canApproveCashAdvanceStatus(status: CashAdvanceStatus) {
@@ -143,16 +158,12 @@ export function canCancelCashAdvanceStatus(status: CashAdvanceStatus) {
   return status === CashAdvanceStatuses.draft || status === CashAdvanceStatuses.forApproval || status === CashAdvanceStatuses.cancelled;
 }
 
-export function getCashAdvanceStatusDialogCopy(
-  status: CashAdvanceStatus,
-  recordLabel: string,
-  currentStatus?: CashAdvanceStatus,
-) {
+export function getCashAdvanceStatusDialogCopy(status: CashAdvanceStatus, recordLabel: string, currentStatus?: CashAdvanceStatus) {
   if (status === CashAdvanceStatuses.forApproval && currentStatus === CashAdvanceStatuses.posted) {
     return {
       confirmLabel: "Undo Approved",
       description: `This will undo the approval of ${recordLabel} and return it to For Approval.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Approval...",
       title: "Undo Approved Cash Advance?",
       tone: "question" as const,
@@ -163,7 +174,7 @@ export function getCashAdvanceStatusDialogCopy(
     return {
       confirmLabel: "Undo Disapproved",
       description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Disapproval...",
       title: "Undo Disapproved Cash Advance?",
       tone: "question" as const,
@@ -174,7 +185,7 @@ export function getCashAdvanceStatusDialogCopy(
     return {
       confirmLabel: "Undo Cancelled",
       description: `This will undo the cancellation of ${recordLabel}.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Cancellation...",
       title: "Undo Cancelled Cash Advance?",
       tone: "question" as const,
@@ -209,6 +220,6 @@ export function getCashAdvanceStatusDialogCopy(
     iconTone: "cancel" as const,
     pendingLabel: "Cancelling...",
     title: "Make Cash Advance as Cancelled",
-    tone: "danger" as const,
+    tone: "warning" as const,
   };
 }

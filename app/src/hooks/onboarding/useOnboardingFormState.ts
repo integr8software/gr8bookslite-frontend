@@ -26,7 +26,7 @@ import {
 import type {
   BillingCycle,
   PricingPlan,
-} from "@/app/src/data/pricing/PricingData";
+} from "@/app/src/types/pricing/PricingTypes";
 
 function RevokeObjectUrlIfNeeded(value: string) {
   if (value.startsWith("blob:")) {

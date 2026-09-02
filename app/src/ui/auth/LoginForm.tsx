@@ -118,13 +118,20 @@ export function LoginForm() {
 							className="font-bold text-darknavy/70 hover:text-sky-700"
 						>
 							Terms of Service
-						</Link>{" "}
-						and{" "}
+						</Link>
+						,{" "}
 						<Link
 							href="/privacy-policy"
 							className="font-bold text-darknavy/70 hover:text-sky-700"
 						>
 							Privacy Policy
+						</Link>
+						, and{" "}
+						<Link
+							href="/return-and-refund-policy"
+							className="font-bold text-darknavy/70 hover:text-sky-700"
+						>
+							Return & Refund Policy
 						</Link>
 						.
 					</p>

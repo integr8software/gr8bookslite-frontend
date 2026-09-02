@@ -1,6 +1,21 @@
-import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
+export const CashDisbursementQuerySegment = "cash-disbursement";
+export const CashDisbursementAllStatusFilter = "All";
+export const CashDisbursementApiAllStatusFilter = "all";
+export const CashDisbursementActiveStatus = "Active";
+export const CashDisbursementActionModeAdd = "add";
+export const CashDisbursementTaxTypeEwt = "EWT";
+export const CashDisbursementTaxTypeVat = "VAT";
+export const CashDisbursementTotalEntriesLabel = "Total Entries";
+export const CashDisbursementAllTimeSummary = "All time";
 
-export const CashDisbursementOverviewActionColumnWidth = TransactionOverviewColumnWidths.actions + 48;
+export function createCashDisbursementListQueryKey<TFilters>(moduleKey: string, filters: TFilters) {
+  return [CashDisbursementQuerySegment, moduleKey, "list", filters] as const;
+}
 
-export const CashDisbursementViewActionButtonClassName =
-  "inline-flex h-10 items-center justify-center gap-2 rounded-md border px-4 text-sm font-semibold shadow-sm shadow-darknavy/5 transition focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-white";
+export function createCashDisbursementModuleQueryKey(moduleKey: string) {
+  return [CashDisbursementQuerySegment, moduleKey] as const;
+}
+
+export function createCashDisbursementRecordQueryKey(moduleKey: string, recordId?: string) {
+  return [CashDisbursementQuerySegment, moduleKey, recordId] as const;
+}

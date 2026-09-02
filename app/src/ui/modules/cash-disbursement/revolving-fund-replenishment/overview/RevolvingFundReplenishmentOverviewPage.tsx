@@ -59,7 +59,7 @@ export function RevolvingFundReplenishmentOverviewPage() {
           table={page.table}
           tableTitle="Revolving Fund Replenishment Transactions"
           toolbar={
-            <RevolvingFundReplenishmentTableToolbar page={page} />
+            <RevolvingFundReplenishmentTableToolbar onRefresh={page.refreshRecords} page={page} />
           }
           useColumnSizing
           renderRow={(row) => (

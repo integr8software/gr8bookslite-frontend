@@ -1,7 +1,11 @@
 "use client";
 
 import {
+  PartyImportBillingAddressRole,
+  PartyImportDefaultAddressRole,
+  PartyImportDeliveryAddressRole,
   PartyImportFieldOrder,
+  PartyImportHomeAddressRole,
   PartyImportPreviewColumnCount,
   PartyClassificationOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
@@ -44,7 +48,14 @@ export function PartyManagementImportPreviewTableRow({
         </td>
         <ModuleImportRowNumberCell rowId={row.id} rowNumber={row.rowNumber} onMoveRow={onMoveRow} />
         {PartyImportFieldOrder.map((field) => (
-          <td key={field} className="px-3 py-2 align-middle">
+          <td
+            key={field}
+            className={joinClasses(
+              "px-3 py-2 align-middle",
+              field === PartyImportFieldOrder[0] && "module-import-first-data-column sticky z-10",
+              field === PartyImportFieldOrder[0] && stickyCellBackground,
+            )}
+          >
             {field === "classification" ? (
               <ModuleImportEditableSelect
                 value={row.party.classification}
@@ -109,15 +120,15 @@ function getPartyImportCellValue(row: PartyImportPreviewRow, field: PartyImportC
 
 function getPartyImportAddressValue(row: PartyImportPreviewRow, field: PartyImportAddressColumnId) {
   const { property, role } = PartyImportAddressColumnMap[field];
-  const address = role === "default" ? row.party.address : row.party.addresses.find((candidate) => partyImportAddressHasRole(candidate, role));
+  const address = role === PartyImportDefaultAddressRole ? row.party.address : row.party.addresses.find((candidate) => partyImportAddressHasRole(candidate, role));
 
   return String(address?.[property] ?? "");
 }
 
 function partyImportAddressHasRole(address: PartyImportPreviewRow["party"]["address"], role: PartyImportAddressRole) {
-  if (role === "billing") return address.isBilling;
-  if (role === "delivery") return address.isDelivery;
-  if (role === "home") return address.isHome;
+  if (role === PartyImportBillingAddressRole) return address.isBilling;
+  if (role === PartyImportDeliveryAddressRole) return address.isDelivery;
+  if (role === PartyImportHomeAddressRole) return address.isHome;
 
   return address.isDefault;
 }
@@ -127,27 +138,27 @@ function isPartyImportAddressColumn(field: PartyImportColumnId): field is PartyI
 }
 
 const PartyImportAddressColumnMap = {
-  addressLine1: { property: "addressLine1", role: "default" },
-  addressLine2: { property: "addressLine2", role: "default" },
-  barangay: { property: "barangay", role: "default" },
-  cityMunicipality: { property: "cityMunicipality", role: "default" },
-  province: { property: "province", role: "default" },
-  homeAddressLine1: { property: "addressLine1", role: "home" },
-  homeAddressLine2: { property: "addressLine2", role: "home" },
-  homeBarangay: { property: "barangay", role: "home" },
-  homeCityMunicipality: { property: "cityMunicipality", role: "home" },
-  homeProvince: { property: "province", role: "home" },
-  billingAddressLine1: { property: "addressLine1", role: "billing" },
-  billingAddressLine2: { property: "addressLine2", role: "billing" },
-  billingBarangay: { property: "barangay", role: "billing" },
-  billingCityMunicipality: { property: "cityMunicipality", role: "billing" },
-  billingProvince: { property: "province", role: "billing" },
-  deliveryAddressLine1: { property: "addressLine1", role: "delivery" },
-  deliveryAddressLine2: { property: "addressLine2", role: "delivery" },
-  deliveryBarangay: { property: "barangay", role: "delivery" },
-  deliveryCityMunicipality: { property: "cityMunicipality", role: "delivery" },
-  deliveryProvince: { property: "province", role: "delivery" },
+  addressLine1: { property: "addressLine1", role: PartyImportDefaultAddressRole },
+  addressLine2: { property: "addressLine2", role: PartyImportDefaultAddressRole },
+  barangay: { property: "barangay", role: PartyImportDefaultAddressRole },
+  cityMunicipality: { property: "cityMunicipality", role: PartyImportDefaultAddressRole },
+  province: { property: "province", role: PartyImportDefaultAddressRole },
+  homeAddressLine1: { property: "addressLine1", role: PartyImportHomeAddressRole },
+  homeAddressLine2: { property: "addressLine2", role: PartyImportHomeAddressRole },
+  homeBarangay: { property: "barangay", role: PartyImportHomeAddressRole },
+  homeCityMunicipality: { property: "cityMunicipality", role: PartyImportHomeAddressRole },
+  homeProvince: { property: "province", role: PartyImportHomeAddressRole },
+  billingAddressLine1: { property: "addressLine1", role: PartyImportBillingAddressRole },
+  billingAddressLine2: { property: "addressLine2", role: PartyImportBillingAddressRole },
+  billingBarangay: { property: "barangay", role: PartyImportBillingAddressRole },
+  billingCityMunicipality: { property: "cityMunicipality", role: PartyImportBillingAddressRole },
+  billingProvince: { property: "province", role: PartyImportBillingAddressRole },
+  deliveryAddressLine1: { property: "addressLine1", role: PartyImportDeliveryAddressRole },
+  deliveryAddressLine2: { property: "addressLine2", role: PartyImportDeliveryAddressRole },
+  deliveryBarangay: { property: "barangay", role: PartyImportDeliveryAddressRole },
+  deliveryCityMunicipality: { property: "cityMunicipality", role: PartyImportDeliveryAddressRole },
+  deliveryProvince: { property: "province", role: PartyImportDeliveryAddressRole },
 } as const;
 
 type PartyImportAddressColumnId = keyof typeof PartyImportAddressColumnMap;
-type PartyImportAddressRole = "billing" | "default" | "delivery" | "home";
+type PartyImportAddressRole = (typeof PartyImportAddressColumnMap)[PartyImportAddressColumnId]["role"];

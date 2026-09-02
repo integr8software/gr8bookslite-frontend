@@ -1,20 +1,16 @@
 import Link from "next/link";
-import type { Row } from "@tanstack/react-table";
 import { getMasterPlanAndPackageViewHref } from "@/app/src/constants/master/plan-and-packages/MasterPlanAndPackageConstants";
 import {
 	formatMasterPlanAndPackagePricing,
-	formatMasterPlanAndPackageScalePricing,
 	formatMasterPlanAndPackageScope,
 	getMasterPlanAndPackagePricingSupportingText,
 } from "@/app/src/data/master/plan-and-packages/MasterPlanAndPackageData";
-import type { MasterPlanAndPackageRecord } from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
+import type {
+	MasterPlanAndPackageRecord,
+	MasterPlanAndPackageTableRowProps,
+} from "@/app/src/types/master/plan-and-packages/MasterPlanAndPackageTypes";
 import { MasterPlanAndPackageStatusBadge } from "@/app/src/ui/master/plan-and-packages/MasterPlanAndPackageBadges";
 import { MasterPlanAndPackageRecordActions } from "@/app/src/ui/master/plan-and-packages/MasterPlanAndPackageRecordActions";
-
-type MasterPlanAndPackageTableRowProps = {
-	row: Row<MasterPlanAndPackageRecord>;
-	onToggleStatus: (recordId: string) => void;
-};
 
 export function MasterPlanAndPackageTableRow({
 	row,
@@ -62,9 +58,6 @@ function MasterPlanAndPackageCellContent({
 						{record.name}
 					</Link>
 					<div className="mt-2 flex flex-wrap items-center gap-2">
-						<span className="rounded-md bg-skyblue/10 px-2 py-1 text-xs font-bold uppercase tracking-wide text-darknavy/60">
-							{record.code}
-						</span>
 						{record.trialDays > 0 ? (
 							<span className="rounded-md bg-offwhite px-2 py-1 text-xs font-bold text-darknavy/48">
 								{record.trialDays} trial days
@@ -91,12 +84,6 @@ function MasterPlanAndPackageCellContent({
 						{getMasterPlanAndPackagePricingSupportingText(record.pricing)}
 					</p>
 				</>
-			);
-		case "scalePricing":
-			return (
-				<p className="text-sm font-semibold text-darknavy">
-					{formatMasterPlanAndPackageScalePricing(record.scalePricing)}
-				</p>
 			);
 		case "actions":
 			return (

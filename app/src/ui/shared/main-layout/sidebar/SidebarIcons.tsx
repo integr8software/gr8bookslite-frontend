@@ -51,7 +51,7 @@ import {
 import type {
 	MainIconName,
 	MainNavigationItem,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import { joinClasses } from "./utils";
 
 export const MainIcons: Record<MainIconName, LucideIcon> = {
@@ -95,6 +95,7 @@ export const SidebarAllowedIcons: Record<string, LucideIcon> = {
 	folder: Folder,
 	gauge: Gauge,
 	link: FileText,
+	listTree: ListTree,
 	mail: Mail,
 	map: MapIcon,
 	mapPin: MapPin,
@@ -177,6 +178,7 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"maintenance-inventory-warehouse": Warehouse,
 	"maintenance-warehouse": Warehouse,
 	"system-administration-form-signatory": FileSignature,
+	"system-administration-field-management": ListTree,
 	"maintenance-item": Package,
 	"maintenance-item-sub-category": Tags,
 	"maintenance-party-management": Users,

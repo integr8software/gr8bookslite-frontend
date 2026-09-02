@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { useApprovalAlertStore } from "@/app/src/hooks/modules/approval-management/useApprovalAlertStore";
+import { useIncrementalVisibleCount } from "@/app/src/hooks/shared/main-layout/sidebar/useIncrementalVisibleCount";
 import type {
 	MainNavigationItem,
 	MainNavigationSection,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import {
 	MainIcons,
 	SidebarAllowedIcons,
@@ -15,7 +16,6 @@ import {
 	getVisibleCountToActiveItem,
 	itemMatchesActiveHref,
 	joinClasses,
-	useIncrementalVisibleCount,
 } from "@/app/src/ui/shared/main-layout/sidebar/utils";
 
 const SectionInitialCount = 8;

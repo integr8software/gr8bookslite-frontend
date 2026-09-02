@@ -4,7 +4,7 @@ import type {
   MainNavigationScope,
   MainNotification,
   MainSearchItem,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import type {
   MainBreadcrumbDropdownItem,
   MainNotificationTab,

@@ -14,6 +14,7 @@ import {
   SpecificAccountLevel,
 } from "@/app/src/constants/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import { FetchNextChartAccountCode } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import type {
   AccountType,
   AccountLevel,
@@ -71,7 +72,8 @@ function DrawerPanel({
   onClose,
   onSave,
 }: ChartsOfAccountsDrawerProps) {
-  const [values, setValues] = useState<ChartAccountFormValues>(() => getInitialFormValues(account, parentAccount));
+  const initialValues = useMemo(() => getInitialFormValues(account, parentAccount), [account, parentAccount]);
+  const [values, setValues] = useState<ChartAccountFormValues>(initialValues);
   const [submitted, setSubmitted] = useState(false);
   const [isAccountCodeLoading, setIsAccountCodeLoading] = useState(false);
   const [accountCodeError, setAccountCodeError] = useState("");
@@ -82,6 +84,18 @@ function DrawerPanel({
   const availableAccountLevels = useMemo(() => getAvailableAccountLevels(accounts, values.parentId), [accounts, values.parentId]);
   const savePendingLabel = getModuleSavePendingLabel(mode);
   const accountNameError = getDuplicateAccountNameError(accounts, values, account);
+
+  const draft = useModuleDraft({
+    enabled: isOpen && mode !== "view",
+    initialValues,
+    key: createModuleDraftKey({
+      mode,
+      moduleId: "financial-maintenance:charts-of-accounts",
+      recordId: account?.id ?? (parentAccount ? `child-of-${parentAccount.id}` : undefined),
+    }),
+    setValues,
+    values,
+  });
 
   useEffect(() => {
     if (!isOpen) {
@@ -183,11 +197,12 @@ function DrawerPanel({
     }
 
     handledSaveResetToken.current = saveResetToken;
+    draft.clearDraft();
     setValues(getInitialFormValues(null, parentAccount));
     setSubmitted(false);
     setIsAccountCodeLoading(false);
     setAccountCodeError("");
-  }, [mode, parentAccount, saveResetToken]);
+  }, [draft, mode, parentAccount, saveResetToken]);
 
   function updateField<Key extends keyof ChartAccountFormValues>(key: Key, value: ChartAccountFormValues[Key]) {
     setValues((current) => ({
@@ -241,10 +256,12 @@ function DrawerPanel({
   }
 
   function handleClose() {
+    draft.saveDraft();
     onClose();
   }
 
   function handleCancel() {
+    draft.clearDraft();
     resetDrawerForm();
     onClose();
   }
@@ -283,6 +300,7 @@ function DrawerPanel({
       return;
     }
 
+    draft.clearDraft();
     setIsSaveConfirmPending(true);
     onSave(values);
   }

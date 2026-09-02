@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useDeferredValue, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
 import {
   getCoreRowModel,
   getPaginationRowModel,
@@ -12,17 +12,18 @@ import {
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
 import {
+  applyCopyFromRecordsToAcknowledgementReceiptForm,
   createBlankAcknowledgementReceiptLineEntry,
   createAcknowledgementReceiptFormValuesFromRecord,
   createAcknowledgementReceiptFormValues,
-  createAcknowledgementReceiptRecordFromForm,
-  getInitialAcknowledgementReceipts,
-  writeStoredAcknowledgementReceipts,
+  AcknowledgementReceiptCopyFromRecords,
+  syncAcknowledgementReceiptCheckDetails,
 } from "@/app/src/data/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptData";
 import { AcknowledgementReceiptStatusFilters } from "@/app/src/constants/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptConstants";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
   AcknowledgementReceiptActionMode,
+  AcknowledgementReceiptCopyFromRecord,
   AcknowledgementReceiptEntryView,
   AcknowledgementReceiptFormValues,
   AcknowledgementReceiptLineEntry,
@@ -32,6 +33,39 @@ import type {
 import { validateAcknowledgementReceiptForm } from "@/app/src/validations/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptValidation";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
+import {
+  createAcknowledgementReceipt,
+  fetchAcknowledgementReceipt,
+  fetchAcknowledgementReceiptNumberSuggestion,
+  fetchAcknowledgementReceipts,
+  mapApiAcknowledgementReceipt,
+  updateAcknowledgementReceipt,
+  updateAcknowledgementReceiptStatus,
+} from "@/app/src/services/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptApi";
+
+type AcknowledgementReceiptListResponse<TReceipt> = {
+  receipts: TReceipt[];
+};
+
+type AcknowledgementReceiptListQuery = Parameters<typeof fetchAcknowledgementReceipts>[0];
+
+type AcknowledgementReceiptApi<TReceipt = Parameters<typeof mapApiAcknowledgementReceipt>[0]> = {
+  createReceipt: typeof createAcknowledgementReceipt;
+  fetchReceipt: typeof fetchAcknowledgementReceipt;
+  fetchReceipts: (query?: AcknowledgementReceiptListQuery) => Promise<AcknowledgementReceiptListResponse<TReceipt>>;
+  mapApiReceipt: (receipt: TReceipt) => AcknowledgementReceiptRecord;
+  updateReceipt: typeof updateAcknowledgementReceipt;
+  updateReceiptStatus: typeof updateAcknowledgementReceiptStatus;
+};
+
+const DefaultAcknowledgementReceiptApi: AcknowledgementReceiptApi = {
+  createReceipt: createAcknowledgementReceipt,
+  fetchReceipt: fetchAcknowledgementReceipt,
+  fetchReceipts: fetchAcknowledgementReceipts,
+  mapApiReceipt: mapApiAcknowledgementReceipt,
+  updateReceipt: updateAcknowledgementReceipt,
+  updateReceiptStatus: updateAcknowledgementReceiptStatus,
+};
 
 type AcknowledgementReceiptStoreState = {
   isLoading: boolean;
@@ -40,65 +74,151 @@ type AcknowledgementReceiptStoreState = {
   updateReceiptStatus: (receipt: AcknowledgementReceiptRecord, status: AcknowledgementReceiptStatus) => void;
 };
 
-export function useAcknowledgementReceiptStore<TSelected = AcknowledgementReceiptStoreState>(
-  selector?: (state: AcknowledgementReceiptStoreState) => TSelected,
-) {
-  const [receipts, setReceipts] = useState(getInitialAcknowledgementReceipts);
-  const [lastSyncedAt] = useState(() => Date.now());
-  const updateReceiptStatus = useCallback((receipt: AcknowledgementReceiptRecord, status: AcknowledgementReceiptStatus) => {
-    setReceipts((currentReceipts) =>
-      persistAcknowledgementReceipts(
-        currentReceipts.map((currentReceipt) =>
-          currentReceipt.id === receipt.id
-            ? {
-                ...currentReceipt,
-                formValues: currentReceipt.formValues
-                  ? {
-                      ...currentReceipt.formValues,
-                      status,
-                    }
-                  : currentReceipt.formValues,
-                status,
-              }
-            : currentReceipt,
-        ),
-      ),
-    );
-    toast.success(`Acknowledgement Receipt marked as ${status}.`);
-  }, []);
+export type AcknowledgementReceiptModuleConfig<TReceipt = Parameters<typeof mapApiAcknowledgementReceipt>[0]> = {
+  api?: AcknowledgementReceiptApi<TReceipt>;
+  copyFromRecords?: AcknowledgementReceiptCopyFromRecord[];
+  receiptLabel?: string;
+  storageKey?: string;
+};
+
+export function useAcknowledgementReceiptStore<
+  TSelected = AcknowledgementReceiptStoreState,
+  TReceipt = Parameters<typeof mapApiAcknowledgementReceipt>[0],
+>(selector?: (state: AcknowledgementReceiptStoreState) => TSelected, config: AcknowledgementReceiptModuleConfig<TReceipt> = {}) {
+  const receiptLabel = config.receiptLabel ?? "Acknowledgement receipt";
+  const api = (config.api ?? DefaultAcknowledgementReceiptApi) as AcknowledgementReceiptApi<TReceipt>;
+  const [receipts, setReceipts] = useState<AcknowledgementReceiptRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
+
+  useEffect(() => {
+    let isMounted = true;
+
+    api
+      .fetchReceipts()
+      .then((data) => {
+        if (!isMounted) return;
+        setReceipts(data.receipts.map(api.mapApiReceipt));
+        setLastSyncedAt(Date.now());
+      })
+      .catch(() => {
+        if (isMounted) {
+          toast.error(`Could not load ${receiptLabel.toLowerCase()} records from the backend.`);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [api, receiptLabel]);
+
+  const updateReceiptStatus = useCallback(
+    (receipt: AcknowledgementReceiptRecord, status: AcknowledgementReceiptStatus) => {
+      api
+        .updateReceiptStatus({ recordId: receipt.id, status })
+        .then((updatedReceipt) => {
+          setReceipts((currentReceipts) =>
+            currentReceipts.map((currentReceipt) => (currentReceipt.id === receipt.id ? updatedReceipt : currentReceipt)),
+          );
+          setLastSyncedAt(Date.now());
+          toast.success(`${receiptLabel} marked as ${status}.`);
+        })
+        .catch(() => {
+          toast.error(`Could not update ${receiptLabel.toLowerCase()} status.`);
+        });
+    },
+    [api, receiptLabel],
+  );
 
   const state = useMemo<AcknowledgementReceiptStoreState>(
     () => ({
-      isLoading: false,
+      isLoading,
       lastSyncedAt,
       receipts,
       updateReceiptStatus,
     }),
-    [lastSyncedAt, receipts, updateReceiptStatus],
+    [isLoading, lastSyncedAt, receipts, updateReceiptStatus],
   );
 
   return selector ? selector(state) : (state as TSelected);
 }
 
-export function useAcknowledgementReceiptActionForm(
+export function useAcknowledgementReceiptActionForm<TReceipt = Parameters<typeof mapApiAcknowledgementReceipt>[0]>(
   mode: AcknowledgementReceiptActionMode,
   recordId?: string,
   onSaved?: (record: AcknowledgementReceiptRecord) => void,
+  config: AcknowledgementReceiptModuleConfig<TReceipt> = {},
 ) {
-  const initialRecord = mode === "add" ? null : (getInitialAcknowledgementReceipts().find((receipt) => receipt.id === recordId) ?? null);
-  const isNotFound = mode !== "add" && !initialRecord;
+  const receiptLabel = config.receiptLabel ?? "Acknowledgement receipt";
+  const api = (config.api ?? DefaultAcknowledgementReceiptApi) as AcknowledgementReceiptApi<TReceipt>;
+  const [isNotFound, setIsNotFound] = useState(mode !== "add" && !recordId);
   const [entryView, setEntryView] = useState<AcknowledgementReceiptEntryView>("collection");
-  const [loadedRecord, setLoadedRecord] = useState<AcknowledgementReceiptRecord | null>(initialRecord);
-  const [values, setValues] = useState<AcknowledgementReceiptFormValues>(() =>
-    initialRecord ? createAcknowledgementReceiptFormValuesFromRecord(initialRecord) : createAcknowledgementReceiptFormValues(),
-  );
+  const [loadedRecord, setLoadedRecord] = useState<AcknowledgementReceiptRecord | null>(null);
+  const [values, setValues] = useState<AcknowledgementReceiptFormValues>(() => createAcknowledgementReceiptFormValues());
+
+  useEffect(() => {
+    if (mode !== "add") return;
+    let isMounted = true;
+    fetchAcknowledgementReceiptNumberSuggestion()
+      .then((suggestion) => {
+        if (isMounted) {
+          setValues((current) => (current.receiptNo ? current : { ...current, receiptNo: suggestion.transactionNo }));
+        }
+      })
+      .catch(() => {
+        if (isMounted) toast.error("Could not load the acknowledgement receipt number.");
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [mode]);
+
+  useEffect(() => {
+    if (mode === "add" || !recordId) {
+      return;
+    }
+
+    let isMounted = true;
+
+    api
+      .fetchReceipt(recordId)
+      .then((record) => {
+        if (!isMounted) return;
+        setIsNotFound(false);
+        setLoadedRecord(record);
+        setValues(createAcknowledgementReceiptFormValuesFromRecord(record));
+      })
+      .catch(() => {
+        if (isMounted) {
+          setIsNotFound(true);
+          toast.error(`Could not load ${receiptLabel}.`);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [api, mode, receiptLabel, recordId]);
 
   function updateField<Key extends keyof AcknowledgementReceiptFormValues>(key: Key, value: AcknowledgementReceiptFormValues[Key]) {
-    setValues((current) => ({ ...current, [key]: value }));
+    setValues((current) => {
+      const nextValues = { ...current, [key]: value };
+
+      if (key === "partyCode" || key === "customerName") {
+        return syncAcknowledgementReceiptPartyDetails(nextValues);
+      }
+
+      return isCheckDetailField(key) ? syncAcknowledgementReceiptCheckDetails(nextValues) : nextValues;
+    });
   }
 
   function updateLineEntries(lineEntries: AcknowledgementReceiptLineEntry[]) {
-    setValues((current) => ({ ...current, lineEntries }));
+    setValues((current) => syncAcknowledgementReceiptCheckDetails({ ...current, lineEntries }));
   }
 
   function updateFirstLineEntry(updates: Partial<AcknowledgementReceiptLineEntry>) {
@@ -124,29 +244,47 @@ export function useAcknowledgementReceiptActionForm(
       return;
     }
 
-    setValues((current) => ({
-      ...current,
-      referenceNo: recordIds[0] ?? current.referenceNo,
-      lineEntries: current.lineEntries.length ? current.lineEntries : [createBlankAcknowledgementReceiptLineEntry()],
-    }));
+    const availableCopyRecords = config.copyFromRecords ?? AcknowledgementReceiptCopyFromRecords;
+    const selectedRecords = availableCopyRecords.filter((record) => recordIds.includes(record.id));
+
+    if (selectedRecords.length > 0) {
+      setValues((current) => applyCopyFromRecordsToAcknowledgementReceiptForm(current, selectedRecords));
+    } else {
+      setValues((current) => ({
+        ...current,
+        referenceNo: recordIds.join(", "),
+        lineEntries: current.lineEntries.length ? current.lineEntries : [createBlankAcknowledgementReceiptLineEntry()],
+      }));
+    }
     toast.success("Copied receipt source details.");
   }
 
   function submitReceipt() {
-    const validation = validateAcknowledgementReceiptForm(values);
+    const syncedValues = syncAcknowledgementReceiptCheckDetails(values);
+    const validation = validateAcknowledgementReceiptForm(syncedValues);
 
     if (!validation.isValid) {
-      toast.error(validation.message ?? "Review the Acknowledgement Receipt details.");
+      toast.error(validation.message ?? "Review the acknowledgement receipt details.");
       return;
     }
 
-    const nextRecord = createAcknowledgementReceiptRecordFromForm(values, mode === "edit" ? (loadedRecord ?? undefined) : undefined);
-    const nextReceipts = upsertAcknowledgementReceiptRecord(nextRecord);
+    const saveRequest =
+      mode === "edit" && loadedRecord
+        ? api.updateReceipt({
+            ...loadedRecord,
+            formValues: syncedValues,
+          })
+        : api.createReceipt(syncedValues);
 
-    writeStoredAcknowledgementReceipts(nextReceipts);
-    setLoadedRecord(nextRecord);
-    toast.success(mode === "edit" ? "Acknowledgement Receipt updated." : "Acknowledgement Receipt saved.");
-    onSaved?.(nextRecord);
+    saveRequest
+      .then((nextRecord) => {
+        setLoadedRecord(nextRecord);
+        toast.success(mode === "edit" ? `${receiptLabel} updated.` : `${receiptLabel} saved.`);
+        onSaved?.(nextRecord);
+      })
+      .catch(() => {
+        toast.error(`Could not save ${receiptLabel}.`);
+      });
   }
 
   return {
@@ -162,23 +300,20 @@ export function useAcknowledgementReceiptActionForm(
   };
 }
 
-function persistAcknowledgementReceipts(receipts: AcknowledgementReceiptRecord[]) {
-  writeStoredAcknowledgementReceipts(receipts);
-
-  return receipts;
+function isCheckDetailField(key: keyof AcknowledgementReceiptFormValues) {
+  return key === "bankName" || key === "checkDate" || key === "checkNo";
 }
 
-function upsertAcknowledgementReceiptRecord(record: AcknowledgementReceiptRecord) {
-  const currentReceipts = getInitialAcknowledgementReceipts();
-  const existingIndex = currentReceipts.findIndex((receipt) => receipt.id === record.id);
-
-  if (existingIndex === -1) {
-    return persistAcknowledgementReceipts([record, ...currentReceipts]);
-  }
-
-  return persistAcknowledgementReceipts(
-    currentReceipts.map((currentReceipt) => (currentReceipt.id === record.id ? record : currentReceipt)),
-  );
+function syncAcknowledgementReceiptPartyDetails(values: AcknowledgementReceiptFormValues): AcknowledgementReceiptFormValues {
+  return {
+    ...values,
+    lineEntries: values.lineEntries.map((entry) => ({
+      ...entry,
+      customerName: values.customerName,
+      partyCode: values.partyCode,
+      partyName: values.customerName,
+    })),
+  };
 }
 
 export function useAcknowledgementReceiptTable(receipts: AcknowledgementReceiptRecord[]) {

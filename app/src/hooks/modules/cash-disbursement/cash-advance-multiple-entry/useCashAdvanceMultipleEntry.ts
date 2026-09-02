@@ -13,17 +13,19 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table";
 import toast from "react-hot-toast";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ReceiptText } from "lucide-react";
 import {
   calculateCashAdvanceMultipleEntryTotal,
   createBlankCashAdvanceMultipleEntryAccountingEntry,
   createBlankCashAdvanceMultipleEntryItem,
   createCashAdvanceMultipleEntryFormValues,
   createCashAdvanceMultipleEntryFormValuesFromRecord,
-  createCashAdvanceMultipleEntryRecordFromForm,
   formatCashAdvanceMultipleEntryAmount,
-  getInitialCashAdvanceMultipleEntries,
-  writeStoredCashAdvanceMultipleEntries,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
+import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
+import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import {
   CashAdvanceMultipleEntryAllStatusFilter,
   CashAdvanceMultipleEntryDefaultColumnOrder,
@@ -32,17 +34,25 @@ import {
   CashAdvanceMultipleEntryStatusFilters,
   CashAdvanceMultipleEntryStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
+import {
+  CashDisbursementActionModeAdd,
+  CashDisbursementAllTimeSummary,
+  CashDisbursementQuerySegment,
+  CashDisbursementTotalEntriesLabel,
+  createCashDisbursementModuleQueryKey,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type { CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import type {
   CashAdvanceMultipleEntryAccountingEntry,
   CashAdvanceMultipleEntryActionMode,
+  CashAdvanceMultipleEntryFormErrors,
   CashAdvanceMultipleEntryFormValues,
   CashAdvanceMultipleEntryItem,
   CashAdvanceMultipleEntryRecord,
   CashAdvanceMultipleEntryStoreState,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import {
-  validateCashAdvanceMultipleEntryAmountsWithinBalances,
+  getCashAdvanceMultipleEntryAvailabilityWarning,
   validateCashAdvanceMultipleEntryForm,
 } from "@/app/src/validations/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryValidation";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
@@ -50,42 +60,71 @@ import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateR
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
+import { hasModuleDraftChanges } from "@/app/src/hooks/shared/module/useModuleDraftChanges";
+import {
+  createCashAdvanceMultipleEntryApi,
+  fetchCashAdvanceMultipleEntryById,
+  fetchCashAdvanceMultipleEntryList,
+  fetchNextCashAdvanceMultipleEntryTransactionNo,
+  updateCashAdvanceMultipleEntryApi,
+  updateCashAdvanceMultipleEntryStatusApi,
+} from "@/app/src/services/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryApi";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+
+const EmptyCashAdvanceMultipleEntries: CashAdvanceMultipleEntryRecord[] = [];
+const CashAdvanceMultipleEntryQueryKey = "cash-advance-multiple-entry";
 
 export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultipleEntryStoreState>(
   selector?: (state: CashAdvanceMultipleEntryStoreState) => TSelected,
 ) {
-  const [entries, setEntries] = useState(getInitialCashAdvanceMultipleEntries);
-  const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
-  const updateEntryStatus = useCallback((record: CashAdvanceMultipleEntryRecord, status: CashAdvanceStatus) => {
-    const updatedAt = new Date().toISOString();
+  const queryClient = useQueryClient();
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+  const queryKey = [CashDisbursementQuerySegment, CashAdvanceMultipleEntryQueryKey, "records", activeCompanyId] as const;
+  const entriesQuery = useQuery({
+    queryKey,
+    queryFn: async () => {
+      try {
+        const response = await fetchCashAdvanceMultipleEntryList();
+        return response.data ?? [];
+      } catch {
+        toast.error("Could not load Cash Advance Multiple Entry records.");
+        return [];
+      }
+    },
+    enabled: activeCompanyId !== null,
+  });
+  const entries = entriesQuery.data ?? EmptyCashAdvanceMultipleEntries;
 
-    setEntries((currentEntries) => {
-      const nextEntries = currentEntries.map((currentRecord) =>
-        currentRecord.id === record.id
-          ? {
-              ...currentRecord,
-              formValues: currentRecord.formValues ? { ...currentRecord.formValues, status } : currentRecord.formValues,
-              status,
-              updatedAt,
-              updatedBy: "Current User",
-            }
-          : currentRecord,
+  const refreshRecords = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(CashAdvanceMultipleEntryQueryKey) });
+  }, [queryClient]);
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ record, status }: { record: CashAdvanceMultipleEntryRecord; status: CashAdvanceStatus }) =>
+      updateCashAdvanceMultipleEntryStatusApi(record.id, status),
+    onSuccess: (updatedRecord, { status }) => {
+      queryClient.setQueryData<CashAdvanceMultipleEntryRecord[]>(queryKey, (current = []) =>
+        current.map((record) => (record.id === updatedRecord.id ? updatedRecord : record)),
       );
+      refreshRecords();
+      toast.success(`Cash Advance Multiple Entry Marked as ${status}.`);
+    },
+    onError: () => toast.error("Could not update the Cash Advance Multiple Entry status."),
+  });
 
-      writeStoredCashAdvanceMultipleEntries(nextEntries);
-      return nextEntries;
-    });
-    setLastSyncedAt(Date.now());
-    toast.success(`Cash advance multiple entry marked as ${status}.`);
-  }, []);
+  const updateEntryStatus = useCallback(
+    (record: CashAdvanceMultipleEntryRecord, status: CashAdvanceStatus) => updateStatusMutation.mutate({ record, status }),
+    [updateStatusMutation],
+  );
   const state = useMemo<CashAdvanceMultipleEntryStoreState>(
     () => ({
       entries,
-      isLoading: false,
-      lastSyncedAt,
+      isLoading: entriesQuery.isLoading,
+      lastSyncedAt: entriesQuery.dataUpdatedAt,
+      refreshRecords,
       updateEntryStatus,
     }),
-    [entries, lastSyncedAt, updateEntryStatus],
+    [entries, entriesQuery.dataUpdatedAt, entriesQuery.isLoading, refreshRecords, updateEntryStatus],
   );
 
   return selector ? selector(state) : (state as TSelected);
@@ -97,27 +136,96 @@ export function useCashAdvanceMultipleEntryActionForm(
   onSaved?: (record: CashAdvanceMultipleEntryRecord) => void,
 ) {
   const transactionCurrency = useTransactionCurrency();
-  const initialRecord = mode === "add" ? null : (getInitialCashAdvanceMultipleEntries().find((entry) => entry.id === recordId) ?? null);
-  const [loadedRecord, setLoadedRecord] = useState<CashAdvanceMultipleEntryRecord | null>(initialRecord);
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const [loadedRecord, setLoadedRecord] = useState<CashAdvanceMultipleEntryRecord | null>(null);
   const [values, setValues] = useState<CashAdvanceMultipleEntryFormValues>(() =>
-    initialRecord
-      ? createCashAdvanceMultipleEntryFormValuesFromRecord(initialRecord)
-      : createCashAdvanceMultipleEntryFormValues(transactionCurrency.baseCurrencyCode),
+    createCashAdvanceMultipleEntryFormValues(transactionCurrency.baseCurrencyCode),
   );
   const hasEditedCurrencyRef = useRef(false);
   const isSubmittingRef = useRef(false);
+  const [isLoading, setIsLoading] = useState(mode !== CashDisbursementActionModeAdd && Boolean(recordId));
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [initialValues] = useState(values);
-  const isDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const [errors, setErrors] = useState<CashAdvanceMultipleEntryFormErrors>({});
+  const [initialValues, setInitialValues] = useState(values);
+  const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
+  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transNo"]) : rawIsDirty;
+  const availabilityWarning = useMemo(() => getCashAdvanceMultipleEntryAvailabilityWarning(values), [values]);
   const draft = useModuleDraft({
     enabled: mode !== "view",
+    initialValues,
+    isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:cash-advance-multiple-entry", recordId }),
     setValues,
     values,
   });
 
+  const refreshNextTransactionNo = useCallback(async () => {
+    try {
+      const nextTransNo = await fetchNextCashAdvanceMultipleEntryTransactionNo(activeBranchId ?? undefined);
+
+      if (nextTransNo) {
+        setValues((current) => ({ ...current, transNo: nextTransNo }));
+        setInitialValues((current) => ({ ...current, transNo: nextTransNo }));
+      }
+    } catch {
+      // Keep the current add form if the number endpoint is temporarily unavailable.
+    }
+  }, [activeBranchId]);
+
   useEffect(() => {
-    if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+    if (mode !== CashDisbursementActionModeAdd) {
+      return;
+    }
+
+    queueMicrotask(() => void refreshNextTransactionNo());
+  }, [mode, refreshNextTransactionNo]);
+
+  useEffect(() => {
+    if (mode === CashDisbursementActionModeAdd) {
+      return;
+    }
+
+    if (!recordId) {
+      return;
+    }
+
+    let isMounted = true;
+    queueMicrotask(() => {
+      if (!isMounted) {
+        return;
+      }
+
+      setIsLoading(true);
+      fetchCashAdvanceMultipleEntryById(recordId)
+        .then((record) => {
+          if (!isMounted) {
+            return;
+          }
+
+          const nextValues = createCashAdvanceMultipleEntryFormValuesFromRecord(record);
+          setLoadedRecord(record);
+          setValues(nextValues);
+          setInitialValues(nextValues);
+        })
+        .catch(() => {
+          if (isMounted) {
+            setLoadedRecord(null);
+          }
+        })
+        .finally(() => {
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        });
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [mode, recordId]);
+
+  useEffect(() => {
+    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
       return;
     }
 
@@ -126,16 +234,27 @@ export function useCashAdvanceMultipleEntryActionForm(
       currency: transactionCurrency.baseCurrencyCode,
       exchangeRate: "1.00",
     }));
+    setInitialValues((current) => ({
+      ...current,
+      currency: transactionCurrency.baseCurrencyCode,
+      exchangeRate: "1.00",
+    }));
   }, [mode, transactionCurrency.baseCurrencyCode, transactionCurrency.isBaseCurrencyResolved]);
 
   function updateField<Key extends keyof CashAdvanceMultipleEntryFormValues>(key: Key, value: CashAdvanceMultipleEntryFormValues[Key]) {
     setValues((current) => ({ ...current, [key]: value }));
+    if (key in errors) {
+      setErrors((current) => ({ ...current, [key]: undefined }));
+    }
   }
 
   function updateItems(items: CashAdvanceMultipleEntryItem[]) {
     const totalAmount = formatCashAdvanceMultipleEntryAmount(calculateCashAdvanceMultipleEntryTotal(items));
 
     setValues((current) => ({ ...current, items, totalAmount }));
+    if (errors.items) {
+      setErrors((current) => ({ ...current, items: undefined }));
+    }
   }
 
   async function updateCurrency(currencyCode: string) {
@@ -165,9 +284,9 @@ export function useCashAdvanceMultipleEntryActionForm(
     updateAccountingEntries([...values.accountingEntries, ...createRows(count, createBlankCashAdvanceMultipleEntryAccountingEntry)]);
   }
 
-  function submitEntry(status: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.forApproval) {
+  async function submitEntry(status: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.forApproval) {
     if (mode === "view" || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty) {
+    if (mode === "edit" && !isDirty && status === loadedRecord?.status) {
       toast.error("No changes to save.");
       return false;
     }
@@ -178,41 +297,44 @@ export function useCashAdvanceMultipleEntryActionForm(
     isSubmittingRef.current = true;
     setIsSubmitting(true);
     const nextValues = { ...values, status };
-    const balanceValidation = validateCashAdvanceMultipleEntryAmountsWithinBalances(nextValues);
-    const validation = !balanceValidation.isValid
-      ? balanceValidation
-      : status === CashAdvanceMultipleEntryStatuses.draft
-        ? { isValid: true, message: null }
-        : validateCashAdvanceMultipleEntryForm(nextValues);
+    const shouldValidate = status !== CashAdvanceMultipleEntryStatuses.draft;
+    const nextErrors = shouldValidate ? validateCashAdvanceMultipleEntryForm(nextValues) : {};
 
-    if (!validation.isValid) {
-      toast.error(validation.message ?? "Review the cash advance multiple entry details.");
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      toast.error("Please Fill Up the Required Fields!");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
       return false;
     }
 
+    setErrors({});
+
     try {
-      const nextRecord = createCashAdvanceMultipleEntryRecordFromForm(nextValues, mode === "edit" ? (loadedRecord ?? undefined) : undefined);
-      const nextEntries = upsertCashAdvanceMultipleEntryRecord(nextRecord);
-      writeStoredCashAdvanceMultipleEntries(nextEntries);
+      const nextRecord =
+        mode === "edit" && loadedRecord
+          ? await updateCashAdvanceMultipleEntryApi(loadedRecord.id, nextValues, { branchUnitId: activeBranchId ?? undefined })
+          : await createCashAdvanceMultipleEntryApi(nextValues, { branchUnitId: activeBranchId ?? undefined });
+      const refreshedValues = createCashAdvanceMultipleEntryFormValuesFromRecord(nextRecord);
       setLoadedRecord(nextRecord);
-      setValues(createCashAdvanceMultipleEntryFormValuesFromRecord(nextRecord));
+      setValues(refreshedValues);
+      setInitialValues(refreshedValues);
       draft.clearDraft();
-      toast.success(mode === "edit" ? "Cash advance multiple entry updated." : "Cash advance multiple entry saved.");
+      toast.success(mode === "edit" ? "Cash Advance Multiple Entry Updated." : "Cash Advance Multiple Entry Saved.");
       onSaved?.(nextRecord);
       return true;
     } catch {
-      toast.error("Could not save the cash advance multiple entry. Please try again.");
+      toast.error("Could not save the Cash Advance Multiple Entry. Please try again.");
+      return false;
+    } finally {
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
-      return false;
     }
   }
 
-  function updateEntryStatus(status: CashAdvanceStatus) {
+  async function updateEntryStatus(status: CashAdvanceStatus) {
     if (!loadedRecord) {
       return;
     }
@@ -220,36 +342,78 @@ export function useCashAdvanceMultipleEntryActionForm(
     if (!releaseActionLock) return;
 
     try {
-      const updatedAt = new Date().toISOString();
-      const nextValues = { ...values, status };
-      const nextRecord: CashAdvanceMultipleEntryRecord = {
-        ...loadedRecord,
-        formValues: {
-          ...nextValues,
-          attachments: nextValues.attachments.map((attachment) => ({ ...attachment })),
-        },
-        status,
-        updatedAt,
-        updatedBy: "Current User",
-      };
-      const nextEntries = upsertCashAdvanceMultipleEntryRecord(nextRecord);
-      writeStoredCashAdvanceMultipleEntries(nextEntries);
+      const nextRecord = await updateCashAdvanceMultipleEntryStatusApi(loadedRecord.id, status);
+      const nextValues = createCashAdvanceMultipleEntryFormValuesFromRecord(nextRecord);
       setLoadedRecord(nextRecord);
       setValues(nextValues);
-      toast.success(`Cash advance multiple entry marked as ${status}.`);
+      setInitialValues(nextValues);
+      toast.success(`Cash Advance Multiple Entry Marked as ${status}.`);
     } catch {
-      toast.error("Could not update the cash advance multiple entry. Please try again.");
+      toast.error("Could not update the Cash Advance Multiple Entry. Please try again.");
+    } finally {
       releaseActionLock();
     }
   }
 
+  function validateEntry(status: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.forApproval): boolean {
+    if (mode === "view" || isSubmittingRef.current) return false;
+    if (mode === "edit" && !isDirty && status === loadedRecord?.status) {
+      toast.error("No changes to save.");
+      return false;
+    }
+    const nextValues = { ...values, status };
+    const shouldValidate = status !== CashAdvanceMultipleEntryStatuses.draft;
+    const nextErrors = shouldValidate ? validateCashAdvanceMultipleEntryForm(nextValues) : {};
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      toast.error("Please Fill Up the Required Fields!");
+      return false;
+    }
+    return true;
+  }
+
+  async function resetAddValuesWithNextTransactionNo() {
+    const nextValues = createCashAdvanceMultipleEntryFormValues(transactionCurrency.baseCurrencyCode);
+
+    try {
+      const nextTransNo = await fetchNextCashAdvanceMultipleEntryTransactionNo(activeBranchId ?? undefined);
+
+      if (nextTransNo) {
+        nextValues.transNo = nextTransNo;
+      }
+    } catch {
+      // Keep the blank add form if the number endpoint is temporarily unavailable.
+    }
+
+    setValues(nextValues);
+    setInitialValues(nextValues);
+  }
+
+  function discardDraft() {
+    draft.clearDraft();
+
+    if (mode === CashDisbursementActionModeAdd) {
+      void resetAddValuesWithNextTransactionNo();
+      return;
+    }
+
+    draft.discardDraft();
+  }
+
   return {
+    availabilityWarning,
+    discardDraft,
+    errors,
+    hasDiscardableChanges: isDirty,
+    saveDraft: draft.saveDraft,
     addAccountingEntries,
     addItems,
     currencyOptions: transactionCurrency.currencyOptions,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
+    isLoading,
     isSubmitting,
-    isRecordMissing: mode !== "add" && !initialRecord,
+    isRecordMissing: mode !== CashDisbursementActionModeAdd && !isLoading && !loadedRecord,
     record: loadedRecord,
     submitEntry,
     updateAccountingEntries,
@@ -257,6 +421,7 @@ export function useCashAdvanceMultipleEntryActionForm(
     updateField,
     updateCurrency,
     updateItems,
+    validateEntry,
     values,
   };
 }
@@ -264,7 +429,7 @@ export function useCashAdvanceMultipleEntryActionForm(
 export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEntryRecord[]) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 5,
+    pageSize: 10,
   });
   const [query, setQueryState] = useState("");
   const [amountRange, setAmountRangeState] = useState<AmountRangeValue>({
@@ -299,6 +464,10 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
           record.accountCode,
           record.accountTitle,
           record.costCenter,
+          record.currency,
+          record.exchangeRate,
+          record.formValues?.currency,
+          record.formValues?.exchangeRate,
           record.remarks,
           record.createdBy,
           record.updatedBy,
@@ -315,9 +484,9 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
       {
         accessorKey: "transNo",
         id: "transNo",
-        header: "Cash Advance Multiple Entry No.",
+        header: "Multiple Cash Advance No.",
         size: CashAdvanceMultipleEntryOverviewColumnWidths.transactionNumber,
-        meta: { label: "Cash Advance Multiple Entry No." },
+        meta: { label: "Multiple Cash Advance No." },
       },
       {
         accessorKey: "documentDate",
@@ -329,16 +498,16 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
       {
         accessorKey: "partyCode",
         id: "partyCode",
-        header: "Party Code",
+        header: "Employee Code",
         size: CashAdvanceMultipleEntryOverviewColumnWidths.partyCode,
-        meta: { label: "Party Code" },
+        meta: { label: "Employee Code" },
       },
       {
         accessorKey: "partyName",
         id: "partyName",
-        header: "Party Name",
+        header: "Employee Name",
         size: CashAdvanceMultipleEntryOverviewColumnWidths.partyName,
-        meta: { label: "Party Name" },
+        meta: { label: "Employee Name" },
       },
       {
         accessorKey: "accountCode",
@@ -353,6 +522,20 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
         header: "Default Account Title",
         size: CashAdvanceMultipleEntryOverviewColumnWidths.accountTitle,
         meta: { label: "Default Account Title" },
+      },
+      {
+        accessorFn: (record) => record.currency ?? record.formValues?.currency ?? "PHP",
+        id: "currency",
+        header: "Currency",
+        size: CashAdvanceMultipleEntryOverviewColumnWidths.currency,
+        meta: { label: "Currency" },
+      },
+      {
+        accessorFn: (record) => record.exchangeRate ?? record.formValues?.exchangeRate ?? "1.00",
+        id: "exchangeRate",
+        header: "Exchange Rate",
+        size: CashAdvanceMultipleEntryOverviewColumnWidths.exchangeRate,
+        meta: { label: "Exchange Rate" },
       },
       {
         accessorKey: "amount",
@@ -450,10 +633,13 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
     table.setPageIndex(0);
   }
 
-  function setStatusFilter(value: (typeof CashAdvanceMultipleEntryStatusFilters)[number]) {
-    setStatusFilterState(value);
-    table.setPageIndex(0);
-  }
+  const setStatusFilter = useCallback(
+    (value: (typeof CashAdvanceMultipleEntryStatusFilters)[number]) => {
+      setStatusFilterState(value);
+      table.setPageIndex(0);
+    },
+    [table],
+  );
 
   function resetFilters() {
     setAmountRangeState({ from: "", to: "" });
@@ -462,6 +648,76 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
     setStatusFilterState(CashAdvanceMultipleEntryAllStatusFilter);
     table.setPageIndex(0);
   }
+
+  const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => {
+    const postedCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.posted).length;
+    const forApprovalCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.forApproval).length;
+    const draftCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.draft).length;
+    const disapprovedCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.disapproved).length;
+    const cancelledCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.cancelled).length;
+
+    return [
+      {
+        label: CashDisbursementTotalEntriesLabel,
+        value: records.length,
+        summary: CashDisbursementAllTimeSummary,
+        icon: ReceiptText,
+        tone: "violet",
+        isActive: statusFilter === CashAdvanceMultipleEntryAllStatusFilter,
+        onClick: () => setStatusFilter(CashAdvanceMultipleEntryAllStatusFilter),
+      },
+      {
+        label: CashAdvanceMultipleEntryStatuses.posted,
+        value: postedCount,
+        summary: formatPartOfTotalPercentage(postedCount, records.length),
+        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.posted),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.posted),
+        tone: "emerald",
+        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.posted,
+        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.posted),
+      },
+      {
+        label: CashAdvanceMultipleEntryStatuses.forApproval,
+        value: forApprovalCount,
+        summary: formatPartOfTotalPercentage(forApprovalCount, records.length),
+        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.forApproval),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.forApproval),
+        tone: "amber",
+        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.forApproval,
+        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.forApproval),
+      },
+      {
+        label: CashAdvanceMultipleEntryStatuses.draft,
+        value: draftCount,
+        summary: formatPartOfTotalPercentage(draftCount, records.length),
+        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.draft),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.draft),
+        tone: "blue",
+        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.draft,
+        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.draft),
+      },
+      {
+        label: CashAdvanceMultipleEntryStatuses.disapproved,
+        value: disapprovedCount,
+        summary: formatPartOfTotalPercentage(disapprovedCount, records.length),
+        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.disapproved),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.disapproved),
+        tone: "red",
+        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.disapproved,
+        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.disapproved),
+      },
+      {
+        label: CashAdvanceMultipleEntryStatuses.cancelled,
+        value: cancelledCount,
+        summary: formatPartOfTotalPercentage(cancelledCount, records.length),
+        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.cancelled),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.cancelled),
+        tone: "slate",
+        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.cancelled,
+        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.cancelled),
+      },
+    ];
+  }, [records, setStatusFilter, statusFilter]);
 
   return {
     amountRange,
@@ -472,6 +728,7 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
     setDateRange,
     setQuery,
     setStatusFilter,
+    statisticCards,
     statusFilter,
     table,
   };
@@ -487,15 +744,4 @@ export function removeCashAdvanceMultipleEntryRow<TRow extends { id: string }>(r
 
 function createRows<TRow>(count: number, createRow: () => TRow) {
   return Array.from({ length: count }, () => createRow());
-}
-
-function upsertCashAdvanceMultipleEntryRecord(record: CashAdvanceMultipleEntryRecord) {
-  const currentEntries = getInitialCashAdvanceMultipleEntries();
-  const existingIndex = currentEntries.findIndex((entry) => entry.id === record.id);
-
-  if (existingIndex === -1) {
-    return [record, ...currentEntries];
-  }
-
-  return currentEntries.map((entry) => (entry.id === record.id ? record : entry));
 }

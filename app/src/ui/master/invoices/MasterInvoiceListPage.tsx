@@ -1,116 +1,90 @@
 "use client";
 
+import { useState } from "react";
 import {
-	Banknote,
-	CircleDollarSign,
-	FileText,
+	AlertTriangle,
+	Building2,
+	CalendarClock,
 	ReceiptText,
-	Users,
 } from "lucide-react";
+import { type MasterInvoiceAnalyticsMetric } from "@/app/src/data/master/invoices/MasterInvoiceAnalyticsData";
 import { formatMasterInvoiceCurrency } from "@/app/src/data/master/invoices/MasterInvoiceData";
 import { useMasterInvoiceListPage } from "@/app/src/hooks/master/invoices/useMasterInvoiceListPage";
+import { MasterInvoiceAnalyticsChart } from "@/app/src/ui/master/invoices/MasterInvoiceAnalyticsChart";
+import { MasterInvoiceCompanyTable } from "@/app/src/ui/master/invoices/MasterInvoiceCompanyTable";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { MasterInvoiceTable } from "@/app/src/ui/master/invoices/MasterInvoiceTable";
+import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 
 export function MasterInvoiceListPage() {
 	const page = useMasterInvoiceListPage();
+	const [activeChartMetric, setActiveChartMetric] =
+		useState<MasterInvoiceAnalyticsMetric | null>(null);
+
+	function handleToggleMetric(metric: MasterInvoiceAnalyticsMetric) {
+
+		setActiveChartMetric((current) => (current === metric ? null : metric));
+	}
 
 	return (
 		<section className="grid gap-5">
 			<ModuleHeader
 				variant="card"
 				titleAs="h1"
-				eyebrow="Subscriber Billing"
-				title="Invoices"
-				description="Review subscriber transactions, what each company availed, the transaction date, payment method, reference number, amount, and payment status."
+				eyebrow="Platform Financials"
+				title="Revenue & Transactions"
+				description="Organized billing, subscription status, collected revenues, pending payments, and transaction records across all subscriber companies."
 			/>
-			<MasterInvoiceSummaryCards summary={page.summary} />
-			<MasterInvoiceTable {...page} />
+			<ModuleStatisticCards
+				items={[
+					{
+						icon: Building2,
+						isActive: activeChartMetric === "subscribers",
+						label: "Subscribers",
+						helper: "Active & scheduled",
+						onClick: () => handleToggleMetric("subscribers"),
+						tone: "blue",
+						value: page.metrics.totalSubscribers,
+					},
+					{
+						icon: ReceiptText,
+						isActive: activeChartMetric === "collected",
+						label: "Total Collected",
+						helper: `${page.metrics.totalInvoicesCount} total transactions`,
+						onClick: () => handleToggleMetric("collected"),
+						tone: "emerald",
+						value: formatMasterInvoiceCurrency(page.metrics.totalCollectedRevenue),
+					},
+					{
+						icon: CalendarClock,
+						isActive: activeChartMetric === "pending",
+						label: "Pending Revenue",
+						helper: `${page.metrics.pendingInvoiceCount} pending collections`,
+						onClick: () => handleToggleMetric("pending"),
+						tone: "amber",
+						value: formatMasterInvoiceCurrency(page.metrics.totalPendingRevenue),
+					},
+					{
+						icon: AlertTriangle,
+						isActive: activeChartMetric === "attention",
+						label: "Needs Attention",
+						helper: `${page.metrics.failedInvoiceCount} failed invoices`,
+						onClick: () => handleToggleMetric("attention"),
+						tone: "red",
+						value: `${page.metrics.pastDueSubscribers} past due`,
+					},
+				]}
+			/>
+			{activeChartMetric ? (
+				<MasterInvoiceAnalyticsChart
+					activeMetric={activeChartMetric}
+					onClose={() => setActiveChartMetric(null)}
+					onSelectMetric={(m) => setActiveChartMetric(m)}
+				/>
+			) : null}
+			<MasterInvoiceCompanyTable {...page} />
 		</section>
 	);
 }
 
-function MasterInvoiceSummaryCards({
-	summary,
-}: {
-	summary: {
-		failedInvoices: number;
-		paidAmount: number;
-		paidInvoices: number;
-		pendingInvoices: number;
-		subscriberCount: number;
-		totalInvoices: number;
-	};
-}) {
-	const metrics = [
-		{
-			icon: FileText,
-			label: "Total Invoices",
-			tone: "bg-skyblue/12 text-darknavy",
-			value: summary.totalInvoices,
-		},
-		{
-			icon: ReceiptText,
-			label: "Paid",
-			tone: "bg-citron/35 text-darknavy",
-			value: summary.paidInvoices,
-		},
-		{
-			icon: Banknote,
-			label: "Pending",
-			tone: "bg-offwhite text-darknavy",
-			value: summary.pendingInvoices,
-		},
-		{
-			icon: CircleDollarSign,
-			label: "Failed",
-			tone: "bg-coralpink/12 text-coralpink",
-			value: summary.failedInvoices,
-		},
-		{
-			icon: Users,
-			label: "Subscribers",
-			tone: "bg-skyblue/12 text-darknavy",
-			value: summary.subscriberCount,
-		},
-	];
 
-	return (
-		<div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-			{metrics.map((metric) => {
-				const Icon = metric.icon;
 
-				return (
-					<article
-						key={metric.label}
-						className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm"
-					>
-						<div className="flex items-center justify-between gap-3">
-							<p className="text-sm font-medium text-darknavy/58">
-								{metric.label}
-							</p>
-							<span
-								className={joinClasses(
-									"flex h-9 w-9 items-center justify-center rounded-lg",
-									metric.tone,
-								)}
-							>
-								<Icon className="h-4 w-4" aria-hidden="true" />
-							</span>
-						</div>
-						<p className="mt-3 text-2xl font-semibold text-darknavy">
-							{metric.value}
-						</p>
-					</article>
-				);
-			})}
-			<article className="rounded-lg border border-darknavy/10 bg-darknavy p-4 text-white shadow-sm md:col-span-2 xl:col-span-5">
-				<p className="text-sm font-semibold text-white/65">Paid revenue</p>
-				<p className="mt-2 text-2xl font-semibold">
-					{formatMasterInvoiceCurrency(summary.paidAmount)}
-				</p>
-			</article>
-		</div>
-	);
-}

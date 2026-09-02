@@ -5,114 +5,45 @@ import type {
   PettyCashFundRecord,
   PettyCashFundStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
-import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { calculateTaxAmounts } from "@/app/src/data/shared/tax/TaxData";
 import { todayDateValue } from "@/app/src/utils/date.util";
-
-export const PettyCashFundSeedRecords: PettyCashFundRecord[] = [
-  createSeed(
-    "1",
-    "PCF-000063",
-    "2026-02-23",
-    "E000102",
-    "Raymark B. Arsicolo",
-    120,
-    "Initial petty cash fund",
-    PettyCashFundStatuses.forApproval,
-  ),
-  createSeed(
-    "2",
-    "PCF-000062",
-    "2026-02-18",
-    "E000117",
-    "Maria L. Dela Cruz",
-    15000,
-    "Field operations fund",
-    PettyCashFundStatuses.posted,
-  ),
-  createSeed("3", "PCF-000061", "2026-02-12", "E000145", "Jose P. Santos", 8500, "Branch petty cash", PettyCashFundStatuses.draft),
-  createSeed(
-    "4",
-    "PCF-000060",
-    "2026-02-08",
-    "E000117",
-    "Maria L. Dela Cruz",
-    4200,
-    "Disapproved office fund",
-    PettyCashFundStatuses.disapproved,
-  ),
-  createSeed(
-    "5",
-    "PCF-000059",
-    "2026-02-02",
-    "E000102",
-    "Raymark B. Arsicolo",
-    3000,
-    "Cancelled field fund",
-    PettyCashFundStatuses.cancelled,
-  ),
-];
-
-export const PettyCashFundCopyFromRecords: AppCopyFromRecord[] = [
-  {
-    amount: "3,250.00",
-    documentDate: "2026-02-24",
-    id: "pcv-copy-000084",
-    partyName: "Raymark B. Arsicolo",
-    remarks: "Office pantry and operating supplies",
-    source: "Petty Cash Voucher",
-    sourceNo: "PCV-000084",
-  },
-  {
-    amount: "1,875.50",
-    documentDate: "2026-02-20",
-    id: "pcv-copy-000083",
-    partyName: "Maria L. Dela Cruz",
-    remarks: "Local transportation and courier expenses",
-    source: "Petty Cash Voucher",
-    sourceNo: "PCV-000083",
-  },
-  {
-    amount: "4,500.00",
-    documentDate: "2026-02-16",
-    id: "pcv-copy-000082",
-    partyName: "Jose P. Santos",
-    remarks: "Branch operating expenses",
-    source: "Petty Cash Voucher",
-    sourceNo: "PCV-000082",
-  },
-];
 
 export function createBlankPettyCashFundItem(): PettyCashFundItem {
   return {
     id: `pcf-item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     date: todayDateValue(),
-    payeeCode: "",
-    payeeName: "",
+    supplierCode: "",
+    supplierName: "",
     orNo: "",
     tinNo: "",
     particulars: "",
+    remarks: "",
     amount: "",
     netAmount: "",
-    vatAmount: "0.00",
+    vatPercent: "",
+    vatAmount: "",
+    ewtCode: "",
+    ewtPercent: "",
+    ewtAmount: "",
+    disburseAmount: "",
     type: "",
     vatType: "",
-    vatable: "False",
-    vatInclusive: "False",
     grossAmount: "",
-    responsibilityCenter: "",
+    responsibilityCenterCode: "",
+    responsibilityCenterName: "",
   };
 }
 
 export function createPettyCashFundFormValues(
   record?: PettyCashFundRecord,
-  transactionNo = "PCF-000001",
+  transactionNo = "",
   baseCurrencyCode = "PHP",
 ): PettyCashFundFormValues {
   if (record?.formValues) {
     return {
       ...record.formValues,
-      items: record.formValues.items.map((item) => ({ ...item })),
+      items: record.formValues.items.map(normalizePettyCashFundItem),
       attachments: record.formValues.attachments.map((item) => ({ ...item })),
     };
   }
@@ -124,28 +55,29 @@ export function createPettyCashFundFormValues(
       status: record.status,
       partyCode: record.partyCode,
       partyName: record.partyName,
-      responsibilityCenter: "",
-      responsibilityCenterCode: "",
-      currency: "PHP",
-      exchangeRate: "1.00",
+      responsibilityCenter: record.responsibilityCenter ?? "",
+      responsibilityCenterCode: record.responsibilityCenterCode ?? "",
+      currency: record.currency ?? baseCurrencyCode,
+      exchangeRate: record.exchangeRate ?? "1.00",
       accountCode: record.accountCode,
       accountTitle: record.accountTitle,
-      projectCode: "",
-      projectName: "",
+      projectCode: record.projectCode ?? "",
+      projectName: record.projectName ?? "",
       remarks: record.remarks,
-      items: [
-        {
-          ...createBlankPettyCashFundItem(),
-          date: record.documentDate,
-          payeeCode: "V100006",
-          payeeName: "All4U Restaurant",
-          tinNo: "488-860-327-000",
-          amount,
-          netAmount: amount,
-          grossAmount: amount,
-        },
-      ],
-      attachments: [],
+      items: record.items?.length
+        ? record.items.map(normalizePettyCashFundItem)
+        : [
+            {
+              ...createBlankPettyCashFundItem(),
+              date: record.documentDate,
+              supplierCode: "V100006",
+              supplierName: "All4U Restaurant",
+              amount,
+              ...calculatePettyCashFundItemTaxFields(amount),
+              grossAmount: amount,
+            },
+          ],
+      attachments: record.attachments?.map((item) => ({ ...item })) ?? [],
     };
   }
   return {
@@ -174,10 +106,37 @@ export function calculatePettyCashFundTotals(items: PettyCashFundItem[]) {
       amount: totals.amount + parseMoneyNumberInput(item.amount),
       netAmount: totals.netAmount + parseMoneyNumberInput(item.netAmount),
       vatAmount: totals.vatAmount + parseMoneyNumberInput(item.vatAmount),
+      ewtAmount: totals.ewtAmount + parseMoneyNumberInput(item.ewtAmount),
+      disburseAmount: totals.disburseAmount + parseMoneyNumberInput(item.disburseAmount),
       grossAmount: totals.grossAmount + parseMoneyNumberInput(item.grossAmount),
     }),
-    { amount: 0, netAmount: 0, vatAmount: 0, grossAmount: 0 },
+    { amount: 0, netAmount: 0, vatAmount: 0, ewtAmount: 0, disburseAmount: 0, grossAmount: 0 },
   );
+}
+
+export function calculatePettyCashFundItemTaxFields(
+  amountValue: string | number,
+  vatType = "",
+  ewtCode = "",
+): Pick<PettyCashFundItem, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "disburseAmount" | "grossAmount"> {
+  const amount = roundPettyCashTaxAmount(parseMoneyNumberInput(amountValue));
+  const vatPercent = getPettyCashFundVatPercent(vatType);
+  const ewtPercent = getPettyCashFundEwtPercent(ewtCode);
+  const taxAmounts = calculateTaxAmounts({
+    grossAmount: amount,
+    taxRate: vatPercent,
+    ewtRate: ewtPercent,
+  });
+
+  return {
+    netAmount: formatPettyCashFundAmount(taxAmounts.netAmount),
+    vatPercent: vatPercent ? `${formatPettyCashFundAmount(vatPercent)}%` : "",
+    vatAmount: formatPettyCashFundAmount(taxAmounts.vatAmount),
+    ewtPercent: ewtPercent ? `${formatPettyCashFundAmount(ewtPercent)}%` : "",
+    ewtAmount: formatPettyCashFundAmount(taxAmounts.ewtAmount),
+    disburseAmount: formatPettyCashFundAmount(taxAmounts.totalAmountDue),
+    grossAmount: formatPettyCashFundAmount(amount),
+  };
 }
 
 export function createPettyCashFundRecord(
@@ -200,13 +159,22 @@ export function createPettyCashFundRecord(
     partyName: values.partyName,
     accountCode: values.accountCode,
     accountTitle: values.accountTitle,
+    responsibilityCenter: values.responsibilityCenter,
+    responsibilityCenterCode: values.responsibilityCenterCode,
+    projectCode: values.projectCode,
+    projectName: values.projectName,
+    currency: values.currency,
+    exchangeRate: values.exchangeRate,
     amount: calculatePettyCashFundTotals(values.items).amount,
+    disburseAmount: calculatePettyCashFundTotals(values.items).disburseAmount,
     remarks: values.remarks,
     status,
     createdBy: existing?.createdBy ?? "Current User",
     createdAt: existing?.createdAt ?? now,
     updatedBy: "Current User",
     updatedAt: now,
+    items: values.items.map((item) => ({ ...item })),
+    attachments: values.attachments.map((item) => ({ ...item })),
     formValues: nextValues,
   };
 }
@@ -215,30 +183,34 @@ export function formatPettyCashFundAmount(value: number) {
   return formatMoneyNumberDisplayValue(value.toFixed(2));
 }
 
-function createSeed(
-  id: string,
-  transactionNo: string,
-  documentDate: string,
-  partyCode: string,
-  partyName: string,
-  amount: number,
-  remarks: string,
-  status: PettyCashFundStatus,
-): PettyCashFundRecord {
+function getPettyCashFundVatPercent(vatType: string) {
+  const normalized = vatType.toLowerCase();
+  const match = normalized.match(/(\d+(?:\.\d+)?)/);
+  if (match) return Number.parseFloat(match[1]);
+  return 0;
+}
+
+function getPettyCashFundEwtPercent(ewtCode: string) {
+  const rates: Record<string, number> = {
+    W05: 5,
+    W10: 10,
+    WV01: 1,
+    WV02: 2,
+  };
+  return rates[ewtCode] ?? 0;
+}
+
+function roundPettyCashTaxAmount(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function normalizePettyCashFundItem(item: Partial<PettyCashFundItem>): PettyCashFundItem {
+  const amount = item.amount ?? item.grossAmount ?? "";
+
   return {
-    id,
-    transactionNo,
-    documentDate,
-    partyCode,
-    partyName,
-    accountCode: "101-200",
-    accountTitle: "Petty Cash Fund",
+    ...createBlankPettyCashFundItem(),
+    ...item,
     amount,
-    remarks,
-    status,
-    createdBy: "Maria Santos",
-    createdAt: `${documentDate}T09:00:00`,
-    updatedBy: "Maria Santos",
-    updatedAt: `${documentDate}T09:00:00`,
+    ...calculatePettyCashFundItemTaxFields(amount, item.vatType ?? "", item.ewtCode ?? ""),
   };
 }

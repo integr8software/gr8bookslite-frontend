@@ -23,11 +23,11 @@ import {
 
 export function PartyInformationActionHeader({
 	canSave = true,
-	cancelHref,
 	editHref,
 	isReadonly,
 	mode,
 	nextStatus,
+	onCancel,
 	onSave,
 	onStatusChange,
 }: PartyInformationActionHeaderProps) {
@@ -84,14 +84,15 @@ export function PartyInformationActionHeader({
 							{statusLabel}
 						</button>
 					) : null}
-					{mode !== "view" ? (
-						<Link
-							href={cancelHref}
+					{mode !== "view" && onCancel ? (
+						<button
+							type="button"
+							onClick={onCancel}
 							className={moduleHeaderActionClassNames.secondary}
 						>
 							<X className="h-4 w-4" aria-hidden="true" />
 							Cancel
-						</Link>
+						</button>
 					) : null}
 					{!isReadonly ? (
 						<button

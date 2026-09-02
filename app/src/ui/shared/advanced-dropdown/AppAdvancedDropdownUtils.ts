@@ -75,17 +75,55 @@ export function isEventInsideDropdown(
 	);
 }
 
-export function flattenOptions(options: AppAdvancedDropdownOption[]): AppAdvancedDropdownOption[] {
+export function flattenOptions(
+	options: AppAdvancedDropdownOption[] | null | undefined,
+): AppAdvancedDropdownOption[] {
+	if (!Array.isArray(options)) {
+		return [];
+	}
+
 	return options.flatMap((option) => [
 		option,
 		...(option.children ? flattenOptions(option.children) : []),
 	]);
 }
 
-export function filterOptions(
+export function deduplicateOptions(
 	options: AppAdvancedDropdownOption[],
+): AppAdvancedDropdownOption[] {
+	const seenValues = new Set<string>();
+
+	function visit(currentOptions: AppAdvancedDropdownOption[]): AppAdvancedDropdownOption[] {
+		return currentOptions.reduce<AppAdvancedDropdownOption[]>((uniqueOptions, option) => {
+			if (seenValues.has(option.value)) {
+				return uniqueOptions;
+			}
+
+			seenValues.add(option.value);
+			uniqueOptions.push(
+				option.children
+					? {
+							...option,
+							children: visit(option.children),
+						}
+					: option,
+			);
+
+			return uniqueOptions;
+		}, []);
+	}
+
+	return visit(options);
+}
+
+export function filterOptions(
+	options: AppAdvancedDropdownOption[] | null | undefined,
 	query: string,
 ): AppAdvancedDropdownOption[] {
+	if (!Array.isArray(options)) {
+		return [];
+	}
+
 	const normalizedQuery = query.trim().toLowerCase();
 
 	if (!normalizedQuery) {
@@ -156,14 +194,6 @@ export function getOptionIndentStyle(view: AppAdvancedDropdownOptionView, level:
 	return view === AppAdvancedDropdownOptionViewList
 		? { paddingLeft: `${0.75 + level * 0.9}rem` }
 		: undefined;
-}
-
-export function escapeCssIdentifier(value: string) {
-	if (typeof CSS !== "undefined" && CSS.escape) {
-		return CSS.escape(value);
-	}
-
-	return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
 export function joinClasses(...classes: Array<string | false | undefined>) {

@@ -9,11 +9,9 @@ import type {
 
 export const AccountsPayableVoucherHref = MODULE_ROUTE_MAP.APV;
 
-export const AccountsPayableVoucherApiPath =
-  "/accounts-payable/accounts-payable-voucher";
+export const AccountsPayableVoucherApiPath = "/accounts-payable/accounts-payable-voucher";
 
-export const AccountsPayableVoucherTablePaginationStorageKey =
-  "accounts-payable.accounts-payable-voucher";
+export const AccountsPayableVoucherTablePaginationStorageKey = "accounts-payable.accounts-payable-voucher";
 
 export const AccountsPayableVoucherTableColumns = [
   {
@@ -57,54 +55,42 @@ export const AccountsPayableVoucherTableColumns = [
   },
 ] as const;
 
-export const AccountsPayableVoucherTablePreferencesStorageKey =
-  "gr8booksneo:accounts-payable-voucher:table-preferences";
-export const AccountsPayableVoucherTablePreferencesModuleKey =
-  "accounts-payable:accounts-payable-voucher";
-export const AccountsPayableVoucherDefaultColumnOrder =
-  AccountsPayableVoucherTableColumns.map((column) =>
-    "key" in column ? column.key : "actions",
-  );
+export const AccountsPayableVoucherTablePreferencesStorageKey = "gr8booksneo:accounts-payable-voucher:table-preferences";
+export const AccountsPayableVoucherTablePreferencesModuleKey = "accounts-payable:accounts-payable-voucher";
+export const AccountsPayableVoucherDefaultColumnOrder = AccountsPayableVoucherTableColumns.map((column) =>
+  "key" in column ? column.key : "actions",
+);
 export const AccountsPayableVoucherDefaultColumnVisibility: VisibilityState = {};
-export const AccountsPayableVoucherDefaultSorting: SortingState = [
-  { id: "documentDate", desc: true },
+export const AccountsPayableVoucherDefaultSorting: SortingState = [{ id: "documentDate", desc: true }];
+
+export const AccountsPayableVoucherStatusOptions: AccountsPayableVoucherStatus[] = [
+  "Posted",
+  "Draft",
+  "For Approval",
+  "Disapproved",
+  "Cancelled",
 ];
 
-export const AccountsPayableVoucherStatusOptions: AccountsPayableVoucherStatus[] =
-  ["Draft", "For Approval", "Posted", "Disapproved", "Cancelled"];
+export const AccountsPayableVoucherStatusFilters = ["all", ...AccountsPayableVoucherStatusOptions] as const;
 
-export const AccountsPayableVoucherStatusFilters = [
-  "all",
-  ...AccountsPayableVoucherStatusOptions,
-] as const;
+export const AccountsPayableVoucherStatusFilterOptions = AccountsPayableVoucherStatusFilters.map((status) => ({
+  label: status === "all" ? "All" : status,
+  value: status,
+}));
 
-export const AccountsPayableVoucherStatusFilterOptions =
-  AccountsPayableVoucherStatusFilters.map((status) => ({
-    label: status === "all" ? "All" : status,
-    value: status,
-  }));
-
-export function canEditAccountsPayableVoucherStatus(
-  status: AccountsPayableVoucherStatus,
-) {
+export function canEditAccountsPayableVoucherStatus(status: AccountsPayableVoucherStatus) {
   return status === "Draft" || status === "For Approval";
 }
 
-export function canApproveAccountsPayableVoucherStatus(
-  status: AccountsPayableVoucherStatus,
-) {
+export function canApproveAccountsPayableVoucherStatus(status: AccountsPayableVoucherStatus) {
   return status === "For Approval" || status === "Posted";
 }
 
-export function canDisapproveAccountsPayableVoucherStatus(
-  status: AccountsPayableVoucherStatus,
-) {
+export function canDisapproveAccountsPayableVoucherStatus(status: AccountsPayableVoucherStatus) {
   return status === "For Approval" || status === "Disapproved";
 }
 
-export function canCancelAccountsPayableVoucherStatus(
-  status: AccountsPayableVoucherStatus,
-) {
+export function canCancelAccountsPayableVoucherStatus(status: AccountsPayableVoucherStatus) {
   return status === "Draft" || status === "For Approval" || status === "Cancelled";
 }
 
@@ -115,37 +101,28 @@ export const AccountsPayableVoucherAccountingDebitSide = "debit";
 export const AccountsPayableVoucherEwtTaxLabel = "EWT";
 export const AccountsPayableVoucherInputVatTaxLabel = "Input VAT";
 
-export const AccountsPayableVoucherPayableTypeOptions: AccountsPayableVoucherPayableType[] =
-  [
-    "Trade Payable",
-    "Non-Trade Payable",
-    "Employee Payable",
-    "Tax Payable",
-    "Accrued Payable",
-  ];
+export const AccountsPayableVoucherPayableTypeOptions: AccountsPayableVoucherPayableType[] = [
+  "Trade Payable",
+  "Non-Trade Payable",
+  "Employee Payable",
+  "Tax Payable",
+  "Accrued Payable",
+];
 
-export const AccountsPayableVoucherVatTypeOptions = [
-  "VATable",
-  "VAT Exempt",
-  "Zero Rated",
-  "Non-VAT",
-] as const;
+export const AccountsPayableVoucherVatTypeOptions = ["VATable", "VAT Exempt", "Zero Rated", "Non-VAT"] as const;
 
 export const AccountsPayableVoucherActionCopy = {
   add: {
     title: "Create New Accounts Payable Voucher",
-    description:
-      "Record a supplier payable voucher with expense and accounting entries.",
+    description: "Record a supplier payable voucher with expense and accounting entries.",
   },
   edit: {
     title: "Edit Accounts Payable Voucher",
-    description:
-      "Update the supplier, payable details, expenses, and accounting entries.",
+    description: "Update the supplier, payable details, expenses, and accounting entries.",
   },
   view: {
     title: "View Accounts Payable Voucher",
-    description:
-      "Review payable voucher header details, expenses, and accounting entries.",
+    description: "Review payable voucher header details, expenses, and accounting entries.",
   },
 } as const;
 
@@ -167,24 +144,13 @@ export const AccountsPayableVoucherExpenseColumnIds = [
   "referenceNo",
 ] as const;
 
-export const AccountsPayableVoucherExpenseProtectedColumnIds =
-  new Set<AccountsPayableVoucherExpenseColumnId>([
-    "expenseType",
-    "amount",
-  ]);
+export const AccountsPayableVoucherExpenseProtectedColumnIds = new Set<AccountsPayableVoucherExpenseColumnId>(["expenseType", "amount"]);
 
-export const AccountsPayableVoucherExpenseDefaultVisibleColumnIds =
-  AccountsPayableVoucherExpenseColumnIds.filter(
-    (columnId) =>
-      !["vat", "vatPercent", "ewt", "ewtPercent", "partyCode"].includes(
-        columnId,
-      ),
-  );
+export const AccountsPayableVoucherExpenseDefaultVisibleColumnIds = AccountsPayableVoucherExpenseColumnIds.filter(
+  (columnId) => !["vat", "vatPercent", "ewt", "ewtPercent", "partyCode"].includes(columnId),
+);
 
-export const AccountsPayableVoucherExpenseColumnLabels: Record<
-  AccountsPayableVoucherExpenseColumnId,
-  string
-> = {
+export const AccountsPayableVoucherExpenseColumnLabels: Record<AccountsPayableVoucherExpenseColumnId, string> = {
   expenseType: "Payable Type",
   particulars: "Particulars",
   amount: "Gross Amount",
@@ -202,10 +168,7 @@ export const AccountsPayableVoucherExpenseColumnLabels: Record<
   referenceNo: "Reference No",
 };
 
-export const AccountsPayableVoucherExpenseColumnWidths: Record<
-  AccountsPayableVoucherExpenseColumnId,
-  number
-> = {
+export const AccountsPayableVoucherExpenseColumnWidths: Record<AccountsPayableVoucherExpenseColumnId, number> = {
   expenseType: 235,
   particulars: 320,
   amount: 155,
@@ -237,12 +200,11 @@ export const AccountsPayableVoucherAccountingColumnIds = [
   "refNo",
 ] as const;
 
-export const AccountsPayableVoucherAccountingProtectedColumnIds =
-  new Set<AccountsPayableVoucherAccountingColumnId>([
-    "accountTitle",
-    "debit",
-    "credit",
-  ]);
+export const AccountsPayableVoucherAccountingProtectedColumnIds = new Set<AccountsPayableVoucherAccountingColumnId>([
+  "accountTitle",
+  "debit",
+  "credit",
+]);
 
 export const AccountsPayableVoucherAccountingDefaultVisibleColumnIds = [
   "accountTitle",
@@ -251,10 +213,7 @@ export const AccountsPayableVoucherAccountingDefaultVisibleColumnIds = [
   "particulars",
 ] as const satisfies readonly AccountsPayableVoucherAccountingColumnId[];
 
-export const AccountsPayableVoucherAccountingColumnLabels: Record<
-  AccountsPayableVoucherAccountingColumnId,
-  string
-> = {
+export const AccountsPayableVoucherAccountingColumnLabels: Record<AccountsPayableVoucherAccountingColumnId, string> = {
   accountCode: "Account Code",
   accountTitle: "Account Title",
   particulars: "Particulars",
@@ -268,10 +227,7 @@ export const AccountsPayableVoucherAccountingColumnLabels: Record<
   refNo: "Reference No",
 };
 
-export const AccountsPayableVoucherAccountingColumnWidths: Record<
-  AccountsPayableVoucherAccountingColumnId,
-  number
-> = {
+export const AccountsPayableVoucherAccountingColumnWidths: Record<AccountsPayableVoucherAccountingColumnId, number> = {
   accountCode: 160,
   accountTitle: 260,
   particulars: 320,
@@ -285,6 +241,4 @@ export const AccountsPayableVoucherAccountingColumnWidths: Record<
   refNo: 160,
 };
 
-export const AccountsPayableVoucherrefetchOnMount = [
-  "always",
-] as const;
+export const AccountsPayableVoucherrefetchOnMount = ["always"] as const;

@@ -19,7 +19,7 @@ import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTabl
 import { formatFileSize } from "@/app/src/utils/file.util";
 import { isModuleImportOptionValue } from "@/app/src/utils/module-import.util";
 
-export const PaymentTypeOptions: PaymentTypeClassification[] = ["Bank Transfer", "Check", "Digital Wallet"];
+export const PaymentTypeOptions: PaymentTypeClassification[] = ["Bank Transfer", "Check", "Debit Memo", "Digital Wallet"];
 
 export const PaymentTypeInitialFormValues: PaymentTypeFormValues = {
   description: "",
@@ -43,6 +43,13 @@ export function createPaymentTypeFormValues(record?: PaymentTypeRecord): Payment
   };
 }
 
+export function createNextPaymentTypeFormValues(records: PaymentTypeRecord[]): PaymentTypeFormValues {
+  return {
+    ...PaymentTypeInitialFormValues,
+    sortOrder: String(getNextPaymentTypeSortOrder(records)),
+  };
+}
+
 export function createPaymentTypeFromForm(values: PaymentTypeFormValues): PaymentTypeRecord {
   return {
     description: values.description.trim(),
@@ -52,6 +59,10 @@ export function createPaymentTypeFromForm(values: PaymentTypeFormValues): Paymen
     status: values.status,
     type: values.type || "Bank Transfer",
   };
+}
+
+function getNextPaymentTypeSortOrder(records: PaymentTypeRecord[]) {
+  return Math.max(0, ...records.map((record) => record.sortOrder)) + 10;
 }
 
 export function updatePaymentTypeFromForm(record: PaymentTypeRecord, values: PaymentTypeFormValues): PaymentTypeRecord {
@@ -404,6 +415,9 @@ export function normalizeImportedPaymentTypeClassification(value: string): Payme
   }
   if (normalized === "digitalwallet" || normalized === "ewallet") {
     return "Digital Wallet";
+  }
+  if (normalized === "debitmemo" || normalized === "dm") {
+    return "Debit Memo";
   }
   return value as PaymentTypeClassification;
 }

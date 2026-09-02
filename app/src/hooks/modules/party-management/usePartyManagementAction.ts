@@ -28,6 +28,7 @@ import {
 } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/terms-maintenance/useTermDropdownOptions";
 import { usePartyManagementAccountOptions } from "@/app/src/hooks/modules/party-management/usePartyManagementAccountOptions";
+import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { usePartyTaxDefaultOptions } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOptions";
 import type {
@@ -72,11 +73,13 @@ export function usePartyManagementAction() {
     mode === "edit" &&
     searchParams.get(PartyManagementEditFromParam) === PartyManagementEditFromViewValue;
   const existingRecord = partyManagement.records.find((record) => record.id === params.recordId);
-  const [values, setValues] = useState<PartyInformationFormValues>(() =>
+  const initialValues = useMemo<PartyInformationFormValues>(() =>
     existingRecord
       ? createPartyInformationFormValues(existingRecord)
       : PartyInformationInitialFormValues,
+    [existingRecord],
   );
+  const [values, setValues] = useState<PartyInformationFormValues>(initialValues);
   const [syncedAddressSources, setSyncedAddressSources] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<PartyInformationFormErrors>({});
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
@@ -95,6 +98,17 @@ export function usePartyManagementAction() {
     regionName: activeAddress.region,
   });
   const isReadonly = mode === "view";
+  const draft = useModuleDraft({
+    enabled: !isReadonly,
+    initialValues,
+    key: createModuleDraftKey({
+      mode,
+      moduleId: "party-management:party-information",
+      recordId: existingRecord?.id,
+    }),
+    setValues,
+    values,
+  });
   const partyNumberSetup = useMemo(
     () => getPartyManagementNumberSetup(transactionNumberSetup.setups, activeBranchId),
     [activeBranchId, transactionNumberSetup.setups],
@@ -593,7 +607,15 @@ export function usePartyManagementAction() {
       partyManagement.addRecord(createPartyInformationRecord(effectiveValues));
     }
 
+    draft.clearDraft();
     router.push(mode === "edit" && openedFromView ? viewHref : PartyManagementHref);
+  }
+
+  function handleCancel() {
+    draft.discardDraft();
+    setErrors({});
+    setSyncedAddressSources({});
+    router.push(cancelHref);
   }
 
   function updateAddressMeta(
@@ -647,12 +669,12 @@ export function usePartyManagementAction() {
     addressOptions,
     accountOptions: partyAccountOptions.accountOptions,
     accountOptionsRefetch: partyAccountOptions.refetch,
-    cancelHref,
     editHref,
     errors,
     existingRecord,
     handleAddressInputChange,
     handleConfirmStatusChange,
+    handleCancel,
     handleInputChange,
     handlePartyTypesChange,
     handleSubmit,

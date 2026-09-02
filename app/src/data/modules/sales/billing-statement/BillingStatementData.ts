@@ -5,6 +5,7 @@ import type {
   BillingStatementRecord,
   BillingStatementStatus,
 } from "@/app/src/types/modules/sales/billing-statement/BillingStatementTypes";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 
 export const emptyBillingStatementItem: BillingStatementItem = {
   id: "draft-item",
@@ -18,6 +19,8 @@ export const emptyBillingStatementItem: BillingStatementItem = {
   ewtAmount: 0,
   discountPercent: "",
   discountAmount: 0,
+  grossAfterDiscount: 0,
+  netOfVatAmount: 0,
   grossAmount: 0,
   vatType: "",
   vatable: "False",
@@ -120,6 +123,45 @@ export function createBlankBillingStatementItem() {
   return {
     ...emptyBillingStatementItem,
     id: createBillingStatementId("item"),
+  };
+}
+
+export function recalculateBillingStatementItem(
+  item: BillingStatementItem,
+): BillingStatementItem {
+  const amount = parseMoneyNumberInput(item.amount);
+  const quantity = parseMoneyNumberInput(item.quantity);
+  const grossAmount = amount * Math.max(quantity, 0);
+  const discountPercent = parseMoneyNumberInput(item.discountPercent);
+  const discountAmount = grossAmount * (Math.max(discountPercent, 0) / 100);
+  const grossAfterDiscount = Math.max(grossAmount - discountAmount, 0);
+  const isVatable = String(item.vatable ?? "").toLowerCase() === "true";
+  const isVatInclusive =
+    isVatable && String(item.vatInclusive ?? "").toLowerCase() === "true";
+  const vatAmount = !isVatable
+    ? 0
+    : isVatInclusive
+      ? (grossAfterDiscount / 1.12) * 0.12
+      : grossAfterDiscount * 0.12;
+  const netOfVatAmount =
+    isVatable && isVatInclusive
+      ? Math.max(grossAfterDiscount - vatAmount, 0)
+      : grossAfterDiscount;
+  const netAmount =
+    isVatable && !isVatInclusive
+      ? grossAfterDiscount + vatAmount
+      : grossAfterDiscount;
+
+  return {
+    ...item,
+    amount: roundMoney(amount),
+    discountAmount: roundMoney(discountAmount),
+    grossAfterDiscount: roundMoney(grossAfterDiscount),
+    grossAmount: roundMoney(netAmount),
+    netAmount: roundMoney(grossAmount),
+    netOfVatAmount: roundMoney(netOfVatAmount),
+    quantity: roundMoney(quantity),
+    vatAmount: roundMoney(vatAmount),
   };
 }
 
@@ -296,36 +338,15 @@ function normalizeBillingStatementRecordDefaults(
 }
 
 function normalizeBillingStatementItem(item: Partial<BillingStatementItem>) {
-  const amount = Number(item.amount) || 0;
-  const quantity = Number(item.quantity) || 0;
-  const grossAmount =
-    amount > 0 && quantity > 0 ? amount * quantity : Number(item.grossAmount) || amount * quantity;
-  const discountPercent = Number(item.discountPercent) || 0;
-  const discountAmount =
-    grossAmount * (Math.max(discountPercent, 0) / 100);
-  const grossAfterDiscount = Math.max(grossAmount - discountAmount, 0);
-  const isVatable = String(item.vatable ?? "").toLowerCase() === "true";
-  const isVatInclusive = isVatable && String(item.vatInclusive ?? "").toLowerCase() === "true";
-  const vatAmount = !isVatable
-    ? 0
-    : isVatInclusive
-      ? (grossAfterDiscount / 1.12) * 0.12
-      : grossAfterDiscount * 0.12;
-  const netAmount = isVatable && !isVatInclusive ? grossAfterDiscount + vatAmount : grossAfterDiscount;
-
-  return {
+  return recalculateBillingStatementItem({
     ...emptyBillingStatementItem,
     ...item,
     id: item.id || createBillingStatementId("item"),
-    amount,
-    quantity,
-    discountAmount: roundMoney(discountAmount),
-    grossAmount: roundMoney(grossAmount),
-    netAmount: roundMoney(netAmount),
-    vatAmount: roundMoney(vatAmount),
-    wvatAmount: Number(item.wvatAmount) || 0,
-    ewtAmount: Number(item.ewtAmount) || 0,
-  };
+    amount: parseMoneyNumberInput(item.amount),
+    quantity: parseMoneyNumberInput(item.quantity),
+    wvatAmount: parseMoneyNumberInput(item.wvatAmount),
+    ewtAmount: parseMoneyNumberInput(item.ewtAmount),
+  });
 }
 
 function normalizeBillingStatementAccountingEntry(

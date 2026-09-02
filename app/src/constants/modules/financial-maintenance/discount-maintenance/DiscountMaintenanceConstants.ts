@@ -115,7 +115,7 @@ export const DiscountMaintenanceExportColumns: ModuleTableExportColumn<DiscountM
   ),
 ];
 
-export const DiscountMaintenanceTypeOptions = ["Purchase", "Sales"] as const satisfies readonly DiscountTransactionType[];
+export const DiscountMaintenanceTypeOptions = ["Purchases", "Sales"] as const satisfies readonly DiscountTransactionType[];
 
 export const DiscountMaintenanceTypeFilterOptions = [
   { value: "All", label: "All Discounts" },

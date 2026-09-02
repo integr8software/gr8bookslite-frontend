@@ -16,18 +16,13 @@ import type {
   CashVoucherHistoryEntry,
   CashVoucherRecord,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
-import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
-import {
-  CashVoucherRecordStorageKey,
-  CashVoucherStatuses,
-  CashVoucherTransactionStorageKey,
-} from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
+import { CashVoucherStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
 import { formatCurrency as formatCurrencyValue } from "@/app/src/utils/currency.util";
 
-const CashInHandAccount = {
+const CashOnHandAccount = {
   accountCode: "1001111",
-  accountName: "Cash in Hand",
+  accountName: "Cash on Hand",
 } as const;
 
 const InputVatAccount = {
@@ -40,87 +35,11 @@ const ExpandedWithholdingTaxAccount = {
   accountName: "Expanded Withholding Tax",
 } as const;
 
-export function getSeedCashVoucherTransactions() {
-  return MockCashVoucherTransactions.filter((transaction) => transaction.paymentMethod === "Cash").map((transaction) => ({
-    ...transaction,
-    status: getCashVoucherDisplayStatus(transaction.status),
-  }));
-}
-
-export function getSeedCashVouchers() {
-  return MockCashVouchers.filter((voucher) => voucher.paymentMethod === "Cash").map(sanitizeCashVoucherRecord);
-}
-
-export function readStoredCashVoucherTransactions() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const storedTransactions = window.localStorage.getItem(CashVoucherTransactionStorageKey);
-
-  if (!storedTransactions) {
-    return null;
-  }
-
-  try {
-    const parsedTransactions = JSON.parse(storedTransactions) as CashVoucherTransactionRecord[];
-
-    return Array.isArray(parsedTransactions)
-      ? parsedTransactions.map((transaction) => ({
-          ...transaction,
-          status: getCashVoucherDisplayStatus(transaction.status),
-        }))
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-export function readStoredCashVouchers() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const storedVouchers = window.localStorage.getItem(CashVoucherRecordStorageKey);
-
-  if (!storedVouchers) {
-    return null;
-  }
-
-  try {
-    const parsedVouchers = JSON.parse(storedVouchers) as CashVoucherRecord[];
-
-    if (!Array.isArray(parsedVouchers)) {
-      return null;
-    }
-
-    return parsedVouchers.map(sanitizeCashVoucherRecord);
-  } catch {
-    return null;
-  }
-}
-
-export function writeStoredCashVoucherTransactions(transactions: CashVoucherTransactionRecord[]) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(CashVoucherTransactionStorageKey, JSON.stringify(transactions));
-}
-
-export function writeStoredCashVouchers(vouchers: CashVoucherRecord[]) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(CashVoucherRecordStorageKey, JSON.stringify(vouchers.map(sanitizeCashVoucherRecord)));
-}
-
 export const CashVoucherInitialEntryDraft: CashVoucherEntryDraft = {
   accountCode: "",
   accountName: "",
-  atcCode: "",
-  particulars: "",
+  ewtCode: "",
+  remarks: "",
   partyCode: "",
   partyName: "",
   refId: "",
@@ -135,18 +54,20 @@ export const CashVoucherInitialEntryDraft: CashVoucherEntryDraft = {
 export function createBlankCashVoucherLineEntry(overrides: Partial<CashVoucherLineEntry> = {}): CashVoucherLineEntry {
   const refId = overrides.refId ?? "";
   const responsibilityCenter = overrides.responsibilityCenter ?? "";
+  const particulars = overrides.particulars ?? overrides.remarks ?? "";
 
   return {
     accountCode: "",
     accountName: "",
-    atcCode: "",
+    ewtCode: "",
     checkDate: "",
     checkNo: "",
     checkStatus: "",
     credit: 0,
     debit: 0,
     id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    particulars: "",
+    particulars,
+    remarks: particulars,
     partyCode: "",
     partyName: "",
     refId,
@@ -197,385 +118,122 @@ export const CashVoucherBankAccounts: CashVoucherBankAccount[] = [
   },
 ];
 
-export const CashVoucherPartyOptions = [
-  {
-    label: "PARTY-001",
-    name: "North Harbor Office Depot",
-    value: "PARTY-001",
-  },
-  {
-    label: "PARTY-002",
-    name: "Metro Utilities Services",
-    value: "PARTY-002",
-  },
-  {
-    label: "PARTY-003",
-    name: "Santos and Velasco Legal",
-    value: "PARTY-003",
-  },
-  {
-    label: "PARTY-004",
-    name: "Global Freight Movers",
-    value: "PARTY-004",
-  },
-  {
-    label: "EMP-001",
-    name: "Juan dela Cruz",
-    value: "EMP-001",
-  },
-  {
-    label: "PARTY-005",
-    name: "TechPro Infrastructure",
-    value: "PARTY-005",
-  },
-] as const;
+export const CashVoucherTransactions: CashVoucherTransactionRecord[] = [];
+export const CashVouchers: CashVoucherRecord[] = [];
 
-export const CashVoucherDefaultAccounts: DefaultAccount[] = [
-  {
-    id: "cv-default-account-office-supplies",
-    type: "EXPENSE",
-    defaultAccountName: "Office Supplies",
-    description: "Default expense account for office supply disbursements.",
-    status: "Active",
-    expenseParentCoaId: "exp-parent-office",
-    generatedAccounts: [
-      {
-        accountCode: "5010-001",
-        accountNature: "Operating Expense",
-        accountTitle: "Office Supplies Expense",
-        accountType: "Expenses",
-        chartAccountId: "coa-exp-office-supplies",
-        parentAccountId: "exp-parent-office",
-        role: "EXPENSE",
-        status: "ACTIVE",
-      },
-    ],
-  },
-  {
-    id: "cv-default-account-professional-fees",
-    type: "EXPENSE",
-    defaultAccountName: "Professional Fees",
-    description: "Default expense account for legal, consulting, and professional services.",
-    status: "Active",
-    expenseParentCoaId: "exp-parent-services",
-    generatedAccounts: [
-      {
-        accountCode: "6080-011",
-        accountNature: "Operating Expense",
-        accountTitle: "Professional Fees",
-        accountType: "Expenses",
-        chartAccountId: "coa-exp-professional-fees",
-        parentAccountId: "exp-parent-services",
-        role: "EXPENSE",
-        status: "ACTIVE",
-      },
-    ],
-  },
-  {
-    id: "cv-default-account-travel",
-    type: "EXPENSE",
-    defaultAccountName: "Travel and Transportation",
-    description: "Default expense account for travel, transport, and field reimbursement.",
-    status: "Active",
-    expenseParentCoaId: "exp-parent-travel",
-    generatedAccounts: [
-      {
-        accountCode: "6120-004",
-        accountNature: "Operating Expense",
-        accountTitle: "Travel and Transportation",
-        accountType: "Expenses",
-        chartAccountId: "coa-exp-travel-transport",
-        parentAccountId: "exp-parent-travel",
-        role: "EXPENSE",
-        status: "ACTIVE",
-      },
-    ],
-  },
-  {
-    id: "cv-default-account-utilities",
-    type: "EXPENSE",
-    defaultAccountName: "Utilities",
-    description: "Default expense account for utility settlements.",
-    status: "Active",
-    expenseParentCoaId: "exp-parent-utilities",
-    generatedAccounts: [
-      {
-        accountCode: "6040-002",
-        accountNature: "Operating Expense",
-        accountTitle: "Utilities Expense",
-        accountType: "Expenses",
-        chartAccountId: "coa-exp-utilities",
-        parentAccountId: "exp-parent-utilities",
-        role: "EXPENSE",
-        status: "ACTIVE",
-      },
-    ],
-  },
-];
-
-export const CashVoucherProjectOptions = [
-  {
-    label: "CC-ADM-001",
-    name: "Finance Operations",
-    value: "Finance Operations",
-  },
-  {
-    label: "CC-FAC-014",
-    name: "Facilities",
-    value: "Facilities",
-  },
-  {
-    label: "CC-LGL-201",
-    name: "Corporate Affairs",
-    value: "Corporate Affairs",
-  },
-  {
-    label: "CC-SCM-018",
-    name: "Supply Chain",
-    value: "Supply Chain",
-  },
-  {
-    label: "CC-SAL-090",
-    name: "Sales",
-    value: "Sales",
-  },
-  {
-    label: "CC-IT-305",
-    name: "Technology",
-    value: "Technology",
-  },
-] as const;
-
-export const CashVoucherResponsibilityCenterOptions = [
-  {
-    description: "Cost Center / Administrative",
-    label: "CC-ADM-001",
-    name: "Finance Operations",
-    value: "CC-ADM-001",
-  },
-  {
-    description: "Cost Center / Operating",
-    label: "CC-FAC-014",
-    name: "Facilities",
-    value: "CC-FAC-014",
-  },
-  {
-    description: "Cost Center / Administrative",
-    label: "CC-LGL-201",
-    name: "Corporate Affairs",
-    value: "CC-LGL-201",
-  },
-  {
-    description: "Cost Center / Operating",
-    label: "CC-SCM-018",
-    name: "Supply Chain",
-    value: "CC-SCM-018",
-  },
-  {
-    description: "Cost Center / Revenue",
-    label: "CC-SAL-090",
-    name: "Sales",
-    value: "CC-SAL-090",
-  },
-  {
-    description: "Cost Center / Operating",
-    label: "CC-IT-305",
-    name: "Technology",
-    value: "CC-IT-305",
-  },
-] as const;
-
-export const MockCashVoucherTransactions: CashVoucherTransactionRecord[] = [
-  {
-    id: "cv-tx-1005",
-    transactionNo: "TXN-2026-00099",
-    payee: "Juan dela Cruz",
-    purpose: "Field travel reimbursement for Visayas customer visits.",
-    department: "Sales",
-    requestedBy: "Lara Ong",
-    transactionDate: "2026-04-22",
-    paymentDueDate: "2026-04-29",
-    amount: 3200,
-    currency: "PHP",
-    paymentMethod: "Cash",
-    disbursementType: "Reimbursement",
-    status: CashVoucherStatuses.posted,
-    costCenter: "CC-SAL-090",
-    createdBy: "Lara Ong",
-    createdAt: "2026-04-22T09:25:00.000Z",
-    updatedBy: "Angela Go",
-    updatedAt: "2026-04-24T14:05:00.000Z",
-  },
-];
-
-export const MockCashVouchers: CashVoucherRecord[] = [
-  {
-    id: "cv-2026-0099",
-    transactionId: "cv-tx-1005",
-    voucherNo: "CV-2026-0099",
-    voucherDate: "2026-04-24",
-    paymentMethod: "Cash",
-    disbursementType: "Reimbursement",
-    currency: "PHP",
-    fxRate: "1.00",
-    costCenter: "CC-SAL-090",
-    partyCode: "EMP-044",
-    partyName: "Juan dela Cruz",
-    amount: 3200,
-    taxRate: "0%",
-    taxDetails: createTaxDetails(3200, "0%"),
-    remarks: "Travel reimbursement for client branch roadshow.",
-    referenceModule: "Cash Advance",
-    voucherReferenceNo: "DVR-2026-0067",
-    invoiceReferenceNo: "TRV-APR-778",
-    paymentDueDate: "2026-04-29",
-    paymentDetails: createEmptyPaymentDetails(),
-    preparedBy: "Angela Go",
-    lineEntries: [
-      {
-        id: "entry-1005",
-        accountCode: "6150-017",
-        accountName: "Travel and Transportation",
-        particulars: "Field travel reimbursement",
-        debit: 3200,
-        credit: 0,
-        taxRate: "0%",
-        taxDetails: createTaxDetails(3200, "0%"),
-        status: "Balanced",
-      },
-      {
-        id: "entry-1006",
-        accountCode: "1001111",
-        accountName: "Cash in Hand",
-        particulars: "Cash reimbursement release",
-        debit: 0,
-        credit: 3200,
-        taxRate: "0%",
-        taxDetails: createTaxDetails(3200, "0%"),
-        status: "Balanced",
-      },
-    ],
-    attachments: [],
-    status: CashVoucherStatuses.posted,
-    history: createInitialCashVoucherHistory({
-      voucherNo: "CV-2026-0099",
-      voucherDate: "2026-04-24",
-      status: CashVoucherStatuses.posted,
-    }),
-    createdBy: "Angela Go",
-    createdAt: "2026-04-24T14:05:00.000Z",
-    updatedBy: "Angela Go",
-    updatedAt: "2026-04-24T14:05:00.000Z",
-  },
-];
-
-const LegacyMockAttachmentNames = new Set([
+const LegacyDemoAttachmentNames = new Set([
   "invoice-office-depot.pdf",
   "approval-memo-q2.docx",
   "retainer-billing.pdf",
   "travel-receipts.zip",
 ]);
 
-export function removeLegacyMockAttachments(attachments: CashVoucherAttachment[]) {
-  return attachments.filter((attachment) => !LegacyMockAttachmentNames.has(attachment.name));
+export function removeLegacyDemoAttachments(attachments?: CashVoucherAttachment[] | null) {
+  return (attachments ?? []).filter((attachment) => !LegacyDemoAttachmentNames.has(attachment.name));
 }
 
 export function sanitizeCashVoucherRecord(voucher: CashVoucherRecord): CashVoucherRecord {
   const createdAt = voucher.createdAt ?? voucher.history?.[0]?.createdAt ?? "";
   const updatedAt = voucher.updatedAt ?? voucher.history?.[voucher.history.length - 1]?.createdAt ?? createdAt;
+  const lineEntries = normalizeGeneratedCashVoucherRemarks(voucher.lineEntries ?? []);
 
   return {
     ...voucher,
     referenceModule: voucher.referenceModule ?? "",
     paymentDetails: normalizePaymentDetails(voucher.paymentDetails ?? createEmptyPaymentDetails()),
-    attachments: removeLegacyMockAttachments(voucher.attachments),
+    attachments: removeLegacyDemoAttachments(voucher.attachments),
     status: getCashVoucherDisplayStatus(voucher.status),
-    history:
-      voucher.history?.length > 0
-        ? voucher.history.map(normalizeCashVoucherHistoryEntry)
-        : createInitialCashVoucherHistory(voucher),
+    history: voucher.history?.length > 0 ? voucher.history.map(normalizeCashVoucherHistoryEntry) : createInitialCashVoucherHistory(voucher),
     createdBy: voucher.createdBy ?? voucher.preparedBy ?? "",
     createdAt,
+    lineEntries,
     updatedBy: voucher.updatedBy ?? voucher.preparedBy ?? "",
     updatedAt,
   };
 }
 
+function normalizeGeneratedCashVoucherRemarks(entries: CashVoucherLineEntry[]) {
+  const sourceEntry = entries.find((entry) => !isGeneratedCashVoucherLineEntry(entry));
+  const sourceRemarks = (sourceEntry?.particulars || sourceEntry?.remarks || "").trim();
+  const sourceCreatedRemarks = sourceEntry?.accountName.trim() ?? "";
+  const hasUserRemarks = sourceRemarks !== "" && sourceRemarks !== sourceCreatedRemarks;
+
+  if (!hasUserRemarks) {
+    return entries;
+  }
+
+  return entries.map((entry) => {
+    const entryRemarks = entry.particulars || entry.remarks || "";
+    if (!isGeneratedCashVoucherLineEntry(entry) || !hasGeneratedCashVoucherRemarkPrefix(entryRemarks)) {
+      return entry;
+    }
+
+    const nextRemarks = stripGeneratedCashVoucherRemarkPrefix(entryRemarks, sourceRemarks);
+    return {
+      ...entry,
+      particulars: nextRemarks,
+      remarks: nextRemarks,
+    };
+  });
+}
+
+function isGeneratedCashVoucherLineEntry(entry: CashVoucherLineEntry) {
+  const accountName = entry.accountName.trim().toLowerCase();
+
+  return (
+    entry.id.startsWith("auto-input-vat-") ||
+    entry.id.startsWith("auto-ewt-") ||
+    entry.id.startsWith("auto-credit-") ||
+    accountName === "input vat" ||
+    accountName === "expanded withholding tax" ||
+    accountName === "cash on hand" ||
+    accountName.startsWith("cash in bank")
+  );
+}
+
+function hasGeneratedCashVoucherRemarkPrefix(remarks: string) {
+  const trimmedRemarks = remarks.trim();
+
+  return getGeneratedCashVoucherRemarkPrefixPatterns().some((pattern) => pattern.test(trimmedRemarks));
+}
+
+function stripGeneratedCashVoucherRemarkPrefix(remarks: string, fallbackRemarks: string) {
+  const trimmedRemarks = remarks.trim();
+
+  for (const pattern of getGeneratedCashVoucherRemarkPrefixPatterns()) {
+    if (pattern.test(trimmedRemarks)) {
+      return trimmedRemarks.replace(pattern, "").trim() || fallbackRemarks;
+    }
+  }
+
+  return trimmedRemarks || fallbackRemarks;
+}
+
+function getGeneratedCashVoucherRemarkPrefixPatterns() {
+  return [
+    /^Input VAT\s*-\s*/i,
+    /^EWT\s*-\s*/i,
+    /^Expanded Withholding Tax\s*-\s*/i,
+    /^Settlement via .*?\s*-\s*/i,
+    /^Settlement(?:\s+for.*?)?(?:\s+via.*?)?$/i,
+  ];
+}
+
 export const CashVoucherCopySources: CashVoucherCopySource[] = [
-  "Account Payable Voucher",
+  "Accounts Payable Voucher",
   "Advances to Suppliers",
   "Cash Advance",
   "Cash Advance Liquidation",
-  "Cash Advance ",
   "Cash Advance Multiple Entry",
+  "Cash Advance Multiple Entry Liquidation",
+  "Petty Cash Fund",
+  "Petty Cash Replenishment",
   "Revolving Fund",
   "Revolving Fund Replenishment",
+  "Revolving Fund Return",
   "Purchase Order",
   "Purchase Journal",
   "Receiving Report",
-];
-
-export const CashVoucherCopyFromRecords: CashVoucherCopyFromRecord[] = [
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1001",
-    "Account Payable Voucher",
-    "APV-2026-0041",
-    "PARTY-OD-204",
-    MockCashVoucherTransactions[0],
-    MockCashVouchers[0],
-  ),
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1002",
-    "Advances to Suppliers",
-    "ATS-2026-0017",
-    "PARTY-MUS-118",
-    MockCashVoucherTransactions[0],
-  ),
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1003",
-    "Cash Advance",
-    "CA-2026-0021",
-    "EMP-044",
-    MockCashVoucherTransactions[0],
-    MockCashVouchers[2],
-  ),
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1004",
-    "Cash Advance Multiple Entry",
-    "CAME-2026-0015",
-    "EMP-044",
-    MockCashVoucherTransactions[0],
-  ),
-  createCashVoucherCopyFromRecord("copy-cv-1005", "Revolving Fund", "RF-2026-0007", "EMP-044", MockCashVoucherTransactions[0]),
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1007",
-    "Revolving Fund Replenishment",
-    "PCFR-2026-0012",
-    "PARTY-TPI-611",
-    MockCashVoucherTransactions[0],
-  ),
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1008",
-    "Purchase Order",
-    "PO-2026-0322",
-    "PARTY-LAW-108",
-    MockCashVoucherTransactions[0],
-    MockCashVouchers[1],
-  ),
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1009",
-    "Purchase Journal",
-    "PJ-2026-0088",
-    "PARTY-MUS-118",
-    MockCashVoucherTransactions[0],
-  ),
-  createCashVoucherCopyFromRecord(
-    "copy-cv-1010",
-    "Receiving Report",
-    "RR-2026-0144",
-    "PARTY-GFM-077",
-    MockCashVoucherTransactions[0],
-  ),
 ];
 
 export function buildCashVoucherPreviewRows(transactions: CashVoucherTransactionRecord[], vouchers: CashVoucherRecord[]) {
@@ -592,6 +250,8 @@ export function createCashVoucherFormValues(
   voucher?: CashVoucherRecord,
 ): CashVoucherFormValues {
   if (voucher) {
+    const voucherGrossAmount = getCashVoucherSourceGrossTotal(voucher.lineEntries) || voucher.amount;
+
     return {
       transactionId: voucher.transactionId,
       voucherNo: voucher.voucherNo,
@@ -600,13 +260,14 @@ export function createCashVoucherFormValues(
       disbursementType: voucher.disbursementType,
       currency: voucher.currency,
       fxRate: voucher.fxRate,
-      costCenter: voucher.costCenter,
+      costCenter: voucher.projectCode ?? voucher.costCenter,
+      projectCode: voucher.projectCode ?? voucher.costCenter,
       projectName: voucher.projectName ?? transaction?.projectName ?? transaction?.department ?? "",
       partyCode: voucher.partyCode,
       partyName: voucher.partyName,
-      amount: voucher.amount.toFixed(2),
+      amount: voucherGrossAmount.toFixed(2),
       taxRate: voucher.taxRate,
-      taxDetails: voucher.taxDetails,
+      taxDetails: syncTaxDetailsAmount(voucher.taxDetails, voucherGrossAmount, voucher.taxRate),
       remarks: voucher.remarks,
       referenceModule: voucher.referenceModule ?? "",
       voucherReferenceNo: voucher.voucherReferenceNo,
@@ -616,7 +277,7 @@ export function createCashVoucherFormValues(
       preparedBy: voucher.preparedBy,
       status: voucher.status,
       lineEntries: ensureCashVoucherLineEntries(voucher.lineEntries),
-      attachments: removeLegacyMockAttachments(voucher.attachments),
+      attachments: removeLegacyDemoAttachments(voucher.attachments),
     };
   }
 
@@ -624,17 +285,18 @@ export function createCashVoucherFormValues(
     taxRate: transaction ? getDefaultTaxRate(transaction) : "0%",
     taxDetails: transaction ? createDefaultTransactionTaxDetails(transaction) : createTaxDetails(0, "0%"),
     transactionId: transaction?.id ?? "",
-    voucherNo: createNextVoucherNumber(),
+    voucherNo: "",
     voucherDate: todayDateValue(),
     paymentMethod: "Cash",
     disbursementType: transaction?.disbursementType ?? "",
     currency: transaction?.currency ?? "PHP",
     fxRate: "1.00",
-    costCenter: transaction?.costCenter ?? "",
+    costCenter: transaction?.projectCode ?? transaction?.costCenter ?? "",
+    projectCode: transaction?.projectCode ?? transaction?.costCenter ?? "",
     projectName: transaction?.projectName ?? transaction?.department ?? "",
     partyCode: getCashVoucherPartyCode(transaction?.payee ?? ""),
     partyName: transaction?.payee ?? "",
-    amount: transaction ? createDefaultTransactionTaxDetails(transaction).amount.toFixed(2) : "",
+    amount: transaction ? transaction.amount.toFixed(2) : "",
     remarks: transaction?.purpose ?? "",
     referenceModule: "Cash Voucher",
     voucherReferenceNo: "",
@@ -650,6 +312,14 @@ export function createCashVoucherFormValues(
   };
 }
 
+function getCashVoucherSourceGrossTotal(entries: CashVoucherLineEntry[]) {
+  return entries.filter((entry) => !isGeneratedCashVoucherLineEntry(entry)).reduce((sum, entry) => {
+    const grossAmount = Number(entry.taxDetails?.grossAmount || entry.debit || 0);
+
+    return sum + grossAmount;
+  }, 0);
+}
+
 export function createCashVoucherFromForm(values: CashVoucherFormValues): CashVoucherRecord {
   const now = new Date().toISOString();
   const actor = values.preparedBy.trim() || "Current User";
@@ -663,7 +333,8 @@ export function createCashVoucherFromForm(values: CashVoucherFormValues): CashVo
     disbursementType: values.disbursementType as CashVoucherRecord["disbursementType"],
     currency: values.currency,
     fxRate: values.fxRate.trim() || "1.00",
-    costCenter: values.costCenter.trim(),
+    costCenter: values.projectCode.trim() || values.costCenter.trim(),
+    projectCode: values.projectCode.trim() || values.costCenter.trim(),
     projectName: values.projectName.trim(),
     partyCode: values.partyCode.trim(),
     partyName: values.partyName.trim(),
@@ -679,7 +350,7 @@ export function createCashVoucherFromForm(values: CashVoucherFormValues): CashVo
     preparedBy: values.preparedBy.trim(),
     status: values.status,
     lineEntries: ensureCashVoucherLineEntries(values.lineEntries),
-    attachments: removeLegacyMockAttachments(values.attachments),
+    attachments: removeLegacyDemoAttachments(values.attachments),
     history: createInitialCashVoucherHistory({
       voucherNo: values.voucherNo.trim(),
       voucherDate: values.voucherDate,
@@ -714,7 +385,8 @@ export function createCashVoucherTransactionFromForm(
     paymentMethod: "Cash",
     disbursementType: values.disbursementType as CashVoucherTransactionRecord["disbursementType"],
     status: values.status,
-    costCenter: values.costCenter.trim(),
+    costCenter: values.projectCode.trim() || values.costCenter.trim(),
+    projectCode: values.projectCode.trim() || values.costCenter.trim(),
     accountingEntries: ensureCashVoucherLineEntries(values.lineEntries),
     createdBy: transaction?.createdBy ?? actor,
     createdAt: transaction?.createdAt ?? now,
@@ -734,7 +406,9 @@ export function applyCopyFromRecordToCashVoucherForm(
     disbursementType: record.templateValues.disbursementType,
     currency: record.templateValues.currency,
     fxRate: record.templateValues.fxRate,
-    costCenter: record.templateValues.costCenter,
+    costCenter: record.templateValues.projectCode || record.templateValues.costCenter,
+    projectCode: record.templateValues.projectCode || record.templateValues.costCenter,
+    projectName: record.templateValues.projectName,
     partyCode: record.templateValues.partyCode,
     partyName: record.templateValues.partyName,
     amount: record.templateValues.amount,
@@ -747,7 +421,7 @@ export function applyCopyFromRecordToCashVoucherForm(
     paymentDueDate: record.templateValues.paymentDueDate,
     paymentDetails: record.templateValues.paymentDetails,
     lineEntries: ensureCashVoucherLineEntries(record.templateValues.lineEntries),
-    attachments: removeLegacyMockAttachments(record.templateValues.attachments),
+    attachments: removeLegacyDemoAttachments(record.templateValues.attachments),
   };
 }
 
@@ -786,7 +460,7 @@ export function applyCopyFromRecordsToCashVoucherForm(
       },
     })),
   );
-  const attachments = records.flatMap((record) => removeLegacyMockAttachments(record.templateValues.attachments));
+  const attachments = records.flatMap((record) => removeLegacyDemoAttachments(record.templateValues.attachments));
 
   return {
     ...currentValues,
@@ -795,7 +469,9 @@ export function applyCopyFromRecordsToCashVoucherForm(
     disbursementType: firstValues.disbursementType,
     currency: firstValues.currency,
     fxRate: firstValues.fxRate,
-    costCenter: firstValues.costCenter,
+    costCenter: firstValues.projectCode || firstValues.costCenter,
+    projectCode: firstValues.projectCode || firstValues.costCenter,
+    projectName: firstValues.projectName,
     partyCode: records.every((record) => record.partyCode === firstRecord.partyCode) ? firstValues.partyCode : "",
     partyName: records.every((record) => record.partyName === firstRecord.partyName) ? firstValues.partyName : "Multiple Parties",
     amount: totalAmount.toFixed(2),
@@ -847,7 +523,7 @@ export function createCashVoucherLineEntry(draft: CashVoucherEntryDraft): CashVo
   const taxDetails = syncTaxDetailsAmount(
     {
       ...draft.taxDetails,
-      atcCode: draft.atcCode?.trim() ?? draft.taxDetails.atcCode,
+      ewtCode: draft.ewtCode?.trim() ?? draft.taxDetails.ewtCode,
       refId: draft.refId?.trim() ?? draft.taxDetails.refId,
       responsibilityCenter: draft.responsibilityCenter?.trim() ?? draft.taxDetails.responsibilityCenter,
       vatType: draft.vatType?.trim() ?? draft.taxDetails.vatType,
@@ -860,8 +536,9 @@ export function createCashVoucherLineEntry(draft: CashVoucherEntryDraft): CashVo
     id: `line-${Date.now()}`,
     accountCode: draft.accountCode.trim(),
     accountName: draft.accountName.trim(),
-    atcCode: taxDetails.atcCode,
-    particulars: draft.particulars.trim(),
+    ewtCode: taxDetails.ewtCode,
+    particulars: (draft.particulars ?? draft.remarks ?? "").trim(),
+    remarks: draft.remarks?.trim() ?? "",
     partyCode: draft.partyCode?.trim() ?? "",
     partyName: draft.partyName?.trim() ?? "",
     refId: taxDetails.refId,
@@ -880,7 +557,7 @@ export function createAutoCashVoucherLineEntries(
   bankAccount?: CashVoucherBankAccount | null,
   paymentAccount?: CashVoucherPaymentAccount | null,
 ): CashVoucherLineEntry[] {
-  const bankPaymentAccount = bankAccount ?? getMockBankAccountForPayment(transaction.paymentMethod);
+  const bankPaymentAccount = bankAccount ?? getDefaultBankAccountForPayment(transaction.paymentMethod);
   const amount = transaction.amount;
   const debitAccount = getDebitAccountTemplate(transaction);
   const creditAccount = getCreditAccountTemplate(transaction, bankPaymentAccount, paymentAccount);
@@ -889,8 +566,8 @@ export function createAutoCashVoucherLineEntries(
     amount,
     ...taxProfile,
   });
-  const creditParticulars = createCreditParticulars(transaction, bankPaymentAccount, paymentAccount);
   const refId = transaction.transactionNo || transaction.id;
+  const generatedRemarks = createAutoCashVoucherGeneratedRemarks(transaction.purpose, debitAccount.accountName, transaction.paymentMethod);
   const commonFields = {
     partyCode: getCashVoucherPartyCode(transaction.payee),
     partyName: transaction.payee,
@@ -902,8 +579,9 @@ export function createAutoCashVoucherLineEntries(
       id: `auto-expense-${transaction.id}`,
       accountCode: debitAccount.accountCode,
       accountName: debitAccount.accountName,
-      atcCode: "",
-      particulars: transaction.purpose,
+      ewtCode: "",
+      particulars: transaction.purpose || debitAccount.accountName,
+      remarks: transaction.purpose || debitAccount.accountName,
       ...commonFields,
       debit: taxDetails.netAmount,
       credit: 0,
@@ -922,8 +600,9 @@ export function createAutoCashVoucherLineEntries(
       id: `auto-input-vat-${transaction.id}`,
       accountCode: InputVatAccount.accountCode,
       accountName: InputVatAccount.accountName,
-      atcCode: "",
-      particulars: `Input VAT - ${transaction.purpose}`,
+      ewtCode: "",
+      particulars: generatedRemarks.inputVat,
+      remarks: generatedRemarks.inputVat,
       ...commonFields,
       debit: taxDetails.vatAmount,
       credit: 0,
@@ -942,8 +621,9 @@ export function createAutoCashVoucherLineEntries(
       id: `auto-ewt-${transaction.id}`,
       accountCode: ExpandedWithholdingTaxAccount.accountCode,
       accountName: ExpandedWithholdingTaxAccount.accountName,
-      atcCode: taxDetails.ewtCode,
-      particulars: `EWT - ${transaction.purpose}`,
+      ewtCode: taxDetails.ewtCode,
+      particulars: generatedRemarks.ewt,
+      remarks: generatedRemarks.ewt,
       ...commonFields,
       debit: 0,
       credit: taxDetails.ewtAmount,
@@ -961,8 +641,9 @@ export function createAutoCashVoucherLineEntries(
     id: `auto-credit-${transaction.id}`,
     accountCode: creditAccount.accountCode,
     accountName: creditAccount.accountName,
-    atcCode: "",
-    particulars: creditParticulars,
+    ewtCode: "",
+    particulars: generatedRemarks.settlement,
+    remarks: generatedRemarks.settlement,
     ...commonFields,
     debit: 0,
     credit: taxDetails.amount,
@@ -976,6 +657,27 @@ export function createAutoCashVoucherLineEntries(
   });
 
   return entries;
+}
+
+function createAutoCashVoucherGeneratedRemarks(headerRemarks: string, expenseName: string, paymentMethod: string) {
+  const remarks = headerRemarks.trim();
+
+  if (remarks) {
+    return {
+      ewt: remarks,
+      inputVat: remarks,
+      settlement: remarks,
+    };
+  }
+
+  const expenseSummary = expenseName.trim();
+  const settlementMethod = paymentMethod.trim() || "Cash";
+
+  return {
+    ewt: expenseSummary ? `EWT - ${expenseSummary}` : "EWT",
+    inputVat: expenseSummary ? `Input VAT - ${expenseSummary}` : "Input VAT",
+    settlement: expenseSummary ? `Settlement via ${settlementMethod} - ${expenseSummary}` : `Settlement via ${settlementMethod}`,
+  };
 }
 
 export function applyBankAccountToPaymentDetails(
@@ -1016,7 +718,7 @@ export function applyBankAccountToCashVoucherLineEntries(
           ...entry,
           accountCode: bankAccount.accountCode,
           accountName: bankAccount.accountTitle,
-          particulars: createCreditParticulars(undefined, bankAccount, paymentAccount),
+          remarks: createCreditRemarks(undefined, bankAccount, paymentAccount),
         }
       : entry,
   );
@@ -1049,7 +751,6 @@ export function createTaxDetails(amount: number, taxRate: string): CashVoucherTa
     responsibilityCenter: "",
     refId: "",
     vatType: "",
-    atcCode: "",
     grossAmount: roundedAmount,
     netAmount,
     vatCode: taxRate !== "0%" ? `VAT-${taxRate.replace("%", "")}` : "",
@@ -1109,7 +810,6 @@ function createCashVoucherTaxDetails({
     responsibilityCenter: "",
     refId: "",
     vatType: vatCode,
-    atcCode: ewtCode,
     grossAmount: roundedAmount,
     netAmount: roundCurrency(sign * Math.max(absoluteAmount - Math.abs(vatAmount), 0)),
     vatCode,
@@ -1146,6 +846,35 @@ export function formatDateLabel(value: string) {
 }
 
 export function getCashVoucherDisplayStatus(status: string): CashVoucherDisplayStatus {
+  const normalizedStatus = status
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
+
+  if (normalizedStatus === "DRAFT") {
+    return CashVoucherStatuses.draft;
+  }
+
+  if (normalizedStatus === "FOR_APPROVAL") {
+    return CashVoucherStatuses.forApproval;
+  }
+
+  if (normalizedStatus === "APPROVED" || normalizedStatus === "POSTED") {
+    return CashVoucherStatuses.posted;
+  }
+
+  if (normalizedStatus === "DISAPPROVED" || normalizedStatus === "REJECTED") {
+    return CashVoucherStatuses.disapproved;
+  }
+
+  if (normalizedStatus === "CANCELLED" || normalizedStatus === "CANCELED") {
+    return CashVoucherStatuses.cancelled;
+  }
+
+  if (normalizedStatus === "CLOSED" || normalizedStatus === "COMPLETED") {
+    return CashVoucherStatuses.closed;
+  }
+
   if (status === CashVoucherStatuses.draft || status === CashVoucherStatuses.open) {
     return CashVoucherStatuses.draft;
   }
@@ -1183,8 +912,7 @@ export function getCashVoucherDisplayStatus(status: string): CashVoucherDisplayS
 function createInitialCashVoucherHistory(
   voucher: Pick<CashVoucherRecord, "voucherNo" | "voucherDate" | "status">,
 ): CashVoucherHistoryEntry[] {
-  const createdStatus =
-    voucher.status === CashVoucherStatuses.draft ? CashVoucherStatuses.draft : CashVoucherStatuses.forApproval;
+  const createdStatus = voucher.status === CashVoucherStatuses.draft ? CashVoucherStatuses.draft : CashVoucherStatuses.forApproval;
   const createdAt = createCashVoucherHistoryDate(voucher.voucherDate, 8);
   const history: CashVoucherHistoryEntry[] = [
     {
@@ -1199,11 +927,7 @@ function createInitialCashVoucherHistory(
 
   if (voucher.status !== createdStatus) {
     history.push(
-      createCashVoucherStatusHistoryEntry(
-        voucher.status,
-        voucher.voucherNo,
-        createCashVoucherHistoryDate(voucher.voucherDate, 9),
-      ),
+      createCashVoucherStatusHistoryEntry(voucher.status, voucher.voucherNo, createCashVoucherHistoryDate(voucher.voucherDate, 9)),
     );
   }
 
@@ -1287,63 +1011,11 @@ function todayDateValue() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function createNextVoucherNumber() {
-  const currentYear = new Date().getFullYear();
-  const matchingSerials = MockCashVouchers.map((voucher) => {
-    const matchedParts = voucher.voucherNo.match(/^CV-(\d{4})-(\d{4})$/);
-
-    if (!matchedParts) {
-      return null;
-    }
-
-    const [, year, serial] = matchedParts;
-
-    return Number(year) === currentYear ? Number(serial) : null;
-  }).filter((value): value is number => value !== null);
-  const nextSerial = Math.max(0, ...matchingSerials) + 1;
-  const serial = String(nextSerial).padStart(4, "0");
-
-  return `CV-${currentYear}-${serial}`;
-}
-
 function createNextTransactionNumber() {
   const currentYear = new Date().getFullYear();
   const serial = String(Date.now() % 100000).padStart(5, "0");
 
   return `TXN-${currentYear}-${serial}`;
-}
-
-function createCashVoucherCopyFromRecord(
-  id: string,
-  source: CashVoucherCopySource,
-  sourceNo: string,
-  partyCode: string,
-  transaction: CashVoucherTransactionRecord,
-  voucher?: CashVoucherRecord,
-): CashVoucherCopyFromRecord {
-  const templateValues = createCashVoucherFormValues(transaction, voucher);
-
-  return {
-    id,
-    source,
-    sourceNo,
-    documentDate: voucher?.voucherDate ?? transaction.transactionDate,
-    transactionId: transaction.id,
-    partyCode,
-    partyName: transaction.payee,
-    amount: templateValues.amount,
-    remarks: voucher?.remarks ?? transaction.purpose,
-    templateValues: {
-      ...templateValues,
-      partyCode: voucher?.partyCode ?? partyCode,
-      partyName: voucher?.partyName ?? transaction.payee,
-      remarks: voucher?.remarks ?? `${transaction.purpose} Copied from ${sourceNo}.`,
-      referenceModule: voucher?.referenceModule ?? source,
-      invoiceReferenceNo: voucher?.invoiceReferenceNo ?? `${sourceNo}-REF`,
-      attachments: voucher?.attachments ?? createAttachmentPlaceholders(),
-      lineEntries: voucher?.lineEntries ?? createAutoCashVoucherLineEntries(transaction),
-    },
-  };
 }
 
 function getDebitAccountTemplate(transaction: CashVoucherTransactionRecord) {
@@ -1388,20 +1060,20 @@ function getCreditAccountTemplate(
 
   if (paymentAccount?.type === "Cash") {
     return {
-      ...CashInHandAccount,
+      ...CashOnHandAccount,
     };
   }
 
   if (transaction.paymentMethod === "Cash") {
     return {
-      ...CashInHandAccount,
+      ...CashOnHandAccount,
     };
   }
 
   return createDefaultCashInBankCreditAccount();
 }
 
-function getMockBankAccountForPayment(paymentMethod: CashVoucherPaymentMethod) {
+function getDefaultBankAccountForPayment(paymentMethod: CashVoucherPaymentMethod) {
   if (paymentMethod === "Cash") {
     return null;
   }
@@ -1422,7 +1094,7 @@ function createDefaultCashInBankCreditAccount() {
   };
 }
 
-function createCreditParticulars(
+function createCreditRemarks(
   transaction?: CashVoucherTransactionRecord,
   bankAccount?: CashVoucherBankAccount | null,
   paymentAccount?: CashVoucherPaymentAccount | null,
@@ -1531,7 +1203,6 @@ function normalizePaymentDetails(paymentDetails: CashVoucherPaymentDetails): Cas
 }
 
 function getCashVoucherPartyCode(partyName: string) {
-  return CashVoucherPartyOptions.find((option) => option.name.toLowerCase() === partyName.trim().toLowerCase())?.value ?? "";
+  void partyName;
+  return "";
 }
-
-

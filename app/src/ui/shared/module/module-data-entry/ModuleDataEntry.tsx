@@ -21,6 +21,7 @@ export type {
 } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export function ModuleDataEntry<TRow extends { id: string }>({
+  addButtonLabel,
   addColumnOptions = [],
   addMenuActions = [],
   columnResetLabel,
@@ -35,6 +36,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
   summaryRowHeader,
   toolbarActions = [],
   canConfigureColumnsWhenReadonly = false,
+  canManageRowsWhenReadonly = false,
   isDraggable = false,
   isReadonly,
   isRowNumberColumnFixed = false,
@@ -68,6 +70,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const shouldScrollToBottomAfterAddRef = useRef(false);
   const canEditRows = !isReadonly;
+  const canManageRows = canEditRows || canManageRowsWhenReadonly;
   const canConfigureColumns =
     (canEditRows || canConfigureColumnsWhenReadonly) &&
     columnOptions.length > 0 &&
@@ -79,7 +82,7 @@ export function ModuleDataEntry<TRow extends { id: string }>({
       onUpdateColumnWidth ||
       onAutoColumnWidth,
     );
-  const hasHeaderActions = canEditRows || canConfigureColumns || Boolean(onExport);
+  const hasHeaderActions = canManageRows || canConfigureColumns || Boolean(onExport);
   const hasExportActions = Boolean(onExport) || exportOptions.length > 0;
   const shouldShowActions = hasHeaderActions || hasExportActions;
   const entryCountLabel = formatEntryCountLabel(rows.length, emptyRowLabel);
@@ -109,11 +112,13 @@ export function ModuleDataEntry<TRow extends { id: string }>({
 
     return (
       <ModuleDataEntryActionGroup
+        addButtonLabel={addButtonLabel}
         addColumnOptions={addColumnOptions}
         addMenuActions={addMenuActions}
         align={placement === "footer" ? "right" : "left"}
         canConfigureColumns={canConfigureColumns}
         canEditRows={canEditRows}
+        canManageRows={canManageRows}
         columnResetLabel={columnResetLabel}
         columnOptions={columnOptions}
         exportOptions={exportOptions}

@@ -19,11 +19,13 @@ import type {
 } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export function ModuleDataEntryActionGroup({
+  addButtonLabel,
   addColumnOptions,
   addMenuActions,
   align = "left",
   canConfigureColumns,
   canEditRows,
+  canManageRows,
   columnResetLabel,
   columnOptions,
   exportOptions,
@@ -45,11 +47,13 @@ export function ModuleDataEntryActionGroup({
   onUpdateColumnHeader,
   onUpdateColumnWidth,
 }: {
+  addButtonLabel?: string;
   addColumnOptions: ModuleDataEntryAddColumnOption[];
   addMenuActions: ModuleDataEntryAddMenuAction[];
   align?: "left" | "right";
   canConfigureColumns: boolean;
   canEditRows: boolean;
+  canManageRows: boolean;
   columnResetLabel?: string;
   columnOptions: ModuleDataEntryColumnOption[];
   exportOptions: ModuleDataEntryExportOption[];
@@ -112,7 +116,7 @@ export function ModuleDataEntryActionGroup({
           onAddColumn={onAddColumn}
         />
       ) : null}
-      {canEditRows && onClearRows ? (
+      {canManageRows && onClearRows ? (
         <ModuleDataEntryClearButton
           align={align}
           isOpen={isClearOpen}
@@ -120,11 +124,12 @@ export function ModuleDataEntryActionGroup({
           onOpenChange={onClearOpenChange}
         />
       ) : null}
-      {canEditRows ? (
+      {canManageRows ? (
         <ModuleDataEntryAddButton
           actions={addMenuActions}
           align={align}
           isOpen={isAddOpen}
+          label={addButtonLabel}
           onAddRows={onAddRows}
           onOpenChange={onAddOpenChange}
         />

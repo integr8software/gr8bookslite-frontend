@@ -7,6 +7,7 @@ import {
 import type { TermsMaintenanceFieldsProps } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 export function TermsMaintenanceFields({ errors, isReadonly, values, onInputChange, onStatusChange }: TermsMaintenanceFieldsProps) {
   return (
@@ -101,10 +102,10 @@ function FormField({
   warning?: string;
 }) {
   return (
-    <div className={className}>
+    <label className={className}>
       <span className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
-        {required ? <span className="text-coralpink"> *</span> : null}
+        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
       </span>
       {children}
       {error ? (
@@ -112,7 +113,7 @@ function FormField({
       ) : warning ? (
         <span className="mt-1 block text-xs font-medium text-amber-600">{warning}</span>
       ) : null}
-    </div>
+    </label>
   );
 }
 

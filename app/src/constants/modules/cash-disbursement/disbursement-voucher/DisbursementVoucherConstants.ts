@@ -1,25 +1,38 @@
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
-import { CashDisbursementOverviewActionColumnWidth } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type {
   DisbursementVoucherActionMode,
   DisbursementVoucherActionTab,
+  DisbursementVoucherPaymentErrorField,
   DisbursementVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 
 export function getDisbursementVoucherSubmitDialogCopy(
   mode: DisbursementVoucherActionMode,
   status: DisbursementVoucherStatus,
+  recordLabel = "this disbursement voucher",
 ) {
   const isDraft = status === DisbursementVoucherStatuses.draft;
-  const confirmLabel = mode === "edit" ? "Update" : isDraft ? "Save as Draft" : "Save and Submit";
+  const isEdit = mode === "edit";
+  const title = isEdit
+    ? "Update Disbursement Voucher?"
+    : isDraft
+      ? "Save Disbursement Voucher as Draft?"
+      : "Save Disbursement Voucher?";
+  const description = isEdit
+    ? `This will update ${recordLabel}.`
+    : isDraft
+      ? `This will save ${recordLabel} as draft.`
+      : `This will save and submit ${recordLabel}.`;
+  const confirmLabel = isEdit ? "Update" : isDraft ? "Save as Draft" : "Save and Submit";
 
   return {
     confirmLabel,
-    description: `Confirm that you want to ${confirmLabel.toLowerCase()} this Disbursement Voucher.`,
-    pendingLabel: mode === "edit" ? "Updating..." : "Saving...",
-    title: `${confirmLabel} Disbursement Voucher?`,
+    description,
+    iconTone: isEdit ? ("update" as const) : ("save" as const),
+    pendingLabel: isEdit ? "Updating..." : "Saving...",
+    title,
   };
 }
 
@@ -27,11 +40,6 @@ export const DisbursementVoucherLink = getModuleRoute("DV");
 export const DisbursementVoucherAddLink = `${DisbursementVoucherLink}/add`;
 export const getDisbursementVoucherEditLink = (recordId: string) => `${DisbursementVoucherLink}/edit/${recordId}`;
 export const getDisbursementVoucherViewLink = (recordId: string) => `${DisbursementVoucherLink}/view/${recordId}`;
-
-export const DisbursementVoucherQueryKeys = {
-  transactions: () => ["cash-disbursement", "disbursement-voucher", "transactions"] as const,
-  vouchers: () => ["cash-disbursement", "disbursement-voucher", "vouchers"] as const,
-};
 
 export const DisbursementVoucherTablePaginationStorageKey = "cash-disbursement-disbursement-voucher";
 
@@ -79,9 +87,18 @@ export const DisbursementVoucherActionTabs: {
   label: string;
 }[] = [
   { id: "details", label: "Voucher Details" },
-  { id: "bank-information", label: "Bank Information" },
+  { id: "payment-information", label: "Payment Information" },
   { id: "attachments", label: "File Attachments" },
 ];
+
+export const DisbursementVoucherPaymentInformationErrorFields = [
+  "bankAccountCode",
+  "checkDate",
+  "checkNo",
+  "payee",
+  "transferAccountNo",
+  "transferToBank",
+] as const satisfies readonly DisbursementVoucherPaymentErrorField[];
 
 export const DisbursementVoucherStatuses = {
   cancelled: "Cancelled",
@@ -103,7 +120,7 @@ export const DisbursementVoucherWorkflowSteps = [
   },
   {
     id: "entries",
-    title: "Line Entries",
+    title: "Disbursement Details",
     description: "Capture the debit and credit lines for the disbursement.",
   },
   {
@@ -115,9 +132,9 @@ export const DisbursementVoucherWorkflowSteps = [
 
 export const DisbursementVoucherStatusFilters = [
   DisbursementVoucherAllStatusFilter,
-  DisbursementVoucherStatuses.draft,
-  DisbursementVoucherStatuses.forApproval,
   DisbursementVoucherStatuses.posted,
+  DisbursementVoucherStatuses.forApproval,
+  DisbursementVoucherStatuses.draft,
   DisbursementVoucherStatuses.disapproved,
   DisbursementVoucherStatuses.cancelled,
   DisbursementVoucherStatuses.closed,
@@ -126,16 +143,16 @@ export const DisbursementVoucherStatusFilters = [
 export const DisbursementVoucherStatusFilterOptions = [
   { label: "All statuses", value: DisbursementVoucherAllStatusFilter },
   {
-    label: DisbursementVoucherStatuses.draft,
-    value: DisbursementVoucherStatuses.draft,
+    label: DisbursementVoucherStatuses.posted,
+    value: DisbursementVoucherStatuses.posted,
   },
   {
     label: DisbursementVoucherStatuses.forApproval,
     value: DisbursementVoucherStatuses.forApproval,
   },
   {
-    label: DisbursementVoucherStatuses.posted,
-    value: DisbursementVoucherStatuses.posted,
+    label: DisbursementVoucherStatuses.draft,
+    value: DisbursementVoucherStatuses.draft,
   },
   {
     label: DisbursementVoucherStatuses.disapproved,
@@ -195,6 +212,12 @@ export const DisbursementVoucherTableColumns = [
     size: TransactionOverviewColumnWidths.amount,
   },
   {
+    key: "disburseAmount",
+    label: "Disburse Amount",
+    className: "",
+    size: TransactionOverviewColumnWidths.amount,
+  },
+  {
     key: "remarks",
     label: "Remarks",
     className: "",
@@ -233,7 +256,7 @@ export const DisbursementVoucherTableColumns = [
   {
     label: "Actions",
     className: "text-center",
-    size: CashDisbursementOverviewActionColumnWidth,
+    size: TransactionOverviewColumnWidths.actions,
   },
 ] as const;
 
@@ -249,12 +272,13 @@ export const DisbursementVoucherDefaultColumnVisibility: VisibilityState = {
   remarks: false,
   updatedBy: false,
   updatedAt: false,
+  disburseAmount: false,
 };
 
 export const DisbursementVoucherDefaultSorting: SortingState = [{ id: "documentDate", desc: true }];
 
 export function canEditDisbursementVoucherStatus(status: DisbursementVoucherStatus) {
-  return status === DisbursementVoucherStatuses.draft || status === DisbursementVoucherStatuses.forApproval;
+  return status === DisbursementVoucherStatuses.draft;
 }
 
 export function canApproveDisbursementVoucherStatus(status: DisbursementVoucherStatus) {
@@ -282,7 +306,7 @@ export function getDisbursementVoucherStatusDialogCopy(
     return {
       confirmLabel: "Undo Approved",
       description: `This will undo the approval of ${recordLabel} and return it to For Approval.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Approval...",
       title: "Undo Approved Disbursement Voucher?",
       tone: "question" as const,
@@ -293,7 +317,7 @@ export function getDisbursementVoucherStatusDialogCopy(
     return {
       confirmLabel: "Undo Disapproved",
       description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Disapproval...",
       title: "Undo Disapproved Disbursement Voucher?",
       tone: "question" as const,
@@ -304,7 +328,7 @@ export function getDisbursementVoucherStatusDialogCopy(
     return {
       confirmLabel: "Undo Cancelled",
       description: `This will undo the cancellation of ${recordLabel}.`,
-      iconTone: "question" as const,
+      iconTone: "undo" as const,
       pendingLabel: "Undoing Cancellation...",
       title: "Undo Cancelled Disbursement Voucher?",
       tone: "question" as const,
@@ -339,6 +363,6 @@ export function getDisbursementVoucherStatusDialogCopy(
     iconTone: "cancel" as const,
     pendingLabel: "Cancelling...",
     title: "Make Disbursement Voucher as Cancelled",
-    tone: "danger" as const,
+    tone: "warning" as const,
   };
 }

@@ -9,6 +9,7 @@ export function DefaultAccountStatisticCards({ isLoading, statistics }: DefaultA
   const statisticCards = useMemo<ModuleStatisticCardItem[]>(
     () => [
       {
+        className: "sm:col-span-2 lg:col-span-1 xl:col-span-1",
         icon: FileCog,
         iconClassName: "bg-skyblue/20 text-skyblue",
         label: "Total",
@@ -47,5 +48,5 @@ export function DefaultAccountStatisticCards({ isLoading, statistics }: DefaultA
     [statistics],
   );
 
-  return <ModuleStatisticCards items={statisticCards} isLoading={isLoading} className="xl:grid-cols-5" />;
+  return <ModuleStatisticCards items={statisticCards} isLoading={isLoading} className="sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-5" />;
 }

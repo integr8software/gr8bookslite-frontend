@@ -17,6 +17,8 @@ export type OnboardingPlan = {
   name: string;
   description: string | null;
   trialDays: number;
+  trialPriceInCents?: number;
+  trialPriceDisplay?: string;
   pricing: {
     monthly: OnboardingPlanPriceSummary;
     yearly: OnboardingPlanPriceSummary;

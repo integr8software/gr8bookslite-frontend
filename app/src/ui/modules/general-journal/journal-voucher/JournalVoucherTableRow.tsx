@@ -1,4 +1,6 @@
 import { Ban, CalendarDays, CheckCircle2, Clock3, Edit3, Eye, PackageCheck, ThumbsDown, Undo2, XCircle } from "lucide-react";
+import type { ReactNode } from "react";
+import type { Row } from "@tanstack/react-table";
 import {
   JournalVoucherHref,
   canApproveJournalVoucherStatus,
@@ -17,15 +19,17 @@ import type {
 import type { JournalVoucherPermissions } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherService";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
 
 type JournalVoucherTableRowProps = {
   permissions: JournalVoucherPermissions;
-  record: JournalVoucherRecord;
+  row: Row<JournalVoucherRecord>;
   onUpdateStatus: (record: JournalVoucherRecord, status: JournalVoucherStatus) => void;
 };
 
-export function JournalVoucherTableRow({ permissions, record, onUpdateStatus }: JournalVoucherTableRowProps) {
+export function JournalVoucherTableRow({ permissions, row, onUpdateStatus }: JournalVoucherTableRowProps) {
+  const record = row.original;
   const totals = getJournalVoucherTotals(record.lines, record);
   const isPosted = record.status === "Posted";
   const isDisapproved = record.status === "Disapproved";
@@ -88,32 +92,87 @@ export function JournalVoucherTableRow({ permissions, record, onUpdateStatus }: 
 
   return (
     <tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
-      <td className="px-4 py-4 font-semibold">{record.transactionNo}</td>
-      <td className="px-4 py-4">
+      {row.getVisibleCells().map((cell) => (
+        <JournalVoucherTableCell key={cell.id} className={getColumnMetaClassName(cell.column.columnDef.meta)}>
+          <JournalVoucherCellContent actionItems={actionItems} columnId={cell.column.id} record={record} totals={totals} />
+        </JournalVoucherTableCell>
+      ))}
+    </tr>
+  );
+}
+
+function JournalVoucherCellContent({
+  actionItems,
+  columnId,
+  record,
+  totals,
+}: {
+  actionItems: ModuleActionMenuItem[];
+  columnId: string;
+  record: JournalVoucherRecord;
+  totals: ReturnType<typeof getJournalVoucherTotals>;
+}) {
+  switch (columnId) {
+    case "transactionNo":
+      return <span className="font-semibold">{record.transactionNo}</span>;
+    case "documentDate":
+      return (
         <span className="inline-flex items-center gap-2">
           <CalendarDays className="h-4 w-4 text-skyblue" aria-hidden="true" />
           {record.documentDate}
         </span>
-      </td>
-      <td className="px-4 py-4">
-        <p className="line-clamp-2 max-w-[22rem] text-sm text-darknavy/75">{record.remarks || "No remarks"}</p>
-      </td>
-      <td className="px-4 py-4">
-        <div className="font-medium">{record.currencyType}</div>
-        <div className="text-xs text-darknavy/55">Exchange Rate {formatJournalVoucherAmount(record.currencyRate)}</div>
-      </td>
-      <td className="px-4 py-4 text-right font-semibold tabular-nums">{formatJournalVoucherAmount(totals.totalDebit)}</td>
-      <td className="px-4 py-4 text-right font-semibold tabular-nums">{formatJournalVoucherAmount(totals.totalCredit)}</td>
-      <td className="px-4 py-4">
-        <JournalVoucherStatusBadge status={record.status} />
-      </td>
-      <td className="px-4 py-4">
+      );
+    case "remarks":
+      return <JournalVoucherRemarksCell remarks={record.remarks} />;
+    case "currencyType":
+      return (
+        <>
+          <div className="font-medium">{record.currencyType}</div>
+          <div className="text-xs text-darknavy/55">Exchange Rate {formatJournalVoucherAmount(record.currencyRate)}</div>
+        </>
+      );
+    case "totalDebit":
+      return <span className="font-semibold tabular-nums">{formatJournalVoucherAmount(totals.totalDebit)}</span>;
+    case "totalCredit":
+      return <span className="font-semibold tabular-nums">{formatJournalVoucherAmount(totals.totalCredit)}</span>;
+    case "status":
+      return <JournalVoucherStatusBadge status={record.status} />;
+    case "actions":
+      return (
         <ModuleTableActions className="w-full !justify-center">
           <ModuleActionMenu items={actionItems} label={`Actions for journal voucher ${record.transactionNo}`} />
         </ModuleTableActions>
-      </td>
-    </tr>
+      );
+    default:
+      return null;
+  }
+}
+
+function JournalVoucherRemarksCell({ remarks }: { remarks: string }) {
+  const normalizedRemarks = remarks.trim();
+  const displayRemarks = normalizedRemarks || "-";
+  const remarksContent = <span className="line-clamp-3 whitespace-pre-line leading-5">{displayRemarks}</span>;
+
+  if (!normalizedRemarks) {
+    return remarksContent;
+  }
+
+  return (
+    <ModuleTooltip
+      align="start"
+      className="min-w-0 max-w-full"
+      contentClassName="max-w-sm whitespace-pre-line"
+      position="top"
+      title="Remarks"
+      description={normalizedRemarks}
+    >
+      {remarksContent}
+    </ModuleTooltip>
   );
+}
+
+function JournalVoucherTableCell({ className = "text-left", children }: { className?: string; children: ReactNode }) {
+  return <td className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}>{children}</td>;
 }
 
 function JournalVoucherStatusBadge({ status }: { status: JournalVoucherStatus }) {

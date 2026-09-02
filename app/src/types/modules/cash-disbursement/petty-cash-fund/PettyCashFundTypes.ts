@@ -8,30 +8,44 @@ export type PettyCashFundActionMode = "add" | "edit" | "view";
 export type PettyCashFundActionTab = "details" | "attachments";
 export type PettyCashFundConfirmationAction = "save" | "draft" | "approve" | "disapprove" | "cancel";
 export type PettyCashFundActionPageState = ReturnType<typeof usePettyCashFundActionPage>;
+
+export type PettyCashFundOpenResponsibilityCenterDrawerHandler = (rowId: string) => void;
+export type PettyCashFundOpenSupplierDrawerHandler = (rowId: string) => void;
+export type PettyCashFundEntrySectionProps = {
+  page: PettyCashFundActionPageState;
+  onOpenResponsibilityCenterDrawer?: PettyCashFundOpenResponsibilityCenterDrawerHandler;
+  onOpenSupplierDrawer?: PettyCashFundOpenSupplierDrawerHandler;
+};
+export type PettyCashFundDetailEntryTableProps = PettyCashFundEntrySectionProps;
+export type PettyCashFundAccountingEntryTableProps = { page: PettyCashFundActionPageState };
 export type PettyCashFundOverviewPageState = ReturnType<typeof usePettyCashFundOverviewPage>;
 export type PettyCashFundEntryTab = "items" | "accounting";
-export type PettyCashFundBoolean = "False" | "True";
 
 export type PettyCashFundItem = {
   id: string;
   date: string;
-  payeeCode: string;
-  payeeName: string;
+  supplierCode: string;
+  supplierName: string;
   orNo: string;
   tinNo: string;
   particulars: string;
+  remarks?: string;
   amount: string;
   netAmount: string;
+  vatPercent: string;
   vatAmount: string;
+  ewtCode: string;
+  ewtPercent: string;
+  ewtAmount: string;
+  disburseAmount: string;
   type: string;
   vatType: string;
-  vatable: PettyCashFundBoolean;
-  vatInclusive: PettyCashFundBoolean;
   grossAmount: string;
-  responsibilityCenter: string;
+  responsibilityCenterCode: string;
+  responsibilityCenterName: string;
 };
 
-export type PettyCashFundItemColumnId = Exclude<keyof PettyCashFundItem, "id">;
+export type PettyCashFundItemColumnId = Exclude<keyof PettyCashFundItem, "id" | "remarks">;
 
 export type PettyCashFundFormValues = {
   transactionNo: string;
@@ -61,9 +75,10 @@ export type PettyCashFundAccountingEntry = {
   partyCode: string;
   partyName: string;
   particulars: string;
+  remarks?: string;
 };
 
-export type PettyCashFundAccountingColumnId = Exclude<keyof PettyCashFundAccountingEntry, "id">;
+export type PettyCashFundAccountingColumnId = Exclude<keyof PettyCashFundAccountingEntry, "id" | "remarks">;
 
 export type PettyCashFundRecord = {
   id: string;
@@ -73,13 +88,22 @@ export type PettyCashFundRecord = {
   partyName: string;
   accountCode: string;
   accountTitle: string;
+  responsibilityCenter?: string;
+  responsibilityCenterCode?: string;
+  projectCode?: string;
+  projectName?: string;
+  currency?: string;
+  exchangeRate?: string;
   amount: number;
+  disburseAmount: number;
   remarks: string;
   status: PettyCashFundStatus;
   createdBy: string;
   createdAt: string;
   updatedBy: string;
   updatedAt: string;
+  items?: PettyCashFundItem[];
+  attachments?: TransactionAttachment[];
   formValues?: PettyCashFundFormValues;
 };
 

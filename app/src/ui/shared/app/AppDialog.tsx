@@ -1,12 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Ban, LoaderCircle, Power, PowerOff, ThumbsDown, ThumbsUp } from "lucide-react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { Ban, FilePenLine, LoaderCircle, Power, PowerOff, RotateCcw, Save, ThumbsDown, ThumbsUp } from "lucide-react";
 import type { AppDialogIconTone, AppDialogProps, AppDialogTone } from "@/app/src/types/shared/app/AppDialogTypes";
 
-const AppDialogSuccessTone = "success";
 const AppDialogActivateTone = "activate";
+const AppDialogApproveTone = "approve";
+const AppDialogCancelTone = "cancel";
+const AppDialogDangerTone = "danger";
+const AppDialogDefaultTone = "default";
 const AppDialogDeactivateTone = "deactivate";
+const AppDialogDisapproveTone = "disapprove";
+const AppDialogErrorTone = "error";
+const AppDialogInfoTone = "info";
+const AppDialogNeutralTone = "neutral";
+const AppDialogQuestionTone = "question";
+const AppDialogSaveTone = "save";
+const AppDialogSuccessTone = "success";
+const AppDialogUndoTone = "undo";
+const AppDialogUpdateTone = "update";
+const AppDialogWarningTone = "warning";
 
 export function AppDialog({
   animateIcon = true,
@@ -17,14 +31,16 @@ export function AppDialog({
   confirmLabel = "Confirm",
   confirmationLabel = "Confirmation",
   confirmationPhrase,
+  content,
   description,
   iconTone,
   isOpen,
   isPending = false,
   pendingLabel,
   showCancel = true,
+  statusIcon,
   title,
-  tone = "default",
+  tone = AppDialogDefaultTone,
   onCancel,
   onConfirm,
 }: AppDialogProps) {
@@ -81,7 +97,7 @@ export function AppDialog({
     return null;
   }
 
-  return (
+  const dialog = (
     <div
       role="presentation"
       className="app-dialog-backdrop fixed inset-0 z-140 flex items-center justify-center bg-slate-950/20 px-4 py-6 backdrop-blur-[1px]"
@@ -98,7 +114,7 @@ export function AppDialog({
         aria-describedby="app-dialog-description"
         className="app-dialog-panel w-full max-w-md rounded-lg border border-darknavy/10 bg-white p-5 shadow-[0_28px_90px_rgba(33,39,56,0.24)]"
       >
-        {resolvedIconTone ? <AppDialogStatusIcon animate={animateIcon} tone={resolvedIconTone} /> : null}
+        {resolvedIconTone ? <AppDialogStatusIcon animate={animateIcon} icon={statusIcon} tone={resolvedIconTone} /> : null}
         <h2 id="app-dialog-title" className="text-center text-base font-semibold text-darknavy">
           {title}
         </h2>
@@ -117,6 +133,7 @@ export function AppDialog({
             />
           </label>
         ) : null}
+        {content ? <div className="mt-5">{content}</div> : null}
         <div className="mt-5 flex justify-center gap-2">
           <button
             type="button"
@@ -159,6 +176,10 @@ export function AppDialog({
       </section>
     </div>
   );
+
+  // Render at document level so the dialog is not trapped beneath a layout
+  // stacking context (for example, the sticky topbar or sidebar).
+  return typeof document === "undefined" ? dialog : createPortal(dialog, document.body);
 }
 
 export function AnimatedPendingLabel({ label }: { label: string }) {
@@ -177,20 +198,26 @@ export function AnimatedPendingLabel({ label }: { label: string }) {
   );
 }
 
-function AppDialogStatusIcon({ animate, tone }: { animate: boolean; tone: AppDialogIconTone }) {
-  const isDoubleMark = tone === "error";
+function AppDialogStatusIcon({ animate, icon, tone }: { animate: boolean; icon?: ReactNode; tone: AppDialogIconTone }) {
+  const isDoubleMark = tone === AppDialogErrorTone;
   const StatusIcon =
     tone === AppDialogActivateTone
       ? Power
-      : tone === "approve"
+      : tone === AppDialogApproveTone
         ? ThumbsUp
-        : tone === "cancel"
+        : tone === AppDialogCancelTone
           ? Ban
-          : tone === AppDialogDeactivateTone
-            ? PowerOff
-            : tone === "disapprove"
-              ? ThumbsDown
-              : null;
+          : tone === AppDialogUndoTone
+            ? RotateCcw
+            : tone === AppDialogSaveTone
+              ? Save
+              : tone === AppDialogUpdateTone
+                ? FilePenLine
+                : tone === AppDialogDeactivateTone
+                  ? PowerOff
+                  : tone === AppDialogDisapproveTone
+                    ? ThumbsDown
+                    : null;
 
   return (
     <span
@@ -198,7 +225,9 @@ function AppDialogStatusIcon({ animate, tone }: { animate: boolean; tone: AppDia
       data-animated={animate ? "true" : "false"}
       aria-hidden="true"
     >
-      {StatusIcon ? (
+      {icon ? (
+        <span className="app-dialog-status-icon-symbol flex items-center justify-center [&>svg]:h-full [&>svg]:w-full">{icon}</span>
+      ) : StatusIcon ? (
         <StatusIcon className="app-dialog-status-icon-symbol" strokeWidth={2.2} />
       ) : (
         <>
@@ -219,24 +248,28 @@ function getDefaultIconTone(tone: AppDialogTone): AppDialogIconTone | null {
     return AppDialogDeactivateTone;
   }
 
-  if (tone === "danger") {
-    return "error";
+  if (tone === AppDialogDangerTone) {
+    return AppDialogErrorTone;
   }
 
   if (tone === AppDialogSuccessTone) {
     return AppDialogSuccessTone;
   }
 
-  if (tone === "warning") {
-    return "warning";
+  if (tone === AppDialogWarningTone) {
+    return AppDialogWarningTone;
   }
 
-  if (tone === "info") {
-    return "info";
+  if (tone === AppDialogInfoTone) {
+    return AppDialogInfoTone;
   }
 
-  if (tone === "question") {
-    return "question";
+  if (tone === AppDialogNeutralTone) {
+    return AppDialogNeutralTone;
+  }
+
+  if (tone === AppDialogQuestionTone) {
+    return AppDialogQuestionTone;
   }
 
   return null;
@@ -260,8 +293,12 @@ function getConfirmButtonClassName({ isDisabled, isPending, tone }: { isDisabled
   const disabledClassName = isDisabled && !isPending ? "cursor-not-allowed opacity-55" : "";
   const pendingClassName = isPending ? "cursor-wait opacity-100" : "";
 
-  if (tone === "danger") {
+  if (tone === AppDialogDangerTone) {
     return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-coralpink text-white hover:bg-coralpink/90 focus-visible:ring-coralpink/35`;
+  }
+
+  if (tone === AppDialogNeutralTone) {
+    return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-slate-500 text-white hover:bg-slate-600 focus-visible:ring-slate-400/35`;
   }
 
   if (tone === AppDialogActivateTone) {
@@ -274,6 +311,10 @@ function getConfirmButtonClassName({ isDisabled, isPending, tone }: { isDisabled
 
   if (tone === AppDialogDeactivateTone) {
     return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-coralpink text-white hover:bg-coralpink/90 focus-visible:ring-coralpink/35`;
+  }
+
+  if (tone === AppDialogWarningTone) {
+    return `${baseClassName} ${disabledClassName} ${pendingClassName} bg-amber-500 text-white hover:bg-amber-500/90 focus-visible:ring-amber-500/35`;
   }
 
   return `${baseClassName} ${disabledClassName} ${pendingClassName} app-dialog-primary-button`;

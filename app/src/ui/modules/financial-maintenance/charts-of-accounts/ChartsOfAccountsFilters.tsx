@@ -17,15 +17,20 @@ import type {
   ChartAccountStructureFilter,
   FilterValue,
 } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
-import { Tabs } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsControls";
+import { ModuleTabs, type ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import {
   ModuleTableColumnVisibilityButton,
   ModuleTableExportButton,
-  ModuleTableResetButton,
   ModuleTableFilterSelect,
+  ModuleTableResetButton,
   ModuleTableSearch,
   ModuleTableToolbar,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
+
+const chartsOfAccountsTabs: readonly ModuleTabItem<ChartsOfAccountsNav>[] = ChartsOfAccountsNavs.map((nav) => ({
+  id: nav,
+  label: nav,
+}));
 
 export function ChartsOfAccountsFilters({
   accountTypeFilter,
@@ -41,7 +46,6 @@ export function ChartsOfAccountsFilters({
   onAccountTypeChange,
   onRefresh,
   onSearchChange,
-  onResetFilters,
   onStatusChange,
   onStructureChange,
   onTabChange,
@@ -49,7 +53,7 @@ export function ChartsOfAccountsFilters({
   return (
     <div>
       <div
-        className="grid gap-2 border-b border-darknavy/10 px-3 py-3 xl:flex xl:items-end xl:justify-between xl:pb-0 xl:pt-2"
+        className="grid gap-2 border-b border-darknavy/10 px-3 py-3 xl:flex xl:items-end xl:justify-between xl:pb-2 xl:pt-2"
         data-spotlight-id="charts-of-accounts-tabs"
       >
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:hidden">
@@ -68,10 +72,16 @@ export function ChartsOfAccountsFilters({
         </div>
 
         <div className="hidden xl:block">
-          <Tabs value={activeTab} options={[...ChartsOfAccountsNavs]} onChange={onTabChange} />
+          <ModuleTabs
+            activeTab={activeTab}
+            ariaLabel="Charts of accounts navigation tabs"
+            onTabChange={onTabChange}
+            tabs={chartsOfAccountsTabs}
+            variant="underline"
+          />
         </div>
 
-        <div className="hidden gap-2 overflow-x-auto pb-2 xl:flex">
+        <div className="hidden gap-2 overflow-x-auto pb-0 xl:flex">
           <StructureButton
             active={structureFilter === "With Submodules"}
             icon={<Network className="h-4 w-4" aria-hidden="true" />}
@@ -148,10 +158,7 @@ export function ChartsOfAccountsFilters({
             <ModuleTableResetButton
               className="px-2"
               isRefreshing={isRefreshing}
-              onClick={() => {
-                onResetFilters();
-                onRefresh();
-              }}
+              onClick={onRefresh}
             >
               <span className="sr-only">Refresh</span>
             </ModuleTableResetButton>

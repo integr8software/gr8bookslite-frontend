@@ -2,7 +2,7 @@ import {
   GetCalendarYearReportDates,
   OnboardingReportYearBasisOptions,
 } from "@/app/src/data/onboarding/OnboardingData";
-import type { BillingCycle, PricingPlan } from "@/app/src/data/pricing/PricingData";
+import type { BillingCycle, PricingPlan } from "@/app/src/types/pricing/PricingTypes";
 import type { BillingMode } from "@/app/src/data/billing/BillingTypes";
 
 export type OnboardingTaxpayerType = "individual" | "non-individual";
@@ -82,6 +82,24 @@ export type OnboardingBillingStepProps = {
   updateValue: (key: keyof OnboardingValues, value: string) => void;
   handleBack: () => void;
   handleNext: () => void;
+};
+
+export type OnboardingPricingDesktopPlansProps = {
+  plans: PricingPlan[];
+  billingCycle: BillingCycle;
+  isSubmitting: boolean;
+  submittingPlanCode: string | null;
+  onReviewPlans: () => void;
+  onSelectPlan: (plan: PricingPlan, billingCycle: BillingCycle) => void;
+};
+
+export type OnboardingPricingMobilePlansProps = {
+  plans: PricingPlan[];
+  billingCycle: BillingCycle;
+  isSubmitting: boolean;
+  submittingPlanCode: string | null;
+  onReviewPlans: () => void;
+  onSelectPlan: (plan: PricingPlan, billingCycle: BillingCycle) => void;
 };
 
 const DefaultReportYear = GetCalendarYearReportDates();

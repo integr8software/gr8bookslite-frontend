@@ -2,8 +2,14 @@
 
 import { useRef, useState, type ReactNode } from "react";
 import { ArrowDownAZ, ArrowUpAZ, CheckCircle2, CirclePause, GripVertical, Plus, Save, Trash2 } from "lucide-react";
-import { ItemVariationsDrawerFormId, ItemVariationsFieldClassName } from "@/app/src/constants/modules/item-management/item-variations/ItemVariationsConstants";
-import { createVariationValue, createItemVariationFormValues } from "@/app/src/data/modules/item-management/item-variations/ItemVariationsData";
+import {
+  ItemVariationsDrawerFormId,
+  ItemVariationsFieldClassName,
+} from "@/app/src/constants/modules/item-management/item-variations/ItemVariationsConstants";
+import {
+  createVariationValue,
+  createItemVariationFormValues,
+} from "@/app/src/data/modules/item-management/item-variations/ItemVariationsData";
 import type {
   ItemVariationFormErrors,
   ItemVariationFormValues,
@@ -15,6 +21,7 @@ import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleH
 import { validateItemVariationsForm } from "@/app/src/validations/modules/item-management/item-variations/ItemVariationsValidation";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 type ItemVariationsDrawerProps = {
   drawer: ItemVariationsListPageState["drawer"];
@@ -180,7 +187,8 @@ export function ItemVariationsDrawer({ drawer, records, onClose, onSave }: ItemV
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="mb-2 flex items-center justify-between gap-3">
             <span className="text-sm font-semibold text-darknavy">
-              Values <span className="text-coralpink">*</span>
+              Values
+              <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label="Values" leadingSpace />
             </span>
             {!isReadonly ? (
               <div className="flex shrink-0 gap-2">
@@ -274,7 +282,9 @@ export function ItemVariationsDrawer({ drawer, records, onClose, onSave }: ItemV
                             ? "border-amber-300/60 text-amber-600 hover:bg-amber-50"
                             : "border-emerald-300/60 text-emerald-600 hover:bg-emerald-50"
                         }`}
-                        aria-label={value.status === "Active" ? `Deactivate ${value.label || "value"}` : `Activate ${value.label || "value"}`}
+                        aria-label={
+                          value.status === "Active" ? `Deactivate ${value.label || "value"}` : `Activate ${value.label || "value"}`
+                        }
                         onClick={() => toggleValueStatus(index)}
                       >
                         {value.status === "Active" ? (
@@ -291,7 +301,10 @@ export function ItemVariationsDrawer({ drawer, records, onClose, onSave }: ItemV
                         onClick={() =>
                           setValues((current) => ({
                             ...current,
-                            values: current.values.length > 1 ? current.values.filter((_, currentIndex) => currentIndex !== index) : [createVariationValue("")],
+                            values:
+                              current.values.length > 1
+                                ? current.values.filter((_, currentIndex) => currentIndex !== index)
+                                : [createVariationValue("")],
                           }))
                         }
                       >
@@ -312,19 +325,19 @@ export function ItemVariationsDrawer({ drawer, records, onClose, onSave }: ItemV
           {errors.values ? <span className="mt-1 block text-xs font-medium text-coralpink">{errors.values}</span> : null}
         </div>
         <FormField className="mt-auto" label="Status" error={errors.status} required>
-		  <AppSwitch
-			falseOption={MaintenanceInactiveStatusSwitchOption}
+          <AppSwitch
+            falseOption={MaintenanceInactiveStatusSwitchOption}
             value={values.status}
-			readOnly={isReadonly}
+            readOnly={isReadonly}
             onChange={(status) => {
               setValues((current) => ({
                 ...current,
                 status,
               }));
-			  setErrors((current) => ({ ...current, status: undefined }));
-			}}
-			trueOption={MaintenanceActiveStatusSwitchOption}
-		  />
+              setErrors((current) => ({ ...current, status: undefined }));
+            }}
+            trueOption={MaintenanceActiveStatusSwitchOption}
+          />
         </FormField>
       </form>
     </ModuleDrawer>
@@ -348,7 +361,7 @@ function FormField({
     <label className={className}>
       <span className="mb-2 block text-sm font-semibold text-darknavy">
         {label}
-        {required ? <span className="text-coralpink"> *</span> : null}
+        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
       </span>
       {children}
       {error ? <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span> : null}

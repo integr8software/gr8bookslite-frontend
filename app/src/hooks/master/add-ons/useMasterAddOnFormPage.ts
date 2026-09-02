@@ -72,6 +72,13 @@ export function useMasterAddOnFormPage({
 			return;
 		}
 
+		const generatedCode =
+			activeValues.code?.trim() ||
+			activeValues.name
+				.trim()
+				.toUpperCase()
+				.replace(/[^A-Z0-9]+/g, "_");
+
 		// Mock save — replace with a real mutation when the backend is ready.
 		toast.success(
 			mode === "edit" ? "Add-on updated." : "Add-on created.",
@@ -112,10 +119,6 @@ function validateAddOnForm(
 ): MasterAddOnFormErrors {
 	const errors: MasterAddOnFormErrors = {};
 
-	if (!values.code.trim()) {
-		errors.code = "Code is required.";
-	}
-
 	if (!values.name.trim()) {
 		errors.name = "Name is required.";
 	}
@@ -134,3 +137,4 @@ function validateAddOnForm(
 
 	return errors;
 }
+

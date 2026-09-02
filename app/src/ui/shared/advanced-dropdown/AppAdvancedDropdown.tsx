@@ -30,7 +30,7 @@ import {
 	ViewToggle,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdownParts";
 import {
-	escapeCssIdentifier,
+	deduplicateOptions,
 	filterOptions,
 	flattenOptions,
 	getInitialActiveOptionValue,
@@ -39,6 +39,21 @@ import {
 	joinClasses,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdownUtils";
 
+function sortOptionsByName(options: AppAdvancedDropdownOption[]): AppAdvancedDropdownOption[] {
+	return [...options]
+		.sort(
+			(left, right) =>
+				left.name.localeCompare(right.name, undefined, { sensitivity: "base" }) ||
+				(left.label ?? "").localeCompare(right.label ?? "", undefined, { sensitivity: "base" }) ||
+				left.value.localeCompare(right.value, undefined, { sensitivity: "base" }),
+		)
+		.map((option) =>
+			option.children
+				? { ...option, children: sortOptionsByName(option.children) }
+				: option,
+		);
+}
+
 export type {
 	AppAdvancedDropdownAddAction,
 	AppAdvancedDropdownOption,
@@ -46,6 +61,8 @@ export type {
 	AppAdvancedDropdownProps,
 	AppAdvancedDropdownSelectionMode,
 } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+
+const AppAdvancedDropdownDefaultMenuMinWidth = 320;
 
 export function AppAdvancedDropdown({
 	addAction,
@@ -92,17 +109,22 @@ export function AppAdvancedDropdown({
 	const menuInteractionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const isMenuInteractionActiveRef = useRef(false);
 	const isMenuPointerDownRef = useRef(false);
+	const controlRef = useRef<HTMLDivElement>(null);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const selectedValues = useMemo(
-		() => (Array.isArray(value) ? value : value ? [value] : []),
+		() => Array.from(new Set(Array.isArray(value) ? value : value ? [value] : [])),
 		[value],
 	);
 	const selectedValueSet = useMemo(() => new Set(selectedValues), [selectedValues]);
-	const flatOptions = useMemo(() => flattenOptions(options), [options]);
+	const uniqueOptions = useMemo(() => sortOptionsByName(deduplicateOptions(options)), [options]);
+	const flatOptions = useMemo(() => flattenOptions(uniqueOptions), [uniqueOptions]);
 	const selectedOptions = selectedValues
 		.map((selectedValue) => flatOptions.find((option) => option.value === selectedValue))
 		.filter((option): option is AppAdvancedDropdownOption => Boolean(option));
-	const filteredOptions = useMemo(() => filterOptions(options, query), [options, query]);
+	const filteredOptions = useMemo(
+		() => filterOptions(uniqueOptions, query),
+		[query, uniqueOptions],
+	);
 	const visibleOptions = useMemo(() => flattenOptions(filteredOptions), [filteredOptions]);
 	const selectableOptions = useMemo(
 		() => visibleOptions.filter((option) => !option.disabled),
@@ -194,8 +216,8 @@ export function AppAdvancedDropdown({
 			return;
 		}
 
-		const labels = Array.from(
-			document.querySelectorAll<HTMLLabelElement>(`label[for="${escapeCssIdentifier(controlId)}"]`),
+		const labels = Array.from(document.querySelectorAll<HTMLLabelElement>("label[for]")).filter(
+			(label) => label.htmlFor === controlId,
 		);
 
 		if (labels.length === 0) {
@@ -208,7 +230,7 @@ export function AppAdvancedDropdown({
 			}
 
 			event.preventDefault();
-			rootRef.current?.querySelector<HTMLElement>(".app-advanced-dropdown-control")?.focus();
+			controlRef.current?.focus();
 		}
 
 		labels.forEach((label) => {
@@ -222,13 +244,15 @@ export function AppAdvancedDropdown({
 		};
 	}, [controlId, isInteractionLocked]);
 
+	const effectiveMenuMinWidth = menuMinWidth ?? (optionViewToggle ? 480 : AppAdvancedDropdownDefaultMenuMinWidth);
+
 	useEffect(() => {
 		if (!isOpen || !menuPortal) {
 			return;
 		}
 
 		function updatePortalStyle() {
-			const nextStyle = getPortalStyle(rootRef.current, menuMinWidth);
+			const nextStyle = getPortalStyle(rootRef.current, effectiveMenuMinWidth);
 
 			if (nextStyle) {
 				setPortalStyle(nextStyle);
@@ -253,7 +277,7 @@ export function AppAdvancedDropdown({
 			window.removeEventListener("resize", updatePortalStyle);
 			window.removeEventListener("scroll", handleScroll, true);
 		};
-	}, [isOpen, menuMinWidth, menuPortal]);
+	}, [isOpen, effectiveMenuMinWidth, menuPortal]);
 
 	useEffect(() => {
 		if (!isOpen || !activeOptionId) {
@@ -305,7 +329,7 @@ export function AppAdvancedDropdown({
 		}
 
 		if (menuPortal) {
-			const nextStyle = getPortalStyle(rootRef.current, menuMinWidth);
+			const nextStyle = getPortalStyle(rootRef.current, effectiveMenuMinWidth);
 
 			if (nextStyle) {
 				setPortalStyle(nextStyle);
@@ -464,7 +488,7 @@ export function AppAdvancedDropdown({
 			id={listboxId}
 			role="listbox"
 			aria-multiselectable={selectionMode === AppAdvancedDropdownSelectionModeMultiple}
-			style={menuPortal ? portalStyle : undefined}
+			style={menuPortal ? portalStyle : { minWidth: effectiveMenuMinWidth }}
 			onMouseDownCapture={(event) => {
 				keepMenuInteractionActive();
 				event.stopPropagation();
@@ -531,7 +555,7 @@ export function AppAdvancedDropdown({
 				className={joinClasses(
 					"min-h-0 overflow-y-auto overscroll-contain p-2",
 					optionViewToggle && optionView === AppAdvancedDropdownOptionViewGrid
-						? "grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-4"
+						? "grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-1.5"
 						: "grid gap-1",
 				)}
 			>
@@ -565,6 +589,7 @@ export function AppAdvancedDropdown({
 				<input type="hidden" name={name} value={Array.isArray(value) ? value.join(",") : value} />
 			) : null}
 			<div
+				ref={controlRef}
 				id={controlId}
 				role="combobox"
 				aria-controls={listboxId}

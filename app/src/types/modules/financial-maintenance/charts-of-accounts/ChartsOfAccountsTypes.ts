@@ -175,7 +175,6 @@ export type ChartsOfAccountsFiltersProps = {
   onAccountTypeChange: (value: FilterValue<AccountType>) => void;
   onRefresh: () => void;
   onSearchChange: (value: string) => void;
-  onResetFilters: () => void;
   onStatusChange: (value: FilterValue<AccountStatus>) => void;
   onStructureChange: (value: ChartAccountStructureFilter) => void;
   onTabChange: (value: ChartsOfAccountsNav) => void;

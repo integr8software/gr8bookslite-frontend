@@ -1,38 +1,39 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft, Ban, CreditCard, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, CreditCard, Edit3 } from "lucide-react";
 import {
-  PettyCashVoucherActionButtonClassNames,
   PettyCashVoucherActionDescriptions,
   PettyCashVoucherLink,
   PettyCashVoucherStatuses,
-  canApprovePettyCashVoucherStatus,
-  canCancelPettyCashVoucherStatus,
-  canDisapprovePettyCashVoucherStatus,
+  canEditPettyCashVoucherStatus,
   getPettyCashVoucherStatusDialogCopy,
+  getPettyCashVoucherEditLink,
   getPettyCashVoucherActionTitle,
   getPettyCashVoucherSaveDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
-import type { PettyCashVoucherActionPageState } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherActionPage";
 import type {
+  PettyCashVoucherActionPageState,
   PettyCashVoucherConfirmation,
-  PettyCashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
+import { ModuleDraftDiscardAction } from "@/app/src/ui/shared/module/ModuleDraftDiscardAction";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { PettyCashVoucherActionHistory } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherActionHistory";
+import { PettyCashVoucherStatusActions } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherStatusActions";
 
 export function PettyCashVoucherActionHeader({ page }: { page: PettyCashVoucherActionPageState }) {
   const [confirmation, setConfirmation] = useState<PettyCashVoucherConfirmation | null>(null);
   const recordLabel = page.values.transactionNo || "this petty cash voucher";
+  const isDraftEdit = page.mode === "edit" && page.existingVoucher?.status === PettyCashVoucherStatuses.draft;
+  const isSaveAction = page.mode === "add" || isDraftEdit;
   const dialogCopy = confirmation
     ? confirmation.action === "status"
       ? getPettyCashVoucherStatusDialogCopy(confirmation.status, recordLabel)
-      : getPettyCashVoucherSaveDialogCopy(confirmation.action, page.mode, recordLabel)
+      : getPettyCashVoucherSaveDialogCopy(confirmation.action, isDraftEdit ? "add" : page.mode, recordLabel)
     : null;
 
   return (
@@ -44,23 +45,30 @@ export function PettyCashVoucherActionHeader({ page }: { page: PettyCashVoucherA
         description={PettyCashVoucherActionDescriptions[page.mode]}
         actionsClassName="items-center justify-end gap-2"
         eyebrow={<PettyCashVoucherHeaderEyebrow />}
-        actions={<PettyCashVoucherHeaderActions page={page} onRequestConfirmation={setConfirmation} />}
+        actions={
+          <PettyCashVoucherHeaderActions
+            isSaveAction={isSaveAction}
+            page={page}
+            onRequestConfirmation={setConfirmation}
+          />
+        }
       />
       {dialogCopy && confirmation ? (
         <AppDialog
           isOpen
-          cancelLabel={confirmation.action === "status" ? "Keep Current Status" : "Continue Editing"}
+          cancelLabel="Cancel"
           confirmLabel={dialogCopy.confirmLabel}
           description={dialogCopy.description}
           iconTone={dialogCopy.iconTone}
+          isPending={page.isSubmitting}
           pendingLabel={dialogCopy.pendingLabel}
           title={dialogCopy.title}
           tone={dialogCopy.tone}
           onCancel={() => setConfirmation(null)}
-          onConfirm={() => {
-            const succeeded = runConfirmedAction(page, confirmation);
+          onConfirm={async () => {
+            const isSuccessful = await runConfirmedAction(page, confirmation);
 
-            if (succeeded !== false) {
+            if (isSuccessful) {
               setConfirmation(null);
             }
           }}
@@ -80,19 +88,29 @@ function PettyCashVoucherHeaderEyebrow() {
 }
 
 function PettyCashVoucherHeaderActions({
+  isSaveAction,
   onRequestConfirmation,
   page,
 }: {
+  isSaveAction: boolean;
   onRequestConfirmation: (confirmation: PettyCashVoucherConfirmation) => void;
   page: PettyCashVoucherActionPageState;
 }) {
   return (
     <span className="contents">
-      <Link href={PettyCashVoucherLink} className={moduleHeaderActionClassNames.secondary}>
+      <Link href={PettyCashVoucherLink} className={moduleHeaderActionClassNames.secondary} onClick={page.saveDraft}>
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         Back
       </Link>
-      <ReportPreviewAction onPreview={() => undefined} />
+      {page.mode !== "view" ? (
+        <ModuleDraftDiscardAction
+          hasChanges={page.hasDiscardableChanges}
+          href={PettyCashVoucherLink}
+          mode={page.mode}
+          onDiscard={page.discardDraft}
+        />
+      ) : null}
+      <ReportPreviewAction onPreview={page.openReportPreview} />
       {page.mode === "view" ? <PettyCashVoucherActionHistory page={page} /> : null}
       {page.mode !== "add" ? (
         <PettyCashVoucherStatusActions
@@ -100,67 +118,37 @@ function PettyCashVoucherHeaderActions({
           onRequestStatus={(status) => onRequestConfirmation({ action: "status", status })}
         />
       ) : null}
+      {page.mode === "view" && page.existingVoucher && canEditPettyCashVoucherStatus(page.existingVoucher.status) ? (
+        <Link href={getPettyCashVoucherEditLink(page.existingVoucher.id)} className={moduleHeaderActionClassNames.primary}>
+          <Edit3 className="h-4 w-4" aria-hidden="true" />
+          Edit
+        </Link>
+      ) : null}
       {page.isReadonly ? null : (
         <ModuleActionButton
           disabled={page.isSubmitting}
-          label={page.isSubmitting ? "Saving..." : "Save"}
-          onAction={() => onRequestConfirmation({ action: "submit" })}
+          label={isSaveAction ? "Save" : "Update"}
+          onAction={() => {
+            if (page.validate(PettyCashVoucherStatuses.forApproval)) {
+              onRequestConfirmation({ action: "submit" });
+            }
+          }}
           menuItems={
-            page.mode === "add"
+            isSaveAction
               ? [
                   {
                     label: "Save As Draft",
-                    onSelect: () => onRequestConfirmation({ action: "draft" }),
+                    onSelect: () => {
+                      if (page.validate(PettyCashVoucherStatuses.draft)) {
+                        onRequestConfirmation({ action: "draft" });
+                      }
+                    },
                   },
                 ]
               : []
           }
         />
       )}
-    </span>
-  );
-}
-
-function PettyCashVoucherStatusActions({
-  status,
-  onRequestStatus,
-}: {
-  status: PettyCashVoucherActionPageState["values"]["status"];
-  onRequestStatus: (status: PettyCashVoucherStatus) => void;
-}) {
-  const isPosted = status === PettyCashVoucherStatuses.posted;
-  const isDisapproved = status === PettyCashVoucherStatuses.disapproved;
-  const isCancelled = status === PettyCashVoucherStatuses.cancelled;
-
-  return (
-    <span className="contents">
-      <button
-        type="button"
-        disabled={!canApprovePettyCashVoucherStatus(status)}
-        onClick={() => onRequestStatus(isPosted ? PettyCashVoucherStatuses.forApproval : PettyCashVoucherStatuses.posted)}
-        className={PettyCashVoucherActionButtonClassNames.approve}
-      >
-        {isPosted ? <Undo2 className="h-4 w-4" aria-hidden="true" /> : <ThumbsUp className="h-4 w-4" aria-hidden="true" />}
-        {isPosted ? "Undo Approved" : "Approve"}
-      </button>
-      <button
-        type="button"
-        disabled={!canDisapprovePettyCashVoucherStatus(status)}
-        onClick={() => onRequestStatus(isDisapproved ? PettyCashVoucherStatuses.forApproval : PettyCashVoucherStatuses.disapproved)}
-        className={PettyCashVoucherActionButtonClassNames.disapprove}
-      >
-        {isDisapproved ? <Undo2 className="h-4 w-4" aria-hidden="true" /> : <ThumbsDown className="h-4 w-4" aria-hidden="true" />}
-        {isDisapproved ? "Undo Disapproved" : "Disapprove"}
-      </button>
-      <button
-        type="button"
-        disabled={!canCancelPettyCashVoucherStatus(status)}
-        onClick={() => onRequestStatus(isCancelled ? PettyCashVoucherStatuses.forApproval : PettyCashVoucherStatuses.cancelled)}
-        className={PettyCashVoucherActionButtonClassNames.cancel}
-      >
-        {isCancelled ? <Undo2 className="h-4 w-4" aria-hidden="true" /> : <Ban className="h-4 w-4" aria-hidden="true" />}
-        {isCancelled ? "Undo Cancelled" : "Cancel"}
-      </button>
     </span>
   );
 }

@@ -3,7 +3,7 @@ import type {
   MainAccessKey,
   MainNavigationSection,
   MainProductKey,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import { flattenSections } from "@/app/src/data/shared/main-layout/sidebar/SidebarUtils";
 
 export const MainWorkspaceNavigationSections: MainNavigationSection[] = [
@@ -108,7 +108,7 @@ export const MainMasterNavigationSections: MainNavigationSection[] = [
     "workspace.billing.subscriptions",
     "master-subscriptions",
   ),
-  directSection("master-invoices-section", "Invoices", "/master/invoices", "invoice", "workspace.billing.invoices", "master-invoices"),
+  directSection("master-invoices-section", "Revenue & Transactions", "/master/invoices", "invoice", "workspace.billing.invoices", "master-invoices"),
   directSection(
     "master-promotions-section",
     "Promotions",

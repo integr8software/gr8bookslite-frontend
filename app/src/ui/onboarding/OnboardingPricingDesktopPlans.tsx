@@ -1,20 +1,8 @@
 "use client";
 
 import { Check, LoaderCircle, MoveRight } from "lucide-react";
-import {
-	type BillingCycle,
-	type PricingPlan,
-} from "@/app/src/data/pricing/PricingTypes";
 import { OnboardingPlanComparisonRows } from "@/app/src/data/onboarding/OnboardingData";
-
-type OnboardingPricingDesktopPlansProps = {
-	plans: PricingPlan[];
-	billingCycle: BillingCycle;
-	isSubmitting: boolean;
-	submittingPlanCode: string | null;
-	onReviewPlans: () => void;
-	onSelectPlan: (plan: PricingPlan, billingCycle: BillingCycle) => void;
-};
+import type { OnboardingPricingDesktopPlansProps } from "@/app/src/types/onboarding/OnboardingTypes";
 
 export function OnboardingPricingDesktopPlans({
 	plans,
@@ -24,6 +12,7 @@ export function OnboardingPricingDesktopPlans({
 	onReviewPlans,
 	onSelectPlan,
 }: OnboardingPricingDesktopPlansProps) {
+	const isMonthlyBillingCycle = billingCycle === "monthly";
 	const visiblePlans = plans.filter(
 		(plan) => plan.name !== "Additional Company",
 	);
@@ -63,11 +52,11 @@ export function OnboardingPricingDesktopPlans({
 					{visiblePlans.map((plan) => {
 						const isHighlighted = plan.highlighted;
 						const price =
-							billingCycle === "monthly"
+							isMonthlyBillingCycle
 								? plan.monthlyPrice
 								: plan.yearlyPrice;
 						const compareAtPrice =
-							billingCycle === "monthly"
+							isMonthlyBillingCycle
 								? plan.monthlyCompareAtPrice
 								: plan.yearlyCompareAtPrice;
 						const billingLabel = plan.billingLabel[billingCycle];
@@ -77,7 +66,7 @@ export function OnboardingPricingDesktopPlans({
 						return (
 							<div
 								key={plan.name}
-								className={`relative flex h-full flex-col px-6 pb-7 pt-8 text-center sm:px-8 ${
+								className={`relative flex h-full flex-col px-5 pb-7 pt-9 text-center sm:px-6 ${
 									isHighlighted
 										? "rounded-xl border border-skyblue/35 bg-white shadow-[0_16px_34px_rgba(33,39,56,0.16)]"
 										: "border-r border-darknavy/10 bg-white last:border-r-0"
@@ -85,7 +74,7 @@ export function OnboardingPricingDesktopPlans({
 							>
 								{isHighlighted ? (
 									<div
-										className="absolute right-4 top-0 flex h-16 w-12 flex-col items-center justify-center bg-citron pt-1 text-[10px] font-black uppercase leading-tight tracking-[0.08em] text-darknavy"
+										className="absolute right-3 top-0 flex h-13 w-10 flex-col items-center justify-center bg-citron pt-0.5 text-[9px] font-black uppercase leading-tight tracking-[0.06em] text-darknavy shadow-xs"
 										style={{
 											clipPath:
 												"polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%)",
@@ -96,38 +85,92 @@ export function OnboardingPricingDesktopPlans({
 									</div>
 								) : null}
 
-								<div className="flex min-h-43 flex-col justify-center">
-									<h4 className="mx-auto max-w-52 text-xl font-semibold leading-tight text-darknavy">
+								{/* 1. Title Row - Fixed height & centered */}
+								<div className="flex h-16 items-center justify-center">
+									<h4 className="mx-auto px-6 text-xl font-semibold leading-tight text-darknavy line-clamp-3">
 										{plan.name}
 									</h4>
-									<div className="mt-3 space-y-1">
-										{compareAtPrice ? (
-											<p className="text-xs text-darknavy/35 line-through">
-												{compareAtPrice}
-											</p>
-										) : null}
-										<div className="flex items-end justify-center gap-1 whitespace-nowrap">
-											<p className="text-2xl font-semibold tracking-tight text-darknavy">
-												{price}
-											</p>
-											<span className="pb-0.5 text-xs font-medium text-darknavy/55">
-												{billingCycle === "monthly"
-													? "/month"
-													: "/year"}
-											</span>
-										</div>
-										<p className="text-xs text-darknavy/50">
-											{billingLabel}
-										</p>
-									</div>
 								</div>
 
-								{isHighlighted ? (
-									<span className="mb-3 self-center rounded-full bg-skyblue/15 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-sky-800">
-										Most popular
-									</span>
-								) : null}
+								{/* 2. Description Row - Fixed height & centered */}
+								<div className="mt-1 flex h-10 items-center justify-center">
+									{plan.description ? (
+										<p className="line-clamp-2 px-2 text-xs leading-relaxed text-darknavy/60">
+											{plan.description}
+										</p>
+									) : null}
+								</div>
 
+								{/* 3. Price Section - Level & aligned */}
+								<div className="mt-3 flex flex-col justify-end">
+									{plan.trialDays && plan.trialDays > 0 ? (
+										<>
+											{/* Trial: show trial price with after-trial notice */}
+											<div className="flex h-4 items-center justify-center">
+												<p className="text-xs font-medium text-emerald-600">
+													{plan.trialPrice && plan.trialPrice !== "₱0.00"
+														? `${plan.trialPrice} for ${plan.trialDays} days`
+														: `Free for ${plan.trialDays} days`}
+												</p>
+											</div>
+											<div className="flex h-9 items-baseline justify-center gap-1 whitespace-nowrap">
+												<p className="text-2xl font-semibold tracking-tight text-darknavy">
+													{plan.trialPrice ?? "₱0.00"}
+												</p>
+												<span className="pb-0.5 text-xs font-medium text-darknavy/55">
+													{isMonthlyBillingCycle
+														? "/month"
+														: "/year"}
+												</span>
+											</div>
+											<div className="flex h-5 items-center justify-center">
+												<p className="text-xs text-darknavy/50">
+													then {price}
+													{isMonthlyBillingCycle
+														? "/month"
+														: "/year"}
+												</p>
+											</div>
+										</>
+									) : (
+										<>
+											{/* Regular: show compareAt strikethrough + real price */}
+											<div className="flex h-4 items-center justify-center">
+												{compareAtPrice ? (
+													<p className="text-xs text-darknavy/35 line-through">
+														{compareAtPrice}
+													</p>
+												) : null}
+											</div>
+											<div className="flex h-9 items-baseline justify-center gap-1 whitespace-nowrap">
+												<p className="text-2xl font-semibold tracking-tight text-darknavy">
+													{price}
+												</p>
+												<span className="pb-0.5 text-xs font-medium text-darknavy/55">
+													{isMonthlyBillingCycle
+														? "/month"
+														: "/year"}
+												</span>
+											</div>
+											<div className="flex h-5 items-center justify-center">
+												<p className="text-xs text-darknavy/50">
+													{billingLabel}
+												</p>
+											</div>
+										</>
+									)}
+								</div>
+
+								{/* 4. Badge Section - Fixed height container */}
+								<div className="my-3 flex h-6 items-center justify-center">
+									{isHighlighted ? (
+										<span className="rounded-full bg-skyblue/15 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-sky-800">
+											Most popular
+										</span>
+									) : null}
+								</div>
+
+								{/* 5. Choose plan button */}
 								<button
 									type="button"
 									onClick={() =>
@@ -167,13 +210,18 @@ export function OnboardingPricingDesktopPlans({
 							{row.label}
 						</div>
 
-						{row.values
-							.slice(0, visiblePlans.length)
-							.map((value, valueIndex) => (
+						{visiblePlans.map((plan, planIndex) => {
+							const fallbackValue = row.values[planIndex];
+							const value =
+								row.label === "Best for" && plan.description
+									? plan.description
+									: fallbackValue;
+
+							return (
 								<div
-									key={`${row.label}-${visiblePlans[valueIndex]?.name}`}
+									key={`${row.label}-${plan.name}`}
 									className={`flex items-center justify-center border-r border-darknavy/10 px-6 py-5 text-center text-sm text-darknavy/75 last:border-r-0 ${
-										visiblePlans[valueIndex]?.highlighted
+										plan.highlighted
 											? "bg-[#f5fffb]"
 											: "bg-white"
 									}`}
@@ -189,10 +237,11 @@ export function OnboardingPricingDesktopPlans({
 											</span>
 										)
 									) : (
-										value
+										value ?? "-"
 									)}
 								</div>
-							))}
+							);
+						})}
 					</div>
 				))}
 			</div>

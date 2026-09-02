@@ -5,6 +5,7 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import {
   PettyCashVoucherFormStatusOptions,
+  PettyCashVoucherStatuses,
   PettyCashVoucherTransactionNumberPadding,
   PettyCashVoucherTransactionPrefix,
   PettyCashVoucherVATableOptions,
@@ -15,33 +16,49 @@ const requiredText = (message: string) => z.string().trim().min(1, message);
 const transactionNumberPattern = new RegExp(`^${PettyCashVoucherTransactionPrefix}-\\d{${PettyCashVoucherTransactionNumberPadding}}$`);
 const amount = z.preprocess(
   (value) => (typeof value === "string" ? parseAmount(value) : value),
-  z.coerce.number().finite().min(0, "Enter a valid amount."),
+  z.coerce.number().finite().min(0, "Enter a valid Amount."),
 );
 
+export const PettyCashVoucherDraftFormValidationSchema = z.object({
+  documentDate: requiredText("Select a PCV Date."),
+  transactionNo: requiredText("PCV No. is required.").regex(
+    transactionNumberPattern,
+    "Use the generated PCV No. format.",
+  ),
+});
+
 export const PettyCashVoucherFormValidationSchema = z.object({
-  accountCode: requiredText("Enter an account code."),
-  accountTitle: requiredText("Enter an account title."),
-  amount: amount.refine((value) => value > 0, "Enter an amount."),
-  documentDate: requiredText("Select a petty cash voucher date."),
-  currency: requiredText("Select a currency."),
-  exchangeRate: requiredText("Enter an exchange rate.").refine((value) => Number(value) > 0, "Exchange rate must be greater than zero."),
+  accountCode: requiredText("Default Account Code is required."),
+  accountTitle: requiredText("Default Account Title is required."),
+  amount: amount.refine((value) => value > 0, "Amount is required."),
+  documentDate: requiredText("Select a PCV Date."),
+  currency: requiredText("Currency is required."),
+  exchangeRate: requiredText("Enter an Exchange Rate.").refine((value) => Number(value) > 0, "Exchange Rate must be greater than zero."),
+  ewtCode: z.string().optional(),
+  ewtRate: z.string().optional(),
+  ewtAmount: amount.optional(),
   netAmount: amount,
   remarks: z.string().max(500, "Remarks can only be up to 500 characters."),
   responsibilityCenter: z.string(),
   responsibilityCenterCode: z.string(),
   status: z.enum(PettyCashVoucherFormStatusOptions),
-  transactionNo: requiredText("Generate a petty cash voucher number.").regex(
+  transactionNo: requiredText("PCV No. is required.").regex(
     transactionNumberPattern,
-    "Use the generated petty cash voucher number format.",
+    "Use the generated PCV No. format.",
   ),
-  vatable: z.enum(PettyCashVoucherVATableOptions),
+  vatType: z.string().optional(),
+  vatable: z.enum(PettyCashVoucherVATableOptions).optional(),
+  vatRate: z.string().optional(),
   vatAmount: amount,
-  partyCode: requiredText("Enter a party code."),
-  partyName: requiredText("Enter a party name."),
+  partyCode: requiredText("Party Code is required."),
+  partyName: requiredText("Party Name is required."),
 });
 
 export function validatePettyCashVoucherForm(values: PettyCashVoucherFormValues): PettyCashVoucherFormErrors {
-  const result = PettyCashVoucherFormValidationSchema.safeParse(values);
+  const result = (values.status === PettyCashVoucherStatuses.draft
+    ? PettyCashVoucherDraftFormValidationSchema
+    : PettyCashVoucherFormValidationSchema
+  ).safeParse(values);
 
   if (result.success) {
     return {};

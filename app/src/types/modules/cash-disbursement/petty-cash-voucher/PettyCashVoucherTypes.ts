@@ -16,6 +16,7 @@ export type PettyCashVoucherRecord = {
   accountCode: string;
   accountTitle: string;
   amount: number;
+  disburseAmount: number;
   documentDate: string;
   currency?: string;
   exchangeRate?: string;
@@ -25,6 +26,18 @@ export type PettyCashVoucherRecord = {
   updatedBy: string;
   dateModified: string;
   status: PettyCashVoucherStatus;
+  vatType?: string;
+  vatable?: PettyCashVoucherVATable;
+  vatRate?: string;
+  vatAmount?: number;
+  ewtCode?: string;
+  ewtRate?: string;
+  ewtAmount?: number;
+  netAmount?: number;
+  responsibilityCenter?: string;
+  responsibilityCenterCode?: string;
+  attachments?: TransactionAttachment[];
+  formValues?: PettyCashVoucherFormValues;
 };
 
 export type PettyCashVoucherFormValues = {
@@ -35,13 +48,18 @@ export type PettyCashVoucherFormValues = {
   documentDate: string;
   currency: string;
   exchangeRate: string;
+  ewtCode: string;
+  ewtRate: string;
+  ewtAmount: string;
   netAmount: string;
   remarks: string;
   responsibilityCenter: string;
   responsibilityCenterCode: string;
   status: PettyCashVoucherFormStatus;
   transactionNo: string;
-  vatable: PettyCashVoucherVATable;
+  vatType: string;
+  vatable?: PettyCashVoucherVATable;
+  vatRate: string;
   vatAmount: string;
   partyCode: string;
   partyName: string;

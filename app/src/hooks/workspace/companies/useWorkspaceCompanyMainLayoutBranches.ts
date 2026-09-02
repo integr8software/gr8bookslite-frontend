@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
 	mapWorkspaceCompanyBranchesToMainBranches,
 } from "@/app/src/data/workspace/companies/WorkspaceCompanyMainLayoutBranchData";
-import type { MainBranch } from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+import type { MainBranch } from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
 	getWorkspaceCompanyUnits,

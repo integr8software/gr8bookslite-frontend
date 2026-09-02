@@ -2,17 +2,24 @@
 
 import { useMemo, useState, type ChangeEventHandler, type ReactNode } from "react";
 import { MultiCurrencyCatalog } from "@/app/src/data/modules/system-administration/multi-currency-setup/MultiCurrencySetupData";
+import { useJournalVoucherLookups } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucher";
 import { useJournalVoucherFormPage } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucherFormPage";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
-import { JournalVoucherDataEntryTable } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherDataEntryTable";
+import {
+  applyJournalVoucherLinePartyTaxDefaults,
+  JournalVoucherDataEntryTable,
+} from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherDataEntryTable";
 import { JournalVoucherHeaderPage } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherHeaderPage";
 import { JournalVoucherNotFound } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherNotFound";
+import { openJournalVoucherPdf } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherPdf";
+import { JournalVoucherReportPreview } from "@/app/src/ui/modules/general-journal/journal-voucher/JournalVoucherReportPreview";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 const fieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-white disabled:text-darknavy disabled:opacity-60";
@@ -24,8 +31,11 @@ const errorClassName = "mt-1.5 block text-xs font-semibold text-coralpink";
 export function JournalVoucherFormPage() {
   const page = useJournalVoucherFormPage();
   const partyStore = usePartyManagementStore();
+  const journalVoucherLookups = useJournalVoucherLookups();
   const [partyAddLineId, setPartyAddLineId] = useState<string | null>(null);
+  const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const currencyOptions = useMemo(() => createJournalVoucherCurrencyDropdownOptions(), []);
+  const taxCodes = useMemo(() => journalVoucherLookups.data?.taxCodes ?? [], [journalVoucherLookups.data?.taxCodes]);
 
   if (page.isRecordLoading) {
     return (
@@ -43,6 +53,7 @@ export function JournalVoucherFormPage() {
     if (partyAddLineId) {
       page.updateLine(partyAddLineId, "partyCode", record.partyCodeNo);
       page.updateLine(partyAddLineId, "partyName", getPartyDisplayName(record));
+      applyJournalVoucherLinePartyTaxDefaults(page, partyAddLineId, record, taxCodes);
     }
 
     setPartyAddLineId(null);
@@ -51,7 +62,7 @@ export function JournalVoucherFormPage() {
   return (
     <>
       <form onSubmit={page.handleSubmit} className="grid gap-5">
-        <JournalVoucherHeaderPage page={page} />
+        <JournalVoucherHeaderPage page={page} onPreview={() => setIsReportPreviewOpen(true)} />
 
         <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
           <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-2 2xl:grid-cols-3">
@@ -136,12 +147,15 @@ export function JournalVoucherFormPage() {
           </div>
         </section>
 
-        <JournalVoucherDataEntryTable
-          canAddPartyName={partyStore.permissions.canCreate}
-          onAddPartyName={setPartyAddLineId}
-          page={page}
-        />
+        <JournalVoucherDataEntryTable canAddPartyName={partyStore.permissions.canCreate} onAddPartyName={setPartyAddLineId} page={page} />
       </form>
+
+      <JournalVoucherReportPreview
+        isOpen={isReportPreviewOpen}
+        values={page.values}
+        onClose={() => setIsReportPreviewOpen(false)}
+        onGeneratePdf={() => openJournalVoucherPdf(page.values)}
+      />
 
       <AppDialog
         isOpen={page.isCancelDialogOpen}
@@ -277,7 +291,7 @@ function FieldShell({
   const labelContent = (
     <>
       {label}
-      {isRequired ? <span className="ml-1 text-coralpink">*</span> : null}
+      <ModuleFieldRequiredMark fallbackRequired={isRequired} label={label} />
     </>
   );
 

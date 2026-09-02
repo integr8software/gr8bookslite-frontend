@@ -1,10 +1,7 @@
-import {
-  RevolvingFundReplenishmentAccountOptions,
-  RevolvingFundReplenishmentPartyOptions,
-  RevolvingFundReplenishmentProjectOptions,
-  RevolvingFundReplenishmentResponsibilityCenterOptions,
-} from "@/app/src/constants/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentConstants";
-import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund-replenishment/useRevolvingFundReplenishmentActionPage";
+"use client";
+
+import { useRevolvingFundReplenishmentDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund-replenishment/useRevolvingFundReplenishmentDetailsLookups";
+import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -27,17 +24,30 @@ export function RevolvingFundReplenishmentDetailsFields({
   onOpenResponsibilityCenterDrawer: () => void;
   page: RevolvingFundReplenishmentActionPageState;
 }) {
+  const {
+    accountOptions,
+    isAccountLookupLoading,
+    isPartyLookupLoading,
+    isProjectLookupLoading,
+    isResponsibilityCenterLookupLoading,
+    partyOptions,
+    projectOptions,
+    responsibilityCenterOptions,
+  } = useRevolvingFundReplenishmentDetailsLookups(page.values);
+
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid gap-5 xl:grid-cols-3">
+        {/* Column 1: Name & Lookup Fields */}
         <div className="grid min-w-0 content-start gap-5">
           <TransactionField label="Party Name" error={page.errors.partyName} isRequired>
             <AppLookupDropdown
               value={page.values.partyCode}
-              options={RevolvingFundReplenishmentPartyOptions}
+              options={partyOptions}
               readOnly={page.isReadonly}
               placeholder="Select Party Name"
               searchPlaceholder="Search Party Name"
+              emptyMessage={isPartyLookupLoading ? "Loading Party Name options..." : "No Party Name options found."}
               addAction={!page.isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("partyCode", code);
@@ -45,13 +55,19 @@ export function RevolvingFundReplenishmentDetailsFields({
               }}
             />
           </TransactionField>
+
           <TransactionField label="Responsibility Center">
             <AppLookupDropdown
               value={page.values.responsibilityCenterCode}
-              options={RevolvingFundReplenishmentResponsibilityCenterOptions}
+              options={responsibilityCenterOptions}
               readOnly={page.isReadonly}
               placeholder="Select Responsibility Center"
               searchPlaceholder="Search Responsibility Center"
+              emptyMessage={
+                isResponsibilityCenterLookupLoading
+                  ? "Loading Responsibility Center options..."
+                  : "No Responsibility Center options found."
+              }
               addAction={!page.isReadonly ? { label: "Add Responsibility Center", onClick: onOpenResponsibilityCenterDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("responsibilityCenterCode", code);
@@ -59,13 +75,15 @@ export function RevolvingFundReplenishmentDetailsFields({
               }}
             />
           </TransactionField>
+
           <TransactionField label="Project Name">
             <AppLookupDropdown
               value={page.values.projectCode}
-              options={RevolvingFundReplenishmentProjectOptions}
+              options={projectOptions}
               readOnly={page.isReadonly}
               placeholder="Select Project Name"
               searchPlaceholder="Search Project Name"
+              emptyMessage={isProjectLookupLoading ? "Loading Project Name options..." : "No Project Name options found."}
               addAction={!page.isReadonly ? { label: "Add Project Name", onClick: onOpenProjectDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("projectCode", code);
@@ -73,19 +91,22 @@ export function RevolvingFundReplenishmentDetailsFields({
               }}
             />
           </TransactionField>
+
           <TransactionField label="Default Account Title" error={page.errors.accountTitle} isRequired>
             <AppLookupDropdown
               value={page.values.accountCode}
-              options={RevolvingFundReplenishmentAccountOptions}
+              options={accountOptions}
               readOnly={page.isReadonly}
               placeholder="Select Default Account Title"
               searchPlaceholder="Search Default Account"
+              emptyMessage={isAccountLookupLoading ? "Loading Default Account options..." : "No Default Account options found."}
               onChange={(code, name) => {
                 page.updateField("accountCode", code);
                 page.updateField("accountTitle", name);
               }}
             />
           </TransactionField>
+
           <TransactionField label="Remarks">
             <AppLimitedTextarea
               value={page.values.remarks}
@@ -97,6 +118,8 @@ export function RevolvingFundReplenishmentDetailsFields({
             />
           </TransactionField>
         </div>
+
+        {/* Column 2: Aligned Code & Financial Fields */}
         <div className="grid min-w-0 content-start gap-5">
           <TransactionTextField
             value={page.values.partyCode}
@@ -131,11 +154,15 @@ export function RevolvingFundReplenishmentDetailsFields({
             placeholder="Default Account Code"
           />
           <CurrencyExchangeRateRow
-            currencyControlId="rfr-currency"
             currencyLabel="Currency"
+            currencyControlId="rfr-currency"
+            currencyError={page.errors.currency}
+            exchangeRateControlId="rfr-exchange-rate"
+            exchangeRateError={page.errors.exchangeRate}
             currencyControl={
               <AppAdvancedDropdown
                 id="rfr-currency"
+                className="w-full min-w-0"
                 value={page.values.currency}
                 readOnly={page.isReadonly}
                 isClearable={false}
@@ -146,7 +173,6 @@ export function RevolvingFundReplenishmentDetailsFields({
                 onChange={(value) => page.updateCurrency(String(value))}
               />
             }
-            exchangeRateControlId="rfr-exchange-rate"
             exchangeRateControl={
               <input
                 id="rfr-exchange-rate"
@@ -156,26 +182,29 @@ export function RevolvingFundReplenishmentDetailsFields({
                 readOnly={page.isReadonly}
                 disabled={page.isReadonly || page.isExchangeRateLoading}
                 onChange={(event) => page.updateField("exchangeRate", formatExchangeRateInput(event.target.value))}
-                className={`${TransactionFieldClassName} text-right tabular-nums`}
+                className={`${TransactionFieldClassName} text-right tabular-nums${page.isReadonly || page.isExchangeRateLoading ? " transaction-readonly-placeholder" : ""}`}
+                placeholder="0.00"
               />
             }
           />
         </div>
+
+        {/* Column 3: Transaction Identity & Status */}
         <div className="grid min-w-0 content-start gap-5">
           <TransactionTextField
             value={page.values.transactionNo}
             isReadonly
             isRequired
-            label="Revolving Fund Replenishment No."
+            label="RFR No."
             error={page.errors.transactionNo}
             onValueChange={(value) => page.updateField("transactionNo", value)}
-            placeholder="Auto Generated Revolving Fund Replenishment Transaction Number"
+            placeholder="Auto Generated RFR Transaction Number"
           />
           <TransactionTextField
             value={page.values.documentDate}
             isReadonly={page.isReadonly}
             isRequired
-            label="Revolving Fund Replenishment Date"
+            label="RFR Date"
             error={page.errors.documentDate}
             type="date"
             onValueChange={(value) => page.updateField("documentDate", value)}

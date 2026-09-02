@@ -1,11 +1,13 @@
 import type {
   CashVoucherAccountingGridColumnId,
   CashVoucherEntryColumnId,
+  CashVoucherEntryView,
   ExpenseEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export const CashVoucherLineEntriesField = "lineEntries";
+export const CashVoucherExpenseEntryView: CashVoucherEntryView = "expense";
 
 export const CashVoucherAccountingDropdownClassName =
   "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
@@ -31,35 +33,30 @@ export const CashVoucherAccountingPdfGridLayout = {
 };
 
 export const DefaultExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
+  "partyCode",
+  "partyName",
+  "disbursementCode",
   "expenseType",
   "amount",
-  "netAmount",
   "vatCode",
   "vatPercent",
   "vatAmount",
+  "netAmount",
   "ewtCode",
   "ewtPercent",
   "ewtAmount",
-  "totalAmountDue",
-  "partyCode",
-  "partyName",
-  "particulars",
+  "disburseAmount",
+  "responsibilityCenterCode",
   "responsibilityCenter",
+  "particulars",
   "refId",
-  "checkNo",
-  "checkStatus",
-  "checkDate",
 ];
 
 export const DefaultVisibleExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
+  "partyName",
   "expenseType",
   "amount",
-  "vatCode",
-  "ewtCode",
-  "totalAmountDue",
-  "partyName",
-  "particulars",
-  "refId",
+  "disburseAmount",
 ];
 
 export const ProtectedExpenseEntryColumnIds = new Set<ExpenseEntryColumnId>(["expenseType", "amount"]);
@@ -87,20 +84,20 @@ export const DefaultCashVoucherAccountingGridColumnLabels: Record<CashVoucherAcc
   accountName: "Account Name",
   credit: "Credit",
   debit: "Debit",
-  particulars: "Remarks",
+  particulars: "Particulars",
   taxRate: "Tax Rate",
 };
 
 export const DefaultCashVoucherAccountingGridColumnWidths: Record<CashVoucherAccountingGridColumnId, number> = {
-  accountCode: 190,
-  accountName: 240,
-  credit: 165,
-  debit: 165,
-  particulars: 330,
-  taxRate: 150,
+  accountCode: 160,
+  accountName: 210,
+  credit: 140,
+  debit: 140,
+  particulars: 260,
+  taxRate: 125,
 };
 
-export const CashVoucherAccountingImportTemplateHeaders = ["Account Code", "Account Name", "Remarks", "Tax Rate", "Debit", "Credit"];
+export const CashVoucherAccountingImportTemplateHeaders = ["Account Code", "Account Name", "Particulars", "Tax Rate", "Debit", "Credit"];
 
 export const CashVoucherAccountingImportTemplateRows = [
   ["2010-003", "Accounts Payable", "Settlement of approved office depot payable", "0%", "", "18450.00"],
@@ -129,109 +126,121 @@ export const CashVoucherAccountingImportClearActions: {
 ];
 
 export const ExpenseEntryColumnLabels: Record<ExpenseEntryColumnId, string> = {
-  expenseType: "Expense Type",
+  disbursementCode: "Disbursement Code",
+  expenseType: "Disbursement Type",
   amount: "Gross Amount",
   checkDate: "Check Date",
   checkNo: "Check No.",
   checkStatus: "Check Status",
   netAmount: "Net Amount",
   vatCode: "VAT Type",
-  vatPercent: "VAT %",
+  vatPercent: "VAT Rate",
   vatAmount: "VAT Amount",
   ewtCode: "EWT Code",
-  ewtPercent: "EWT %",
+  ewtPercent: "EWT Rate",
   ewtAmount: "EWT Amount",
-  totalAmountDue: "Total Amount Due",
+  disburseAmount: "Disburse Amount",
   partyCode: "Party Code",
   partyName: "Party Name",
-  particulars: "Remarks",
+  particulars: "Particulars",
   refId: "Reference No",
   responsibilityCenter: "Responsibility Center",
+  responsibilityCenterCode: "Responsibility Center Code",
 };
 
 export const DefaultExpenseEntryColumnWidths: Record<ExpenseEntryColumnId, number> = {
-  expenseType: 235,
-  amount: 155,
-  checkDate: 150,
-  checkNo: 180,
-  checkStatus: 160,
-  netAmount: 145,
-  vatCode: 190,
-  vatPercent: 105,
-  vatAmount: 135,
-  ewtCode: 210,
-  ewtPercent: 105,
-  ewtAmount: 135,
-  totalAmountDue: 165,
-  partyCode: 150,
-  partyName: 260,
-  particulars: 320,
-  responsibilityCenter: 220,
-  refId: 180,
+  partyCode: 155,
+  partyName: 220,
+  disbursementCode: 205,
+  expenseType: 205,
+  amount: 170,
+  checkDate: 155,
+  checkNo: 150,
+  checkStatus: 170,
+  netAmount: 155,
+  vatCode: 220,
+  vatPercent: 115,
+  vatAmount: 155,
+  ewtCode: 175,
+  ewtPercent: 115,
+  ewtAmount: 155,
+  disburseAmount: 165,
+  responsibilityCenterCode: 240,
+  responsibilityCenter: 235,
+  particulars: 260,
+  refId: 170,
 };
 
 export const DefaultCashVoucherEntryColumnOrder: CashVoucherEntryColumnId[] = [
+  "partyCode",
+  "partyName",
   "accountCode",
   "accountName",
   "debit",
   "credit",
-  "partyCode",
-  "partyName",
-  "particulars",
   "vatType",
-  "atcCode",
+  "ewtCode",
+  "responsibilityCenterCode",
   "responsibilityCenter",
+  "particulars",
   "refId",
-  "checkNo",
-  "checkStatus",
-  "checkDate",
 ];
 
-export const DefaultVisibleCashVoucherEntryColumnOrder: CashVoucherEntryColumnId[] = ["accountName", "debit", "credit", "particulars"];
+export const DefaultVisibleCashVoucherEntryColumnOrder: CashVoucherEntryColumnId[] = [
+  "partyName",
+  "accountName",
+  "debit",
+  "credit",
+  "vatType",
+  "ewtCode",
+];
 
 export const ProtectedCashVoucherEntryColumnIds = new Set<CashVoucherEntryColumnId>(["accountName", "debit", "credit"]);
 
 export const CashVoucherEntryColumnLabels: Record<CashVoucherEntryColumnId, string> = {
   accountCode: "Account Code",
   accountName: "Account Title",
-  atcCode: "EWT Code",
+  ewtCode: "EWT Code",
   checkDate: "Check Date",
   checkNo: "Check No.",
   checkStatus: "Check Status",
-  particulars: "Remarks",
+  particulars: "Particulars",
   partyCode: "Party Code",
   partyName: "Party Name",
   refId: "Reference No",
   responsibilityCenter: "Responsibility Center",
+  responsibilityCenterCode: "Responsibility Center Code",
   vatType: "VAT Type",
   debit: "Debit",
   credit: "Credit",
 };
 
 export const DefaultCashVoucherEntryColumnWidths: Record<CashVoucherEntryColumnId, number> = {
-  accountCode: 160,
-  accountName: 260,
-  atcCode: 140,
-  checkDate: 150,
-  checkNo: 180,
-  checkStatus: 160,
-  credit: 160,
-  debit: 160,
-  particulars: 320,
-  partyCode: 150,
+  partyCode: 155,
   partyName: 220,
-  refId: 160,
-  responsibilityCenter: 220,
-  vatType: 150,
+  accountCode: 205,
+  accountName: 220,
+  debit: 135,
+  credit: 135,
+  vatType: 220,
+  ewtCode: 175,
+  responsibilityCenterCode: 240,
+  responsibilityCenter: 235,
+  particulars: 260,
+  refId: 170,
+  checkDate: 155,
+  checkNo: 150,
+  checkStatus: 170,
 };
 
 export const AccountingPartyFallbackValuePrefix = "entry-party:";
-export const CashInHandAccountCode = "1001111";
-export const CashInHandAccountName = "Cash in Hand";
+export const CashOnHandAccountCode = "1001111";
+export const CashOnHandAccountName = "Cash on Hand";
 export const InputVatAccountCode = "2010002011";
 export const InputVatAccountName = "Input VAT";
 export const ExpandedWithholdingTaxAccountCode = "2010002002";
 export const ExpandedWithholdingTaxAccountName = "Expanded Withholding Tax";
 export const MultiCheckColumnIds = new Set<string>(["checkNo", "checkStatus", "checkDate"]);
 
-
+export const CashVoucherDetailTablePreferencesStorageKey = "gr8books:cash-voucher:detail-table-preferences";
+export const CashVoucherAccountingTablePreferencesStorageKey = "gr8books:cash-voucher:accounting-table-preferences";

@@ -190,10 +190,12 @@ function SaveConfirmDialog({
       }
       confirmLabel={isEditMode ? "Save Changes" : "Save"}
       pendingLabel={pendingLabel}
-      tone="success"
+      iconTone="question"
+      tone="default"
       onCancel={onCancel}
       onConfirm={onConfirm}
     />
+
   );
 }
 
@@ -223,9 +225,10 @@ function StatusConfirmDialog({
       confirmLabel={
         nextStatus === "Inactive" ? "Set as Inactive" : "Set as Active"
       }
-      tone={nextStatus === "Inactive" ? "danger" : "success"}
+      tone={nextStatus === "Inactive" ? "deactivate" : "activate"}
       onCancel={onCancel}
       onConfirm={onConfirm}
     />
   );
+
 }

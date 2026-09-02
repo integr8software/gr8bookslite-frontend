@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { AcknowledgementReceiptCurrencyOptions } from "@/app/src/data/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptData";
-import type { AcknowledgementReceiptFormValues } from "@/app/src/types/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptTypes";
+import { ProvisionalReceiptCurrencyOptions } from "@/app/src/data/modules/cash-receipt/provisional-receipt/ProvisionalReceiptData";
+import type { ProvisionalReceiptFormValues } from "@/app/src/types/modules/cash-receipt/provisional-receipt/ProvisionalReceiptTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
@@ -9,30 +9,34 @@ import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchang
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
-type AcknowledgementReceiptDetailsFormProps = {
+type ProvisionalReceiptDetailsFormProps = {
   isReadonly: boolean;
   partyOptions: AppAdvancedDropdownOption[];
   paymentTypeOptions: AppAdvancedDropdownOption[];
-  values: AcknowledgementReceiptFormValues;
+  receiptCodeLabel?: string;
+  values: ProvisionalReceiptFormValues;
   onOpenPartyDrawer: () => void;
   onOpenPaymentTypeDialog: () => void;
-  onUpdateField: <Key extends keyof AcknowledgementReceiptFormValues>(key: Key, value: AcknowledgementReceiptFormValues[Key]) => void;
+  onUpdateField: <Key extends keyof ProvisionalReceiptFormValues>(key: Key, value: ProvisionalReceiptFormValues[Key]) => void;
 };
 
-export function AcknowledgementReceiptDetailsForm({
+export function ProvisionalReceiptDetailsForm({
   isReadonly,
   onOpenPartyDrawer,
   onOpenPaymentTypeDialog,
   onUpdateField,
   partyOptions,
   paymentTypeOptions,
+  receiptCodeLabel = "PVR",
   values,
-}: AcknowledgementReceiptDetailsFormProps) {
+}: ProvisionalReceiptDetailsFormProps) {
+  const selectedPaymentTypeId = values.paymentId || paymentTypeOptions.find((option) => option.name === values.paymentType)?.value || "";
+
   return (
     <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid min-w-0 gap-x-8 gap-y-5 xl:grid-cols-2">
         <div className="grid min-w-0 gap-4">
-          <FieldShell controlId="acknowledgement-receipt-party" label="Party Name" isRequired>
+          <FieldShell controlId="provisional-receipt-party" label="Party Name" isRequired>
             <AppLookupDropdown
               value={values.partyCode}
               readOnly={isReadonly}
@@ -46,41 +50,47 @@ export function AcknowledgementReceiptDetailsForm({
               }}
             />
           </FieldShell>
-          <FieldShell controlId="acknowledgement-receipt-payment-type" label="Payment Type" isRequired>
+          <FieldShell controlId="provisional-receipt-payment-type" label="Payment Type" isRequired>
             <AppAdvancedDropdown
-              id="acknowledgement-receipt-payment-type"
-              value={values.paymentType}
+              id="provisional-receipt-payment-type"
+              value={selectedPaymentTypeId}
               readOnly={isReadonly}
               options={paymentTypeOptions}
               placeholder="Select payment type"
               searchPlaceholder="Search payment type"
               addAction={!isReadonly ? { label: "Add Payment Type", onClick: onOpenPaymentTypeDialog } : undefined}
-              onChange={(value) => onUpdateField("paymentType", String(value))}
+              onChange={(value) => {
+                const paymentId = String(value);
+                const selectedOption = paymentTypeOptions.find((option) => option.value === paymentId);
+
+                onUpdateField("paymentId", paymentId);
+                onUpdateField("paymentType", selectedOption?.name ?? paymentId);
+              }}
             />
           </FieldShell>
           {isCheckPaymentType(values.paymentType) ? (
             <>
-              <FieldShell controlId="acknowledgement-receipt-bank-name" label="Bank Name">
+              <FieldShell controlId="provisional-receipt-bank-name" label="Bank Name">
                 <input
-                  id="acknowledgement-receipt-bank-name"
+                  id="provisional-receipt-bank-name"
                   value={values.bankName}
                   readOnly={isReadonly}
                   onChange={(event) => onUpdateField("bankName", event.target.value)}
                   className={FieldClassName}
                 />
               </FieldShell>
-              <FieldShell controlId="acknowledgement-receipt-check-no" label="Check No.">
+              <FieldShell controlId="provisional-receipt-check-no" label="Check No.">
                 <input
-                  id="acknowledgement-receipt-check-no"
+                  id="provisional-receipt-check-no"
                   value={values.checkNo}
                   readOnly={isReadonly}
                   onChange={(event) => onUpdateField("checkNo", event.target.value)}
                   className={FieldClassName}
                 />
               </FieldShell>
-              <FieldShell controlId="acknowledgement-receipt-check-date" label="Check Date">
+              <FieldShell controlId="provisional-receipt-check-date" label="Check Date">
                 <input
-                  id="acknowledgement-receipt-check-date"
+                  id="provisional-receipt-check-date"
                   type="date"
                   value={values.checkDate}
                   readOnly={isReadonly}
@@ -90,17 +100,17 @@ export function AcknowledgementReceiptDetailsForm({
               </FieldShell>
             </>
           ) : null}
-          <FieldShell controlId="acknowledgement-receipt-currency" label="Currency">
+          <FieldShell controlId="provisional-receipt-currency" label="Currency">
             <CurrencyExchangeRateRow
-              exchangeRateControlId="acknowledgement-receipt-exchange-rate"
+              exchangeRateControlId="provisional-receipt-exchange-rate"
               currencyControl={
                 <AppAdvancedDropdown
-                  id="acknowledgement-receipt-currency"
+                  id="provisional-receipt-currency"
                   className="w-full min-w-0"
                   value={values.currency}
                   readOnly={isReadonly}
                   isClearable={false}
-                  options={AcknowledgementReceiptCurrencyOptions}
+                  options={ProvisionalReceiptCurrencyOptions}
                   placeholder="Currency"
                   searchPlaceholder="Search currency"
                   onChange={(value) => onUpdateField("currency", String(value))}
@@ -108,7 +118,7 @@ export function AcknowledgementReceiptDetailsForm({
               }
               exchangeRateControl={
                 <MoneyNumberField
-                  id="acknowledgement-receipt-exchange-rate"
+                  id="provisional-receipt-exchange-rate"
                   value={values.exchangeRate}
                   readOnly={isReadonly}
                   onValueChange={(value) => onUpdateField("exchangeRate", value)}
@@ -117,9 +127,9 @@ export function AcknowledgementReceiptDetailsForm({
               }
             />
           </FieldShell>
-          <FieldShell controlId="acknowledgement-receipt-remarks" label="Remarks">
+          <FieldShell controlId="provisional-receipt-remarks" label="Remarks">
             <AppLimitedTextarea
-              id="acknowledgement-receipt-remarks"
+              id="provisional-receipt-remarks"
               value={values.remarks}
               readOnly={isReadonly}
               onChange={(event) => onUpdateField("remarks", event.target.value)}
@@ -130,26 +140,21 @@ export function AcknowledgementReceiptDetailsForm({
         </div>
 
         <div className="grid min-w-0 content-start gap-4">
-          <FieldShell controlId="acknowledgement-receipt-party-code" label="Party Code">
-            <input
-              id="acknowledgement-receipt-party-code"
-              value={values.partyCode}
-              readOnly
-              className={FieldClassName}
-            />
+          <FieldShell controlId="provisional-receipt-party-code" label="Party Code">
+            <input id="provisional-receipt-party-code" value={values.partyCode} readOnly className={FieldClassName} />
           </FieldShell>
-          <FieldShell controlId="acknowledgement-receipt-transaction-no" label="AR No." isRequired>
+          <FieldShell controlId="provisional-receipt-transaction-no" label={`${receiptCodeLabel} No.`} isRequired>
             <input
-              id="acknowledgement-receipt-transaction-no"
+              id="provisional-receipt-transaction-no"
               value={values.receiptNo}
               readOnly={isReadonly}
               onChange={(event) => onUpdateField("receiptNo", event.target.value)}
               className={FieldClassName}
             />
           </FieldShell>
-          <FieldShell controlId="acknowledgement-receipt-document-date" label="AR Date" isRequired>
+          <FieldShell controlId="provisional-receipt-document-date" label={`${receiptCodeLabel} Date`} isRequired>
             <input
-              id="acknowledgement-receipt-document-date"
+              id="provisional-receipt-document-date"
               type="date"
               value={values.receiptDate}
               readOnly={isReadonly}
@@ -157,18 +162,18 @@ export function AcknowledgementReceiptDetailsForm({
               className={FieldClassName}
             />
           </FieldShell>
-          <FieldShell controlId="acknowledgement-receipt-reference-no" label="Reference No">
+          <FieldShell controlId="provisional-receipt-reference-no" label="Reference No">
             <input
-              id="acknowledgement-receipt-reference-no"
+              id="provisional-receipt-reference-no"
               value={values.referenceNo}
               readOnly={isReadonly}
               onChange={(event) => onUpdateField("referenceNo", event.target.value)}
               className={FieldClassName}
             />
           </FieldShell>
-          <FieldShell controlId="acknowledgement-receipt-status" label="Status">
+          <FieldShell controlId="provisional-receipt-status" label="Status">
             <input
-              id="acknowledgement-receipt-status"
+              id="provisional-receipt-status"
               value={values.status}
               readOnly
               className={`${FieldClassName} !bg-darknavy/5 text-darknavy/60`}

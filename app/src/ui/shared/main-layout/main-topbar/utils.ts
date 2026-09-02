@@ -1,7 +1,7 @@
 import type {
   MainBranch,
   MainCompany,
-} from "@/app/src/data/shared/main-layout/MainLayoutTypes";
+} from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
 import {
   getBranchDisplayLabel,
 } from "@/app/src/data/shared/branch/BranchDisplayData";

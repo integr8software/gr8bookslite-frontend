@@ -103,11 +103,68 @@ jobs:
 
           "report-path=$reportPath" >> $env:GITHUB_OUTPUT
 
+      - name: Generate frontend architecture Excel report
+        id: excel
+        shell: pwsh
+        env:
+          REPORT_PATH: ${{ steps.architecture.outputs.report-path }}
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          if (
+            [string]::IsNullOrWhiteSpace($env:REPORT_PATH) -or
+            -not (Test-Path -LiteralPath $env:REPORT_PATH -PathType Leaf)
+          ) {
+            throw "Frontend architecture JSON report is unavailable."
+          }
+
+          $excelPath = Join-Path `
+            $env:GITHUB_WORKSPACE `
+            "reports\weekly-architecture\Frontend-Weekly-Architecture.xlsx"
+
+          $generatorPath = Join-Path `
+            $env:GITHUB_WORKSPACE `
+            "qa-automation\scripts\architecture\generate-frontend-architecture-excel.mjs"
+
+          if (-not (Test-Path -LiteralPath $generatorPath -PathType Leaf)) {
+            throw "Frontend architecture Excel generator was not found: $generatorPath"
+          }
+
+          Push-Location ".\qa-automation"
+
+          try {
+            node $generatorPath `
+              $env:REPORT_PATH `
+              $excelPath
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "Frontend architecture Excel generation failed with exit code $LASTEXITCODE."
+            }
+          }
+          finally {
+            Pop-Location
+          }
+
+          if (-not (Test-Path -LiteralPath $excelPath -PathType Leaf)) {
+            throw "Frontend architecture Excel report was not generated: $excelPath"
+          }
+
+          $excelSize = (Get-Item -LiteralPath $excelPath).Length
+
+          if ($excelSize -le 0) {
+            throw "Frontend architecture Excel report is empty: $excelPath"
+          }
+
+          "excel-path=$excelPath" >> $env:GITHUB_OUTPUT
+          Write-Host "Frontend architecture Excel report: $excelPath"
+          Write-Host "Excel size: $excelSize bytes"
+
       - name: Write architecture summary
         if: always()
         shell: pwsh
         env:
           REPORT_PATH: ${{ steps.architecture.outputs.report-path }}
+          EXCEL_PATH: ${{ steps.excel.outputs.excel-path }}
         run: |
           $ErrorActionPreference = "Stop"
 
@@ -130,9 +187,6 @@ jobs:
             -Encoding UTF8 |
             ConvertFrom-Json
 
-          # Weekly architecture review deliberately focuses on structural
-          # architecture signals. The full detector output is still preserved
-          # in the uploaded JSON artifact for QA investigation.
           $architectureRulePrefixes = @(
             "structure.",
             "hooks.",
@@ -185,6 +239,16 @@ jobs:
           $scannedFiles = [int]$report.analysis.changedFileCount
           $fullFindingCount = [int]$report.summary.total
 
+          $excelStatus = if (
+            -not [string]::IsNullOrWhiteSpace($env:EXCEL_PATH) -and
+            (Test-Path -LiteralPath $env:EXCEL_PATH -PathType Leaf)
+          ) {
+            "Generated"
+          }
+          else {
+            "Unavailable"
+          }
+
           @"
           # Weekly Frontend Architecture Review
 
@@ -203,6 +267,8 @@ jobs:
           | Other QA observations kept in artifact | $otherTotal |
           | Full detector findings | $fullFindingCount |
 
+          **Excel report:** $excelStatus
+
           ## Interpretation
 
           - `Blocker-class` is the severity inherited from the normal PR detector. In this weekly review it is **advisory only**.
@@ -210,6 +276,7 @@ jobs:
           - Review existing structural violations before changing code.
           - Preserve intentional legacy patterns and approved exceptions unless there is evidence they are causing a real problem.
           - Repeated literals, hardcoded constants, and similar lower-level PR observations are retained in the JSON artifact but are not promoted into the weekly architecture list.
+          - The Excel workbook contains the architecture findings in a filterable format for QA/admin review.
           - The existing frontend PR quality gate remains the merge gate.
           "@ >> $env:GITHUB_STEP_SUMMARY
 
@@ -232,18 +299,19 @@ jobs:
 
                 "- **$($_.severity.ToUpper())** ``$($_.ruleId)``$location — $($_.message)" >> $env:GITHUB_STEP_SUMMARY
               }
-
           }
           else {
             "" >> $env:GITHUB_STEP_SUMMARY
             "No configured architecture findings were detected." >> $env:GITHUB_STEP_SUMMARY
           }
 
-      - name: Upload weekly architecture report
+      - name: Upload weekly architecture reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: frontend-weekly-architecture-${{ github.run_number }}
-          path: reports/weekly-architecture/frontend-architecture-results.json
+          path: |
+            reports/weekly-architecture/frontend-architecture-results.json
+            reports/weekly-architecture/Frontend-Weekly-Architecture.xlsx
           if-no-files-found: warn
           retention-days: 30

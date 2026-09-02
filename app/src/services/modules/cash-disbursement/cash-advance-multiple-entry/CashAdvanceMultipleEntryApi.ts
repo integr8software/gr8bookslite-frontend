@@ -9,6 +9,10 @@ import type {
 
 type ApiCashAdvanceStatus = "DRAFT" | "FOR_APPROVAL" | "APPROVED" | "POSTED" | "DISAPPROVED" | "CANCELLED";
 
+type CashAdvanceMultipleEntryApiOptions = {
+  branchUnitId?: number;
+};
+
 export type FetchCashAdvanceMultipleEntryListResponse = {
   data: CashAdvanceMultipleEntryRecord[];
   meta: {
@@ -35,16 +39,17 @@ export async function fetchCashAdvanceMultipleEntryById(id: string): Promise<Cas
   return mapCashAdvanceMultipleEntryRecordFromApi(response.data.data);
 }
 
-export async function fetchNextCashAdvanceMultipleEntryTransactionNo(): Promise<string> {
-  return fetchTransactionNumber(cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1);
+export async function fetchNextCashAdvanceMultipleEntryTransactionNo(branchUnitId?: number): Promise<string> {
+  return fetchTransactionNumber(cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1, { branchUnitId });
 }
 
 export async function createCashAdvanceMultipleEntryApi(
   values: CashAdvanceMultipleEntryFormValues,
+  options?: CashAdvanceMultipleEntryApiOptions,
 ): Promise<CashAdvanceMultipleEntryRecord> {
   const response = await ApiClient.post<{ data: CashAdvanceMultipleEntryRecord }>(
     CashAdvanceMultipleEntryPath,
-    mapCashAdvanceMultipleEntryValuesToApi(values),
+    mapCashAdvanceMultipleEntryValuesToApi(values, options),
   );
   return mapCashAdvanceMultipleEntryRecordFromApi(response.data.data);
 }
@@ -52,10 +57,11 @@ export async function createCashAdvanceMultipleEntryApi(
 export async function updateCashAdvanceMultipleEntryApi(
   id: string,
   values: CashAdvanceMultipleEntryFormValues,
+  options?: CashAdvanceMultipleEntryApiOptions,
 ): Promise<CashAdvanceMultipleEntryRecord> {
   const response = await ApiClient.put<{ data: CashAdvanceMultipleEntryRecord }>(
     `${CashAdvanceMultipleEntryPath}/${id}`,
-    mapCashAdvanceMultipleEntryValuesToApi(values),
+    mapCashAdvanceMultipleEntryValuesToApi(values, options),
   );
   return mapCashAdvanceMultipleEntryRecordFromApi(response.data.data);
 }
@@ -74,11 +80,12 @@ export async function deleteCashAdvanceMultipleEntryApi(id: string): Promise<voi
   await ApiClient.delete(`${CashAdvanceMultipleEntryPath}/${id}`);
 }
 
-function mapCashAdvanceMultipleEntryValuesToApi(values: CashAdvanceMultipleEntryFormValues) {
+function mapCashAdvanceMultipleEntryValuesToApi(values: CashAdvanceMultipleEntryFormValues, options?: CashAdvanceMultipleEntryApiOptions) {
   return {
     accountCode: values.accountCode,
     accountTitle: values.accountTitle,
     accountingEntries: values.accountingEntries,
+    branchUnitId: options?.branchUnitId,
     costCenter: values.costCenter,
     currency: values.currency,
     documentDate: values.documentDate,

@@ -46,7 +46,6 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import {
   getCashAdvanceMultipleEntryAvailabilityWarning,
-  validateCashAdvanceMultipleEntryAmountsWithinBalances,
   validateCashAdvanceMultipleEntryForm,
 } from "@/app/src/validations/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryValidation";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
@@ -129,6 +128,7 @@ export function useCashAdvanceMultipleEntryActionForm(
   onSaved?: (record: CashAdvanceMultipleEntryRecord) => void,
 ) {
   const transactionCurrency = useTransactionCurrency();
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
   const [loadedRecord, setLoadedRecord] = useState<CashAdvanceMultipleEntryRecord | null>(null);
   const [values, setValues] = useState<CashAdvanceMultipleEntryFormValues>(() =>
     createCashAdvanceMultipleEntryFormValues(transactionCurrency.baseCurrencyCode),
@@ -151,9 +151,9 @@ export function useCashAdvanceMultipleEntryActionForm(
     values,
   });
 
-  async function refreshNextTransactionNo() {
+  const refreshNextTransactionNo = useCallback(async () => {
     try {
-      const nextTransNo = await fetchNextCashAdvanceMultipleEntryTransactionNo();
+      const nextTransNo = await fetchNextCashAdvanceMultipleEntryTransactionNo(activeBranchId ?? undefined);
 
       if (nextTransNo) {
         setValues((current) => ({ ...current, transNo: nextTransNo }));
@@ -162,7 +162,7 @@ export function useCashAdvanceMultipleEntryActionForm(
     } catch {
       // Keep the current add form if the number endpoint is temporarily unavailable.
     }
-  }
+  }, [activeBranchId]);
 
   useEffect(() => {
     if (mode !== "add") {
@@ -170,7 +170,7 @@ export function useCashAdvanceMultipleEntryActionForm(
     }
 
     queueMicrotask(() => void refreshNextTransactionNo());
-  }, [mode]);
+  }, [mode, refreshNextTransactionNo]);
 
   useEffect(() => {
     if (mode === "add") {
@@ -306,8 +306,8 @@ export function useCashAdvanceMultipleEntryActionForm(
     try {
       const nextRecord =
         mode === "edit" && loadedRecord
-          ? await updateCashAdvanceMultipleEntryApi(loadedRecord.id, nextValues)
-          : await createCashAdvanceMultipleEntryApi(nextValues);
+          ? await updateCashAdvanceMultipleEntryApi(loadedRecord.id, nextValues, { branchUnitId: activeBranchId ?? undefined })
+          : await createCashAdvanceMultipleEntryApi(nextValues, { branchUnitId: activeBranchId ?? undefined });
       const refreshedValues = createCashAdvanceMultipleEntryFormValuesFromRecord(nextRecord);
       setLoadedRecord(nextRecord);
       setValues(refreshedValues);
@@ -369,7 +369,7 @@ export function useCashAdvanceMultipleEntryActionForm(
     const nextValues = createCashAdvanceMultipleEntryFormValues(transactionCurrency.baseCurrencyCode);
 
     try {
-      const nextTransNo = await fetchNextCashAdvanceMultipleEntryTransactionNo();
+      const nextTransNo = await fetchNextCashAdvanceMultipleEntryTransactionNo(activeBranchId ?? undefined);
 
       if (nextTransNo) {
         nextValues.transNo = nextTransNo;

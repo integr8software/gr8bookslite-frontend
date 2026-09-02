@@ -5,7 +5,6 @@ import type {
   CashAdvanceMultipleEntryFormErrors,
   CashAdvanceMultipleEntryFormValues,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
-import { formatAmount } from "@/app/src/utils/currency.util";
 
 const CashAdvanceMultipleEntryDraftSchema = z.object({
   documentDate: z.string().trim().min(1, "Select a CAME Date."),
@@ -62,7 +61,7 @@ export function validateCashAdvanceMultipleEntryForm(values: CashAdvanceMultiple
 }
 
 export function getCashAdvanceMultipleEntryAvailabilityWarning(values: CashAdvanceMultipleEntryFormValues): string | null {
-  const balances = new Map<string, { balance: number; partyName: string }>();
+  const balances = new Map<string, number>();
   const totals = new Map<string, number>();
 
   values.items.forEach((item) => {
@@ -76,24 +75,29 @@ export function getCashAdvanceMultipleEntryAvailabilityWarning(values: CashAdvan
     const balance = parseMoneyNumberInput(item.cashAdvanceBalance);
     const current = balances.get(partyKey);
 
-    if (!current || balance < current.balance) {
-      balances.set(partyKey, {
-        balance,
-        partyName: item.partyName.trim() || item.partyCode.trim() || "the selected employee",
-      });
+    if (current === undefined || balance < current) {
+      balances.set(partyKey, balance);
     }
   });
 
-  const warnings: string[] = [];
+  let exceededEmployeeCount = 0;
 
-  for (const [partyKey, { balance, partyName }] of balances) {
+  for (const [partyKey, balance] of balances) {
     const total = totals.get(partyKey) ?? 0;
     if (total > balance) {
-      warnings.push(`Total Cash Advance Amount for ${partyName} cannot exceed the Available Cash Advance of ${formatAmount(balance)}.`);
+      exceededEmployeeCount += 1;
     }
   }
 
-  return warnings.length > 0 ? warnings.join(" ") : null;
+  if (exceededEmployeeCount === 1) {
+    return "An employee has a Total Cash Advance Amount that exceeds the Available Cash Advance.";
+  }
+
+  if (exceededEmployeeCount > 1) {
+    return `Total Cash Advance Amount exceeds the Available Cash Advance for ${exceededEmployeeCount} employees.`;
+  }
+
+  return null;
 }
 
 export function validateCashAdvanceMultipleEntryAmountsWithinBalances(values: CashAdvanceMultipleEntryFormValues) {

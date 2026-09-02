@@ -16359,12 +16359,19 @@ export const DefaultAccountControllerFindOptionsByTypeV1Status = {
 
 export type ServicesMaintenanceControllerFindAllV1Params = {
 /**
+ * Filter by service type
+ */
+serviceType?: ServicesMaintenanceControllerFindAllV1ServiceType;
+/**
+ * Sort by field
+ */
+sortBy?: ServicesMaintenanceControllerFindAllV1SortBy;
+/**
  * @maxLength 120
  */
 search?: string;
 status?: ServicesMaintenanceControllerFindAllV1Status;
 accountSetupMode?: ServicesMaintenanceControllerFindAllV1AccountSetupMode;
-serviceType?: ServicesMaintenanceControllerFindAllV1ServiceType;
 /**
  * @minimum 1
  */
@@ -16374,9 +16381,28 @@ page?: number;
  * @maximum 500
  */
 limit?: number;
-sortBy?: ServicesMaintenanceControllerFindAllV1SortBy;
 sortDirection?: ServicesMaintenanceControllerFindAllV1SortDirection;
 };
+
+export type ServicesMaintenanceControllerFindAllV1ServiceType = typeof ServicesMaintenanceControllerFindAllV1ServiceType[keyof typeof ServicesMaintenanceControllerFindAllV1ServiceType];
+
+
+export const ServicesMaintenanceControllerFindAllV1ServiceType = {
+  PURCHASES: 'PURCHASES',
+  SALES: 'SALES',
+} as const;
+
+export type ServicesMaintenanceControllerFindAllV1SortBy = typeof ServicesMaintenanceControllerFindAllV1SortBy[keyof typeof ServicesMaintenanceControllerFindAllV1SortBy];
+
+
+export const ServicesMaintenanceControllerFindAllV1SortBy = {
+  serviceName: 'serviceName',
+  serviceType: 'serviceType',
+  status: 'status',
+  accountSetupMode: 'accountSetupMode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
 
 export type ServicesMaintenanceControllerFindAllV1Status = typeof ServicesMaintenanceControllerFindAllV1Status[keyof typeof ServicesMaintenanceControllerFindAllV1Status];
 
@@ -16394,26 +16420,6 @@ export const ServicesMaintenanceControllerFindAllV1AccountSetupMode = {
   EXISTING: 'EXISTING',
 } as const;
 
-export type ServicesMaintenanceControllerFindAllV1ServiceType = typeof ServicesMaintenanceControllerFindAllV1ServiceType[keyof typeof ServicesMaintenanceControllerFindAllV1ServiceType];
-
-
-export const ServicesMaintenanceControllerFindAllV1ServiceType = {
-  SALES: 'SALES',
-  PURCHASES: 'PURCHASES',
-} as const;
-
-export type ServicesMaintenanceControllerFindAllV1SortBy = typeof ServicesMaintenanceControllerFindAllV1SortBy[keyof typeof ServicesMaintenanceControllerFindAllV1SortBy];
-
-
-export const ServicesMaintenanceControllerFindAllV1SortBy = {
-  serviceName: 'serviceName',
-  serviceType: 'serviceType',
-  status: 'status',
-  accountSetupMode: 'accountSetupMode',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
 export type ServicesMaintenanceControllerFindAllV1SortDirection = typeof ServicesMaintenanceControllerFindAllV1SortDirection[keyof typeof ServicesMaintenanceControllerFindAllV1SortDirection];
 
 
@@ -16424,12 +16430,19 @@ export const ServicesMaintenanceControllerFindAllV1SortDirection = {
 
 export type ServicesMaintenanceControllerFindOptionsV1Params = {
 /**
+ * Filter by service type
+ */
+serviceType?: ServicesMaintenanceControllerFindOptionsV1ServiceType;
+/**
+ * Sort by field
+ */
+sortBy?: ServicesMaintenanceControllerFindOptionsV1SortBy;
+/**
  * @maxLength 120
  */
 search?: string;
 status?: ServicesMaintenanceControllerFindOptionsV1Status;
 accountSetupMode?: ServicesMaintenanceControllerFindOptionsV1AccountSetupMode;
-serviceType?: ServicesMaintenanceControllerFindOptionsV1ServiceType;
 /**
  * @minimum 1
  */
@@ -16439,9 +16452,28 @@ page?: number;
  * @maximum 500
  */
 limit?: number;
-sortBy?: ServicesMaintenanceControllerFindOptionsV1SortBy;
 sortDirection?: ServicesMaintenanceControllerFindOptionsV1SortDirection;
 };
+
+export type ServicesMaintenanceControllerFindOptionsV1ServiceType = typeof ServicesMaintenanceControllerFindOptionsV1ServiceType[keyof typeof ServicesMaintenanceControllerFindOptionsV1ServiceType];
+
+
+export const ServicesMaintenanceControllerFindOptionsV1ServiceType = {
+  PURCHASES: 'PURCHASES',
+  SALES: 'SALES',
+} as const;
+
+export type ServicesMaintenanceControllerFindOptionsV1SortBy = typeof ServicesMaintenanceControllerFindOptionsV1SortBy[keyof typeof ServicesMaintenanceControllerFindOptionsV1SortBy];
+
+
+export const ServicesMaintenanceControllerFindOptionsV1SortBy = {
+  serviceName: 'serviceName',
+  serviceType: 'serviceType',
+  status: 'status',
+  accountSetupMode: 'accountSetupMode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
 
 export type ServicesMaintenanceControllerFindOptionsV1Status = typeof ServicesMaintenanceControllerFindOptionsV1Status[keyof typeof ServicesMaintenanceControllerFindOptionsV1Status];
 
@@ -16457,26 +16489,6 @@ export type ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = typeof 
 export const ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = {
   AUTO: 'AUTO',
   EXISTING: 'EXISTING',
-} as const;
-
-export type ServicesMaintenanceControllerFindOptionsV1ServiceType = typeof ServicesMaintenanceControllerFindOptionsV1ServiceType[keyof typeof ServicesMaintenanceControllerFindOptionsV1ServiceType];
-
-
-export const ServicesMaintenanceControllerFindOptionsV1ServiceType = {
-  SALES: 'SALES',
-  PURCHASES: 'PURCHASES',
-} as const;
-
-export type ServicesMaintenanceControllerFindOptionsV1SortBy = typeof ServicesMaintenanceControllerFindOptionsV1SortBy[keyof typeof ServicesMaintenanceControllerFindOptionsV1SortBy];
-
-
-export const ServicesMaintenanceControllerFindOptionsV1SortBy = {
-  serviceName: 'serviceName',
-  serviceType: 'serviceType',
-  status: 'status',
-  accountSetupMode: 'accountSetupMode',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
 } as const;
 
 export type ServicesMaintenanceControllerFindOptionsV1SortDirection = typeof ServicesMaintenanceControllerFindOptionsV1SortDirection[keyof typeof ServicesMaintenanceControllerFindOptionsV1SortDirection];

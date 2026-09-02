@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { usePettyCashVoucherDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherDetailsLookups";
 import type { PettyCashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
@@ -14,11 +13,6 @@ import {
   TransactionTextField,
 } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 import { formatExchangeRateInput } from "@/app/src/utils/number.util";
-import {
-  fetchPettyCashVoucherAccountOptions,
-  fetchPettyCashVoucherPartyOptions,
-  fetchPettyCashVoucherResponsibilityCenters,
-} from "@/app/src/services/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherApi";
 
 export function PettyCashVoucherDetailsFields({
   canAddParty = true,
@@ -33,65 +27,14 @@ export function PettyCashVoucherDetailsFields({
   onOpenResponsibilityCenterDrawer?: () => void;
   page: PettyCashVoucherActionPageState;
 }) {
-  const partyQuery = useQuery({
-    queryKey: ["cash-disbursement", "petty-cash-voucher", "parties"],
-    queryFn: fetchPettyCashVoucherPartyOptions,
-  });
-
-  const accountQuery = useQuery({
-    queryKey: ["cash-disbursement", "petty-cash-voucher", "accounts"],
-    queryFn: fetchPettyCashVoucherAccountOptions,
-  });
-
-  const rcQuery = useQuery({
-    queryKey: ["cash-disbursement", "petty-cash-voucher", "rcs"],
-    queryFn: fetchPettyCashVoucherResponsibilityCenters,
-  });
-
-  const partyOptions = useMemo(() => {
-    const raw = partyQuery.data ?? [];
-    const options = [...raw];
-    if (page.values.partyCode && !options.some((o) => o.value === page.values.partyCode || o.label === page.values.partyCode)) {
-      options.unshift({
-        name: page.values.partyName || page.values.partyCode,
-        label: page.values.partyCode,
-        value: page.values.partyCode,
-        description: page.values.partyName,
-      });
-    }
-    return options;
-  }, [partyQuery.data, page.values.partyCode, page.values.partyName]);
-
-  const accountOptions = useMemo(() => {
-    const raw = accountQuery.data ?? [];
-    const options = [...raw];
-    if (page.values.accountCode && !options.some((o) => o.value === page.values.accountCode || o.label === page.values.accountCode)) {
-      options.unshift({
-        name: page.values.accountTitle || page.values.accountCode,
-        label: page.values.accountCode,
-        value: page.values.accountCode,
-        description: page.values.accountTitle,
-      });
-    }
-    return options;
-  }, [accountQuery.data, page.values.accountCode, page.values.accountTitle]);
-
-  const responsibilityCenterOptions = useMemo(() => {
-    const raw = rcQuery.data ?? [];
-    const options = [...raw];
-    if (
-      page.values.responsibilityCenterCode &&
-      !options.some((o) => o.value === page.values.responsibilityCenterCode || o.label === page.values.responsibilityCenterCode)
-    ) {
-      options.unshift({
-        name: page.values.responsibilityCenter || page.values.responsibilityCenterCode,
-        label: page.values.responsibilityCenterCode,
-        value: page.values.responsibilityCenterCode,
-        description: page.values.responsibilityCenter,
-      });
-    }
-    return options;
-  }, [rcQuery.data, page.values.responsibilityCenterCode, page.values.responsibilityCenter]);
+  const {
+    accountOptions,
+    isAccountLookupLoading,
+    isPartyLookupLoading,
+    isResponsibilityCenterLookupLoading,
+    partyOptions,
+    responsibilityCenterOptions,
+  } = usePettyCashVoucherDetailsLookups(page.values);
 
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
@@ -105,6 +48,7 @@ export function PettyCashVoucherDetailsFields({
               options={partyOptions}
               placeholder="Select Party Name"
               searchPlaceholder="Search Party Name"
+              emptyMessage={isPartyLookupLoading ? "Loading Party Name options..." : "No Party Name options found."}
               addAction={
                 !page.isReadonly && canAddParty && onOpenPartyDrawer
                   ? {
@@ -127,6 +71,7 @@ export function PettyCashVoucherDetailsFields({
               options={accountOptions}
               placeholder="Select Default Account Title"
               searchPlaceholder="Search Default Account Title"
+              emptyMessage={isAccountLookupLoading ? "Loading Default Account options..." : "No Default Account options found."}
               onChange={(code, name) => {
                 page.updateField("accountCode", code);
                 page.updateField("accountTitle", name);
@@ -141,6 +86,11 @@ export function PettyCashVoucherDetailsFields({
               options={responsibilityCenterOptions}
               placeholder="Select Responsibility Center"
               searchPlaceholder="Search Responsibility Center"
+              emptyMessage={
+                isResponsibilityCenterLookupLoading
+                  ? "Loading Responsibility Center options..."
+                  : "No Responsibility Center options found."
+              }
               addAction={
                 !page.isReadonly && canAddResponsibilityCenter && onOpenResponsibilityCenterDrawer
                   ? {

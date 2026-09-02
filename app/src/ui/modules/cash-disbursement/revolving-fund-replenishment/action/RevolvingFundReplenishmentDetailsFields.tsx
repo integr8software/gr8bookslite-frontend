@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useRevolvingFundReplenishmentDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund-replenishment/useRevolvingFundReplenishmentDetailsLookups";
 import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
@@ -13,11 +12,6 @@ import {
   TransactionTextField,
 } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 import { formatExchangeRateInput } from "@/app/src/utils/number.util";
-import {
-  fetchRevolvingFundReplenishmentAccountOptions,
-  fetchRevolvingFundReplenishmentPartyOptions,
-  fetchRevolvingFundReplenishmentResponsibilityCenters,
-} from "@/app/src/services/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentApi";
 
 export function RevolvingFundReplenishmentDetailsFields({
   onOpenPartyDrawer,
@@ -30,83 +24,16 @@ export function RevolvingFundReplenishmentDetailsFields({
   onOpenResponsibilityCenterDrawer: () => void;
   page: RevolvingFundReplenishmentActionPageState;
 }) {
-  const partyQuery = useQuery({
-    queryKey: ["cash-disbursement", "revolving-fund-replenishment", "parties"],
-    queryFn: fetchRevolvingFundReplenishmentPartyOptions,
-  });
-
-  const accountQuery = useQuery({
-    queryKey: ["cash-disbursement", "revolving-fund-replenishment", "accounts"],
-    queryFn: fetchRevolvingFundReplenishmentAccountOptions,
-  });
-
-  const rcQuery = useQuery({
-    queryKey: ["cash-disbursement", "revolving-fund-replenishment", "rcs"],
-    queryFn: fetchRevolvingFundReplenishmentResponsibilityCenters,
-  });
-
-  const partyOptions = useMemo(() => {
-    const raw = partyQuery.data ?? [];
-    const options = [...raw];
-    if (page.values.partyCode && !options.some((o) => o.value === page.values.partyCode || o.label === page.values.partyCode)) {
-      options.unshift({
-        name: page.values.partyName || page.values.partyCode,
-        label: page.values.partyCode,
-        value: page.values.partyCode,
-        description: page.values.partyName,
-      });
-    }
-    return options;
-  }, [partyQuery.data, page.values.partyCode, page.values.partyName]);
-
-  const accountOptions = useMemo(() => {
-    const raw = accountQuery.data ?? [];
-    const options = [...raw];
-    if (page.values.accountCode && !options.some((o) => o.value === page.values.accountCode || o.label === page.values.accountCode)) {
-      options.unshift({
-        name: page.values.accountTitle || page.values.accountCode,
-        label: page.values.accountCode,
-        value: page.values.accountCode,
-        description: page.values.accountTitle,
-      });
-    }
-    return options;
-  }, [accountQuery.data, page.values.accountCode, page.values.accountTitle]);
-
-  const responsibilityCenterOptions = useMemo(() => {
-    const raw = (rcQuery.data ?? []).filter((r) => !r.name?.toLowerCase().includes("project"));
-    const options = [...raw];
-    if (
-      page.values.responsibilityCenterCode &&
-      !options.some((o) => o.value === page.values.responsibilityCenterCode || o.label === page.values.responsibilityCenterCode)
-    ) {
-      options.unshift({
-        name: page.values.responsibilityCenter || page.values.responsibilityCenterCode,
-        label: page.values.responsibilityCenterCode,
-        value: page.values.responsibilityCenterCode,
-        description: page.values.responsibilityCenter,
-      });
-    }
-    return options;
-  }, [rcQuery.data, page.values.responsibilityCenterCode, page.values.responsibilityCenter]);
-
-  const projectOptions = useMemo(() => {
-    const raw = (rcQuery.data ?? []).filter((r) => r.name?.toLowerCase().includes("project"));
-    const options = raw.length > 0 ? raw : (rcQuery.data ?? []);
-    const fullOptions = [...options];
-    if (
-      page.values.projectCode &&
-      !fullOptions.some((o) => o.value === page.values.projectCode || o.label === page.values.projectCode)
-    ) {
-      fullOptions.unshift({
-        name: page.values.projectName || page.values.projectCode,
-        label: page.values.projectCode,
-        value: page.values.projectCode,
-        description: page.values.projectName,
-      });
-    }
-    return fullOptions;
-  }, [rcQuery.data, page.values.projectCode, page.values.projectName]);
+  const {
+    accountOptions,
+    isAccountLookupLoading,
+    isPartyLookupLoading,
+    isProjectLookupLoading,
+    isResponsibilityCenterLookupLoading,
+    partyOptions,
+    projectOptions,
+    responsibilityCenterOptions,
+  } = useRevolvingFundReplenishmentDetailsLookups(page.values);
 
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
@@ -120,6 +47,7 @@ export function RevolvingFundReplenishmentDetailsFields({
               readOnly={page.isReadonly}
               placeholder="Select Party Name"
               searchPlaceholder="Search Party Name"
+              emptyMessage={isPartyLookupLoading ? "Loading Party Name options..." : "No Party Name options found."}
               addAction={!page.isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("partyCode", code);
@@ -135,6 +63,11 @@ export function RevolvingFundReplenishmentDetailsFields({
               readOnly={page.isReadonly}
               placeholder="Select Responsibility Center"
               searchPlaceholder="Search Responsibility Center"
+              emptyMessage={
+                isResponsibilityCenterLookupLoading
+                  ? "Loading Responsibility Center options..."
+                  : "No Responsibility Center options found."
+              }
               addAction={!page.isReadonly ? { label: "Add Responsibility Center", onClick: onOpenResponsibilityCenterDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("responsibilityCenterCode", code);
@@ -150,6 +83,7 @@ export function RevolvingFundReplenishmentDetailsFields({
               readOnly={page.isReadonly}
               placeholder="Select Project Name"
               searchPlaceholder="Search Project Name"
+              emptyMessage={isProjectLookupLoading ? "Loading Project Name options..." : "No Project Name options found."}
               addAction={!page.isReadonly ? { label: "Add Project Name", onClick: onOpenProjectDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("projectCode", code);
@@ -165,6 +99,7 @@ export function RevolvingFundReplenishmentDetailsFields({
               readOnly={page.isReadonly}
               placeholder="Select Default Account Title"
               searchPlaceholder="Search Default Account"
+              emptyMessage={isAccountLookupLoading ? "Loading Default Account options..." : "No Default Account options found."}
               onChange={(code, name) => {
                 page.updateField("accountCode", code);
                 page.updateField("accountTitle", name);

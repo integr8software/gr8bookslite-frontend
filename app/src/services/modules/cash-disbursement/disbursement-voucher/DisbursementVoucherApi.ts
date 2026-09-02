@@ -15,6 +15,7 @@ import type {
   CreateDisbursementVoucherDtoStatus,
   DefaultAccountOptionResponseDto,
   DisbursementVoucherControllerFindAllV1Params,
+  DisbursementVoucherListResponseDto,
   DisbursementVoucherRecordResponseDto,
   DisbursementVoucherSingleResponseDto,
   UpdateDisbursementVoucherDto,

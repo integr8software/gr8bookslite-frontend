@@ -15,6 +15,7 @@ import {
   fetchMaintenancePostingAccountOptions,
   fetchMaintenanceResponsibilityCenterOptions,
 } from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
+import { CashDisbursementApiAllStatusFilter } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type {
   CreatePettyCashFundDto,
   PettyCashFundDetailDto,
@@ -236,7 +237,7 @@ export async function fetchPettyCashFundList(params?: FetchPettyCashFundListPara
     sortOrder: params?.sortOrder,
   };
 
-  if (params?.status && params.status !== "all") {
+  if (params?.status && params.status !== CashDisbursementApiAllStatusFilter) {
     queryParams.status = (StatusToApi[params.status as PettyCashFundStatus] ?? params.status) as PettyCashFundQueryParams["status"];
   }
 

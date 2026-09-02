@@ -1,5 +1,23 @@
-import { cashVoucherControllerSuggestTransactionNumberV1 } from "@/app/src/generated/api/cash-voucher/cash-voucher";
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+  cashVoucherControllerCreateV1,
+  cashVoucherControllerFindAllV1,
+  cashVoucherControllerFindOneV1,
+  cashVoucherControllerRemoveV1,
+  cashVoucherControllerSuggestTransactionNumberV1,
+  cashVoucherControllerUpdatePutV1,
+  cashVoucherControllerUpdateStatusV1,
+} from "@/app/src/generated/api/cash-voucher/cash-voucher";
+import type {
+  CashVoucherControllerFindAllV1Params,
+  CashVoucherListResponseDto,
+  CashVoucherRecordResponseDto,
+  CashVoucherSingleResponseDto,
+  CreateCashVoucherDto,
+  CreateCashVoucherDtoStatus,
+  UpdateCashVoucherDto,
+  UpdateCashVoucherDtoStatus,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import { CashDisbursementApiAllStatusFilter } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
 import {
   fetchMaintenancePartyOptions,
@@ -13,7 +31,7 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
-type ApiCashVoucherStatus = "DRAFT" | "FOR_APPROVAL" | "APPROVED" | "POSTED" | "DISAPPROVED" | "CANCELLED" | "CLOSED";
+type ApiCashVoucherStatus = CreateCashVoucherDtoStatus | UpdateCashVoucherDtoStatus | string;
 type ApiCashVoucherLineAmountSource = CashVoucherLineEntry & {
   accountTitle?: string;
   disburseAmount?: number;
@@ -22,56 +40,27 @@ type ApiCashVoucherLineAmountSource = CashVoucherLineEntry & {
   vatPercent?: number;
 };
 
-export type FetchCashVoucherListParams = {
-  page?: number;
-  limit?: number;
-  search?: string;
-  status?: string;
-  partyCode?: string;
-  startDate?: string;
-  endDate?: string;
-  amountFrom?: number;
-  amountTo?: number;
-  branchUnitId?: number;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
-};
-
-export type FetchCashVoucherListResponse = {
-  data: CashVoucherRecord[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-  statistics?: {
-    totalVouchers: number;
-    draftVouchers: number;
-    forApprovalVouchers: number;
-    postedVouchers: number;
-    disapprovedVouchers: number;
-    cancelledVouchers: number;
-  };
-};
+type FetchCashVoucherListParams = CashVoucherControllerFindAllV1Params;
+type FetchCashVoucherListResponse = Omit<CashVoucherListResponseDto, "data"> & { data: CashVoucherRecord[] };
 
 export async function fetchCashVoucherList(params?: FetchCashVoucherListParams): Promise<FetchCashVoucherListResponse> {
-  const response = await ApiClient.get<FetchCashVoucherListResponse>("/cash-disbursement/cash-voucher", {
-    params: {
-      ...params,
-      status: params?.status && params.status !== "all" ? mapCashVoucherStatusToApi(params.status) : params?.status,
-    },
+  const response = await cashVoucherControllerFindAllV1({
+    ...params,
+    status:
+      params?.status && params.status !== CashDisbursementApiAllStatusFilter
+        ? mapCashVoucherStatusToApi(params.status)
+        : params?.status,
   });
 
   return {
-    ...response.data,
-    data: response.data.data.map(mapCashVoucherRecordFromApi),
+    ...response,
+    data: response.data.map(mapCashVoucherRecordFromApi),
   };
 }
 
 export async function fetchCashVoucherById(id: string): Promise<CashVoucherRecord> {
-  const response = await ApiClient.get<{ data: CashVoucherRecord }>(`/cash-disbursement/cash-voucher/${id}`);
-  return mapCashVoucherRecordFromApi(response.data.data);
+  const response = await cashVoucherControllerFindOneV1(id);
+  return mapCashVoucherResponseFromApi(response);
 }
 
 export async function fetchNextCashVoucherTransactionNo(): Promise<string> {
@@ -141,8 +130,9 @@ export async function createCashVoucherApi(payload: {
   details: CashVoucherLineEntry[];
 }): Promise<CashVoucherRecord> {
   const details = getCashVoucherPayloadDetails(payload.details, payload.status);
-  const transformedPayload = {
+  const transformedPayload: CreateCashVoucherDto = {
     ...payload,
+    amount: payload.amount === undefined ? undefined : Number(payload.amount),
     details: details.map((detail, index) => ({
       id: detail.id,
       lineNumber: index + 1,
@@ -170,11 +160,12 @@ export async function createCashVoucherApi(payload: {
       checkNo: detail.checkNo,
       checkStatus: detail.checkStatus,
     })),
-    status: payload.status ? mapCashVoucherStatusToApi(payload.status) : undefined,
+    fxRate: payload.fxRate === undefined ? undefined : Number(payload.fxRate),
+    status: payload.status ? (mapCashVoucherStatusToApi(payload.status) as CreateCashVoucherDtoStatus) : undefined,
   };
 
-  const response = await ApiClient.post<{ data: CashVoucherRecord }>("/cash-disbursement/cash-voucher", transformedPayload);
-  return mapCashVoucherRecordFromApi(response.data.data);
+  const response = await cashVoucherControllerCreateV1(transformedPayload);
+  return mapCashVoucherResponseFromApi(response);
 }
 
 export async function updateCashVoucherApi(
@@ -206,8 +197,11 @@ export async function updateCashVoucherApi(
   }>,
 ): Promise<CashVoucherRecord> {
   const details = payload.details ? getCashVoucherPayloadDetails(payload.details, payload.status) : undefined;
-  const transformedPayload = {
-    ...payload,
+  const { details: _frontendDetails, ...payloadWithoutDetails } = payload;
+  void _frontendDetails;
+  const transformedPayload: UpdateCashVoucherDto = {
+    ...payloadWithoutDetails,
+    amount: payload.amount === undefined ? undefined : Number(payload.amount),
     ...(details
       ? {
           details: details.map((detail, index) => ({
@@ -239,25 +233,30 @@ export async function updateCashVoucherApi(
           })),
         }
       : {}),
-    status: payload.status ? mapCashVoucherStatusToApi(payload.status) : undefined,
+    fxRate: payload.fxRate === undefined ? undefined : Number(payload.fxRate),
+    status: payload.status ? (mapCashVoucherStatusToApi(payload.status) as UpdateCashVoucherDtoStatus) : undefined,
   };
 
-  const response = await ApiClient.put<{ data: CashVoucherRecord }>(`/cash-disbursement/cash-voucher/${id}`, transformedPayload);
-  return mapCashVoucherRecordFromApi(response.data.data);
+  const response = await cashVoucherControllerUpdatePutV1(id, transformedPayload);
+  return mapCashVoucherResponseFromApi(response);
 }
 
 export async function updateCashVoucherStatusApi(id: string, status: CashVoucherStatus): Promise<CashVoucherRecord> {
-  const response = await ApiClient.patch<{ data: CashVoucherRecord }>(`/cash-disbursement/cash-voucher/${id}/status`, {
+  const response = await cashVoucherControllerUpdateStatusV1(id, {
     status: mapCashVoucherStatusToApi(status),
   });
-  return mapCashVoucherRecordFromApi(response.data.data);
+  return mapCashVoucherResponseFromApi(response);
 }
 
 export async function deleteCashVoucherApi(id: string): Promise<void> {
-  await ApiClient.delete(`/cash-disbursement/cash-voucher/${id}`);
+  await cashVoucherControllerRemoveV1(id);
 }
 
-function mapCashVoucherRecordFromApi(record: CashVoucherRecord): CashVoucherRecord {
+function mapCashVoucherResponseFromApi(response: CashVoucherSingleResponseDto): CashVoucherRecord {
+  return mapCashVoucherRecordFromApi(response.data);
+}
+
+function mapCashVoucherRecordFromApi(record: CashVoucherRecordResponseDto): CashVoucherRecord {
   const displayAmount = getCashVoucherDisplayGrossAmount(record);
   const displayDisburseAmount = getCashVoucherDisplayDisburseAmount(record);
 
@@ -265,31 +264,121 @@ function mapCashVoucherRecordFromApi(record: CashVoucherRecord): CashVoucherReco
     ...record,
     amount: displayAmount,
     disburseAmount: displayDisburseAmount,
-    costCenter: record.projectCode ?? record.costCenter,
-    projectCode: record.projectCode ?? record.costCenter,
-    history:
-      record.history?.map((entry) => ({
-        ...entry,
-        status: mapCashVoucherStatusFromApi(entry.status),
-      })) ?? [],
+    costCenter: record.projectCode ?? record.costCenter ?? "",
+    projectCode: record.projectCode ?? record.costCenter ?? "",
+    createdBy: record.createdBy ?? undefined,
+    disbursementType: record.disbursementType ?? "",
+    fxRate: String(record.fxRate ?? "1.00"),
+    history: [],
+    invoiceReferenceNo: record.invoiceReferenceNo ?? "",
+    lineEntries: record.details.map((detail) => ({
+      id: detail.id,
+      accountCode: detail.accountCode,
+      accountName: detail.accountTitle,
+      checkDate: detail.checkDate ?? undefined,
+      checkNo: detail.checkNo ?? undefined,
+      checkStatus: detail.checkStatus ?? undefined,
+      partyCode: detail.partyCode ?? undefined,
+      partyName: detail.partyName ?? undefined,
+      responsibilityCenter: detail.responsibilityCenter ?? undefined,
+      refId: detail.refId ?? undefined,
+      vatType: detail.vatType ?? undefined,
+      ewtCode: detail.ewtCode ?? undefined,
+      particulars: detail.particulars ?? "",
+      remarks: detail.remarks ?? undefined,
+      debit: detail.debit,
+      credit: detail.credit,
+      taxRate: "",
+      taxDetails: {
+        code: detail.vatCode ?? "",
+        name: detail.vatType ?? "",
+        responsibilityCenter: detail.responsibilityCenter ?? "",
+        refId: detail.refId ?? "",
+        vatType: detail.vatType ?? "",
+        grossAmount: detail.grossAmount,
+        netAmount: detail.netAmount,
+        vatCode: detail.vatCode ?? "",
+        vatPercent: detail.vatPercent,
+        vatAmount: detail.vatAmount,
+        ewtCode: detail.ewtCode ?? "",
+        ewtPercent: detail.ewtPercent,
+        ewtAmount: detail.ewtAmount,
+        amount: detail.disburseAmount || detail.debit,
+      },
+      status: detail.debit === detail.credit ? "Balanced" : "Pending",
+    })),
+    paymentDetails: createEmptyPaymentDetails(),
+    paymentDueDate: record.paymentDueDate ?? record.voucherDate,
+    paymentMethod: record.paymentMethod as CashVoucherRecord["paymentMethod"],
+    preparedBy: record.preparedBy ?? "",
+    projectName: record.projectName ?? "",
+    referenceModule: record.referenceModule ?? "",
+    remarks: record.remarks ?? "",
     status: mapCashVoucherStatusFromApi(record.status),
+    taxDetails: createApiTaxDetails(displayAmount),
+    taxRate: "0%",
+    transactionId: record.id,
+    updatedBy: record.updatedBy ?? undefined,
+    updatedAt: record.updatedAt ?? undefined,
+    voucherReferenceNo: record.voucherReferenceNo ?? "",
+    attachments: [],
   };
 }
 
-function getCashVoucherDisplayDisburseAmount(record: CashVoucherRecord) {
-  const rawRecord = record as CashVoucherRecord & { details?: ApiCashVoucherLineAmountSource[] };
+function getCashVoucherDisplayDisburseAmount(record: CashVoucherRecordResponseDto) {
+  const rawRecord = record as unknown as CashVoucherRecord & { details?: ApiCashVoucherLineAmountSource[] };
   const sourceRows = (rawRecord.lineEntries ?? rawRecord.details ?? []).filter((entry) => !isGeneratedCashVoucherApiLine(entry));
   const disburseAmount = sourceRows.reduce((sum, entry) => sum + getCashVoucherApiLineDisburseAmount(entry), 0);
 
-  return disburseAmount > 0 ? roundCashVoucherApiAmount(disburseAmount) : record.disburseAmount ?? record.amount;
+  return disburseAmount > 0 ? roundCashVoucherApiAmount(disburseAmount) : record.amount;
 }
 
-function getCashVoucherDisplayGrossAmount(record: CashVoucherRecord) {
-  const rawRecord = record as CashVoucherRecord & { details?: ApiCashVoucherLineAmountSource[] };
+function getCashVoucherDisplayGrossAmount(record: CashVoucherRecordResponseDto) {
+  const rawRecord = record as unknown as CashVoucherRecord & { details?: ApiCashVoucherLineAmountSource[] };
   const sourceRows = (rawRecord.lineEntries ?? rawRecord.details ?? []).filter((entry) => !isGeneratedCashVoucherApiLine(entry));
   const grossAmount = sourceRows.reduce((sum, entry) => sum + getCashVoucherApiLineGrossAmount(entry), 0);
 
   return grossAmount > 0 ? roundCashVoucherApiAmount(grossAmount) : record.amount;
+}
+
+function createEmptyPaymentDetails(): CashVoucherRecord["paymentDetails"] {
+  return {
+    bankAccountCode: "",
+    bankAccountName: "",
+    bankAccountNo: "",
+    bankAccountTitle: "",
+    bankBranch: "",
+    bankName: "",
+    checkDate: "",
+    checkNo: "",
+    checkStatus: "",
+    isMultiCheckNumber: false,
+    payee: "",
+    paymentReferenceNo: "",
+    transferAccountName: "",
+    transferAccountNo: "",
+    transferToBank: "",
+    transferTo: "",
+  };
+}
+
+function createApiTaxDetails(amount: number): CashVoucherRecord["taxDetails"] {
+  return {
+    code: "",
+    name: "",
+    responsibilityCenter: "",
+    refId: "",
+    vatType: "",
+    grossAmount: amount,
+    netAmount: amount,
+    vatCode: "",
+    vatPercent: 0,
+    vatAmount: 0,
+    ewtCode: "",
+    ewtPercent: 0,
+    ewtAmount: 0,
+    amount,
+  };
 }
 
 function getCashVoucherApiLineDisburseAmount(entry: ApiCashVoucherLineAmountSource) {

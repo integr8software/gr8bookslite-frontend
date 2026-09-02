@@ -24,6 +24,10 @@ import {
   CashVoucherTablePreferencesModuleKey,
   CashVoucherTablePreferencesStorageKey,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
+import {
+  CashDisbursementAllTimeSummary,
+  CashDisbursementTotalEntriesLabel,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { CashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherQueryKeys";
 import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
@@ -322,9 +326,9 @@ export function useCashVoucherPreviewTable(previewRows: CashVoucherPreviewRow[])
 
     return [
       {
-        label: "Total Entries",
+        label: CashDisbursementTotalEntriesLabel,
         value: previewRows.length,
-        summary: "All time",
+        summary: CashDisbursementAllTimeSummary,
         icon: ReceiptText,
         tone: "violet",
         isActive: statusFilter === CashVoucherAllStatusFilter,

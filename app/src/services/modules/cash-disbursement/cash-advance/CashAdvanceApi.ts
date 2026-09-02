@@ -1,5 +1,23 @@
-import { cashAdvanceControllerSuggestTransactionNumberV1 } from "@/app/src/generated/api/cash-advance/cash-advance";
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+  cashAdvanceControllerCreateV1,
+  cashAdvanceControllerFindAllV1,
+  cashAdvanceControllerFindOneV1,
+  cashAdvanceControllerRemoveV1,
+  cashAdvanceControllerSubmitApprovalV1,
+  cashAdvanceControllerSuggestTransactionNumberV1,
+  cashAdvanceControllerUpdateStatusV1,
+  cashAdvanceControllerUpdateV1,
+} from "@/app/src/generated/api/cash-advance/cash-advance";
+import type {
+  CashAdvanceControllerFindAllV1Params,
+  CashAdvanceDto,
+  CashAdvanceListResponseDto,
+  CashAdvanceSingleResponseDto,
+  CreateCashAdvanceDto,
+  UpdateCashAdvanceDto,
+  UpdateCashAdvanceStatusDtoStatus,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import { CashDisbursementApiAllStatusFilter } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
 import {
   fetchMaintenancePartyOptions,
@@ -14,41 +32,22 @@ import type {
   CashAdvanceStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 
-type ApiCashAdvanceStatus = "DRAFT" | "FOR_APPROVAL" | "APPROVED" | "POSTED" | "DISAPPROVED" | "CANCELLED";
-
-export type FetchCashAdvanceListParams = {
-  page?: number;
-  limit?: number;
-  search?: string;
-  status?: string;
-  partyCode?: string;
-  startDate?: string;
-  endDate?: string;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
-};
-
-export type FetchCashAdvanceListResponse = {
-  data: CashAdvanceRecord[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-};
+type ApiCashAdvanceStatus = UpdateCashAdvanceStatusDtoStatus | string;
+type FetchCashAdvanceListParams = CashAdvanceControllerFindAllV1Params;
+type FetchCashAdvanceListResponse = Omit<CashAdvanceListResponseDto, "data"> & { data: CashAdvanceRecord[] };
 
 export async function fetchCashAdvanceList(params?: FetchCashAdvanceListParams): Promise<FetchCashAdvanceListResponse> {
-  const response = await ApiClient.get<FetchCashAdvanceListResponse>("/cash-disbursement/cash-advance", {
-    params: {
-      ...params,
-      status: params?.status && params.status !== "all" ? mapCashAdvanceStatusToApi(params.status) : params?.status,
-    },
+  const response = await cashAdvanceControllerFindAllV1({
+    ...params,
+    status:
+      params?.status && params.status !== CashDisbursementApiAllStatusFilter
+        ? mapCashAdvanceStatusToApi(params.status)
+        : params?.status,
   });
 
   return {
-    ...response.data,
-    data: response.data.data.map(mapCashAdvanceRecordFromApi),
+    ...response,
+    data: response.data.map(mapCashAdvanceRecordFromApi),
   };
 }
 
@@ -133,84 +132,60 @@ export async function fetchNextCashAdvanceTransactionNo(): Promise<string> {
 }
 
 export async function fetchCashAdvanceById(id: string): Promise<CashAdvanceRecord> {
-  const response = await ApiClient.get<{ data: CashAdvanceRecord }>(`/cash-disbursement/cash-advance/${id}`);
-  return mapCashAdvanceRecordFromApi(response.data.data);
+  const response = await cashAdvanceControllerFindOneV1(id);
+  return mapCashAdvanceResponseFromApi(response);
 }
 
-export async function createCashAdvanceApi(payload: {
-  partyId?: string;
-  partyCode: string;
-  partyName: string;
-  creditAccountId?: string;
-  accountCode: string;
-  accountTitle?: string;
-  costCenterId?: string;
-  costCenter?: string;
-  costCenterCode?: string;
-  projectId?: string;
-  projectName?: string;
-  projectRef?: string;
-  projectCode?: string;
-  currency: string;
-  fxRate: string;
-  amount: string;
-  documentDate: string;
-  transNo?: string;
-  remarks?: string;
-}): Promise<CashAdvanceRecord> {
-  const response = await ApiClient.post<{ data: CashAdvanceRecord }>("/cash-disbursement/cash-advance", payload);
-  return mapCashAdvanceRecordFromApi(response.data.data);
+export async function createCashAdvanceApi(payload: CreateCashAdvanceDto): Promise<CashAdvanceRecord> {
+  const response = await cashAdvanceControllerCreateV1(payload);
+  return mapCashAdvanceResponseFromApi(response);
 }
 
 export async function updateCashAdvanceApi(
   id: string,
-  payload: Partial<{
-    partyId?: string;
-    partyCode: string;
-    partyName: string;
-    creditAccountId?: string;
-    accountCode: string;
-    accountTitle: string;
-    costCenterId?: string;
-    costCenter: string;
-    costCenterCode: string;
-    projectId?: string;
-    projectName: string;
-    projectRef: string;
-    projectCode: string;
-    currency: string;
-    fxRate: string;
-    amount: string;
-    documentDate: string;
-    remarks: string;
-  }>,
+  payload: UpdateCashAdvanceDto,
 ): Promise<CashAdvanceRecord> {
-  const response = await ApiClient.put<{ data: CashAdvanceRecord }>(`/cash-disbursement/cash-advance/${id}`, payload);
-  return mapCashAdvanceRecordFromApi(response.data.data);
+  const response = await cashAdvanceControllerUpdateV1(id, payload);
+  return mapCashAdvanceResponseFromApi(response);
 }
 
 export async function deleteCashAdvanceApi(id: string): Promise<void> {
-  await ApiClient.delete(`/cash-disbursement/cash-advance/${id}`);
+  await cashAdvanceControllerRemoveV1(id);
 }
 
 export async function submitCashAdvanceApprovalApi(id: string): Promise<CashAdvanceRecord> {
-  const response = await ApiClient.post<{ data: CashAdvanceRecord }>(`/cash-disbursement/cash-advance/${id}/submit-approval`);
-  return mapCashAdvanceRecordFromApi(response.data.data);
+  const response = await cashAdvanceControllerSubmitApprovalV1(id);
+  return mapCashAdvanceResponseFromApi(response);
 }
 
 export async function updateCashAdvanceStatusApi(id: string, status: CashAdvanceStatus): Promise<CashAdvanceRecord> {
-  const response = await ApiClient.patch<{ data: CashAdvanceRecord }>(`/cash-disbursement/cash-advance/${id}/status`, {
-    status: mapCashAdvanceStatusToApi(status),
+  const response = await cashAdvanceControllerUpdateStatusV1(id, {
+    status: mapCashAdvanceStatusToApi(status) as UpdateCashAdvanceStatusDtoStatus,
   });
-  return mapCashAdvanceRecordFromApi(response.data.data);
+  return mapCashAdvanceResponseFromApi(response);
 }
 
-function mapCashAdvanceRecordFromApi(record: CashAdvanceRecord): CashAdvanceRecord {
+function mapCashAdvanceResponseFromApi(response: CashAdvanceSingleResponseDto): CashAdvanceRecord {
+  return mapCashAdvanceRecordFromApi(response.data);
+}
+
+function mapCashAdvanceRecordFromApi(record: CashAdvanceDto & { formValues?: CashAdvanceRecord["formValues"] }): CashAdvanceRecord {
+  const projectName = record.projectName ?? record.projectRef ?? "";
+  const projectRef = record.projectName ?? record.projectRef ?? "";
+
   return {
     ...record,
+    accountCode: record.accountCode ?? "",
+    accountTitle: record.accountTitle ?? "",
+    amount: record.amount ?? 0,
+    costCenter: record.costCenter ?? "",
     currency: record.currency ?? record.formValues?.currency ?? "PHP",
     fxRate: record.fxRate ?? record.formValues?.fxRate ?? "1.00",
-    projectName: record.projectName ?? record.projectRef ?? "",
+    partyCode: record.partyCode ?? "",
+    partyName: record.partyName ?? "",
+    projectName,
+    projectRef,
+    remarks: record.remarks ?? "",
     formValues: record.formValues
       ? {
           ...record.formValues,

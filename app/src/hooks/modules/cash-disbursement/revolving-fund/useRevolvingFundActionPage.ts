@@ -30,6 +30,12 @@ import {
   updateRevolvingFundApi,
   updateRevolvingFundStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/revolving-fund/RevolvingFundApi";
+import {
+  createCashDisbursementModuleQueryKey,
+  createCashDisbursementRecordQueryKey,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+
+const RevolvingFundQueryKey = "revolving-fund";
 
 export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionMode; onSaved?: () => void }) {
   const router = useRouter();
@@ -40,7 +46,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   const isReadonly = mode === "view";
 
   const recordQuery = useQuery({
-    queryKey: ["cash-disbursement", "revolving-fund", params.recordId],
+    queryKey: createCashDisbursementRecordQueryKey(RevolvingFundQueryKey, params.recordId),
     queryFn: () => fetchRevolvingFundById(params.recordId!),
     enabled: Boolean(params.recordId) && mode !== "add",
   });
@@ -205,7 +211,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
       return await updateRevolvingFundApi(params.recordId!, submitValues);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "revolving-fund"] });
+      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(RevolvingFundQueryKey) });
       draft.clearDraft();
       toast.success(`Revolving Fund ${mode === "add" ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
@@ -225,8 +231,8 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
       return await updateRevolvingFundStatusApi(params.recordId!, status);
     },
     onSuccess: (updatedRecord, status) => {
-      queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "revolving-fund"] });
-      queryClient.setQueryData(["cash-disbursement", "revolving-fund", params.recordId], updatedRecord);
+      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(RevolvingFundQueryKey) });
+      queryClient.setQueryData(createCashDisbursementRecordQueryKey(RevolvingFundQueryKey, params.recordId), updatedRecord);
       setValues((cur) => ({ ...cur, status }));
       toast.success(`Revolving Fund marked as ${status}.`);
     },

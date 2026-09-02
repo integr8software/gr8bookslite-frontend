@@ -30,6 +30,12 @@ import {
   updatePettyCashFundApi,
   updatePettyCashFundStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/petty-cash-fund/PettyCashFundApi";
+import {
+  createCashDisbursementModuleQueryKey,
+  createCashDisbursementRecordQueryKey,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+
+const PettyCashFundQueryKey = "petty-cash-fund";
 
 export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionMode; onSaved?: () => void }) {
   const router = useRouter();
@@ -40,7 +46,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   const isReadonly = mode === "view";
 
   const recordQuery = useQuery({
-    queryKey: ["cash-disbursement", "petty-cash-fund", params.recordId],
+    queryKey: createCashDisbursementRecordQueryKey(PettyCashFundQueryKey, params.recordId),
     queryFn: () => fetchPettyCashFundById(params.recordId!),
     enabled: Boolean(params.recordId) && mode !== "add",
   });
@@ -205,7 +211,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
       return await updatePettyCashFundApi(params.recordId!, submitValues);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "petty-cash-fund"] });
+      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashFundQueryKey) });
       draft.clearDraft();
       toast.success(`Petty Cash Fund ${mode === "add" ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
@@ -225,8 +231,8 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
       return await updatePettyCashFundStatusApi(params.recordId!, status);
     },
     onSuccess: (updatedRecord, status) => {
-      queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "petty-cash-fund"] });
-      queryClient.setQueryData(["cash-disbursement", "petty-cash-fund", params.recordId], updatedRecord);
+      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashFundQueryKey) });
+      queryClient.setQueryData(createCashDisbursementRecordQueryKey(PettyCashFundQueryKey, params.recordId), updatedRecord);
       setValues((cur) => ({ ...cur, status }));
       toast.success(`Petty Cash Fund marked as ${status}.`);
     },

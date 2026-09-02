@@ -34,6 +34,12 @@ import {
   CashAdvanceMultipleEntryStatusFilters,
   CashAdvanceMultipleEntryStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
+import {
+  CashDisbursementAllTimeSummary,
+  CashDisbursementQuerySegment,
+  CashDisbursementTotalEntriesLabel,
+  createCashDisbursementModuleQueryKey,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type { CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import type {
   CashAdvanceMultipleEntryAccountingEntry,
@@ -65,13 +71,14 @@ import {
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
 const EmptyCashAdvanceMultipleEntries: CashAdvanceMultipleEntryRecord[] = [];
+const CashAdvanceMultipleEntryQueryKey = "cash-advance-multiple-entry";
 
 export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultipleEntryStoreState>(
   selector?: (state: CashAdvanceMultipleEntryStoreState) => TSelected,
 ) {
   const queryClient = useQueryClient();
   const activeCompanyId = useAppStore((state) => state.activeCompanyId);
-  const queryKey = ["cash-disbursement", "cash-advance-multiple-entry", "records", activeCompanyId] as const;
+  const queryKey = [CashDisbursementQuerySegment, CashAdvanceMultipleEntryQueryKey, "records", activeCompanyId] as const;
   const entriesQuery = useQuery({
     queryKey,
     queryFn: async () => {
@@ -88,7 +95,7 @@ export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultiple
   const entries = entriesQuery.data ?? EmptyCashAdvanceMultipleEntries;
 
   const refreshRecords = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "cash-advance-multiple-entry"] });
+    void queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(CashAdvanceMultipleEntryQueryKey) });
   }, [queryClient]);
 
   const updateStatusMutation = useMutation({
@@ -650,9 +657,9 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
 
     return [
       {
-        label: "Total Entries",
+        label: CashDisbursementTotalEntriesLabel,
         value: records.length,
-        summary: "All time",
+        summary: CashDisbursementAllTimeSummary,
         icon: ReceiptText,
         tone: "violet",
         isActive: statusFilter === CashAdvanceMultipleEntryAllStatusFilter,

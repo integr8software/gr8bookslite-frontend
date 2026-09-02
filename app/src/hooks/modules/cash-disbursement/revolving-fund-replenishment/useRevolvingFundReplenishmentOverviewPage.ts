@@ -21,6 +21,13 @@ import {
   RevolvingFundReplenishmentRecordStatuses,
   RevolvingFundReplenishmentStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentConstants";
+import {
+  CashDisbursementAllStatusFilter,
+  CashDisbursementAllTimeSummary,
+  CashDisbursementTotalEntriesLabel,
+  createCashDisbursementListQueryKey,
+  createCashDisbursementModuleQueryKey,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type {
   RevolvingFundReplenishmentRecord,
   RevolvingFundReplenishmentStatus,
@@ -38,11 +45,12 @@ import {
 } from "@/app/src/services/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentApi";
 
 const columnHelper = createColumnHelper<RevolvingFundReplenishmentRecord>();
+const RevolvingFundReplenishmentQueryKey = "revolving-fund-replenishment";
 
 export function useRevolvingFundReplenishmentOverviewPage() {
   const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [statusFilter, setStatusFilter] = useState<string>(CashDisbursementAllStatusFilter);
   const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
   const [amountRange, setAmountRange] = useState<AmountRangeValue>({ from: "", to: "" });
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
@@ -54,23 +62,18 @@ export function useRevolvingFundReplenishmentOverviewPage() {
   const amountTo = parseAmount(amountRange.to);
 
   const listQuery = useQuery({
-    queryKey: [
-      "cash-disbursement",
-      "revolving-fund-replenishment",
-      "list",
-      {
-        query,
-        statusFilter,
-        startDate: dateRange.from || undefined,
-        endDate: dateRange.to || undefined,
-        amountFrom: amountFrom !== null ? amountFrom : undefined,
-        amountTo: amountTo !== null ? amountTo : undefined,
-      },
-    ],
+    queryKey: createCashDisbursementListQueryKey(RevolvingFundReplenishmentQueryKey, {
+      query,
+      statusFilter,
+      startDate: dateRange.from || undefined,
+      endDate: dateRange.to || undefined,
+      amountFrom: amountFrom !== null ? amountFrom : undefined,
+      amountTo: amountTo !== null ? amountTo : undefined,
+    }),
     queryFn: async () => {
       const res = await fetchRevolvingFundReplenishmentList({
         search: query || undefined,
-        status: statusFilter !== "All" ? statusFilter : undefined,
+        status: statusFilter !== CashDisbursementAllStatusFilter ? statusFilter : undefined,
         startDate: dateRange.from || undefined,
         endDate: dateRange.to || undefined,
         amountFrom: amountFrom !== null ? amountFrom : undefined,
@@ -88,7 +91,7 @@ export function useRevolvingFundReplenishmentOverviewPage() {
       return await updateRevolvingFundReplenishmentStatusApi(id, status);
     },
     onSuccess: (_, { status }) => {
-      queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "revolving-fund-replenishment"] });
+      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(RevolvingFundReplenishmentQueryKey) });
       toast.success(`Revolving Fund Replenishment marked as ${status}.`);
     },
     onError: () => {
@@ -101,7 +104,7 @@ export function useRevolvingFundReplenishmentOverviewPage() {
       return await deleteRevolvingFundReplenishmentApi(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "revolving-fund-replenishment"] });
+      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(RevolvingFundReplenishmentQueryKey) });
       toast.success("Revolving Fund Replenishment deleted successfully.");
     },
     onError: () => {
@@ -209,13 +212,13 @@ export function useRevolvingFundReplenishmentOverviewPage() {
     const total = records.length;
     return [
       {
-        label: "Total Entries",
+        label: CashDisbursementTotalEntriesLabel,
         value: total,
         icon: ReceiptText,
         tone: "violet",
-        summary: "All time",
-        isActive: statusFilter === "All",
-        onClick: () => setStatusFilter("All"),
+        summary: CashDisbursementAllTimeSummary,
+        isActive: statusFilter === CashDisbursementAllStatusFilter,
+        onClick: () => setStatusFilter(CashDisbursementAllStatusFilter),
       },
       ...RevolvingFundReplenishmentRecordStatuses.map((status) => {
         const count = records.filter((item) => item.status === status).length;

@@ -1,5 +1,19 @@
-import { cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1 } from "@/app/src/generated/api/cash-advance-multiple-entry/cash-advance-multiple-entry";
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+  cashAdvanceMultipleEntryControllerCreateV1,
+  cashAdvanceMultipleEntryControllerFindAllV1,
+  cashAdvanceMultipleEntryControllerFindOneV1,
+  cashAdvanceMultipleEntryControllerRemoveV1,
+  cashAdvanceMultipleEntryControllerSuggestTransactionNumberV1,
+  cashAdvanceMultipleEntryControllerUpdateStatusV1,
+  cashAdvanceMultipleEntryControllerUpdateV1,
+} from "@/app/src/generated/api/cash-advance-multiple-entry/cash-advance-multiple-entry";
+import type {
+  CreateCashAdvanceMultipleEntryDto,
+  CreateCashAdvanceMultipleEntryDtoStatus,
+  UpdateCashAdvanceMultipleEntryDto,
+  UpdateCashAdvanceMultipleEntryDtoStatus,
+  UpdateCashAdvanceMultipleEntryStatusDtoStatus,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
 import type { CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import type {
@@ -7,13 +21,17 @@ import type {
   CashAdvanceMultipleEntryRecord,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 
-type ApiCashAdvanceStatus = "DRAFT" | "FOR_APPROVAL" | "APPROVED" | "POSTED" | "DISAPPROVED" | "CANCELLED";
+type ApiCashAdvanceStatus =
+  | CreateCashAdvanceMultipleEntryDtoStatus
+  | UpdateCashAdvanceMultipleEntryDtoStatus
+  | UpdateCashAdvanceMultipleEntryStatusDtoStatus
+  | string;
 
 type CashAdvanceMultipleEntryApiOptions = {
   branchUnitId?: number;
 };
 
-export type FetchCashAdvanceMultipleEntryListResponse = {
+type CashAdvanceMultipleEntryListResponseDto = {
   data: CashAdvanceMultipleEntryRecord[];
   meta: {
     page: number;
@@ -23,20 +41,18 @@ export type FetchCashAdvanceMultipleEntryListResponse = {
   };
 };
 
-const CashAdvanceMultipleEntryPath = "/cash-disbursement/cash-advance-multiple-entry";
-
-export async function fetchCashAdvanceMultipleEntryList(): Promise<FetchCashAdvanceMultipleEntryListResponse> {
-  const response = await ApiClient.get<FetchCashAdvanceMultipleEntryListResponse>(CashAdvanceMultipleEntryPath);
+export async function fetchCashAdvanceMultipleEntryList(): Promise<CashAdvanceMultipleEntryListResponseDto> {
+  const response = (await cashAdvanceMultipleEntryControllerFindAllV1()) as unknown as CashAdvanceMultipleEntryListResponseDto;
 
   return {
-    ...response.data,
-    data: response.data.data.map(mapCashAdvanceMultipleEntryRecordFromApi),
+    ...response,
+    data: response.data.map(mapCashAdvanceMultipleEntryRecordFromApi),
   };
 }
 
 export async function fetchCashAdvanceMultipleEntryById(id: string): Promise<CashAdvanceMultipleEntryRecord> {
-  const response = await ApiClient.get<{ data: CashAdvanceMultipleEntryRecord }>(`${CashAdvanceMultipleEntryPath}/${id}`);
-  return mapCashAdvanceMultipleEntryRecordFromApi(response.data.data);
+  const response = (await cashAdvanceMultipleEntryControllerFindOneV1(id)) as unknown as { data: CashAdvanceMultipleEntryRecord };
+  return mapCashAdvanceMultipleEntryRecordFromApi(response.data);
 }
 
 export async function fetchNextCashAdvanceMultipleEntryTransactionNo(branchUnitId?: number): Promise<string> {
@@ -47,11 +63,10 @@ export async function createCashAdvanceMultipleEntryApi(
   values: CashAdvanceMultipleEntryFormValues,
   options?: CashAdvanceMultipleEntryApiOptions,
 ): Promise<CashAdvanceMultipleEntryRecord> {
-  const response = await ApiClient.post<{ data: CashAdvanceMultipleEntryRecord }>(
-    CashAdvanceMultipleEntryPath,
-    mapCashAdvanceMultipleEntryValuesToApi(values, options),
-  );
-  return mapCashAdvanceMultipleEntryRecordFromApi(response.data.data);
+  const response = (await cashAdvanceMultipleEntryControllerCreateV1(
+    mapCashAdvanceMultipleEntryValuesToApi(values, options) as CreateCashAdvanceMultipleEntryDto,
+  )) as unknown as { data: CashAdvanceMultipleEntryRecord };
+  return mapCashAdvanceMultipleEntryRecordFromApi(response.data);
 }
 
 export async function updateCashAdvanceMultipleEntryApi(
@@ -59,25 +74,25 @@ export async function updateCashAdvanceMultipleEntryApi(
   values: CashAdvanceMultipleEntryFormValues,
   options?: CashAdvanceMultipleEntryApiOptions,
 ): Promise<CashAdvanceMultipleEntryRecord> {
-  const response = await ApiClient.put<{ data: CashAdvanceMultipleEntryRecord }>(
-    `${CashAdvanceMultipleEntryPath}/${id}`,
-    mapCashAdvanceMultipleEntryValuesToApi(values, options),
-  );
-  return mapCashAdvanceMultipleEntryRecordFromApi(response.data.data);
+  const response = (await cashAdvanceMultipleEntryControllerUpdateV1(
+    id,
+    mapCashAdvanceMultipleEntryValuesToApi(values, options) as UpdateCashAdvanceMultipleEntryDto,
+  )) as unknown as { data: CashAdvanceMultipleEntryRecord };
+  return mapCashAdvanceMultipleEntryRecordFromApi(response.data);
 }
 
 export async function updateCashAdvanceMultipleEntryStatusApi(
   id: string,
   status: CashAdvanceStatus,
 ): Promise<CashAdvanceMultipleEntryRecord> {
-  const response = await ApiClient.patch<{ data: CashAdvanceMultipleEntryRecord }>(`${CashAdvanceMultipleEntryPath}/${id}/status`, {
-    status: mapCashAdvanceStatusToApi(status),
-  });
-  return mapCashAdvanceMultipleEntryRecordFromApi(response.data.data);
+  const response = (await cashAdvanceMultipleEntryControllerUpdateStatusV1(id, {
+    status: mapCashAdvanceStatusToApi(status) as UpdateCashAdvanceMultipleEntryStatusDtoStatus,
+  })) as unknown as { data: CashAdvanceMultipleEntryRecord };
+  return mapCashAdvanceMultipleEntryRecordFromApi(response.data);
 }
 
 export async function deleteCashAdvanceMultipleEntryApi(id: string): Promise<void> {
-  await ApiClient.delete(`${CashAdvanceMultipleEntryPath}/${id}`);
+  await cashAdvanceMultipleEntryControllerRemoveV1(id);
 }
 
 function mapCashAdvanceMultipleEntryValuesToApi(values: CashAdvanceMultipleEntryFormValues, options?: CashAdvanceMultipleEntryApiOptions) {
@@ -97,7 +112,7 @@ function mapCashAdvanceMultipleEntryValuesToApi(values: CashAdvanceMultipleEntry
     projectName: values.projectName,
     projectRef: values.projectName,
     remarks: values.remarks,
-    status: mapCashAdvanceStatusToApi(values.status),
+    status: mapCashAdvanceStatusToApi(values.status) as CreateCashAdvanceMultipleEntryDtoStatus | UpdateCashAdvanceMultipleEntryDtoStatus,
     transNo: values.transNo,
   };
 }

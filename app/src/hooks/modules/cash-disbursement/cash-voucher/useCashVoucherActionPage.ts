@@ -30,6 +30,7 @@ import {
   CashVoucherStatuses,
   canEditCashVoucherStatus,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
+import { CashDisbursementActiveStatus } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { CashVoucherLineEntriesField } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
 import {
   validateCashVoucherDetails,
@@ -129,7 +130,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     const optionsByCode = new Map<string, CashVoucherPartyDropdownOption>();
 
     partyStore.records.forEach((record) => {
-      if (record.status !== "Active") {
+      if (record.status !== CashDisbursementActiveStatus) {
         return;
       }
 
@@ -157,7 +158,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }, [partyStore.records]);
   const responsibilityCenterOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
     return responsibilityCenterStore.centers
-      .filter((center) => center.status === "Active")
+      .filter((center) => center.status === CashDisbursementActiveStatus)
       .map((center) => ({
         description: center.typeName || center.category || "",
         label: center.code,
@@ -914,7 +915,11 @@ function restoreCashVoucherAddDraftValues(draftValues: CashVoucherFormValues): C
 
 function findCashOnHandAccount(accounts: ChartAccount[]): { accountCode: string; accountName: string } | undefined {
   for (const account of accounts) {
-    if (account.status === "Active" && account.isPostingAccount && account.accountName.trim().toLowerCase() === "cash on hand") {
+    if (
+      account.status === CashDisbursementActiveStatus &&
+      account.isPostingAccount &&
+      account.accountName.trim().toLowerCase() === "cash on hand"
+    ) {
       return {
         accountCode: account.accountNumber,
         accountName: account.accountName,

@@ -32,6 +32,12 @@ import {
   CashAdvanceTablePreferencesStorageKey,
   CashAdvanceOverviewColumnWidths,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
+import {
+  CashDisbursementAllTimeSummary,
+  CashDisbursementQuerySegment,
+  CashDisbursementTotalEntriesLabel,
+  createCashDisbursementModuleQueryKey,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type {
   CashAdvanceActionMode,
   CashAdvanceFormErrors,
@@ -66,11 +72,12 @@ import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/us
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
 const EmptyCashAdvances: CashAdvanceRecord[] = [];
+const CashAdvanceQueryKey = "cash-advance";
 
 export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?: (state: CashAdvanceStoreState) => TSelected) {
   const queryClient = useQueryClient();
   const activeCompanyId = useAppStore((state) => state.activeCompanyId);
-  const queryKey = ["cash-disbursement", "cash-advance", "records", activeCompanyId] as const;
+  const queryKey = [CashDisbursementQuerySegment, CashAdvanceQueryKey, "records", activeCompanyId] as const;
   const advancesQuery = useQuery({
     queryKey,
     queryFn: async () => {
@@ -87,7 +94,7 @@ export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?
   const advances = advancesQuery.data ?? EmptyCashAdvances;
 
   const refreshRecords = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "cash-advance"] });
+    void queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(CashAdvanceQueryKey) });
   }, [queryClient]);
 
   const updateStatusMutation = useMutation({
@@ -690,8 +697,8 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
       {
         icon: ReceiptText,
         tone: "violet",
-        label: "Total Entries",
-        summary: "All time",
+        label: CashDisbursementTotalEntriesLabel,
+        summary: CashDisbursementAllTimeSummary,
         value: advances.length,
         isActive: statusFilter === CashAdvanceAllStatusFilter,
         onClick: () => setStatusFilter(CashAdvanceAllStatusFilter),

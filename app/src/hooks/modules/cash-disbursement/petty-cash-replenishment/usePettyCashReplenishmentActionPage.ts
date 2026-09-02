@@ -30,6 +30,12 @@ import {
   updatePettyCashReplenishmentApi,
   updatePettyCashReplenishmentStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentApi";
+import {
+  createCashDisbursementModuleQueryKey,
+  createCashDisbursementRecordQueryKey,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+
+const PettyCashReplenishmentQueryKey = "petty-cash-replenishment";
 
 export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashReplenishmentActionMode; onSaved?: () => void }) {
   const router = useRouter();
@@ -40,7 +46,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   const isReadonly = mode === "view";
 
   const recordQuery = useQuery({
-    queryKey: ["cash-disbursement", "petty-cash-replenishment", params.recordId],
+    queryKey: createCashDisbursementRecordQueryKey(PettyCashReplenishmentQueryKey, params.recordId),
     queryFn: () => fetchPettyCashReplenishmentById(params.recordId!),
     enabled: Boolean(params.recordId) && mode !== "add",
   });
@@ -196,7 +202,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
       return await updatePettyCashReplenishmentApi(params.recordId!, submitValues);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "petty-cash-replenishment"] });
+      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashReplenishmentQueryKey) });
       draft.clearDraft();
       toast.success(`Petty Cash Replenishment ${mode === "add" ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
@@ -216,8 +222,8 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
       return await updatePettyCashReplenishmentStatusApi(params.recordId!, status);
     },
     onSuccess: (updatedRecord, status) => {
-      queryClient.invalidateQueries({ queryKey: ["cash-disbursement", "petty-cash-replenishment"] });
-      queryClient.setQueryData(["cash-disbursement", "petty-cash-replenishment", params.recordId], updatedRecord);
+      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashReplenishmentQueryKey) });
+      queryClient.setQueryData(createCashDisbursementRecordQueryKey(PettyCashReplenishmentQueryKey, params.recordId), updatedRecord);
       setValues((cur) => ({ ...cur, status }));
       toast.success(`Petty Cash Replenishment marked as ${status}.`);
     },

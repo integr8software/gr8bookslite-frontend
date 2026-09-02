@@ -22,6 +22,10 @@ export function renderCashAdvanceMultipleEntryTableCell(
       return record.accountCode || "";
     case "accountTitle":
       return record.accountTitle || "";
+    case "currency":
+      return record.currency ?? record.formValues?.currency ?? "PHP";
+    case "exchangeRate":
+      return record.exchangeRate ?? record.formValues?.exchangeRate ?? "1.00";
     case "remarks":
       return <span className="line-clamp-2 text-sm text-darknavy/80">{record.remarks || ""}</span>;
     case "amount":

@@ -13,7 +13,11 @@ export function renderPettyCashVoucherTableCell(
   if (columnId === "voucherNo") {
     return <span className={joinClasses("font-semibold", moduleAccentClassNames.iconText)}>{record.voucherNo}</span>;
   }
-  if (columnId === "amount") return <span className="font-semibold tabular-nums">{formatCurrency(record.amount)}</span>;
+  if (columnId === "amount" || columnId === "disburseAmount") {
+    return <span className="font-semibold tabular-nums">{formatCurrency(record[columnId])}</span>;
+  }
+  if (columnId === "currency") return record.currency ?? "PHP";
+  if (columnId === "exchangeRate") return record.exchangeRate ?? "1.00";
   if (columnId === "documentDate") return formatDate(record.documentDate, { emptyValue: "" });
   if (columnId === "dateCreated") return formatDate(record.dateCreated, { emptyValue: "" });
   if (columnId === "dateModified") return formatDate(record.dateModified, { emptyValue: "" });

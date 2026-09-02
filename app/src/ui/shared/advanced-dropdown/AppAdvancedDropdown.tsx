@@ -39,6 +39,21 @@ import {
 	joinClasses,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdownUtils";
 
+function sortOptionsByName(options: AppAdvancedDropdownOption[]): AppAdvancedDropdownOption[] {
+	return [...options]
+		.sort(
+			(left, right) =>
+				left.name.localeCompare(right.name, undefined, { sensitivity: "base" }) ||
+				(left.label ?? "").localeCompare(right.label ?? "", undefined, { sensitivity: "base" }) ||
+				left.value.localeCompare(right.value, undefined, { sensitivity: "base" }),
+		)
+		.map((option) =>
+			option.children
+				? { ...option, children: sortOptionsByName(option.children) }
+				: option,
+		);
+}
+
 export type {
 	AppAdvancedDropdownAddAction,
 	AppAdvancedDropdownOption,
@@ -46,6 +61,8 @@ export type {
 	AppAdvancedDropdownProps,
 	AppAdvancedDropdownSelectionMode,
 } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+
+const AppAdvancedDropdownDefaultMenuMinWidth = 320;
 
 export function AppAdvancedDropdown({
 	addAction,
@@ -99,7 +116,7 @@ export function AppAdvancedDropdown({
 		[value],
 	);
 	const selectedValueSet = useMemo(() => new Set(selectedValues), [selectedValues]);
-	const uniqueOptions = useMemo(() => deduplicateOptions(options), [options]);
+	const uniqueOptions = useMemo(() => sortOptionsByName(deduplicateOptions(options)), [options]);
 	const flatOptions = useMemo(() => flattenOptions(uniqueOptions), [uniqueOptions]);
 	const selectedOptions = selectedValues
 		.map((selectedValue) => flatOptions.find((option) => option.value === selectedValue))
@@ -227,7 +244,7 @@ export function AppAdvancedDropdown({
 		};
 	}, [controlId, isInteractionLocked]);
 
-	const effectiveMenuMinWidth = menuMinWidth ?? (optionViewToggle ? 480 : undefined);
+	const effectiveMenuMinWidth = menuMinWidth ?? (optionViewToggle ? 480 : AppAdvancedDropdownDefaultMenuMinWidth);
 
 	useEffect(() => {
 		if (!isOpen || !menuPortal) {
@@ -471,7 +488,7 @@ export function AppAdvancedDropdown({
 			id={listboxId}
 			role="listbox"
 			aria-multiselectable={selectionMode === AppAdvancedDropdownSelectionModeMultiple}
-			style={menuPortal ? portalStyle : undefined}
+			style={menuPortal ? portalStyle : { minWidth: effectiveMenuMinWidth }}
 			onMouseDownCapture={(event) => {
 				keepMenuInteractionActive();
 				event.stopPropagation();

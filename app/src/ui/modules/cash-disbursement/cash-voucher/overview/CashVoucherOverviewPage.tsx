@@ -28,6 +28,7 @@ import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/
 
 export function CashVoucherOverviewPage() {
   const previewRows = useCashVoucherStore((state) => state.previewRows);
+  const isLoading = useCashVoucherStore((state) => state.isLoading);
   const lastSyncedAt = useCashVoucherStore((state) => state.lastSyncedAt);
   const refreshRecords = useCashVoucherStore((state) => state.refreshRecords);
   const updateTransaction = useCashVoucherStore((state) => state.updateTransaction);
@@ -86,17 +87,18 @@ export function CashVoucherOverviewPage() {
         }
       />
 
-      <ModuleStatisticCards className="2xl:grid-cols-6" items={previewTable.statisticCards} />
+      <ModuleStatisticCards className="2xl:grid-cols-6" isLoading={isLoading} items={previewTable.statisticCards} />
 
       <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm" data-spotlight-id="maintenance-table">
         <ModuleTable
           variant="embedded"
           emptyDescription="Try another Voucher No., remarks, date range, amount range, or status."
           emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-          emptyTitle="No Cash Voucher Transaction Found."
+          emptyTitle="No Cash Voucher Transaction Found"
           minWidthClassName="min-w-full"
           paginationLabel="entries"
           paginationStorageKey={CashVoucherTablePaginationStorageKey}
+          isLoading={isLoading}
           lastSyncedAt={lastSyncedAt}
           table={previewTable.table}
           tableTitle="Cash Voucher Entries"

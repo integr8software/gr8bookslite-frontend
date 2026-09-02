@@ -180,6 +180,7 @@ export function DisbursementVoucherDetailEntryTable({
       columns={expenseColumns}
       columnOptions={expenseColumnOptions}
       rows={expenseRows}
+      canConfigureColumnsWhenReadonly
       isDraggable={!isReadonly}
       isReadonly={isReadonly}
       onAddRows={onAddEntries}

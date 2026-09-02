@@ -34,6 +34,8 @@ export function PettyCashReplenishmentActionHeader({
 }) {
   const [confirmation, setConfirmation] = useState<PettyCashReplenishmentConfirmationAction | null>(null);
   const transactionNo = page.record?.transactionNo ?? page.values.transactionNo;
+  const isDraftEdit = page.mode === "edit" && page.record?.status === PettyCashReplenishmentStatuses.draft;
+  const isSaveAction = page.mode === "add" || isDraftEdit;
   const title =
     page.mode === "add" ? (
       "Add Petty Cash Replenishment"
@@ -96,14 +98,14 @@ export function PettyCashReplenishmentActionHeader({
             {page.mode !== "view" ? (
               <ModuleActionButton
                 disabled={page.isSubmitting}
-                label={page.mode === "edit" ? "Update" : "Save"}
+                label={isSaveAction ? "Save" : "Update"}
                 onAction={() => {
                   if (page.validate(PettyCashReplenishmentStatuses.forApproval)) {
                     setConfirmation("save");
                   }
                 }}
                 menuItems={
-                  page.mode === "add"
+                  isSaveAction
                     ? [
                         {
                           label: "Save As Draft",
@@ -125,13 +127,13 @@ export function PettyCashReplenishmentActionHeader({
         <AppDialog
           isOpen
           title={
-            confirmation === "save" && page.mode === "edit"
+            confirmation === "save" && !isSaveAction
               ? "Update Petty Cash Replenishment?"
               : PettyCashReplenishmentConfirmationDialogTitles[confirmation]
           }
           description={
             confirmation === "save"
-              ? page.mode === "edit"
+              ? !isSaveAction
                 ? `This will update ${transactionNo}.`
                 : `This will save and submit ${transactionNo}.`
               : confirmation === "draft"
@@ -143,14 +145,14 @@ export function PettyCashReplenishmentActionHeader({
                     : `This will mark ${transactionNo} as cancelled.`
           }
           confirmLabel={
-            confirmation === "save" && page.mode === "edit"
+            confirmation === "save" && !isSaveAction
               ? "Update"
               : PettyCashReplenishmentConfirmationDialogConfirmLabels[confirmation]
           }
           cancelLabel="Cancel"
-          iconTone={confirmation === "save" ? (page.mode === "edit" ? "update" : "save") : confirmation === "draft" ? "save" : undefined}
+          iconTone={confirmation === "save" ? (isSaveAction ? "save" : "update") : confirmation === "draft" ? "save" : undefined}
           isPending={page.isSubmitting}
-          pendingLabel={confirmation === "save" && page.mode === "edit" ? "Updating..." : "Saving..."}
+          pendingLabel={confirmation === "save" && !isSaveAction ? "Updating..." : "Saving..."}
           tone={
             confirmation === "approve"
               ? "success"
@@ -161,22 +163,23 @@ export function PettyCashReplenishmentActionHeader({
                   : "default"
           }
           onCancel={() => setConfirmation(null)}
-          onConfirm={() => {
+          onConfirm={async () => {
+            let isSuccessful = false;
+
             if (confirmation === "save") {
-              const ok = page.save(PettyCashReplenishmentStatuses.forApproval);
-              if (ok) setConfirmation(null);
+              isSuccessful = await page.save(PettyCashReplenishmentStatuses.forApproval);
             } else if (confirmation === "draft") {
-              const ok = page.save(PettyCashReplenishmentStatuses.draft);
-              if (ok) setConfirmation(null);
+              isSuccessful = await page.save(PettyCashReplenishmentStatuses.draft);
             } else if (confirmation === "approve") {
-              const ok = page.updateStatus(PettyCashReplenishmentStatuses.posted);
-              if (ok) setConfirmation(null);
+              isSuccessful = await page.updateStatus(PettyCashReplenishmentStatuses.posted);
             } else if (confirmation === "disapprove") {
-              const ok = page.updateStatus(PettyCashReplenishmentStatuses.disapproved);
-              if (ok) setConfirmation(null);
+              isSuccessful = await page.updateStatus(PettyCashReplenishmentStatuses.disapproved);
             } else {
-              const ok = page.updateStatus(PettyCashReplenishmentStatuses.cancelled);
-              if (ok) setConfirmation(null);
+              isSuccessful = await page.updateStatus(PettyCashReplenishmentStatuses.cancelled);
+            }
+
+            if (isSuccessful) {
+              setConfirmation(null);
             }
           }}
         />

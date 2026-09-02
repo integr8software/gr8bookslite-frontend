@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Edit3 } from "lucide-react";
 import {
   CashVoucherLink,
+  CashVoucherStatuses,
   canEditCashVoucherStatus,
   getCashVoucherEditLink,
   getCashVoucherStatusDialogCopy,
@@ -46,6 +47,9 @@ export function CashVoucherActionHeader({
   const [statusToConfirm, setStatusToConfirm] = useState<CashVoucherStatus | null>(null);
   const transactionLabel = transaction?.transactionNo ?? "Cash Voucher";
   const recordLabel = voucher?.voucherNo ?? transaction?.transactionNo ?? "this cash voucher";
+  const editableRecordId = voucher?.id ?? transaction?.id;
+  const isDraftEdit = mode === "edit" && (voucher?.status ?? transaction?.status) === CashVoucherStatuses.draft;
+  const isSaveAction = mode === "add" || isDraftEdit;
   const title =
     mode === "add" ? (
       "Add Cash Voucher"
@@ -61,7 +65,9 @@ export function CashVoucherActionHeader({
     mode === "view"
       ? "Review the transaction source and choose whether to create or update a voucher."
       : "Complete the voucher header and accounting entries on one page before saving.";
-  const submitDialogCopy = pendingSubmitStatus ? getCashVoucherSubmitDialogCopy(mode, pendingSubmitStatus, recordLabel) : null;
+  const submitDialogCopy = pendingSubmitStatus
+    ? getCashVoucherSubmitDialogCopy(isDraftEdit ? "add" : mode, pendingSubmitStatus, recordLabel)
+    : null;
   const statusDialogCopy = statusToConfirm
     ? getCashVoucherStatusDialogCopy(statusToConfirm, recordLabel, voucher?.status ?? transaction?.status)
     : null;
@@ -98,8 +104,8 @@ export function CashVoucherActionHeader({
                   onUpdateStatus={onUpdateStatus}
                   onPreview={onPreview}
                 />
-                {transaction && voucher && canEditCashVoucherStatus(voucher.status) ? (
-                  <Link href={getCashVoucherEditLink(transaction.id)} className={moduleHeaderActionClassNames.primary}>
+                {voucher && editableRecordId && canEditCashVoucherStatus(voucher.status) ? (
+                  <Link href={getCashVoucherEditLink(editableRecordId)} className={moduleHeaderActionClassNames.primary}>
                     <Edit3 className="h-4 w-4" aria-hidden="true" />
                     Edit
                   </Link>
@@ -113,10 +119,10 @@ export function CashVoucherActionHeader({
                 ) : null}
                 <ModuleActionButton
                   disabled={isSubmitting}
-                  label={mode === "edit" ? "Update" : "Save"}
+                  label={isSaveAction ? "Save" : "Update"}
                   onAction={onSubmit}
                   menuItems={
-                    mode === "add" && onSaveDraft
+                    isSaveAction && onSaveDraft
                       ? [
                           {
                             label: "Save As Draft",

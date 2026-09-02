@@ -17,12 +17,8 @@ import type {
   DisbursementEntryColumnId,
   DisbursementVoucherAccountingEntryTableProps,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
-import type { DisbursementLineEntry } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import type {
-  ModuleDataEntryColumn,
-  ModuleDataEntryColumnOption,
-} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import type { ModuleDataEntryColumnOption } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { formatAmount } from "@/app/src/utils/currency.util";
 import { joinClasses } from "@/app/src/utils/string.util";
 
@@ -150,6 +146,7 @@ export function DisbursementVoucherAccountingEntryTable({
       columns={columns}
       columnOptions={columnOptions}
       rows={accountingRows}
+      canConfigureColumnsWhenReadonly
       isDraggable={!isReadonly}
       isReadonly={isReadonly}
       onAddRows={onAddEntries ?? (() => undefined)}

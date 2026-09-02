@@ -7,4 +7,6 @@ export const PartyManagementQueryKeys = {
   records: () => [...PartyManagementQueryKeys.all(), "records"] as const,
   accountingOptions: () => [...PartyManagementQueryKeys.all(), "accounting-options"] as const,
   employeeOptions: (consumer: string) => [...PartyManagementQueryKeys.all(), "options", "employee", consumer] as const,
+  cashVoucherPartyOptions: () => ["cash-voucher", "party-options"] as const,
+  cashAdvancePartyOptions: () => ["cash-disbursement", "cash-advance", "party-options"] as const,
 };

@@ -12,6 +12,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { ReceiptText } from "lucide-react";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
   DisbursementVoucherDefaultColumnOrder,
   DisbursementVoucherDefaultColumnVisibility,
@@ -22,28 +23,16 @@ import {
   DisbursementVoucherTableColumns,
   DisbursementVoucherTablePreferencesModuleKey,
   DisbursementVoucherTablePreferencesStorageKey,
-  DisbursementVoucherQueryKeys,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
-import {
-  getSeedDisbursementTransactions,
-  getSeedDisbursementVouchers,
-  readStoredDisbursementTransactions,
-  readStoredDisbursementVouchers,
-  getDisbursementVoucherDisplayStatus,
-  buildDisbursementVoucherPreviewRows,
-  sanitizeDisbursementVoucherRecord,
-  writeStoredDisbursementTransactions,
-  writeStoredDisbursementVouchers,
-} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
+import { getDisbursementVoucherDisplayStatus, sanitizeDisbursementVoucherRecord } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 import type {
   DisbursementVoucherPreviewRow,
   DisbursementVoucherRecord,
   DisbursementVoucherStatus,
-  DisbursementTransactionRecord,
   DisbursementVoucherTableColumnKey,
   DisbursementVoucherStoreState,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
@@ -51,116 +40,61 @@ import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateR
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
-
-function getInitialTransactions() {
-  return readStoredDisbursementTransactions() ?? getSeedDisbursementTransactions();
-}
-
-function getInitialVouchers() {
-  return readStoredDisbursementVouchers() ?? getSeedDisbursementVouchers();
-}
+import { DisbursementVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherQueryKeys";
+import {
+  deleteDisbursementVoucherApi,
+  fetchDisbursementVoucherList,
+  updateDisbursementVoucherStatusApi,
+} from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherApi";
 
 export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStoreState>(
   selector?: (state: DisbursementVoucherStoreState) => TSelected,
 ) {
   const queryClient = useQueryClient();
-  const transactionsQuery = useQuery({
-    queryKey: DisbursementVoucherQueryKeys.transactions(),
-    queryFn: async () => getInitialTransactions(),
-    initialData: getInitialTransactions,
-  });
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
   const vouchersQuery = useQuery({
-    queryKey: DisbursementVoucherQueryKeys.vouchers(),
-    queryFn: async () => getInitialVouchers(),
-    initialData: getInitialVouchers,
+    queryKey: DisbursementVoucherQueryKeys.records(activeCompanyId, activeBranchId),
+    queryFn: async () => {
+      const response = await fetchDisbursementVoucherList({
+        branchUnitId: activeBranchId ?? undefined,
+        limit: 500,
+      });
+      return response.data;
+    },
+    enabled: activeCompanyId !== null,
   });
   const refreshRecords = useCallback(() => {
-    void Promise.all([
-      queryClient.refetchQueries({ queryKey: DisbursementVoucherQueryKeys.transactions(), exact: true }),
-      queryClient.refetchQueries({ queryKey: DisbursementVoucherQueryKeys.vouchers(), exact: true }),
-    ]);
-  }, [queryClient]);
+    void queryClient.invalidateQueries({
+      queryKey: DisbursementVoucherQueryKeys.all(activeCompanyId, activeBranchId),
+    });
+  }, [activeBranchId, activeCompanyId, queryClient]);
 
-  function updateCachedVouchers(updater: (vouchers: DisbursementVoucherRecord[]) => DisbursementVoucherRecord[]) {
-    queryClient.setQueryData<DisbursementVoucherRecord[]>(
-      DisbursementVoucherQueryKeys.vouchers(),
-      (currentVouchers = getInitialVouchers()) => {
-        const nextVouchers = updater(currentVouchers.map(sanitizeDisbursementVoucherRecord)).map(sanitizeDisbursementVoucherRecord);
-
-        writeStoredDisbursementVouchers(nextVouchers);
-
-        return nextVouchers;
-      },
-    );
-  }
-
-  function updateCachedTransactions(updater: (transactions: DisbursementTransactionRecord[]) => DisbursementTransactionRecord[]) {
-    queryClient.setQueryData<DisbursementTransactionRecord[]>(
-      DisbursementVoucherQueryKeys.transactions(),
-      (currentTransactions = getInitialTransactions()) => {
-        const nextTransactions = updater(currentTransactions);
-
-        writeStoredDisbursementTransactions(nextTransactions);
-
-        return nextTransactions;
-      },
-    );
-  }
-
-  const addTransactionMutation = useMutation({
-    mutationFn: async (transaction: DisbursementTransactionRecord) => transaction,
-    onSuccess: (transaction) => {
-      updateCachedTransactions((transactions) => {
-        if (transactions.some((currentTransaction) => currentTransaction.id === transaction.id)) {
-          return transactions.map((currentTransaction) => (currentTransaction.id === transaction.id ? transaction : currentTransaction));
-        }
-
-        return [transaction, ...transactions];
-      });
-    },
-    onError: () => {
-      toast.error("Could not save Disbursement Voucher. Please try again.");
-    },
-  });
-
-  const updateTransactionMutation = useMutation({
-    mutationFn: async (transaction: DisbursementTransactionRecord) => transaction,
-    onSuccess: (transaction) => {
-      updateCachedTransactions((transactions) =>
-        transactions.map((currentTransaction) => (currentTransaction.id === transaction.id ? transaction : currentTransaction)),
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: DisbursementVoucherStatus }) =>
+      updateDisbursementVoucherStatusApi(id, status),
+    onSuccess: (updated) => {
+      queryClient.setQueryData<DisbursementVoucherRecord[]>(
+        DisbursementVoucherQueryKeys.records(activeCompanyId, activeBranchId),
+        (current = []) => current.map((voucher) => (voucher.id === updated.id ? updated : voucher)),
       );
+      refreshRecords();
+      toast.success("Disbursement Voucher status updated.");
     },
-    onError: () => {
-      toast.error("Could not update Disbursement Voucher. Please try again.");
-    },
-  });
-
-  const addVoucherMutation = useMutation({
-    mutationFn: async (voucher: DisbursementVoucherRecord) => voucher,
-    onSuccess: (voucher) => {
-      updateCachedVouchers((vouchers) => [...vouchers, voucher]);
-      toast.success("Disbursement Voucher Created.");
-    },
-    onError: () => {
-      toast.error("Could not create Disbursement Voucher. Please try again.");
-    },
-  });
-
-  const updateVoucherMutation = useMutation({
-    mutationFn: async (voucher: DisbursementVoucherRecord) => voucher,
-    onSuccess: (voucher) => {
-      updateCachedVouchers((vouchers) => vouchers.map((currentVoucher) => (currentVoucher.id === voucher.id ? voucher : currentVoucher)));
-      toast.success("Disbursement Voucher Updated.");
-    },
-    onError: () => {
-      toast.error("Could not update Disbursement Voucher. Please try again.");
-    },
+    onError: () => toast.error("Could not update Disbursement Voucher status. Please try again."),
   });
 
   const deleteVoucherMutation = useMutation({
-    mutationFn: async (voucherId: string) => voucherId,
+    mutationFn: async (voucherId: string) => {
+      await deleteDisbursementVoucherApi(voucherId);
+      return voucherId;
+    },
     onSuccess: (voucherId) => {
-      updateCachedVouchers((vouchers) => vouchers.filter((voucher) => voucher.id !== voucherId));
+      queryClient.setQueryData<DisbursementVoucherRecord[]>(
+        DisbursementVoucherQueryKeys.records(activeCompanyId, activeBranchId),
+        (current = []) => current.filter((voucher) => voucher.id !== voucherId),
+      );
+      refreshRecords();
       toast.success("Disbursement Voucher Deleted.");
     },
     onError: () => {
@@ -168,43 +102,59 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
     },
   });
 
-  const previewRows = useMemo(
-    () => buildDisbursementVoucherPreviewRows(transactionsQuery.data, vouchersQuery.data.map(sanitizeDisbursementVoucherRecord)),
-    [transactionsQuery.data, vouchersQuery.data],
+  const vouchers = useMemo(() => (vouchersQuery.data ?? []).map(sanitizeDisbursementVoucherRecord), [vouchersQuery.data]);
+  const previewRows = useMemo<DisbursementVoucherPreviewRow[]>(
+    () =>
+      vouchers.map((voucher) => ({
+        transaction: {
+          id: voucher.id,
+          transactionNo: voucher.voucherNo,
+          payee: voucher.partyName,
+          purpose: voucher.remarks || "",
+          department: voucher.costCenter || "",
+          projectName: voucher.projectName,
+          requestedBy: voucher.preparedBy || "",
+          transactionDate: voucher.voucherDate,
+          paymentDueDate: voucher.paymentDueDate || voucher.voucherDate,
+          amount: voucher.amount,
+          currency: voucher.currency,
+          paymentMethod: voucher.paymentMethod,
+          disbursementType: voucher.disbursementType || "Vendor Payment",
+          status: voucher.status,
+          costCenter: voucher.costCenter || "",
+          accountingEntries: voucher.lineEntries,
+          createdBy: voucher.createdBy,
+          createdAt: voucher.createdAt,
+          updatedBy: voucher.updatedBy,
+          updatedAt: voucher.updatedAt,
+        },
+        voucher,
+      })),
+    [vouchers],
   );
 
   const state = useMemo<DisbursementVoucherStoreState>(
     () => ({
       previewRows,
-      transactions: transactionsQuery.data,
-      vouchers: vouchersQuery.data.map(sanitizeDisbursementVoucherRecord),
-      addTransaction: (transaction) => addTransactionMutation.mutate(transaction),
-      updateTransaction: (transaction) => updateTransactionMutation.mutate(transaction),
-      addVoucher: (voucher) => addVoucherMutation.mutate(voucher),
-      updateVoucher: (voucher) => updateVoucherMutation.mutate(voucher),
+      transactions: previewRows.map((row) => row.transaction),
+      vouchers,
+      addTransaction: () => undefined,
+      updateTransaction: (transaction) => updateStatusMutation.mutate({ id: transaction.id, status: transaction.status }),
+      addVoucher: () => refreshRecords(),
+      updateVoucher: (voucher) => updateStatusMutation.mutate({ id: voucher.id, status: voucher.status }),
       deleteVoucher: (voucherId) => deleteVoucherMutation.mutate(voucherId),
-      isLoading: transactionsQuery.isLoading || vouchersQuery.isLoading,
-      lastSyncedAt: Math.max(transactionsQuery.dataUpdatedAt, vouchersQuery.dataUpdatedAt),
+      isLoading: vouchersQuery.isLoading,
+      lastSyncedAt: vouchersQuery.dataUpdatedAt,
       refreshRecords,
       isMutating:
-        addTransactionMutation.isPending ||
-        addVoucherMutation.isPending ||
-        updateTransactionMutation.isPending ||
-        updateVoucherMutation.isPending ||
-        deleteVoucherMutation.isPending,
+        updateStatusMutation.isPending || deleteVoucherMutation.isPending,
     }),
     [
-      addVoucherMutation,
-      addTransactionMutation,
       deleteVoucherMutation,
       previewRows,
       refreshRecords,
-      transactionsQuery.data,
-      transactionsQuery.dataUpdatedAt,
-      transactionsQuery.isLoading,
-      updateTransactionMutation,
-      updateVoucherMutation,
-      vouchersQuery.data,
+      updateStatusMutation,
+      vouchers,
       vouchersQuery.dataUpdatedAt,
       vouchersQuery.isLoading,
     ],

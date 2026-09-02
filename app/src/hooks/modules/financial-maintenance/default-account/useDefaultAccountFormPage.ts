@@ -26,12 +26,7 @@ const EmptyDefaultAccountFormValues: DefaultAccountFormValues = {
   expenseParentCoaId: "",
 };
 
-export function useDefaultAccountFormPage({
-  existingDefaultAccount,
-  isOpen = true,
-  mode,
-  onSaved,
-}: DefaultAccountFormPageOptions) {
+export function useDefaultAccountFormPage({ existingDefaultAccount, isOpen = true, mode, onSaved }: DefaultAccountFormPageOptions) {
   const { addDefaultAccount, isMutating, updateDefaultAccount } = useDefaultAccountStore(undefined, {
     refetchOnMount: false,
   });
@@ -146,8 +141,13 @@ export function useDefaultAccountFormPage({
         await updateDefaultAccount({ ...existingDefaultAccount, ...values });
       } else {
         await addDefaultAccount(values);
+        setValues(EmptyDefaultAccountFormValues);
+        setErrors({});
       }
       draft.clearDraft();
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
       onSaved();
     } catch (error) {
       isSubmittingRef.current = false;

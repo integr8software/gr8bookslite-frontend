@@ -1,9 +1,6 @@
-import {
-  PettyCashFundAccountOptions,
-  PettyCashFundPartyOptions,
-  PettyCashFundProjectOptions,
-  PettyCashFundResponsibilityCenterLookupOptions,
-} from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
+"use client";
+
+import { usePettyCashFundDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundDetailsLookups";
 import type { PettyCashFundActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
@@ -27,6 +24,17 @@ export function PettyCashFundDetailsFields({
   onOpenResponsibilityCenterDrawer: () => void;
   page: PettyCashFundActionPageState;
 }) {
+  const {
+    accountOptions,
+    isAccountLookupLoading,
+    isPartyLookupLoading,
+    isProjectLookupLoading,
+    isResponsibilityCenterLookupLoading,
+    partyOptions,
+    projectOptions,
+    responsibilityCenterOptions,
+  } = usePettyCashFundDetailsLookups(page.values);
+
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid gap-5 xl:grid-cols-3">
@@ -35,10 +43,11 @@ export function PettyCashFundDetailsFields({
           <TransactionField label="Party Name" error={page.errors.partyName} isRequired>
             <AppLookupDropdown
               value={page.values.partyCode}
-              options={PettyCashFundPartyOptions}
+              options={partyOptions}
               readOnly={page.isReadonly}
               placeholder="Select Party Name"
               searchPlaceholder="Search Party Name"
+              emptyMessage={isPartyLookupLoading ? "Loading Party Name options..." : "No Party Name options found."}
               addAction={!page.isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("partyCode", code);
@@ -50,10 +59,15 @@ export function PettyCashFundDetailsFields({
           <TransactionField label="Responsibility Center">
             <AppLookupDropdown
               value={page.values.responsibilityCenterCode}
-              options={PettyCashFundResponsibilityCenterLookupOptions}
+              options={responsibilityCenterOptions}
               readOnly={page.isReadonly}
               placeholder="Select Responsibility Center"
               searchPlaceholder="Search Responsibility Center"
+              emptyMessage={
+                isResponsibilityCenterLookupLoading
+                  ? "Loading Responsibility Center options..."
+                  : "No Responsibility Center options found."
+              }
               addAction={!page.isReadonly ? { label: "Add Responsibility Center", onClick: onOpenResponsibilityCenterDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("responsibilityCenterCode", code);
@@ -65,10 +79,11 @@ export function PettyCashFundDetailsFields({
           <TransactionField label="Project Name">
             <AppLookupDropdown
               value={page.values.projectCode}
-              options={PettyCashFundProjectOptions}
+              options={projectOptions}
               readOnly={page.isReadonly}
               placeholder="Select Project Name"
               searchPlaceholder="Search Project"
+              emptyMessage={isProjectLookupLoading ? "Loading Project options..." : "No Project options found."}
               addAction={!page.isReadonly ? { label: "Add Project", onClick: onOpenProjectDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("projectCode", code);
@@ -80,10 +95,11 @@ export function PettyCashFundDetailsFields({
           <TransactionField label="Default Account Title" error={page.errors.accountTitle} isRequired>
             <AppLookupDropdown
               value={page.values.accountCode}
-              options={PettyCashFundAccountOptions}
+              options={accountOptions}
               readOnly={page.isReadonly}
               placeholder="Select Default Account"
               searchPlaceholder="Search Account"
+              emptyMessage={isAccountLookupLoading ? "Loading Default Account options..." : "No Default Account options found."}
               onChange={(code, name) => {
                 page.updateField("accountCode", code);
                 page.updateField("accountTitle", name);

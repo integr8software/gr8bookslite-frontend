@@ -28,10 +28,12 @@ import { PettyCashVoucherStatusActions } from "@/app/src/ui/modules/cash-disburs
 export function PettyCashVoucherActionHeader({ page }: { page: PettyCashVoucherActionPageState }) {
   const [confirmation, setConfirmation] = useState<PettyCashVoucherConfirmation | null>(null);
   const recordLabel = page.values.transactionNo || "this petty cash voucher";
+  const isDraftEdit = page.mode === "edit" && page.existingVoucher?.status === PettyCashVoucherStatuses.draft;
+  const isSaveAction = page.mode === "add" || isDraftEdit;
   const dialogCopy = confirmation
     ? confirmation.action === "status"
       ? getPettyCashVoucherStatusDialogCopy(confirmation.status, recordLabel)
-      : getPettyCashVoucherSaveDialogCopy(confirmation.action, page.mode, recordLabel)
+      : getPettyCashVoucherSaveDialogCopy(confirmation.action, isDraftEdit ? "add" : page.mode, recordLabel)
     : null;
 
   return (
@@ -43,7 +45,13 @@ export function PettyCashVoucherActionHeader({ page }: { page: PettyCashVoucherA
         description={PettyCashVoucherActionDescriptions[page.mode]}
         actionsClassName="items-center justify-end gap-2"
         eyebrow={<PettyCashVoucherHeaderEyebrow />}
-        actions={<PettyCashVoucherHeaderActions page={page} onRequestConfirmation={setConfirmation} />}
+        actions={
+          <PettyCashVoucherHeaderActions
+            isSaveAction={isSaveAction}
+            page={page}
+            onRequestConfirmation={setConfirmation}
+          />
+        }
       />
       {dialogCopy && confirmation ? (
         <AppDialog
@@ -57,10 +65,10 @@ export function PettyCashVoucherActionHeader({ page }: { page: PettyCashVoucherA
           title={dialogCopy.title}
           tone={dialogCopy.tone}
           onCancel={() => setConfirmation(null)}
-          onConfirm={() => {
-            const succeeded = runConfirmedAction(page, confirmation);
+          onConfirm={async () => {
+            const isSuccessful = await runConfirmedAction(page, confirmation);
 
-            if (succeeded !== false) {
+            if (isSuccessful) {
               setConfirmation(null);
             }
           }}
@@ -80,9 +88,11 @@ function PettyCashVoucherHeaderEyebrow() {
 }
 
 function PettyCashVoucherHeaderActions({
+  isSaveAction,
   onRequestConfirmation,
   page,
 }: {
+  isSaveAction: boolean;
   onRequestConfirmation: (confirmation: PettyCashVoucherConfirmation) => void;
   page: PettyCashVoucherActionPageState;
 }) {
@@ -117,14 +127,14 @@ function PettyCashVoucherHeaderActions({
       {page.isReadonly ? null : (
         <ModuleActionButton
           disabled={page.isSubmitting}
-          label={page.mode === "edit" ? "Update" : "Save"}
+          label={isSaveAction ? "Save" : "Update"}
           onAction={() => {
             if (page.validate(PettyCashVoucherStatuses.forApproval)) {
               onRequestConfirmation({ action: "submit" });
             }
           }}
           menuItems={
-            page.mode === "add"
+            isSaveAction
               ? [
                   {
                     label: "Save As Draft",

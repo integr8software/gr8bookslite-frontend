@@ -191,7 +191,7 @@ export function createVatOptions(
           description: "",
           label: "",
           name,
-          selectedDetails: name,
+          selectedDetails: "",
           value: row.taxCode,
         });
       }
@@ -210,7 +210,7 @@ export function createVatOptions(
         description: "",
         label: "",
         name: row.desc,
-        selectedDetails: row.desc,
+        selectedDetails: "",
         value: row.code,
       });
     });
@@ -243,9 +243,9 @@ export function createEwtOptions(
   const options = new Map<string, AppAdvancedDropdownOption>();
 
   filtered.forEach((row) => {
-    if (options.has(row.taxCode)) return;
-
     const displayCode = row.officialAtcCode || row.taxCode;
+    if (options.has(displayCode)) return;
+
     const rate =
       row.taxRate != null && row.taxRate !== ""
         ? `${row.taxRate}%`.replace(/%%+/, "%")
@@ -257,12 +257,12 @@ export function createEwtOptions(
       row.taxDescription;
     const description = rawDescription.replace(/\s*\(?\d+(?:\.\d+)?%\)?\s*$/u, "").trim();
 
-    options.set(row.taxCode, {
+    options.set(displayCode, {
       description,
       label: "",
       name: codeRateName,
-      selectedDetails: codeRateName,
-      value: row.taxCode,
+      selectedDetails: "",
+      value: displayCode,
     });
   });
 
@@ -295,7 +295,7 @@ export function createEwtOptions(
       description: row.desc,
       label: "",
       name: `${row.code} (${row.rate})`,
-      selectedDetails: `${row.code} (${row.rate})`,
+      selectedDetails: "",
       value: row.code,
     }));
   }

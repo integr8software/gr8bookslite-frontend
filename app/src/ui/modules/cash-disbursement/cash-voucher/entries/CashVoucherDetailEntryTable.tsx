@@ -180,6 +180,7 @@ export function CashVoucherDetailEntryTable({
       columns={expenseColumns}
       columnOptions={expenseColumnOptions}
       rows={expenseRows}
+      canConfigureColumnsWhenReadonly
       isDraggable={!isReadonly}
       isReadonly={isReadonly}
       onAddRows={onAddEntries}

@@ -43,7 +43,7 @@ export function PettyCashVoucherOverviewPage() {
         <ModuleTable
           variant="embedded"
           emptyDescription="Adjust the filters or add a new voucher to view petty cash records."
-          emptyTitle="No vouchers found"
+          emptyTitle="No Petty Cash Voucher Found"
           emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
           isLoading={page.isLoading}
           lastSyncedAt={page.lastSyncedAt}

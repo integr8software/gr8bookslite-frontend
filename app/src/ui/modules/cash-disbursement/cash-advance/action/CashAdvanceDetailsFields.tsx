@@ -1,54 +1,45 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { CashAdvanceTabs } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import {
-  DisbursementVoucherPartyOptions,
-  DisbursementVoucherProjectOptions,
-} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
+  createProjectResponsibilityCenterInitialValues,
+  ResponsibilityCenterInitialFormValues,
+} from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
-import {
-  CashAdvanceAccountOptions,
-  CashAdvanceCostCenterOptions,
-  CashAdvanceTabs,
-} from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
-import { ResponsibilityCenterInitialFormValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
-import {
-  calculatePostedCashAdvanceTotalByParty,
-  getInitialCashAdvances,
-} from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import { useCashAdvanceActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
-import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
+import { useCashAdvanceDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvanceDetailsLookups";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
-import { useCashAdvanceEmployeeOptions } from "@/app/src/hooks/modules/party-management/useCashAdvanceEmployeeOptions";
+import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import type {
+  CashAdvanceAccountDropdownOption,
   CashAdvanceActionMode,
   CashAdvanceDetailsSection,
-  CashAdvanceEmployeeOption,
   CashAdvanceFormController,
   CashAdvancePartyDropdownOption,
+  CashAdvanceResponsibilityCenterDropdownOption,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
-import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import type {
-  ResponsibilityCenter,
   ResponsibilityCenterClassification,
   ResponsibilityCenterFormValues,
   ResponsibilityCenterTypeOption,
 } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
+import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
-import { formatExchangeRateInput } from "@/app/src/utils/number.util";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
+import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
+import { formatMoneyNumberDisplayValue, MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
   TransactionField,
   TransactionFieldClassName,
   TransactionTextField,
 } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
-import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
-import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
-import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
-import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
-import { formatMoneyNumberDisplayValue, MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
+import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 import { CashAdvanceFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceFileAttachmentFields";
 
 export function CashAdvanceFormPanel({
@@ -72,46 +63,41 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const responsibilityCenterStore = useResponsibilityCenterStore();
   const partyStore = usePartyManagementStore();
-  const { employeeOptions, isEmployeeOptionsError } = useCashAdvanceEmployeeOptions("cash-advance");
-  const accountOptions = useMemo(() => createCashAdvanceSelectDropdownOptions(CashAdvanceAccountOptions), []);
-  const costCenterOptions = useMemo(
-    () =>
-      createCashAdvanceCostCenterDropdownOptions({
-        centers: responsibilityCenterStore.centers,
-        currentCostCenter: form.values.costCenter,
-      }),
-    [form.values.costCenter, responsibilityCenterStore.centers],
-  );
+  const {
+    accountOptions,
+    costCenterOptions,
+    isAccountLookupLoading,
+    isCostCenterLookupLoading,
+    isPartyLookupError,
+    isPartyLookupLoading,
+    isProjectLookupLoading,
+    partyOptions,
+    projectOptions,
+    selectedParty,
+    totalAdvanced,
+  } = useCashAdvanceDetailsLookups(form);
+
   const costCenterInitialValues = useMemo(
     () => createCostCenterInitialValues(responsibilityCenterStore.classifications, responsibilityCenterStore.types),
     [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
   );
-  const partyOptions = useMemo(
-    () =>
-      createCashAdvancePartyOptions({
-        employeeOptions,
-        currentPartyCode: form.values.partyCode,
-        currentPartyName: form.values.partyName,
-      }),
-    [employeeOptions, form.values.partyCode, form.values.partyName],
-  );
-  const projectOptions = useMemo(
-    () =>
-      createCashAdvanceProjectDropdownOptions({
-        centers: responsibilityCenterStore.centers,
-        currentProjectCode: form.values.referenceFields.projectCode,
-        currentProjectName: form.values.referenceFields.projectRef,
-      }),
-    [form.values.referenceFields.projectCode, form.values.referenceFields.projectRef, responsibilityCenterStore.centers],
-  );
+
   const projectInitialValues = useMemo(
     () => createProjectInitialValues(responsibilityCenterStore.classifications, responsibilityCenterStore.types),
     [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
   );
-  const totalAdvanced = useMemo(
-    () => calculatePostedCashAdvanceTotalByParty(getInitialCashAdvances(), form.values.partyCode),
-    [form.values.partyCode],
-  );
+
+  useEffect(() => {
+    if (!selectedParty) return;
+
+    if (!form.values.availableCashAdvance && selectedParty.availableCashAdvance) {
+      form.updateField("availableCashAdvance", selectedParty.availableCashAdvance);
+    }
+    if (!form.values.cashAdvanceLimit && selectedParty.cashAdvanceLimit) {
+      form.updateField("cashAdvanceLimit", selectedParty.cashAdvanceLimit);
+    }
+  }, [form, selectedParty]);
+
   const isReadonly = mode === "view";
 
   return (
@@ -119,9 +105,9 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
       <section className="grid min-w-0 gap-5 overflow-visible">
         <ModuleTabs activeTab={activeTab} ariaLabel="Cash advance sections" tabs={CashAdvanceTabs} onTabChange={setActiveTab} />
 
-        {isEmployeeOptionsError ? (
+        {isPartyLookupError ? (
           <p role="alert" className="rounded-lg border border-coralpink/30 bg-coralpink/5 px-4 py-3 text-sm text-darknavy">
-            Employee lookup options could not be loaded. You can retry by refreshing the page.
+            Party lookup options could not be loaded. Please refresh the page.
           </p>
         ) : null}
 
@@ -132,9 +118,14 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
               costCenterOptions={costCenterOptions}
               currencyOptions={form.currencyOptions}
               form={form}
+              isAccountLookupLoading={isAccountLookupLoading}
+              isCostCenterLookupLoading={isCostCenterLookupLoading}
+              isPartyLookupLoading={isPartyLookupLoading}
+              isProjectLookupLoading={isProjectLookupLoading}
               isReadonly={isReadonly}
               partyOptions={partyOptions}
               projectOptions={projectOptions}
+              selectedParty={selectedParty}
               totalAdvanced={totalAdvanced}
               onOpenCostCenterDrawer={() => setIsCostCenterDrawerOpen(true)}
               onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
@@ -162,9 +153,10 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
           onCreateParty={(record: PartyInformationRecord) => {
             const partyName = getPartyDisplayName(record);
 
+            form.updateField("partyId", record.id);
             form.updateField("partyCode", record.partyCodeNo);
             form.updateField("partyName", partyName);
-            form.updateField("cashAdvanceBalance", record.cashAdvanceLimit ?? "");
+            form.updateField("availableCashAdvance", record.cashAdvanceLimit ?? "");
             form.updateField("cashAdvanceLimit", record.cashAdvanceLimit ?? "");
             form.updateReferenceField("partyCode", record.partyCodeNo);
             setIsPartyDrawerOpen(false);
@@ -177,6 +169,7 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
         mode="add"
         onClose={() => setIsCostCenterDrawerOpen(false)}
         onSaved={(center) => {
+          form.updateField("costCenterId", center.id);
           form.updateField("costCenter", center.name);
           form.updateReferenceField("costCenterCode", center.code);
           setIsCostCenterDrawerOpen(false);
@@ -188,7 +181,8 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
         mode="add"
         onClose={() => setIsProjectDrawerOpen(false)}
         onSaved={(center) => {
-          form.updateReferenceField("projectRef", center.name);
+          form.updateField("projectId", center.id);
+          form.updateReferenceField("projectName", center.name);
           form.updateReferenceField("projectCode", center.code);
           setIsProjectDrawerOpen(false);
         }}
@@ -202,6 +196,10 @@ function CashAdvancePrimaryFields({
   costCenterOptions,
   currencyOptions,
   form,
+  isAccountLookupLoading,
+  isCostCenterLookupLoading,
+  isPartyLookupLoading,
+  isProjectLookupLoading,
   isReadonly,
   onOpenCostCenterDrawer,
   onOpenPartyDrawer,
@@ -209,95 +207,130 @@ function CashAdvancePrimaryFields({
   onUpdateCurrency,
   partyOptions,
   projectOptions,
+  selectedParty,
   totalAdvanced,
 }: {
-  accountOptions: AppAdvancedDropdownOption[];
-  costCenterOptions: AppAdvancedDropdownOption[];
+  accountOptions: CashAdvanceAccountDropdownOption[];
+  costCenterOptions: CashAdvanceResponsibilityCenterDropdownOption[];
   currencyOptions: AppAdvancedDropdownOption[];
   form: CashAdvanceFormController;
+  isAccountLookupLoading: boolean;
+  isCostCenterLookupLoading: boolean;
+  isPartyLookupLoading: boolean;
+  isProjectLookupLoading: boolean;
   isReadonly: boolean;
   onOpenCostCenterDrawer: () => void;
   onOpenPartyDrawer: () => void;
   onOpenProjectDrawer: () => void;
   onUpdateCurrency: (value: string) => void;
   partyOptions: CashAdvancePartyDropdownOption[];
-  projectOptions: AppAdvancedDropdownOption[];
+  projectOptions: CashAdvanceResponsibilityCenterDropdownOption[];
+  selectedParty?: CashAdvancePartyDropdownOption;
   totalAdvanced: number;
 }) {
-  const cashAdvanceLimit = form.values.cashAdvanceLimit?.trim();
-  const cashAdvanceBalance = form.values.cashAdvanceBalance?.trim();
-  const cashAdvanceLimitDisplay = cashAdvanceLimit ? formatMoneyNumberDisplayValue(cashAdvanceLimit) : "Unlimited";
-  const cashAdvanceBalanceDisplay = cashAdvanceBalance ? formatMoneyNumberDisplayValue(cashAdvanceBalance) : "Unlimited";
-  const totalCashAdvancedDisplay = formatMoneyNumberDisplayValue(String(totalAdvanced));
+  const effectiveLimit = form.values.cashAdvanceLimit?.trim() || selectedParty?.cashAdvanceLimit?.trim() || "";
+  const effectiveAvailable = form.values.availableCashAdvance?.trim() || selectedParty?.availableCashAdvance?.trim() || "";
+  const cashAdvanceLimitDisplay = effectiveLimit ? formatMoneyNumberDisplayValue(effectiveLimit) : "Unlimited";
+  const availableCashAdvanceDisplay = effectiveAvailable ? formatMoneyNumberDisplayValue(effectiveAvailable) : "Unlimited";
+  const totalCashAdvanceDisplay = formatMoneyNumberDisplayValue(String(totalAdvanced));
+
+  const selectedPartyValue = form.values.partyId || form.values.partyCode;
+  const selectedAccountValue = form.values.accountId || form.values.accountCode;
+  const selectedCostCenterValue = form.values.costCenterId || form.values.costCenter;
+  const selectedProjectValue = form.values.projectId || form.values.referenceFields.projectName;
 
   return (
     <div className="grid gap-5 xl:grid-cols-3">
       {/* Column 1: Name & Lookup Fields */}
       <div className="grid min-w-0 content-start gap-5">
-        <TransactionField label="Party Name" isRequired>
+        <TransactionField label="Party Name" error={form.errors.partyName} isRequired>
           <AppLookupDropdown
-            value={form.values.partyCode}
-            options={partyOptions}
-            readOnly={isReadonly}
-            placeholder="Select Party Name"
-            searchPlaceholder="Search Party Name"
+            value={selectedPartyValue}
+              options={partyOptions}
+              readOnly={isReadonly}
+              placeholder="Select Party Name"
+              searchPlaceholder="Search Party Name"
+              emptyMessage={isPartyLookupLoading ? "Loading Party Name options..." : "No Party Name options found."}
             addAction={!isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
-            onChange={(code, name) => {
-              const party = partyOptions.find((option) => option.value === code);
+            onChange={(selectedId, selectedName) => {
+              const party = partyOptions.find(
+                (option) => option.value === selectedId || option.partyId === selectedId || option.partyCode === selectedId,
+              );
 
-              form.updateField("partyCode", code);
-              form.updateField("partyName", name);
-              form.updateField("cashAdvanceBalance", party?.cashAdvanceBalance ?? "");
+              form.updateField("partyId", party?.partyId || party?.value || selectedId);
+              form.updateField("partyCode", party?.partyCode || party?.label || "");
+              form.updateField("partyName", party?.partyName || party?.name || selectedName);
+              form.updateField("availableCashAdvance", party?.availableCashAdvance ?? "");
               form.updateField("cashAdvanceLimit", party?.cashAdvanceLimit ?? "");
-              form.updateReferenceField("partyCode", code);
+              form.updateReferenceField("partyCode", party?.partyCode || party?.label || "");
             }}
           />
         </TransactionField>
 
-        <TransactionField label="Account Title" isRequired>
+        <TransactionField label="Default Account Title" error={form.errors.accountTitle} isRequired>
           <AppLookupDropdown
-            value={form.values.accountCode}
-            options={accountOptions}
-            readOnly={isReadonly}
-            placeholder="Select Account Title"
-            searchPlaceholder="Search Account Title"
-            onChange={(code) => {
-              form.updateField("accountCode", code);
-              form.updateReferenceField("accountCode", code);
+            value={selectedAccountValue}
+              options={accountOptions}
+              readOnly={isReadonly}
+              placeholder="Select Default Account Title"
+              searchPlaceholder="Search Default Account Title"
+              emptyMessage={isAccountLookupLoading ? "Loading Default Account options..." : "No Default Account options found."}
+            onChange={(selectedId, selectedTitle) => {
+              const account = accountOptions.find(
+                (option) => option.value === selectedId || option.accountId === selectedId || option.accountCode === selectedId,
+              );
+
+              form.updateField("accountId", account?.accountId || account?.value || selectedId);
+              form.updateField("accountCode", account?.accountCode || account?.label || "");
+              form.updateField("accountTitle", account?.accountTitle || account?.name || selectedTitle);
+              form.updateReferenceField("accountCode", account?.accountCode || account?.label || "");
             }}
           />
         </TransactionField>
 
         <TransactionField label="Responsibility Center">
           <AppLookupDropdown
-            value={form.values.costCenter}
+            value={selectedCostCenterValue}
             options={costCenterOptions}
             readOnly={isReadonly}
             placeholder="Select Responsibility Center"
             searchPlaceholder="Search Responsibility Center"
+            emptyMessage={isCostCenterLookupLoading ? "Loading Responsibility Center options..." : "No Responsibility Center options found."}
             addAction={!isReadonly ? { label: "Add Responsibility Center", onClick: onOpenCostCenterDrawer } : undefined}
-            onChange={(costCenter) => {
-              const option = costCenterOptions.find((currentOption) => currentOption.value === costCenter);
+            onChange={(selectedId, selectedName) => {
+              const option = costCenterOptions.find(
+                (currentOption) =>
+                  currentOption.value === selectedId ||
+                  currentOption.id === selectedId ||
+                  currentOption.name === selectedId ||
+                  currentOption.code === selectedId,
+              );
 
-              form.updateField("costCenter", costCenter);
-              form.updateReferenceField("costCenterCode", option?.label === costCenter ? "" : (option?.label ?? ""));
+              form.updateField("costCenterId", option?.id || option?.value || selectedId);
+              form.updateField("costCenter", option?.name || selectedName);
+              form.updateReferenceField("costCenterCode", option?.label || option?.code || "");
             }}
           />
         </TransactionField>
 
         <TransactionField label="Project Name">
           <AppLookupDropdown
-            value={form.values.referenceFields.projectRef}
+            value={selectedProjectValue}
             options={projectOptions}
             readOnly={isReadonly}
             placeholder="Select Project Name"
             searchPlaceholder="Search Project Name"
+            emptyMessage={isProjectLookupLoading ? "Loading Project Name options..." : "No Project Name options found."}
             addAction={!isReadonly ? { label: "Add Project Name", onClick: onOpenProjectDrawer } : undefined}
-            onChange={(projectName) => {
-              const project = projectOptions.find((option) => option.value === projectName);
+            onChange={(selectedId, selectedName) => {
+              const project = projectOptions.find(
+                (option) =>
+                  option.value === selectedId || option.id === selectedId || option.name === selectedId || option.code === selectedId,
+              );
 
-              form.updateReferenceField("projectRef", projectName);
-              form.updateReferenceField("projectCode", project?.label === projectName ? "" : (project?.label ?? ""));
+              form.updateField("projectId", project?.id || project?.value || selectedId);
+              form.updateReferenceField("projectName", project?.name || selectedName);
+              form.updateReferenceField("projectCode", project?.label || project?.code || "");
             }}
           />
         </TransactionField>
@@ -321,6 +354,7 @@ function CashAdvancePrimaryFields({
           isReadonly
           isRequired
           label="Party Code"
+          error={form.errors.partyCode}
           onValueChange={(value) => form.updateField("partyCode", value)}
           placeholder="Party Code"
         />
@@ -329,9 +363,10 @@ function CashAdvancePrimaryFields({
           value={form.values.accountCode}
           isReadonly
           isRequired
-          label="Account Code"
+          label="Default Account Code"
+          error={form.errors.accountCode}
           onValueChange={(value) => form.updateField("accountCode", value)}
-          placeholder="Account Code"
+          placeholder="Default Account Code"
         />
 
         <TransactionTextField
@@ -383,7 +418,7 @@ function CashAdvancePrimaryFields({
           }
         />
 
-        <TransactionField label="Cash Advance Amount" isRequired>
+        <TransactionField label="Cash Advance Amount" error={form.errors.amount} isRequired>
           <MoneyNumberField
             min="0"
             value={form.values.amount}
@@ -402,6 +437,7 @@ function CashAdvancePrimaryFields({
           isReadonly
           isRequired
           label="CA No."
+          error={form.errors.transNo}
           onValueChange={(value) => form.updateField("transNo", value)}
           placeholder="Auto Generated CA Transaction Number"
         />
@@ -411,6 +447,7 @@ function CashAdvancePrimaryFields({
           isReadonly={isReadonly}
           isRequired
           label="CA Date"
+          error={form.errors.documentDate}
           type="date"
           onValueChange={(value) => form.updateField("documentDate", value)}
         />
@@ -423,10 +460,10 @@ function CashAdvancePrimaryFields({
           />
         </TransactionField>
 
-        <TransactionField label="Total Cash Advances">
+        <TransactionField label="Total Cash Advance">
           <input
             className={`${TransactionFieldClassName} transaction-readonly-placeholder text-right tabular-nums`}
-            value={totalCashAdvancedDisplay}
+            value={totalCashAdvanceDisplay}
             readOnly
           />
         </TransactionField>
@@ -434,7 +471,7 @@ function CashAdvancePrimaryFields({
         <TransactionField label="Available Cash Advance">
           <input
             className={`${TransactionFieldClassName} transaction-readonly-placeholder text-right tabular-nums`}
-            value={cashAdvanceBalanceDisplay}
+            value={availableCashAdvanceDisplay}
             readOnly
           />
         </TransactionField>
@@ -445,161 +482,25 @@ function CashAdvancePrimaryFields({
   );
 }
 
-function createCashAdvanceSelectDropdownOptions(options: readonly { label: string; value: string }[]): AppAdvancedDropdownOption[] {
-  return options
-    .filter((option) => option.value)
-    .map((option) => ({
-      label: option.value,
-      name: option.label,
-      value: option.value,
-    }));
-}
-
-function createCashAdvanceCostCenterDropdownOptions({
-  centers,
-  currentCostCenter,
-}: {
-  centers: ResponsibilityCenter[];
-  currentCostCenter: string;
-}): AppAdvancedDropdownOption[] {
-  const options = createCashAdvanceSelectDropdownOptions(CashAdvanceCostCenterOptions);
-
-  centers
-    .filter((center) => center.status === "Active" && center.financialType === "Cost Center")
-    .forEach((center) => {
-      addUniqueDropdownOption(options, {
-        description: center.category,
-        label: center.code,
-        name: center.name,
-        value: center.name,
-      });
-    });
-
-  if (currentCostCenter.trim()) {
-    addUniqueDropdownOption(options, {
-      description: "Current cash advance value",
-      label: currentCostCenter,
-      name: currentCostCenter,
-      value: currentCostCenter,
-    });
-  }
-
-  return options;
-}
-
 function createCostCenterInitialValues(
   classifications: ResponsibilityCenterClassification[],
   types: ResponsibilityCenterTypeOption[],
 ): ResponsibilityCenterFormValues {
-  const costCenterClassification = classifications.find((classification) => classification.name === "Cost Center");
-  const costCenterType = types.find(
-    (type) => type.classificationId === costCenterClassification?.id && type.classificationName === "Cost Center",
-  );
+  const costCenterType = types.find((type) => type.name.toLowerCase().includes("cost")) ?? types[0];
+  const costCenterClassification =
+    classifications.find((classification) => classification.id === costCenterType?.classificationId) ?? classifications[0];
 
   return {
     ...ResponsibilityCenterInitialFormValues,
     classificationId: costCenterClassification?.id ?? "",
-    financialType: "Cost Center",
+    financialType: costCenterClassification?.name ?? "Cost Center",
     typeId: costCenterType?.id ?? "",
   };
-}
-
-function createCashAdvanceProjectDropdownOptions({
-  centers,
-  currentProjectCode,
-  currentProjectName,
-}: {
-  centers: ResponsibilityCenter[];
-  currentProjectCode: string;
-  currentProjectName: string;
-}): AppAdvancedDropdownOption[] {
-  const options: AppAdvancedDropdownOption[] = [...DisbursementVoucherProjectOptions];
-
-  centers
-    .filter((center) => center.status === "Active" && center.category === "Project")
-    .forEach((center) => {
-      addUniqueDropdownOption(options, {
-        description: center.financialType,
-        label: center.code,
-        name: center.name,
-        value: center.name,
-      });
-    });
-
-  if (currentProjectName.trim() || currentProjectCode.trim()) {
-    addUniqueDropdownOption(options, {
-      description: "Current cash advance value",
-      label: currentProjectCode || currentProjectName,
-      name: currentProjectName || currentProjectCode,
-      value: currentProjectName || currentProjectCode,
-    });
-  }
-
-  return options;
 }
 
 function createProjectInitialValues(
   classifications: ResponsibilityCenterClassification[],
   types: ResponsibilityCenterTypeOption[],
 ): ResponsibilityCenterFormValues {
-  const projectType = types.find((type) => type.name === "Project");
-  const projectClassification = classifications.find((classification) => classification.id === projectType?.classificationId);
-  const costCenterClassification = classifications.find((classification) => classification.name === "Cost Center");
-  const classification = projectClassification ?? costCenterClassification;
-
-  return {
-    ...ResponsibilityCenterInitialFormValues,
-    category: "Project",
-    classificationId: classification?.id ?? "",
-    financialType: classification?.name ?? "Cost Center",
-    typeId: projectType?.id ?? "",
-  };
-}
-
-function createCashAdvancePartyOptions({
-  employeeOptions,
-  currentPartyCode,
-  currentPartyName,
-}: {
-  employeeOptions: CashAdvanceEmployeeOption[];
-  currentPartyCode: string;
-  currentPartyName: string;
-}): CashAdvancePartyDropdownOption[] {
-  const options: CashAdvancePartyDropdownOption[] = employeeOptions.map((employee) => ({
-    cashAdvanceBalance: employee.cashAdvanceBalance,
-    cashAdvanceLimit: employee.cashAdvanceLimit,
-    description: employee.cashAdvanceLimit
-      ? `Cash advance limit: ${formatMoneyNumberDisplayValue(employee.cashAdvanceLimit)}`
-      : "No cash advance limit",
-    label: employee.partyCode,
-    name: employee.partyName,
-    value: employee.partyCode,
-  }));
-
-  if (options.length === 0) {
-    DisbursementVoucherPartyOptions.forEach((option) => addUniqueDropdownOption(options, option));
-  }
-
-  if (currentPartyCode.trim() || currentPartyName.trim()) {
-    addUniqueDropdownOption(options, {
-      description: "Current cash advance value",
-      label: currentPartyCode || "Current party",
-      name: currentPartyName || currentPartyCode,
-      value: currentPartyCode || currentPartyName,
-    });
-  }
-
-  return options;
-}
-
-function addUniqueDropdownOption(options: AppAdvancedDropdownOption[], option: AppAdvancedDropdownOption) {
-  if (!option.value.trim()) {
-    return;
-  }
-
-  if (options.some((currentOption) => currentOption.value === option.value)) {
-    return;
-  }
-
-  options.push(option);
+  return createProjectResponsibilityCenterInitialValues(classifications, types);
 }

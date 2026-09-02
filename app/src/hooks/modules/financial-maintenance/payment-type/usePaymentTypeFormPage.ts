@@ -19,12 +19,7 @@ import type {
 } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import { validatePaymentTypeForm } from "@/app/src/validations/modules/financial-maintenance/payment-type/PaymentTypeValidation";
 
-export function usePaymentTypeFormPage({
-  existingPaymentType,
-  isOpen = true,
-  mode,
-  onSaved,
-}: PaymentTypeFormPageOptions) {
+export function usePaymentTypeFormPage({ existingPaymentType, isOpen = true, mode, onSaved }: PaymentTypeFormPageOptions) {
   const { addPaymentType, isMutating, paymentTypes, updatePaymentType } = usePaymentTypeStore(undefined, {
     refetchOnMount: false,
   });
@@ -114,9 +109,17 @@ export function usePaymentTypeFormPage({
         await updatePaymentType(updatePaymentTypeFromForm(existingPaymentType, values));
       } else {
         await addPaymentType(createPaymentTypeFromForm(values));
+        setValues({
+          ...PaymentTypeInitialFormValues,
+          sortOrder: String(getNextPaymentTypeSortOrder(paymentTypes)),
+        });
+        setErrors({});
       }
 
       draft.clearDraft();
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
       onSaved();
     } catch {
       isSubmittingRef.current = false;

@@ -14,29 +14,27 @@ import {
   PettyCashVoucherAllStatusFilter,
   PettyCashVoucherDefaultColumnVisibility,
   PettyCashVoucherRecordStatuses,
-  PettyCashVoucherStatusMetricTones,
   PettyCashVoucherStatusOptions,
+  PettyCashVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
-import { PettyCashVoucherRecords } from "@/app/src/data/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherData";
 import { PettyCashVoucherQueryKeys } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import type {
   PettyCashVoucherRecord,
   PettyCashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
-import { coerceDate } from "@/app/src/utils/date.util";
 import { parseAmount } from "@/app/src/utils/number.util";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
+import {
+  deletePettyCashVoucherApi,
+  fetchPettyCashVoucherList,
+  updatePettyCashVoucherStatusApi,
+} from "@/app/src/services/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherApi";
 
 const columnHelper = createColumnHelper<PettyCashVoucherRecord>();
 
 export function usePettyCashVoucherOverviewPage() {
   const queryClient = useQueryClient();
-  const vouchersQuery = useQuery({
-    queryKey: PettyCashVoucherQueryKeys.vouchers(),
-    queryFn: async () => PettyCashVoucherRecords,
-    initialData: PettyCashVoucherRecords,
-  });
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<typeof PettyCashVoucherAllStatusFilter | PettyCashVoucherStatus>(
     PettyCashVoucherAllStatusFilter,
@@ -44,44 +42,64 @@ export function usePettyCashVoucherOverviewPage() {
   const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
   const [amountRange, setAmountRange] = useState<AmountRangeValue>({ from: "", to: "" });
   const [columnVisibility, setColumnVisibility] = useState(() => PettyCashVoucherDefaultColumnVisibility);
+  const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
+
+  const amountFrom = parseAmount(amountRange.from);
+  const amountTo = parseAmount(amountRange.to);
+
+  const vouchersQuery = useQuery({
+    queryKey: [
+      ...PettyCashVoucherQueryKeys.vouchers(),
+      {
+        search: searchQuery,
+        status: statusFilter,
+        startDate: dateRange.from || undefined,
+        endDate: dateRange.to || undefined,
+        amountFrom: amountFrom !== null ? amountFrom : undefined,
+        amountTo: amountTo !== null ? amountTo : undefined,
+      },
+    ],
+    queryFn: async () => {
+      const res = await fetchPettyCashVoucherList({
+        search: searchQuery || undefined,
+        status: statusFilter !== PettyCashVoucherAllStatusFilter ? statusFilter : undefined,
+        startDate: dateRange.from || undefined,
+        endDate: dateRange.to || undefined,
+        amountFrom: amountFrom !== null ? amountFrom : undefined,
+        amountTo: amountTo !== null ? amountTo : undefined,
+      });
+      setLastSyncedAt(Date.now());
+      return res;
+    },
+  });
+
+  const vouchers = useMemo(() => vouchersQuery.data?.data ?? [], [vouchersQuery.data?.data]);
+
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ status, voucherId }: { status: PettyCashVoucherStatus; voucherId: string }) => ({ status, voucherId }),
-    onSuccess: ({ status, voucherId }) => {
-      queryClient.setQueryData<PettyCashVoucherRecord[]>(PettyCashVoucherQueryKeys.vouchers(), (current = PettyCashVoucherRecords) =>
-        current.map((voucher) => (voucher.id === voucherId ? { ...voucher, status } : voucher)),
-      );
-      toast.success(`Petty Cash Voucher Marked as ${status}.`);
+    mutationFn: async ({ status, voucherId }: { status: PettyCashVoucherStatus; voucherId: string }) => {
+      return await updatePettyCashVoucherStatusApi(voucherId, status);
+    },
+    onSuccess: (_, { status }) => {
+      queryClient.invalidateQueries({ queryKey: PettyCashVoucherQueryKeys.vouchers() });
+      toast.success(`Petty Cash Voucher marked as ${status}.`);
     },
     onError: () => {
       toast.error("Could not update the Petty Cash Voucher status. Please try again.");
     },
   });
 
-  const filteredVouchers = useMemo(() => {
-    const dateFrom = coerceDate(dateRange.from);
-    const dateTo = coerceDate(dateRange.to);
-    const amountFrom = parseAmount(amountRange.from);
-    const amountTo = parseAmount(amountRange.to);
-
-    return vouchersQuery.data.filter((voucher) => {
-      const query = searchQuery.toLowerCase();
-      const documentDate = coerceDate(voucher.documentDate);
-      const matchesSearch =
-        voucher.voucherNo.toLowerCase().includes(query) ||
-        voucher.partyCode.toLowerCase().includes(query) ||
-        voucher.partyName.toLowerCase().includes(query) ||
-        voucher.accountCode.toLowerCase().includes(query) ||
-        voucher.accountTitle.toLowerCase().includes(query);
-
-      const matchesStatus = statusFilter === PettyCashVoucherAllStatusFilter || voucher.status === statusFilter;
-      const matchesDateFrom = !dateFrom || !documentDate || documentDate >= dateFrom;
-      const matchesDateTo = !dateTo || !documentDate || documentDate <= dateTo;
-      const matchesAmountFrom = amountFrom === null || voucher.amount >= amountFrom;
-      const matchesAmountTo = amountTo === null || voucher.amount <= amountTo;
-
-      return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo && matchesAmountFrom && matchesAmountTo;
-    });
-  }, [amountRange.from, amountRange.to, dateRange.from, dateRange.to, searchQuery, statusFilter, vouchersQuery.data]);
+  const deleteMutation = useMutation({
+    mutationFn: async (voucherId: string) => {
+      return await deletePettyCashVoucherApi(voucherId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PettyCashVoucherQueryKeys.vouchers() });
+      toast.success("Petty Cash Voucher deleted successfully.");
+    },
+    onError: () => {
+      toast.error("Could not delete Petty Cash Voucher.");
+    },
+  });
 
   const columns = useMemo(
     () => [
@@ -119,6 +137,11 @@ export function usePettyCashVoucherOverviewPage() {
         header: PettyCashVoucherColumnLabels.amount,
         size: TransactionOverviewColumnWidths.amount,
         meta: { label: PettyCashVoucherColumnLabels.amount },
+      }),
+      columnHelper.accessor("disburseAmount", {
+        header: PettyCashVoucherColumnLabels.disburseAmount,
+        size: TransactionOverviewColumnWidths.amount,
+        meta: { label: PettyCashVoucherColumnLabels.disburseAmount },
       }),
       columnHelper.accessor("remarks", {
         header: PettyCashVoucherColumnLabels.remarks,
@@ -160,94 +183,96 @@ export function usePettyCashVoucherOverviewPage() {
     [],
   );
 
-  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns the table state lifecycle.
   const table = useReactTable({
+    data: vouchers,
     columns,
-    data: filteredVouchers,
-    getCoreRowModel: getCoreRowModel(),
     initialState: {
       columnVisibility: PettyCashVoucherDefaultColumnVisibility,
     },
+    state: { columnVisibility },
     onColumnVisibilityChange: setColumnVisibility,
-    state: {
-      columnVisibility,
-    },
+    getCoreRowModel: getCoreRowModel(),
   });
 
   const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => {
-    function statusMetric(status: PettyCashVoucherStatus) {
-      const value = vouchersQuery.data.filter((voucher) => voucher.status === status).length;
-
-      return {
-        icon: getModuleStatusMetricIcon(status),
-        iconClassName: getModuleStatusMetricIconClassName(status),
-        label: status,
-        summary: formatPartOfTotalPercentage(value, vouchersQuery.data.length),
-        tone: PettyCashVoucherStatusMetricTones[status],
-        value,
-      };
-    }
-
+    const totalCount = vouchers.length;
     return [
       {
-        icon: ReceiptText,
         label: "Total Entries",
+        value: totalCount,
+        icon: ReceiptText,
+        tone: "violet",
         summary: "All time",
-        tone: "violet" as const,
-        value: vouchersQuery.data.length,
+        isActive: statusFilter === PettyCashVoucherAllStatusFilter,
+        onClick: () => setStatusFilter(PettyCashVoucherAllStatusFilter),
       },
-      ...PettyCashVoucherRecordStatuses.map(statusMetric),
-    ].map((item) => ({
-      ...item,
-      isActive: item.label === "Total Entries" ? statusFilter === PettyCashVoucherAllStatusFilter : item.label === statusFilter,
-      onClick:
-        item.label === "Total Entries"
-          ? () => setStatusFilter(PettyCashVoucherAllStatusFilter)
-          : () => setStatusFilter(item.label as PettyCashVoucherStatus),
-    }));
-  }, [statusFilter, vouchersQuery.data]);
+      ...PettyCashVoucherRecordStatuses.map((status) => {
+        const count = vouchers.filter((v) => v.status === status).length;
+        const tone =
+          status === PettyCashVoucherStatuses.posted
+            ? ("emerald" as const)
+            : status === PettyCashVoucherStatuses.forApproval
+              ? ("amber" as const)
+              : status === PettyCashVoucherStatuses.draft
+                ? ("blue" as const)
+                : status === PettyCashVoucherStatuses.disapproved
+                  ? ("red" as const)
+                  : ("slate" as const);
 
-  function resetFilters() {
-    setSearchQuery("");
-    setStatusFilter(PettyCashVoucherAllStatusFilter);
-    setDateRange({ from: "", to: "" });
-    setAmountRange({ from: "", to: "" });
-  }
+        return {
+          label: status,
+          value: count,
+          icon: getModuleStatusMetricIcon(status),
+          iconClassName: getModuleStatusMetricIconClassName(status),
+          tone,
+          summary: formatPartOfTotalPercentage(count, totalCount),
+          isActive: statusFilter === status,
+          onClick: () => setStatusFilter(status),
+        };
+      }),
+    ];
+  }, [statusFilter, vouchers]);
 
-  function refreshRecords() {
-    void vouchersQuery.refetch();
-  }
+  const onUpdateStatus = (record: PettyCashVoucherRecord, status: PettyCashVoucherStatus) => {
+    updateStatusMutation.mutate({ status, voucherId: record.id });
+  };
 
-  function updateStatusFilter(value: string) {
-    if (PettyCashVoucherStatusOptions.includes(value as PettyCashVoucherStatus)) {
-      setStatusFilter(value as typeof PettyCashVoucherAllStatusFilter | PettyCashVoucherStatus);
-    }
-  }
-
-  function handleUpdateStatus(voucher: PettyCashVoucherRecord, status: PettyCashVoucherStatus) {
-    return updateStatusMutation
-      .mutateAsync({ status, voucherId: voucher.id })
-      .then(() => undefined)
-      .catch(() => undefined);
-  }
+  const refreshRecords = () => {
+    vouchersQuery.refetch();
+  };
 
   return {
     amountRange,
+    columns,
     dateRange,
-    handleUpdateStatus,
+    filteredVouchers: vouchers,
+    handleUpdateStatus: onUpdateStatus,
+    hasActiveFilters: Boolean(
+      searchQuery ||
+        statusFilter !== PettyCashVoucherAllStatusFilter ||
+        dateRange.from ||
+        dateRange.to ||
+        amountRange.from ||
+        amountRange.to,
+    ),
     isLoading: vouchersQuery.isLoading,
-    isMutating: updateStatusMutation.isPending,
-    lastSyncedAt: vouchersQuery.dataUpdatedAt,
+    isUpdatingStatus: updateStatusMutation.isPending || deleteMutation.isPending,
+    lastSyncedAt,
+    onDeleteRecord: (record: PettyCashVoucherRecord) => deleteMutation.mutate(record.id),
+    onUpdateStatus,
+    updateStatus: onUpdateStatus,
     refreshRecords,
     searchQuery,
-    resetFilters,
     setAmountRange,
     setDateRange,
     setSearchQuery,
-    setStatusFilter: updateStatusFilter,
+    setStatusFilter,
     statisticCards,
+    statistics: statisticCards,
     statusFilter,
+    statusOptions: PettyCashVoucherStatusOptions,
     table,
+    updateStatusMutation,
   };
 }
-

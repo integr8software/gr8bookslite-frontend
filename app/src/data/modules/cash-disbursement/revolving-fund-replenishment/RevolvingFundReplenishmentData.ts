@@ -8,59 +8,6 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
 import { todayDateValue } from "@/app/src/utils/date.util";
 
-export const RevolvingFundReplenishmentSeedRecords: RevolvingFundReplenishmentRecord[] = [
-  createSeed(
-    "1",
-    "RFR-000063",
-    "2026-02-23",
-    "E000102",
-    "Raymark B. Arsicolo",
-    12500,
-    "February office replenishment",
-    RevolvingFundReplenishmentStatuses.forApproval,
-  ),
-  createSeed(
-    "2",
-    "RFR-000062",
-    "2026-02-18",
-    "E000117",
-    "Maria L. Dela Cruz",
-    15000,
-    "Field operations replenishment",
-    RevolvingFundReplenishmentStatuses.posted,
-  ),
-  createSeed(
-    "3",
-    "RFR-000061",
-    "2026-02-12",
-    "E000145",
-    "Jose P. Santos",
-    8500,
-    "Branch replenishment",
-    RevolvingFundReplenishmentStatuses.draft,
-  ),
-  createSeed(
-    "4",
-    "RFR-000060",
-    "2026-02-08",
-    "E000117",
-    "Maria L. Dela Cruz",
-    4200,
-    "Office expense replenishment",
-    RevolvingFundReplenishmentStatuses.disapproved,
-  ),
-  createSeed(
-    "5",
-    "RFR-000059",
-    "2026-02-02",
-    "E000102",
-    "Raymark B. Arsicolo",
-    3000,
-    "Cancelled replenishment",
-    RevolvingFundReplenishmentStatuses.cancelled,
-  ),
-];
-
 export function createBlankRevolvingFundReplenishmentEntry(): RevolvingFundReplenishmentEntry {
   return {
     id: `rfr-entry-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -86,7 +33,7 @@ export function createBlankRevolvingFundReplenishmentEntry(): RevolvingFundReple
 
 export function createRevolvingFundReplenishmentFormValues(
   record?: RevolvingFundReplenishmentRecord,
-  transactionNo = "RFR-000001",
+  transactionNo = "",
   baseCurrencyCode = "PHP",
 ): RevolvingFundReplenishmentFormValues {
   if (record?.formValues) {
@@ -104,29 +51,31 @@ export function createRevolvingFundReplenishmentFormValues(
       status: record.status,
       partyCode: record.partyCode,
       partyName: record.partyName,
-      responsibilityCenter: "Administration",
-      responsibilityCenterCode: "RC-ADM",
-      projectCode: "",
-      projectName: "",
+      responsibilityCenter: record.responsibilityCenter ?? "",
+      responsibilityCenterCode: record.responsibilityCenterCode ?? "",
+      projectCode: record.projectCode ?? "",
+      projectName: record.projectName ?? "",
       accountCode: record.accountCode,
       accountTitle: record.accountTitle,
-      currency: baseCurrencyCode,
-      exchangeRate: "1.00",
+      currency: record.currency ?? baseCurrencyCode,
+      exchangeRate: record.exchangeRate ?? "1.00",
       remarks: record.remarks,
-      entries: [
-        {
-          ...createBlankRevolvingFundReplenishmentEntry(),
-          revolvingFundDate: record.documentDate,
-          revolvingFundNo: "RFV-000084",
-          supplierCode: record.partyCode,
-          supplierName: record.partyName,
-          amount,
-          ...calculateRevolvingFundReplenishmentEntryTaxFields(amount),
-          particulars: record.remarks,
-          remarks: record.remarks,
-        },
-      ],
-      attachments: [],
+      entries: record.entries?.length
+        ? record.entries.map(normalizeRevolvingFundReplenishmentEntry)
+        : [
+            {
+              ...createBlankRevolvingFundReplenishmentEntry(),
+              revolvingFundDate: record.documentDate,
+              revolvingFundNo: "RFV-000084",
+              supplierCode: record.partyCode,
+              supplierName: record.partyName,
+              amount,
+              ...calculateRevolvingFundReplenishmentEntryTaxFields(amount),
+              particulars: record.remarks,
+              remarks: record.remarks,
+            },
+          ],
+      attachments: record.attachments?.map((attachment) => ({ ...attachment })) ?? [],
     };
   }
   return {
@@ -182,13 +131,22 @@ export function createRevolvingFundReplenishmentRecord(
     partyName: values.partyName,
     accountCode: values.accountCode,
     accountTitle: values.accountTitle,
+    responsibilityCenter: values.responsibilityCenter,
+    responsibilityCenterCode: values.responsibilityCenterCode,
+    projectCode: values.projectCode,
+    projectName: values.projectName,
+    currency: values.currency,
+    exchangeRate: values.exchangeRate,
     amount: calculateRevolvingFundReplenishmentTotals(values.entries).totalAmount,
+    disburseAmount: calculateRevolvingFundReplenishmentTotals(values.entries).disburseAmount,
     remarks: values.remarks,
     status,
     createdBy: existing?.createdBy ?? "Current User",
     createdAt: existing?.createdAt ?? now,
     updatedBy: "Current User",
     updatedAt: now,
+    entries: values.entries.map((entry) => ({ ...entry })),
+    attachments: values.attachments.map((attachment) => ({ ...attachment })),
     formValues: nextValues,
   };
 }
@@ -262,32 +220,4 @@ function getRevolvingFundReplenishmentEwtPercent(ewtCode: string) {
 
 function roundRevolvingFundReplenishmentTaxAmount(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
-}
-
-function createSeed(
-  id: string,
-  transactionNo: string,
-  documentDate: string,
-  partyCode: string,
-  partyName: string,
-  amount: number,
-  remarks: string,
-  status: RevolvingFundReplenishmentStatus,
-): RevolvingFundReplenishmentRecord {
-  return {
-    id,
-    transactionNo,
-    documentDate,
-    partyCode,
-    partyName,
-    accountCode: "101-200",
-    accountTitle: "Revolving Fund",
-    amount,
-    remarks,
-    status,
-    createdBy: "Maria Santos",
-    createdAt: `${documentDate}T09:00:00`,
-    updatedBy: "Maria Santos",
-    updatedAt: `${documentDate}T09:00:00`,
-  };
 }

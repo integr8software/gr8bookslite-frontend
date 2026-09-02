@@ -38,11 +38,11 @@ export function PettyCashVoucherReportPreview({
         <dl className="mt-10 grid grid-cols-2 gap-x-8 gap-y-5 border-y border-darknavy/10 py-6 text-sm">
           <ReportValue label="Party" value={`${page.values.partyName || "-"} (${page.values.partyCode || "-"})`} />
           <ReportValue label="Document Date" value={formatDate(page.values.documentDate)} />
+          <ReportValue label="Default Account" value={`${page.values.accountTitle || "-"} (${page.values.accountCode || "-"})`} />
           <ReportValue
             label="Responsibility Center"
             value={`${page.values.responsibilityCenter || "-"} (${page.values.responsibilityCenterCode || "-"})`}
           />
-          <ReportValue label="Default Account" value={`${page.values.accountTitle || "-"} (${page.values.accountCode || "-"})`} />
           <ReportValue label="VAT Type" value={page.values.vatType || "-"} />
           <ReportValue label="Gross Amount" value={formatCurrency(amount)} />
           <ReportValue label="VAT Amount" value={`${formatCurrency(vatAmount)} (${page.values.vatRate || "0.00%"})`} />

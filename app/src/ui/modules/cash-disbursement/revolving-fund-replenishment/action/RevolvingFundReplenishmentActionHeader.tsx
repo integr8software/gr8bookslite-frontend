@@ -33,6 +33,8 @@ export function RevolvingFundReplenishmentActionHeader({
 }) {
   const [confirmation, setConfirmation] = useState<RevolvingFundReplenishmentConfirmationAction | null>(null);
   const transactionNo = page.record?.transactionNo ?? page.values.transactionNo;
+  const isDraftEdit = page.mode === "edit" && page.record?.status === RevolvingFundReplenishmentStatuses.draft;
+  const isSaveAction = page.mode === "add" || isDraftEdit;
   const title =
     page.mode === "add" ? (
       "Add Revolving Fund Replenishment"
@@ -87,14 +89,14 @@ export function RevolvingFundReplenishmentActionHeader({
             {page.mode !== "view" ? (
               <ModuleActionButton
                 disabled={page.isSubmitting}
-                label={page.mode === "edit" ? "Update" : "Save"}
+                label={isSaveAction ? "Save" : "Update"}
                 onAction={() => {
                   if (page.validate(RevolvingFundReplenishmentStatuses.forApproval)) {
                     setConfirmation("save");
                   }
                 }}
                 menuItems={
-                  page.mode === "add"
+                  isSaveAction
                     ? [
                         {
                           label: "Save As Draft",
@@ -116,13 +118,13 @@ export function RevolvingFundReplenishmentActionHeader({
         <AppDialog
           isOpen
           title={
-            confirmation === "save" && page.mode === "edit"
+            confirmation === "save" && !isSaveAction
               ? "Update Revolving Fund Replenishment?"
               : RevolvingFundReplenishmentConfirmationDialogTitles[confirmation]
           }
           description={
             confirmation === "save"
-              ? page.mode === "edit"
+              ? !isSaveAction
                 ? `This will update ${transactionNo}.`
                 : `This will save and submit ${transactionNo}.`
               : confirmation === "draft"
@@ -134,14 +136,14 @@ export function RevolvingFundReplenishmentActionHeader({
                     : `This will mark ${transactionNo} as cancelled.`
           }
           confirmLabel={
-            confirmation === "save" && page.mode === "edit"
+            confirmation === "save" && !isSaveAction
               ? "Update"
               : RevolvingFundReplenishmentConfirmationDialogConfirmLabels[confirmation]
           }
           cancelLabel="Cancel"
-          iconTone={confirmation === "save" ? (page.mode === "edit" ? "update" : "save") : confirmation === "draft" ? "save" : undefined}
+          iconTone={confirmation === "save" ? (isSaveAction ? "save" : "update") : confirmation === "draft" ? "save" : undefined}
           isPending={page.isSubmitting}
-          pendingLabel={confirmation === "save" && page.mode === "edit" ? "Updating..." : "Saving..."}
+          pendingLabel={confirmation === "save" && !isSaveAction ? "Updating..." : "Saving..."}
           tone={
             confirmation === "approve"
               ? "success"
@@ -152,22 +154,23 @@ export function RevolvingFundReplenishmentActionHeader({
                   : "default"
           }
           onCancel={() => setConfirmation(null)}
-          onConfirm={() => {
+          onConfirm={async () => {
+            let isSuccessful = false;
+
             if (confirmation === "save") {
-              const ok = page.save(RevolvingFundReplenishmentStatuses.forApproval);
-              if (ok) setConfirmation(null);
+              isSuccessful = await page.save(RevolvingFundReplenishmentStatuses.forApproval);
             } else if (confirmation === "draft") {
-              const ok = page.save(RevolvingFundReplenishmentStatuses.draft);
-              if (ok) setConfirmation(null);
+              isSuccessful = await page.save(RevolvingFundReplenishmentStatuses.draft);
             } else if (confirmation === "approve") {
-              const ok = page.updateStatus(RevolvingFundReplenishmentStatuses.posted);
-              if (ok) setConfirmation(null);
+              isSuccessful = await page.updateStatus(RevolvingFundReplenishmentStatuses.posted);
             } else if (confirmation === "disapprove") {
-              const ok = page.updateStatus(RevolvingFundReplenishmentStatuses.disapproved);
-              if (ok) setConfirmation(null);
+              isSuccessful = await page.updateStatus(RevolvingFundReplenishmentStatuses.disapproved);
             } else {
-              const ok = page.updateStatus(RevolvingFundReplenishmentStatuses.cancelled);
-              if (ok) setConfirmation(null);
+              isSuccessful = await page.updateStatus(RevolvingFundReplenishmentStatuses.cancelled);
+            }
+
+            if (isSuccessful) {
+              setConfirmation(null);
             }
           }}
         />

@@ -167,7 +167,7 @@ export function PartyInformationDetailsFields({
       const firstTabWithErrors = PartyInformationTabOrder.find((tabId) => tabErrorCounts[tabId] > 0);
 
       if (firstTabWithErrors) {
-        setActiveTab(firstTabWithErrors);
+        queueMicrotask(() => setActiveTab(firstTabWithErrors));
       }
     }
 

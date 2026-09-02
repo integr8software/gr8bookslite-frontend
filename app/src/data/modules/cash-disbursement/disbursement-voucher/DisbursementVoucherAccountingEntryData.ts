@@ -1,8 +1,9 @@
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import {
   AccountingPartyFallbackValuePrefix,
+  CashOnHandAccountCode,
+  CashOnHandAccountName,
   DefaultDisbursementEntryColumnOrder,
   DefaultExpenseEntryColumnOrder,
   ExpandedWithholdingTaxAccountCode,
@@ -24,46 +25,28 @@ import type {
   DisbursementVoucherBankAccount,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
+import type { DefaultAccountOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import { calculateFitColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 import { formatAmount } from "@/app/src/utils/currency.util";
 
-export function createAccountingChartAccountOptions(entries: DisbursementLineEntry[]): ModuleChartAccount[] {
-  const chartAccounts = getModuleChartAccounts();
-  const accountKeys = new Set(chartAccounts.flatMap((account) => [account.accountName.toLowerCase(), account.accountNumber]));
-  const customAccounts: ModuleChartAccount[] = [];
-
-  entries.forEach((entry) => {
-    const accountName = entry.accountName.trim();
-    const accountKey = accountName.toLowerCase();
-
-    if (!accountName || accountKeys.has(accountKey)) {
-      return;
-    }
-
-    accountKeys.add(accountKey);
-    customAccounts.push({
-      accountCategory: "Other",
-      accountName,
-      accountNumber: entry.accountCode,
-      accountType: "Expenses",
-      description: entry.accountCode,
-      id: `entry-account-${entry.id}`,
-      normalBalance: parseMoneyNumberInput(entry.credit) > 0 ? "Credit" : "Debit",
-      statementGroup: "Income Statement",
-      statementSection: "Accounting Entry",
-      status: "Active",
-    });
-  });
-
-  return [...chartAccounts, ...customAccounts];
+export function createAccountingChartAccountOptions(
+  _entries: DisbursementLineEntry[],
+  chartAccounts: ModuleChartAccount[],
+): ModuleChartAccount[] {
+  void _entries;
+  return chartAccounts;
 }
 
-export function createDefaultAccountExpenseOptions(defaultAccounts: DefaultAccount[]): ModuleChartAccount[] {
-  return defaultAccounts
-    .filter((account) => account.status === "Active" && account.type === "EXPENSE")
-    .flatMap((account) =>
-      account.generatedAccounts
+export function createDefaultAccountExpenseOptions(
+  defaultAccounts: DefaultAccount[] | DefaultAccountOptionResponseDto[] = [],
+): ModuleChartAccount[] {
+  return (defaultAccounts as Array<DefaultAccount | DefaultAccountOptionResponseDto>).flatMap((account) => {
+    if ("generatedAccounts" in account && Array.isArray(account.generatedAccounts)) {
+      if (account.status !== "Active" || account.type !== "EXPENSE") {
+        return [];
+      }
+      return account.generatedAccounts
         .filter((generatedAccount) => generatedAccount.role === "EXPENSE" && generatedAccount.status === "ACTIVE")
         .map<ModuleChartAccount>((generatedAccount) => ({
           accountCategory: generatedAccount.accountNature ?? generatedAccount.role,
@@ -76,8 +59,29 @@ export function createDefaultAccountExpenseOptions(defaultAccounts: DefaultAccou
           statementGroup: "Income Statement",
           statementSection: generatedAccount.accountNature ?? "Default Account Expense",
           status: "Active",
-        })),
-    );
+        }));
+    }
+
+    const dto = account as DefaultAccountOptionResponseDto;
+    if (dto.status === "ACTIVE" && dto.type === "EXPENSE" && dto.chartAccountId && dto.accountCode && dto.accountTitle) {
+      return [
+        {
+          accountCategory: dto.accountNature ?? dto.type,
+          accountName: dto.accountTitle ?? dto.defaultAccountName,
+          accountNumber: dto.accountCode ?? "",
+          accountType: dto.accountType ?? "Expenses",
+          description: dto.defaultAccountName,
+          id: dto.chartAccountId ?? dto.id,
+          normalBalance: "Debit",
+          statementGroup: "Income Statement",
+          statementSection: dto.accountNature ?? "Default Account Expense",
+          status: "Active",
+        },
+      ];
+    }
+
+    return [];
+  });
 }
 
 export function normalizeDisbursementLineEntryFields(entry: DisbursementLineEntry): DisbursementLineEntry {
@@ -133,11 +137,19 @@ export function isExpenseEntryColumnId(columnId: string): columnId is ExpenseEnt
   return DefaultExpenseEntryColumnOrder.includes(columnId as ExpenseEntryColumnId);
 }
 
+export function isCashOnHandEntry(entry: DisbursementLineEntry) {
+  return entry.accountCode === CashOnHandAccountCode || entry.accountName.trim().toLowerCase() === CashOnHandAccountName.toLowerCase();
+}
+
 export function isPaymentCreditEntry(entry: DisbursementLineEntry) {
   return (
+    isCashOnHandEntry(entry) ||
     entry.id.startsWith("auto-credit-") ||
     entry.id.startsWith("auto-payment-credit-") ||
-    entry.id.startsWith("payment-credit-")
+    entry.id.startsWith("payment-credit-") ||
+    entry.id.startsWith("cash-in-hand-") ||
+    entry.accountName === "Cash in Bank" ||
+    entry.accountName.startsWith("Cash in Bank - ")
   );
 }
 
@@ -186,10 +198,13 @@ export function createAutomaticAccountingEntries(
     bankAccount?: DisbursementVoucherBankAccount | null;
     blankRemarksEntryIds?: string[];
     generatedRemarksOverrides?: Record<string, string>;
+    isCashPayment?: boolean;
     paymentMethod: string;
+    cashAccount?: { accountCode: string; accountName: string };
   },
 ) {
   const blankRemarksEntryIds = new Set(options.blankRemarksEntryIds ?? []);
+  const isCash = Boolean(options.isCashPayment || options.paymentMethod.trim().toLowerCase() === "cash");
   const editableExpenseEntries = entries
     .filter((entry) => !isGeneratedAccountingEntry(entry))
     .map((entry) => {
@@ -225,7 +240,9 @@ export function createAutomaticAccountingEntries(
   const totalVatAmount = expenseEntriesWithAmount.reduce((sum, entry) => sum + Number(entry.taxDetails.vatAmount || 0), 0);
   const totalEwtAmount = expenseEntriesWithAmount.reduce((sum, entry) => sum + Number(entry.taxDetails.ewtAmount || 0), 0);
   const totalDisbursementAmount = expenseEntriesWithAmount.reduce((sum, entry) => sum + Number(entry.taxDetails.amount || 0), 0);
-  const settlementAccountName = options.bankAccount?.accountTitle || options.paymentMethod.trim() || "Payment";
+  const settlementAccountName = isCash
+    ? CashOnHandAccountName
+    : options.bankAccount?.accountTitle || options.paymentMethod.trim() || "Payment";
   const generatedRemarks = createGeneratedAccountingRemarks(
     expenseEntriesWithAmount,
     settlementAccountName,
@@ -294,20 +311,31 @@ export function createAutomaticAccountingEntries(
     });
   }
 
-  if (hasNonZeroAccountingAmount(totalDisbursementAmount) && options.bankAccount) {
+  if (hasNonZeroAccountingAmount(totalDisbursementAmount) && (isCash || options.bankAccount)) {
+    const creditAccount = isCash
+      ? {
+          accountCode: options.cashAccount?.accountCode ?? CashOnHandAccountCode,
+          accountName: options.cashAccount?.accountName ?? CashOnHandAccountName,
+        }
+      : {
+          accountCode: options.bankAccount?.accountCode ?? "",
+          accountName: options.bankAccount?.accountTitle ?? "",
+        };
     const paymentEntryAmounts = getSignedAccountingEntryAmounts(totalDisbursementAmount, "credit");
-    const bankText = options.generatedRemarksOverrides?.["auto-payment-credit-current"] ?? generatedRemarks.settlement;
+    const settlementText = options.generatedRemarksOverrides?.["auto-payment-credit-current"] ??
+      options.generatedRemarksOverrides?.["auto-credit-current"] ??
+      generatedRemarks.settlement;
 
     generatedEntries.push({
       ...createBlankDisbursementLineEntry(),
       ...commonFields,
-      accountCode: options.bankAccount.accountCode,
-      accountName: options.bankAccount.accountTitle,
+      accountCode: creditAccount.accountCode,
+      accountName: creditAccount.accountName,
       debit: paymentEntryAmounts.debit,
       credit: paymentEntryAmounts.credit,
-      id: "auto-payment-credit-current",
-      particulars: bankText,
-      remarks: bankText,
+      id: "auto-credit-current",
+      particulars: settlementText,
+      remarks: settlementText,
       taxDetails: {
         ...createTaxDetails(totalDisbursementAmount, "0%"),
         ...commonFields,

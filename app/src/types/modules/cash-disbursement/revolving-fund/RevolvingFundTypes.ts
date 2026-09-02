@@ -88,13 +88,22 @@ export type RevolvingFundRecord = {
   partyName: string;
   accountCode: string;
   accountTitle: string;
+  responsibilityCenter?: string;
+  responsibilityCenterCode?: string;
+  projectCode?: string;
+  projectName?: string;
+  currency?: string;
+  exchangeRate?: string;
   amount: number;
+  disburseAmount: number;
   remarks: string;
   status: RevolvingFundStatus;
   createdBy: string;
   createdAt: string;
   updatedBy: string;
   updatedAt: string;
+  items?: RevolvingFundItem[];
+  attachments?: TransactionAttachment[];
   formValues?: RevolvingFundFormValues;
 };
 

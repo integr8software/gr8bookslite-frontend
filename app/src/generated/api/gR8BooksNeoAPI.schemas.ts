@@ -1252,13 +1252,13 @@ export interface CreateMasterPlanAndPackageDto {
      * @maximum 365
      */
   trialDays: number;
+  /** @minimum 0 */
+  trialPriceInCents?: number;
   /** @minItems 1 */
   prices: MasterPlanPriceDto[];
   usageRules?: MasterPlanUsageRuleDto[];
   discountTiers?: MasterPlanDiscountTierDto[];
-  systemCodes?: string[];
-  moduleKeys?: string[];
-  trialPriceInCents?: number;
+  systemCodes: string[];
 }
 
 export interface WorkspaceCompanyCreatedByResponseDto {
@@ -1610,6 +1610,21 @@ export interface UpdateCompanyUnitDto {
   parentUnitId?: number;
 }
 
+export interface WorkspaceUserUnitAssignmentDto {
+  /** @minimum 1 */
+  unitId: number;
+  /** @nullable */
+  companyRoleId?: number | null;
+}
+
+export type WorkspaceUserAssignmentDtoRole = typeof WorkspaceUserAssignmentDtoRole[keyof typeof WorkspaceUserAssignmentDtoRole];
+
+
+export const WorkspaceUserAssignmentDtoRole = {
+  ADMIN: 'ADMIN',
+  USER: 'USER',
+} as const;
+
 export interface WorkspaceUserAssignmentDto {
   /** @minimum 1 */
   companyId: number;
@@ -1618,6 +1633,10 @@ export interface WorkspaceUserAssignmentDto {
      * @items.minimum 1
      */
   unitIds: number[];
+  unitAssignments?: WorkspaceUserUnitAssignmentDto[];
+  role?: WorkspaceUserAssignmentDtoRole;
+  /** @nullable */
+  companyRoleId?: number | null;
 }
 
 export interface CreateWorkspaceUserDto {
@@ -2156,6 +2175,17 @@ export const ChartAccountBankDetailsDtoKind = {
   BANK: 'BANK',
 } as const;
 
+export type ChartAccountBankDetailsDtoAccountType = typeof ChartAccountBankDetailsDtoAccountType[keyof typeof ChartAccountBankDetailsDtoAccountType];
+
+
+export const ChartAccountBankDetailsDtoAccountType = {
+  CHECKING: 'CHECKING',
+  SAVINGS: 'SAVINGS',
+  CURRENT: 'CURRENT',
+  TIME_DEPOSIT: 'TIME_DEPOSIT',
+  CREDIT_CARD: 'CREDIT_CARD',
+} as const;
+
 export interface ChartAccountBankDetailsDto {
   kind?: ChartAccountBankDetailsDtoKind;
   /** @maxLength 100 */
@@ -2164,8 +2194,7 @@ export interface ChartAccountBankDetailsDto {
   branch?: string;
   /** @maxLength 100 */
   accountNumber?: string;
-  /** @maxLength 50 */
-  accountType?: string;
+  accountType?: ChartAccountBankDetailsDtoAccountType;
   /** @maxLength 10 */
   currencyCode?: string;
   /** @minimum 0 */
@@ -2953,11 +2982,10 @@ export type PaymentTypeResponseDtoClassification = typeof PaymentTypeResponseDto
 
 
 export const PaymentTypeResponseDtoClassification = {
-  CASH: 'CASH',
-  CHECK: 'CHECK',
   BANK_TRANSFER: 'BANK_TRANSFER',
+  CHECK: 'CHECK',
   DIGITAL_WALLET: 'DIGITAL_WALLET',
-  NON_CASH_SETTLEMENT: 'NON_CASH_SETTLEMENT',
+  DEBIT_MEMO: 'DEBIT_MEMO',
 } as const;
 
 export type PaymentTypeResponseDtoStatus = typeof PaymentTypeResponseDtoStatus[keyof typeof PaymentTypeResponseDtoStatus];
@@ -2988,11 +3016,10 @@ export interface PaymentTypeStatisticsResponseDto {
   totalPaymentTypes: number;
   activePaymentTypes: number;
   inactivePaymentTypes: number;
-  cashPaymentTypes: number;
   bankTransferPaymentTypes: number;
   checkPaymentTypes: number;
   digitalWalletPaymentTypes: number;
-  nonCashSettlementPaymentTypes: number;
+  debitMemoPaymentTypes: number;
 }
 
 export interface PaymentTypePaginationResponseDto {
@@ -3021,11 +3048,10 @@ export type PaymentTypeOptionResponseDtoClassification = typeof PaymentTypeOptio
 
 
 export const PaymentTypeOptionResponseDtoClassification = {
-  CASH: 'CASH',
-  CHECK: 'CHECK',
   BANK_TRANSFER: 'BANK_TRANSFER',
+  CHECK: 'CHECK',
   DIGITAL_WALLET: 'DIGITAL_WALLET',
-  NON_CASH_SETTLEMENT: 'NON_CASH_SETTLEMENT',
+  DEBIT_MEMO: 'DEBIT_MEMO',
 } as const;
 
 export type PaymentTypeOptionResponseDtoStatus = typeof PaymentTypeOptionResponseDtoStatus[keyof typeof PaymentTypeOptionResponseDtoStatus];
@@ -3057,12 +3083,10 @@ export type CreatePaymentTypeDtoClassification = typeof CreatePaymentTypeDtoClas
 
 
 export const CreatePaymentTypeDtoClassification = {
-  CASH: 'CASH',
-  CHECK: 'CHECK',
   BANK_TRANSFER: 'BANK_TRANSFER',
+  CHECK: 'CHECK',
   DIGITAL_WALLET: 'DIGITAL_WALLET',
   DEBIT_MEMO: 'DEBIT_MEMO',
-  NON_CASH_SETTLEMENT: 'NON_CASH_SETTLEMENT',
 } as const;
 
 export type CreatePaymentTypeDtoStatus = typeof CreatePaymentTypeDtoStatus[keyof typeof CreatePaymentTypeDtoStatus];
@@ -3106,12 +3130,10 @@ export type UpdatePaymentTypeDtoClassification = typeof UpdatePaymentTypeDtoClas
 
 
 export const UpdatePaymentTypeDtoClassification = {
-  CASH: 'CASH',
-  CHECK: 'CHECK',
   BANK_TRANSFER: 'BANK_TRANSFER',
+  CHECK: 'CHECK',
   DIGITAL_WALLET: 'DIGITAL_WALLET',
   DEBIT_MEMO: 'DEBIT_MEMO',
-  NON_CASH_SETTLEMENT: 'NON_CASH_SETTLEMENT',
 } as const;
 
 export type UpdatePaymentTypeDtoStatus = typeof UpdatePaymentTypeDtoStatus[keyof typeof UpdatePaymentTypeDtoStatus];
@@ -3138,7 +3160,6 @@ export type DiscountResponseDtoType = typeof DiscountResponseDtoType[keyof typeo
 
 export const DiscountResponseDtoType = {
   SALES: 'SALES',
-  PURCHASE: 'PURCHASE',
   PURCHASES: 'PURCHASES',
 } as const;
 
@@ -3215,7 +3236,7 @@ export type DiscountOptionResponseDtoType = typeof DiscountOptionResponseDtoType
 
 export const DiscountOptionResponseDtoType = {
   SALES: 'SALES',
-  PURCHASE: 'PURCHASE',
+  PURCHASES: 'PURCHASES',
 } as const;
 
 export type DiscountOptionResponseDtoValueType = typeof DiscountOptionResponseDtoValueType[keyof typeof DiscountOptionResponseDtoValueType];
@@ -3257,7 +3278,6 @@ export type CreateDiscountDtoType = typeof CreateDiscountDtoType[keyof typeof Cr
 
 export const CreateDiscountDtoType = {
   SALES: 'SALES',
-  PURCHASE: 'PURCHASE',
   PURCHASES: 'PURCHASES',
 } as const;
 
@@ -3312,7 +3332,6 @@ export type UpdateDiscountDtoType = typeof UpdateDiscountDtoType[keyof typeof Up
 
 export const UpdateDiscountDtoType = {
   SALES: 'SALES',
-  PURCHASE: 'PURCHASE',
   PURCHASES: 'PURCHASES',
 } as const;
 
@@ -3590,6 +3609,10 @@ export interface PartyOptionResponseDto {
   cashAdvanceLimit?: string;
   /** Available cash advance balance for the employee. */
   cashAdvanceBalance?: string;
+  /** Total active cash advances for the party. */
+  totalCashAdvance?: string;
+  /** Cash advance limit remaining after active advances. */
+  availableCashAdvance?: string;
   /** @nullable */
   partyEntityType?: string | null;
   partyName?: string;
@@ -4120,6 +4143,20 @@ export interface BankChartAccountResponseDto {
   status: BankChartAccountResponseDtoStatus;
 }
 
+/**
+ * @nullable
+ */
+export type BankAccountResponseDtoAccountType = typeof BankAccountResponseDtoAccountType[keyof typeof BankAccountResponseDtoAccountType] | null;
+
+
+export const BankAccountResponseDtoAccountType = {
+  CHECKING: 'CHECKING',
+  SAVINGS: 'SAVINGS',
+  CURRENT: 'CURRENT',
+  TIME_DEPOSIT: 'TIME_DEPOSIT',
+  CREDIT_CARD: 'CREDIT_CARD',
+} as const;
+
 export type BankAccountResponseDtoStatus = typeof BankAccountResponseDtoStatus[keyof typeof BankAccountResponseDtoStatus];
 
 
@@ -4222,6 +4259,17 @@ export interface BankAccountContainerResponseDto {
   permissions: BankMasterfilePermissionsResponseDto;
 }
 
+export type CreateBankAccountDtoAccountType = typeof CreateBankAccountDtoAccountType[keyof typeof CreateBankAccountDtoAccountType];
+
+
+export const CreateBankAccountDtoAccountType = {
+  CHECKING: 'CHECKING',
+  SAVINGS: 'SAVINGS',
+  CURRENT: 'CURRENT',
+  TIME_DEPOSIT: 'TIME_DEPOSIT',
+  CREDIT_CARD: 'CREDIT_CARD',
+} as const;
+
 export type CreateBankAccountDtoStatus = typeof CreateBankAccountDtoStatus[keyof typeof CreateBankAccountDtoStatus];
 
 
@@ -4239,8 +4287,7 @@ export interface CreateBankAccountDto {
   accountNumber?: string;
   /** @maxLength 250 */
   accountName?: string;
-  /** @maxLength 50 */
-  accountType?: CreateBankAccountDtoAccountType;
+  accountType: CreateBankAccountDtoAccountType;
   /** @maxLength 50 */
   seriesStart: string;
   /** @maxLength 50 */
@@ -4273,6 +4320,17 @@ export interface ImportBankAccountsResponseDto {
   bankAccounts: BankAccountResponseDto[];
 }
 
+export type UpdateBankAccountDtoAccountType = typeof UpdateBankAccountDtoAccountType[keyof typeof UpdateBankAccountDtoAccountType];
+
+
+export const UpdateBankAccountDtoAccountType = {
+  CHECKING: 'CHECKING',
+  SAVINGS: 'SAVINGS',
+  CURRENT: 'CURRENT',
+  TIME_DEPOSIT: 'TIME_DEPOSIT',
+  CREDIT_CARD: 'CREDIT_CARD',
+} as const;
+
 export type UpdateBankAccountDtoStatus = typeof UpdateBankAccountDtoStatus[keyof typeof UpdateBankAccountDtoStatus];
 
 
@@ -4290,8 +4348,7 @@ export interface UpdateBankAccountDto {
   accountNumber?: string;
   /** @maxLength 250 */
   accountName?: string;
-  /** @maxLength 50 */
-  accountType?: CreateBankAccountDtoAccountType;
+  accountType?: UpdateBankAccountDtoAccountType;
   /** @maxLength 50 */
   seriesStart?: string;
   /** @maxLength 50 */
@@ -4613,6 +4670,14 @@ export interface UpdateDefaultAccountTemplateStatusDto {
   status: UpdateDefaultAccountTemplateStatusDtoStatus;
 }
 
+export type ServiceMaintenanceResponseDtoServiceType = typeof ServiceMaintenanceResponseDtoServiceType[keyof typeof ServiceMaintenanceResponseDtoServiceType];
+
+
+export const ServiceMaintenanceResponseDtoServiceType = {
+  PURCHASES: 'PURCHASES',
+  SALES: 'SALES',
+} as const;
+
 export type ServiceMaintenanceResponseDtoStatus = typeof ServiceMaintenanceResponseDtoStatus[keyof typeof ServiceMaintenanceResponseDtoStatus];
 
 
@@ -4632,6 +4697,7 @@ export const ServiceMaintenanceResponseDtoAccountSetupMode = {
 export interface ServiceMaintenanceResponseDto {
   id: string;
   serviceName: string;
+  serviceType: ServiceMaintenanceResponseDtoServiceType;
   /** @nullable */
   description: string | null;
   status: ServiceMaintenanceResponseDtoStatus;
@@ -4678,6 +4744,14 @@ export interface ServiceMaintenanceListResponseDto {
   permissions: ServiceMaintenancePermissionsResponseDto;
 }
 
+export type ServiceMaintenanceOptionResponseDtoServiceType = typeof ServiceMaintenanceOptionResponseDtoServiceType[keyof typeof ServiceMaintenanceOptionResponseDtoServiceType];
+
+
+export const ServiceMaintenanceOptionResponseDtoServiceType = {
+  PURCHASES: 'PURCHASES',
+  SALES: 'SALES',
+} as const;
+
 export type ServiceMaintenanceOptionResponseDtoStatus = typeof ServiceMaintenanceOptionResponseDtoStatus[keyof typeof ServiceMaintenanceOptionResponseDtoStatus];
 
 
@@ -4690,6 +4764,7 @@ export interface ServiceMaintenanceOptionResponseDto {
   id: string;
   serviceName: string;
   name: string;
+  serviceType: ServiceMaintenanceOptionResponseDtoServiceType;
   status: ServiceMaintenanceOptionResponseDtoStatus;
 }
 
@@ -4763,6 +4838,14 @@ export interface ServiceMaintenanceContainerResponseDto {
   permissions: ServiceMaintenancePermissionsResponseDto;
 }
 
+export type CreateServiceMaintenanceDtoServiceType = typeof CreateServiceMaintenanceDtoServiceType[keyof typeof CreateServiceMaintenanceDtoServiceType];
+
+
+export const CreateServiceMaintenanceDtoServiceType = {
+  PURCHASES: 'PURCHASES',
+  SALES: 'SALES',
+} as const;
+
 export type CreateServiceMaintenanceDtoStatus = typeof CreateServiceMaintenanceDtoStatus[keyof typeof CreateServiceMaintenanceDtoStatus];
 
 
@@ -4782,6 +4865,7 @@ export const CreateServiceMaintenanceDtoAccountSetupMode = {
 export interface CreateServiceMaintenanceDto {
   /** @maxLength 150 */
   serviceName: string;
+  serviceType: CreateServiceMaintenanceDtoServiceType;
   /**
      * @maxLength 500
      * @nullable
@@ -4797,6 +4881,14 @@ export interface SaveServiceMaintenanceResponseDto {
   message: string;
   service: ServiceMaintenanceResponseDto;
 }
+
+export type UpdateServiceMaintenanceDtoServiceType = typeof UpdateServiceMaintenanceDtoServiceType[keyof typeof UpdateServiceMaintenanceDtoServiceType];
+
+
+export const UpdateServiceMaintenanceDtoServiceType = {
+  PURCHASES: 'PURCHASES',
+  SALES: 'SALES',
+} as const;
 
 export type UpdateServiceMaintenanceDtoStatus = typeof UpdateServiceMaintenanceDtoStatus[keyof typeof UpdateServiceMaintenanceDtoStatus];
 
@@ -4817,6 +4909,7 @@ export const UpdateServiceMaintenanceDtoAccountSetupMode = {
 export interface UpdateServiceMaintenanceDto {
   /** @maxLength 150 */
   serviceName?: string;
+  serviceType?: UpdateServiceMaintenanceDtoServiceType;
   /**
      * @maxLength 500
      * @nullable
@@ -5776,49 +5869,9 @@ export interface CreateApproverSetupDto {
      * Existing User ids. The User model currently uses integer ids.
      * @minItems 1
      * @maxItems 5
-   */
+     */
   approverUserIds: number[];
 }
-
-export interface ApproverSetupUserResponseDto {
-  id: number;
-  name: string;
-  email: string;
-}
-
-export interface ApproverSetupResponseDto {
-  id: string;
-  approverCondition: string;
-  levelName: string;
-  type: string;
-  status: string;
-  level?: number;
-  moduleScope: string;
-  /** @nullable */
-  validUntil?: string | null;
-  updatedAt: string;
-  approvers: ApproverSetupUserResponseDto[];
-}
-
-export interface ApproverSetupsPaginatedResponseDto {
-  items: ApproverSetupResponseDto[];
-}
-
-export interface CreateApproverSetupResponseDto {
-  setup: ApproverSetupResponseDto;
-}
-
-export type BankAccountResponseDtoAccountType = "CHECKING" | "SAVINGS" | "CURRENT" | "TIME_DEPOSIT" | "CREDIT_CARD" | null;
-export type CreateBankAccountDtoAccountType = Exclude<BankAccountResponseDtoAccountType, null>;
-export type CreateItemCategoryDtoBehaviors = CreateItemCategoryDtoBehaviorsItem;
-export type CreatePartyDtoPartyTypes = CreatePartyDtoPartyTypesItem;
-export type PartyResponseDtoPartyTypes = PartyResponseDtoPartyTypesItem;
-export type CreateWarehouseAccessAssignmentDtoPermissions = CreateWarehouseAccessAssignmentDtoPermissionsItem;
-export type WarehouseAccessResponseDtoPermissions = WarehouseAccessResponseDtoPermissionsItem;
-export type BankMasterfileLookupControllerFindOptionsV1Params = BankMasterfileControllerFindOptionsV1Params;
-export type ServicesMaintenanceLookupControllerFindOptionsV1Params = ServicesMaintenanceControllerFindOptionsV1Params;
-export type ResponsibilityCenterLookupControllerFindOptionsV1Params = ResponsibilityCenterControllerFindOptionsV1Params;
-export type PartyMaintenanceControllerFindOptionsV1PartyType = string;
 
 export interface TransactionNumberBranchResponseDto {
   id: number;
@@ -9259,6 +9312,11 @@ export interface OfficialReceiptJournalEntryDto {
 }
 
 export interface CreateOfficialReceiptDto {
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  paymentId?: string | null;
   /** @minimum 1 */
   branchUnitId?: number;
   /**
@@ -9292,11 +9350,6 @@ export interface CreateOfficialReceiptDto {
      * @nullable
      */
   billToName?: string | null;
-  /**
-     * @maxLength 40
-     * @nullable
-     */
-  paymentId?: string | null;
   /** @maxLength 10 */
   currency: string;
   /** @minimum 0.000001 */
@@ -9334,6 +9387,11 @@ export interface SaveOfficialReceiptResponseDto {
 }
 
 export interface UpdateOfficialReceiptDto {
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  paymentId?: string | null;
   /** @minimum 1 */
   branchUnitId?: number;
   /**
@@ -9367,11 +9425,6 @@ export interface UpdateOfficialReceiptDto {
      * @nullable
      */
   billToName?: string | null;
-  /**
-     * @maxLength 40
-     * @nullable
-     */
-  paymentId?: string | null;
   /** @maxLength 10 */
   currency?: string;
   /** @minimum 0.000001 */
@@ -10778,6 +10831,4521 @@ export interface UpdateProvisionalReceiptStatusDto {
   status: UpdateProvisionalReceiptStatusDtoStatus;
 }
 
+export interface TransactionNumberSuggestionResponseDto {
+  branchUnitId: number;
+  inputMode: string;
+  transactionNo: string;
+}
+
+export type AdvanceToSupplierResponseDtoAdvancePaymentType = typeof AdvanceToSupplierResponseDtoAdvancePaymentType[keyof typeof AdvanceToSupplierResponseDtoAdvancePaymentType];
+
+
+export const AdvanceToSupplierResponseDtoAdvancePaymentType = {
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED_AMOUNT: 'FIXED_AMOUNT',
+} as const;
+
+export type AdvanceToSupplierResponseDtoStatus = typeof AdvanceToSupplierResponseDtoStatus[keyof typeof AdvanceToSupplierResponseDtoStatus];
+
+
+export const AdvanceToSupplierResponseDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface AdvanceToSupplierResponseDto {
+  id: string;
+  transactionNo: string;
+  documentDate: string;
+  /** @nullable */
+  partyId?: string | null;
+  partyCode: string;
+  partyName: string;
+  accountCode: string;
+  /** @nullable */
+  accountTitle?: string | null;
+  /** @nullable */
+  responsibilityCenter?: string | null;
+  /** @nullable */
+  responsibilityCenterCode?: string | null;
+  /** @nullable */
+  projectName?: string | null;
+  /** @nullable */
+  projectCode?: string | null;
+  currency: string;
+  exchangeRate: number;
+  poReference: string;
+  totalPoAmount: number;
+  advancePaymentType: AdvanceToSupplierResponseDtoAdvancePaymentType;
+  advancePaymentPercentage: number;
+  amount: number;
+  /** @nullable */
+  remarks?: string | null;
+  status: AdvanceToSupplierResponseDtoStatus;
+  /** @nullable */
+  createdBy?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy?: string | null;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface NavigablePaginationMetaDto {
+  /** @minimum 1 */
+  page: number;
+  /** @minimum 1 */
+  limit: number;
+  /** @minimum 0 */
+  total: number;
+  /** @minimum 0 */
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface AdvanceToSupplierListResponseDto {
+  items: AdvanceToSupplierResponseDto[];
+  meta: NavigablePaginationMetaDto;
+}
+
+export type CreateAdvanceToSupplierDtoAdvancePaymentType = typeof CreateAdvanceToSupplierDtoAdvancePaymentType[keyof typeof CreateAdvanceToSupplierDtoAdvancePaymentType];
+
+
+export const CreateAdvanceToSupplierDtoAdvancePaymentType = {
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED_AMOUNT: 'FIXED_AMOUNT',
+} as const;
+
+export type CreateAdvanceToSupplierDtoStatus = typeof CreateAdvanceToSupplierDtoStatus[keyof typeof CreateAdvanceToSupplierDtoStatus];
+
+
+export const CreateAdvanceToSupplierDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface CreateAdvanceToSupplierDto {
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
+  /** Party primary key ID */
+  partyId?: string;
+  /** Supplier party code */
+  partyCode?: string;
+  /** Supplier party name */
+  partyName?: string;
+  /** Chart account primary key ID */
+  creditAccountId?: string;
+  /** Default account code */
+  accountCode?: string;
+  /** Default account title */
+  accountTitle?: string;
+  /** Responsibility center name */
+  responsibilityCenter?: string;
+  /** Responsibility center code */
+  responsibilityCenterCode?: string;
+  /** Project name */
+  projectName?: string;
+  /** Project code */
+  projectCode?: string;
+  /** Currency code */
+  currency?: string;
+  /** Exchange rate */
+  exchangeRate?: string;
+  /** Purchase order reference */
+  poReference?: string;
+  /** Purchase order total amount */
+  totalPoAmount?: string;
+  advancePaymentType?: CreateAdvanceToSupplierDtoAdvancePaymentType;
+  /** Advance payment percentage */
+  advancePaymentPercentage?: string;
+  /** Advance payment amount */
+  advancePaymentAmount?: string;
+  /** Document date in YYYY-MM-DD format */
+  documentDate: string;
+  /** Custom ATS transaction number */
+  transactionNo?: string;
+  /** Remarks */
+  remarks?: string;
+  status?: CreateAdvanceToSupplierDtoStatus;
+}
+
+export type UpdateAdvanceToSupplierDtoAdvancePaymentType = typeof UpdateAdvanceToSupplierDtoAdvancePaymentType[keyof typeof UpdateAdvanceToSupplierDtoAdvancePaymentType];
+
+
+export const UpdateAdvanceToSupplierDtoAdvancePaymentType = {
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED_AMOUNT: 'FIXED_AMOUNT',
+} as const;
+
+export type UpdateAdvanceToSupplierDtoStatus = typeof UpdateAdvanceToSupplierDtoStatus[keyof typeof UpdateAdvanceToSupplierDtoStatus];
+
+
+export const UpdateAdvanceToSupplierDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdateAdvanceToSupplierDto {
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
+  /** Party primary key ID */
+  partyId?: string;
+  /** Supplier party code */
+  partyCode?: string;
+  /** Supplier party name */
+  partyName?: string;
+  /** Chart account primary key ID */
+  creditAccountId?: string;
+  /** Default account code */
+  accountCode?: string;
+  /** Default account title */
+  accountTitle?: string;
+  /** Responsibility center name */
+  responsibilityCenter?: string;
+  /** Responsibility center code */
+  responsibilityCenterCode?: string;
+  /** Project name */
+  projectName?: string;
+  /** Project code */
+  projectCode?: string;
+  /** Currency code */
+  currency?: string;
+  /** Exchange rate */
+  exchangeRate?: string;
+  /** Purchase order reference */
+  poReference?: string;
+  /** Purchase order total amount */
+  totalPoAmount?: string;
+  advancePaymentType?: UpdateAdvanceToSupplierDtoAdvancePaymentType;
+  /** Advance payment percentage */
+  advancePaymentPercentage?: string;
+  /** Advance payment amount */
+  advancePaymentAmount?: string;
+  /** Document date in YYYY-MM-DD format */
+  documentDate?: string;
+  /** Custom ATS transaction number */
+  transactionNo?: string;
+  /** Remarks */
+  remarks?: string;
+  status?: UpdateAdvanceToSupplierDtoStatus;
+}
+
+export type UpdateAdvanceToSupplierStatusDtoStatus = typeof UpdateAdvanceToSupplierStatusDtoStatus[keyof typeof UpdateAdvanceToSupplierStatusDtoStatus];
+
+
+export const UpdateAdvanceToSupplierStatusDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdateAdvanceToSupplierStatusDto {
+  status: UpdateAdvanceToSupplierStatusDtoStatus;
+}
+
+export type CashAdvanceDtoStatus = typeof CashAdvanceDtoStatus[keyof typeof CashAdvanceDtoStatus];
+
+
+export const CashAdvanceDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface CashAdvanceDto {
+  id: string;
+  transNo: string;
+  documentDate: string;
+  dueDate?: string;
+  referenceNo?: string;
+  partyId?: string;
+  partyCode: string;
+  partyName: string;
+  accountCode?: string;
+  accountTitle?: string;
+  costCenter?: string;
+  costCenterCode?: string;
+  projectName?: string;
+  projectCode?: string;
+  /** Legacy alias for projectName */
+  projectRef?: string;
+  currency: string;
+  fxRate: number;
+  amount: number;
+  remarks?: string;
+  status: CashAdvanceDtoStatus;
+  createdBy?: string;
+  createdAt: string;
+  updatedBy?: string;
+  updatedAt?: string;
+}
+
+export interface PaginationMetaDto {
+  /** @minimum 1 */
+  page: number;
+  /** @minimum 1 */
+  limit: number;
+  /** @minimum 0 */
+  total: number;
+  /** @minimum 0 */
+  totalPages: number;
+}
+
+export interface CashAdvanceListResponseDto {
+  data: CashAdvanceDto[];
+  meta: PaginationMetaDto;
+}
+
+export interface CashAdvanceSingleResponseDto {
+  message: string;
+  data: CashAdvanceDto;
+}
+
+export interface CreateCashAdvanceDto {
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
+  /** Party Primary Key ID */
+  partyId?: string;
+  /** Party Code (Employee/Vendor) */
+  partyCode?: string;
+  /** Party Name */
+  partyName?: string;
+  /** Chart Account Primary Key ID */
+  creditAccountId?: string;
+  /** Default Account Code */
+  accountCode?: string;
+  /** Default Account Title */
+  accountTitle?: string;
+  /** Responsibility Center Primary Key ID */
+  costCenterId?: string;
+  /** Responsibility Center Name */
+  costCenter?: string;
+  /** Responsibility Center Code */
+  costCenterCode?: string;
+  /** Project Primary Key ID */
+  projectId?: string;
+  /** Project Name */
+  projectName?: string;
+  /** Project Code */
+  projectCode?: string;
+  /** Legacy alias for Project Name */
+  projectRef?: string;
+  /** Currency Code */
+  currency?: string;
+  /** Exchange Rate */
+  fxRate?: string;
+  /** Cash Advance Amount */
+  amount?: string;
+  /** Document Date in YYYY-MM-DD format */
+  documentDate: string;
+  /** Custom Transaction Sequence No */
+  transNo?: string;
+  /** Remarks */
+  remarks?: string;
+}
+
+export interface UpdateCashAdvanceDto {
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
+  /** Party Primary Key ID */
+  partyId?: string;
+  /** Party Code (Employee/Vendor) */
+  partyCode?: string;
+  /** Party Name */
+  partyName?: string;
+  /** Chart Account Primary Key ID */
+  creditAccountId?: string;
+  /** Default Account Code */
+  accountCode?: string;
+  /** Default Account Title */
+  accountTitle?: string;
+  /** Responsibility Center Primary Key ID */
+  costCenterId?: string;
+  /** Responsibility Center Name */
+  costCenter?: string;
+  /** Responsibility Center Code */
+  costCenterCode?: string;
+  /** Project Primary Key ID */
+  projectId?: string;
+  /** Project Name */
+  projectName?: string;
+  /** Project Code */
+  projectCode?: string;
+  /** Legacy alias for Project Name */
+  projectRef?: string;
+  /** Currency Code */
+  currency?: string;
+  /** Exchange Rate */
+  fxRate?: string;
+  /** Cash Advance Amount */
+  amount?: string;
+  /** Document Date in YYYY-MM-DD format */
+  documentDate?: string;
+  /** Custom Transaction Sequence No */
+  transNo?: string;
+  /** Remarks */
+  remarks?: string;
+}
+
+export type UpdateCashAdvanceStatusDtoStatus = typeof UpdateCashAdvanceStatusDtoStatus[keyof typeof UpdateCashAdvanceStatusDtoStatus];
+
+
+export const UpdateCashAdvanceStatusDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdateCashAdvanceStatusDto {
+  status: UpdateCashAdvanceStatusDtoStatus;
+}
+
+export interface CashAdvanceMultipleEntryItemDto {
+  id?: string;
+  partyCode?: string;
+  partyName?: string;
+  cashAdvanceLimit?: string;
+  cashAdvanceBalance?: string;
+  particulars?: string;
+  remarks?: string;
+  responsibilityCenter?: string;
+  amount?: string;
+}
+
+export interface CashAdvanceMultipleEntryAccountingEntryDto {
+  id?: string;
+  accountCode?: string;
+  accountTitle?: string;
+  debit?: string;
+  credit?: string;
+  partyCode?: string;
+  partyName?: string;
+  particulars?: string;
+  responsibilityCenter?: string;
+  remarks?: string;
+}
+
+export type CreateCashAdvanceMultipleEntryDtoStatus = typeof CreateCashAdvanceMultipleEntryDtoStatus[keyof typeof CreateCashAdvanceMultipleEntryDtoStatus];
+
+
+export const CreateCashAdvanceMultipleEntryDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface CreateCashAdvanceMultipleEntryDto {
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
+  accountCode?: string;
+  accountTitle?: string;
+  currency?: string;
+  exchangeRate?: string;
+  documentDate: string;
+  transNo?: string;
+  partyCode?: string;
+  partyName?: string;
+  projectName?: string;
+  projectCode?: string;
+  /** Legacy alias for Project Name */
+  projectRef?: string;
+  costCenter?: string;
+  remarks?: string;
+  status?: CreateCashAdvanceMultipleEntryDtoStatus;
+  items?: CashAdvanceMultipleEntryItemDto[];
+  accountingEntries?: CashAdvanceMultipleEntryAccountingEntryDto[];
+}
+
+export type UpdateCashAdvanceMultipleEntryDtoStatus = typeof UpdateCashAdvanceMultipleEntryDtoStatus[keyof typeof UpdateCashAdvanceMultipleEntryDtoStatus];
+
+
+export const UpdateCashAdvanceMultipleEntryDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdateCashAdvanceMultipleEntryDto {
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
+  accountCode?: string;
+  accountTitle?: string;
+  currency?: string;
+  exchangeRate?: string;
+  documentDate: string;
+  transNo?: string;
+  partyCode?: string;
+  partyName?: string;
+  projectName?: string;
+  projectCode?: string;
+  /** Legacy alias for Project Name */
+  projectRef?: string;
+  costCenter?: string;
+  remarks?: string;
+  status?: UpdateCashAdvanceMultipleEntryDtoStatus;
+  items?: CashAdvanceMultipleEntryItemDto[];
+  accountingEntries?: CashAdvanceMultipleEntryAccountingEntryDto[];
+}
+
+export type UpdateCashAdvanceMultipleEntryStatusDtoStatus = typeof UpdateCashAdvanceMultipleEntryStatusDtoStatus[keyof typeof UpdateCashAdvanceMultipleEntryStatusDtoStatus];
+
+
+export const UpdateCashAdvanceMultipleEntryStatusDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  DISAPPROVED: 'DISAPPROVED',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdateCashAdvanceMultipleEntryStatusDto {
+  status: UpdateCashAdvanceMultipleEntryStatusDtoStatus;
+}
+
+export interface CashVoucherDetailResponseDto {
+  /** Detail Primary Key ID */
+  id: string;
+  /** Line Number */
+  lineNumber: number;
+  /**
+     * Account ID
+     * @nullable
+     */
+  accountId?: string | null;
+  /** Account Code */
+  accountCode: string;
+  /** Account Title */
+  accountTitle: string;
+  /**
+     * Particulars
+     * @nullable
+     */
+  particulars?: string | null;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Debit Amount */
+  debit: number;
+  /** Credit Amount */
+  credit: number;
+  /** Gross Amount */
+  grossAmount: number;
+  /** Net Amount */
+  netAmount: number;
+  /**
+     * VAT Type / Label
+     * @nullable
+     */
+  vatType?: string | null;
+  /**
+     * VAT Code
+     * @nullable
+     */
+  vatCode?: string | null;
+  /** VAT Percent */
+  vatPercent: number;
+  /** VAT Amount */
+  vatAmount: number;
+  /**
+     * EWT Code
+     * @nullable
+     */
+  ewtCode?: string | null;
+  /** EWT Percent */
+  ewtPercent: number;
+  /** EWT Amount */
+  ewtAmount: number;
+  /** Disburse Amount */
+  disburseAmount: number;
+  /**
+     * Party ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /**
+     * Party Code
+     * @nullable
+     */
+  partyCode?: string | null;
+  /**
+     * Party Name
+     * @nullable
+     */
+  partyName?: string | null;
+  /**
+     * Responsibility Center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility Center Name / Snapshot
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+  /**
+     * Reference ID / No
+     * @nullable
+     */
+  refId?: string | null;
+  /**
+     * Check Date (YYYY-MM-DD)
+     * @nullable
+     */
+  checkDate?: string | null;
+  /**
+     * Check Number
+     * @nullable
+     */
+  checkNo?: string | null;
+  /**
+     * Check Status
+     * @nullable
+     */
+  checkStatus?: string | null;
+}
+
+/**
+ * Status
+ */
+export type CashVoucherRecordResponseDtoStatus = typeof CashVoucherRecordResponseDtoStatus[keyof typeof CashVoucherRecordResponseDtoStatus];
+
+
+export const CashVoucherRecordResponseDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
+} as const;
+
+export interface CashVoucherRecordResponseDto {
+  /** Cash Voucher ID */
+  id: string;
+  /**
+     * Branch Unit ID
+     * @nullable
+     */
+  branchUnitId?: number | null;
+  /** Voucher Sequence Number */
+  voucherNo: string;
+  /** Voucher Date (YYYY-MM-DD) */
+  voucherDate: string;
+  /**
+     * Payment Due Date (YYYY-MM-DD)
+     * @nullable
+     */
+  paymentDueDate?: string | null;
+  /**
+     * Reference No
+     * @nullable
+     */
+  referenceNo?: string | null;
+  /**
+     * Source Reference Module
+     * @nullable
+     */
+  referenceModule?: string | null;
+  /**
+     * Voucher Reference No
+     * @nullable
+     */
+  voucherReferenceNo?: string | null;
+  /**
+     * Invoice Reference No
+     * @nullable
+     */
+  invoiceReferenceNo?: string | null;
+  /** Payment Method */
+  paymentMethod: string;
+  /**
+     * Disbursement Type
+     * @nullable
+     */
+  disbursementType?: string | null;
+  /**
+     * Party Primary Key ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /** Party Code */
+  partyCode: string;
+  /** Party Name */
+  partyName: string;
+  /**
+     * Credit Chart Account ID
+     * @nullable
+     */
+  creditAccountId?: string | null;
+  /**
+     * Cost Center / Project Code
+     * @nullable
+     */
+  costCenter?: string | null;
+  /**
+     * Project Code
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project Name
+     * @nullable
+     */
+  projectName?: string | null;
+  /**
+     * Prepared By Name
+     * @nullable
+     */
+  preparedBy?: string | null;
+  /** Currency Code */
+  currency: string;
+  /** Exchange Rate */
+  fxRate: number;
+  /** Total Voucher Amount */
+  amount: number;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Status */
+  status: CashVoucherRecordResponseDtoStatus;
+  /** Details / Line items */
+  details: CashVoucherDetailResponseDto[];
+  /**
+     * Created By User Name
+     * @nullable
+     */
+  createdBy?: string | null;
+  /** Created Timestamp */
+  createdAt: string;
+  /**
+     * Updated By User Name
+     * @nullable
+     */
+  updatedBy?: string | null;
+  /**
+     * Updated Timestamp
+     * @nullable
+     */
+  updatedAt?: string | null;
+}
+
+export interface CashVoucherPaginationMetaDto {
+  /** Current Page */
+  page: number;
+  /** Items per Page */
+  limit: number;
+  /** Total Records Count */
+  total: number;
+  /** Total Pages Count */
+  totalPages: number;
+}
+
+export interface CashVoucherStatisticsDto {
+  /** Total Vouchers Count */
+  totalVouchers: number;
+  /** Draft Vouchers Count */
+  draftVouchers: number;
+  /** For Approval Vouchers Count */
+  forApprovalVouchers: number;
+  /** Posted Vouchers Count */
+  postedVouchers: number;
+  /** Disapproved Vouchers Count */
+  disapprovedVouchers: number;
+  /** Cancelled Vouchers Count */
+  cancelledVouchers: number;
+}
+
+export interface CashVoucherListResponseDto {
+  /** List of Cash Vouchers */
+  data: CashVoucherRecordResponseDto[];
+  /** Pagination Metadata */
+  meta: CashVoucherPaginationMetaDto;
+  /** Voucher Status Statistics */
+  statistics?: CashVoucherStatisticsDto;
+}
+
+export interface CashVoucherSingleResponseDto {
+  /** Cash Voucher Record */
+  data: CashVoucherRecordResponseDto;
+}
+
+export interface CashVoucherDetailDto {
+  /** Line Detail ID */
+  id?: string;
+  /**
+     * Line Number (1-indexed)
+     * @minimum 1
+     */
+  lineNumber: number;
+  /**
+     * Account ID
+     * @nullable
+     */
+  accountId?: string | null;
+  /**
+     * Account Code
+     * @maxLength 80
+     * @nullable
+     */
+  accountCode?: string | null;
+  /**
+     * Account Title / Name
+     * @maxLength 255
+     * @nullable
+     */
+  accountTitle?: string | null;
+  /**
+     * Particulars
+     * @maxLength 500
+     * @nullable
+     */
+  particulars?: string | null;
+  /**
+     * Remarks
+     * @maxLength 500
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Debit Amount */
+  debit?: number;
+  /** Credit Amount */
+  credit?: number;
+  /** Gross Amount */
+  grossAmount?: number;
+  /** Net Amount */
+  netAmount?: number;
+  /**
+     * VAT Type / Label
+     * @maxLength 80
+     * @nullable
+     */
+  vatType?: string | null;
+  /**
+     * VAT Code
+     * @maxLength 80
+     * @nullable
+     */
+  vatCode?: string | null;
+  /** VAT Percent */
+  vatPercent?: number;
+  /** VAT Amount */
+  vatAmount?: number;
+  /**
+     * EWT Code
+     * @maxLength 80
+     * @nullable
+     */
+  ewtCode?: string | null;
+  /** EWT Percent */
+  ewtPercent?: number;
+  /** EWT Amount */
+  ewtAmount?: number;
+  /** Disburse Amount */
+  disburseAmount?: number;
+  /**
+     * Party ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /**
+     * Party Code
+     * @maxLength 80
+     * @nullable
+     */
+  partyCode?: string | null;
+  /**
+     * Party Name
+     * @maxLength 255
+     * @nullable
+     */
+  partyName?: string | null;
+  /**
+     * Responsibility Center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility Center Name / Snapshot
+     * @maxLength 150
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+  /**
+     * Reference ID / No
+     * @maxLength 120
+     * @nullable
+     */
+  refId?: string | null;
+  /**
+     * Check Date (YYYY-MM-DD)
+     * @nullable
+     */
+  checkDate?: string | null;
+  /**
+     * Check Number
+     * @maxLength 80
+     * @nullable
+     */
+  checkNo?: string | null;
+  /**
+     * Check Status
+     * @maxLength 50
+     * @nullable
+     */
+  checkStatus?: string | null;
+}
+
+/**
+ * Voucher Status
+ */
+export type CreateCashVoucherDtoStatus = typeof CreateCashVoucherDtoStatus[keyof typeof CreateCashVoucherDtoStatus];
+
+
+export const CreateCashVoucherDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
+} as const;
+
+export interface CreateCashVoucherDto {
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
+  /**
+     * Transaction / Voucher Sequence No
+     * @maxLength 80
+     * @nullable
+     */
+  transactionNo?: string | null;
+  /**
+     * Voucher No (alias for transactionNo)
+     * @maxLength 80
+     * @nullable
+     */
+  voucherNo?: string | null;
+  /** Document Date in YYYY-MM-DD format */
+  documentDate?: string;
+  /** Voucher Date (alias for documentDate) */
+  voucherDate?: string;
+  /** Payment Due Date in YYYY-MM-DD format */
+  dueDate?: string;
+  /** Payment Due Date (alias for dueDate) */
+  paymentDueDate?: string;
+  /**
+     * Party Primary Key ID
+     * @maxLength 40
+     * @nullable
+     */
+  partyId?: string | null;
+  /**
+     * Party Code (Vendor/Employee/Customer)
+     * @maxLength 80
+     * @nullable
+     */
+  partyCode?: string | null;
+  /**
+     * Party Name
+     * @maxLength 255
+     * @nullable
+     */
+  partyName?: string | null;
+  /**
+     * Party Address snapshot
+     * @maxLength 500
+     * @nullable
+     */
+  address?: string | null;
+  /**
+     * Contact Person snapshot
+     * @maxLength 255
+     * @nullable
+     */
+  contactPerson?: string | null;
+  /**
+     * Contact Number snapshot
+     * @maxLength 40
+     * @nullable
+     */
+  contactNo?: string | null;
+  /**
+     * Chart Account Primary Key ID (Cash/Bank Credit Account)
+     * @maxLength 40
+     * @nullable
+     */
+  creditAccountId?: string | null;
+  /**
+     * Credit Account Code
+     * @maxLength 80
+     */
+  creditAccountCode?: string;
+  /**
+     * Credit Account Title
+     * @maxLength 255
+     */
+  creditAccountTitle?: string;
+  /**
+     * Reference No
+     * @maxLength 120
+     * @nullable
+     */
+  referenceNo?: string | null;
+  /**
+     * Source Reference Module
+     * @maxLength 80
+     * @nullable
+     */
+  referenceModule?: string | null;
+  /**
+     * Voucher Reference No
+     * @maxLength 120
+     * @nullable
+     */
+  voucherReferenceNo?: string | null;
+  /**
+     * Invoice Reference No
+     * @maxLength 120
+     * @nullable
+     */
+  invoiceReferenceNo?: string | null;
+  /**
+     * Payment Method
+     * @maxLength 50
+     * @nullable
+     */
+  paymentMethod?: string | null;
+  /**
+     * Disbursement Type
+     * @maxLength 100
+     * @nullable
+     */
+  disbursementType?: string | null;
+  /**
+     * Cost Center snapshot
+     * @maxLength 80
+     * @nullable
+     */
+  costCenter?: string | null;
+  /**
+     * Project Code
+     * @maxLength 80
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project Name
+     * @maxLength 255
+     * @nullable
+     */
+  projectName?: string | null;
+  /**
+     * Prepared By Name
+     * @maxLength 255
+     * @nullable
+     */
+  preparedBy?: string | null;
+  /**
+     * Currency Code
+     * @maxLength 10
+     * @nullable
+     */
+  currency?: string | null;
+  /**
+     * Currency Code (alias)
+     * @maxLength 10
+     * @nullable
+     */
+  currencyCode?: string | null;
+  /**
+     * Exchange Rate
+     * @minimum 0.000001
+     */
+  exchangeRate?: number;
+  /**
+     * FX Rate (alias for exchangeRate)
+     * @minimum 0.000001
+     */
+  fxRate?: number;
+  /** Total Voucher Amount */
+  amount?: number;
+  /**
+     * Remarks / Memo
+     * @maxLength 500
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Voucher Status */
+  status?: CreateCashVoucherDtoStatus;
+  /** Voucher Line Entries / Details */
+  details?: CashVoucherDetailDto[];
+  /** Journal Entries */
+  journalEntries?: JournalEntryDto[];
+}
+
+/**
+ * Voucher Status
+ */
+export type UpdateCashVoucherDtoStatus = typeof UpdateCashVoucherDtoStatus[keyof typeof UpdateCashVoucherDtoStatus];
+
+
+export const UpdateCashVoucherDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
+} as const;
+
+export interface UpdateCashVoucherDto {
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
+  /**
+     * Transaction / Voucher Sequence No
+     * @maxLength 80
+     * @nullable
+     */
+  transactionNo?: string | null;
+  /**
+     * Voucher No (alias for transactionNo)
+     * @maxLength 80
+     * @nullable
+     */
+  voucherNo?: string | null;
+  /** Document Date in YYYY-MM-DD format */
+  documentDate?: string;
+  /** Voucher Date (alias for documentDate) */
+  voucherDate?: string;
+  /** Payment Due Date in YYYY-MM-DD format */
+  dueDate?: string;
+  /** Payment Due Date (alias for dueDate) */
+  paymentDueDate?: string;
+  /**
+     * Party Primary Key ID
+     * @maxLength 40
+     * @nullable
+     */
+  partyId?: string | null;
+  /**
+     * Party Code (Vendor/Employee/Customer)
+     * @maxLength 80
+     * @nullable
+     */
+  partyCode?: string | null;
+  /**
+     * Party Name
+     * @maxLength 255
+     * @nullable
+     */
+  partyName?: string | null;
+  /**
+     * Party Address snapshot
+     * @maxLength 500
+     * @nullable
+     */
+  address?: string | null;
+  /**
+     * Contact Person snapshot
+     * @maxLength 255
+     * @nullable
+     */
+  contactPerson?: string | null;
+  /**
+     * Contact Number snapshot
+     * @maxLength 40
+     * @nullable
+     */
+  contactNo?: string | null;
+  /**
+     * Chart Account Primary Key ID (Cash/Bank Credit Account)
+     * @maxLength 40
+     * @nullable
+     */
+  creditAccountId?: string | null;
+  /**
+     * Credit Account Code
+     * @maxLength 80
+     */
+  creditAccountCode?: string;
+  /**
+     * Credit Account Title
+     * @maxLength 255
+     */
+  creditAccountTitle?: string;
+  /**
+     * Reference No
+     * @maxLength 120
+     * @nullable
+     */
+  referenceNo?: string | null;
+  /**
+     * Source Reference Module
+     * @maxLength 80
+     * @nullable
+     */
+  referenceModule?: string | null;
+  /**
+     * Voucher Reference No
+     * @maxLength 120
+     * @nullable
+     */
+  voucherReferenceNo?: string | null;
+  /**
+     * Invoice Reference No
+     * @maxLength 120
+     * @nullable
+     */
+  invoiceReferenceNo?: string | null;
+  /**
+     * Payment Method
+     * @maxLength 50
+     * @nullable
+     */
+  paymentMethod?: string | null;
+  /**
+     * Disbursement Type
+     * @maxLength 100
+     * @nullable
+     */
+  disbursementType?: string | null;
+  /**
+     * Cost Center snapshot
+     * @maxLength 80
+     * @nullable
+     */
+  costCenter?: string | null;
+  /**
+     * Project Code
+     * @maxLength 80
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project Name
+     * @maxLength 255
+     * @nullable
+     */
+  projectName?: string | null;
+  /**
+     * Prepared By Name
+     * @maxLength 255
+     * @nullable
+     */
+  preparedBy?: string | null;
+  /**
+     * Currency Code
+     * @maxLength 10
+     * @nullable
+     */
+  currency?: string | null;
+  /**
+     * Currency Code (alias)
+     * @maxLength 10
+     * @nullable
+     */
+  currencyCode?: string | null;
+  /**
+     * Exchange Rate
+     * @minimum 0.000001
+     */
+  exchangeRate?: number;
+  /**
+     * FX Rate (alias for exchangeRate)
+     * @minimum 0.000001
+     */
+  fxRate?: number;
+  /** Total Voucher Amount */
+  amount?: number;
+  /**
+     * Remarks / Memo
+     * @maxLength 500
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Voucher Status */
+  status?: UpdateCashVoucherDtoStatus;
+  /** Voucher Line Entries / Details */
+  details?: CashVoucherDetailDto[];
+  /** Journal Entries */
+  journalEntries?: JournalEntryDto[];
+}
+
+export interface UpdateCashVoucherStatusDto {
+  /** New voucher status */
+  status: string;
+}
+
+export interface DisbursementVoucherDetailResponseDto {
+  /** Detail Primary Key ID */
+  id: string;
+  /** Line Number */
+  lineNumber: number;
+  /**
+     * Account ID
+     * @nullable
+     */
+  accountId?: string | null;
+  /** Account Code */
+  accountCode: string;
+  /** Account Title */
+  accountTitle: string;
+  /**
+     * Particulars
+     * @nullable
+     */
+  particulars?: string | null;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Debit Amount */
+  debit: number;
+  /** Credit Amount */
+  credit: number;
+  /** Gross Amount */
+  grossAmount: number;
+  /** Net Amount */
+  netAmount: number;
+  /**
+     * VAT Type / Label
+     * @nullable
+     */
+  vatType?: string | null;
+  /**
+     * VAT Code
+     * @nullable
+     */
+  vatCode?: string | null;
+  /** VAT Percent */
+  vatPercent: number;
+  /** VAT Amount */
+  vatAmount: number;
+  /**
+     * EWT Code
+     * @nullable
+     */
+  ewtCode?: string | null;
+  /** EWT Percent */
+  ewtPercent: number;
+  /** EWT Amount */
+  ewtAmount: number;
+  /** Disburse Amount */
+  disburseAmount: number;
+  /**
+     * Party ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /**
+     * Party Code
+     * @nullable
+     */
+  partyCode?: string | null;
+  /**
+     * Party Name
+     * @nullable
+     */
+  partyName?: string | null;
+  /**
+     * Responsibility Center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility Center Name / Snapshot
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+  /**
+     * Reference ID / No
+     * @nullable
+     */
+  refId?: string | null;
+  /**
+     * Check Date (YYYY-MM-DD)
+     * @nullable
+     */
+  checkDate?: string | null;
+  /**
+     * Check Number
+     * @nullable
+     */
+  checkNo?: string | null;
+  /**
+     * Check Status
+     * @nullable
+     */
+  checkStatus?: string | null;
+}
+
+/**
+ * Payment-specific bank, check, transfer, or payee fields
+ * @nullable
+ */
+export type DisbursementVoucherRecordResponseDtoPaymentDetails = { [key: string]: unknown } | null;
+
+export type DisbursementVoucherRecordResponseDtoAttachmentsItem = { [key: string]: unknown };
+
+/**
+ * Status
+ */
+export type DisbursementVoucherRecordResponseDtoStatus = typeof DisbursementVoucherRecordResponseDtoStatus[keyof typeof DisbursementVoucherRecordResponseDtoStatus];
+
+
+export const DisbursementVoucherRecordResponseDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
+} as const;
+
+export interface DisbursementVoucherRecordResponseDto {
+  /** Disbursement Voucher ID */
+  id: string;
+  /**
+     * Branch Unit ID
+     * @nullable
+     */
+  branchUnitId?: number | null;
+  /** Voucher Sequence Number */
+  voucherNo: string;
+  /** Voucher Date (YYYY-MM-DD) */
+  voucherDate: string;
+  /**
+     * Payment Due Date (YYYY-MM-DD)
+     * @nullable
+     */
+  paymentDueDate?: string | null;
+  /**
+     * Reference No
+     * @nullable
+     */
+  referenceNo?: string | null;
+  /**
+     * Source Reference Module
+     * @nullable
+     */
+  referenceModule?: string | null;
+  /**
+     * Voucher Reference No
+     * @nullable
+     */
+  voucherReferenceNo?: string | null;
+  /**
+     * Invoice Reference No
+     * @nullable
+     */
+  invoiceReferenceNo?: string | null;
+  /** Payment Method */
+  paymentMethod: string;
+  /**
+     * Disbursement Type
+     * @nullable
+     */
+  disbursementType?: string | null;
+  /**
+     * Payment-specific bank, check, transfer, or payee fields
+     * @nullable
+     */
+  paymentDetails?: DisbursementVoucherRecordResponseDtoPaymentDetails;
+  /**
+     * Voucher attachment metadata
+     * @nullable
+     */
+  attachments?: DisbursementVoucherRecordResponseDtoAttachmentsItem[] | null;
+  /**
+     * Party Primary Key ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /** Party Code */
+  partyCode: string;
+  /** Party Name */
+  partyName: string;
+  /**
+     * Credit Chart Account ID
+     * @nullable
+     */
+  creditAccountId?: string | null;
+  /**
+     * Cost Center / Project Code
+     * @nullable
+     */
+  costCenter?: string | null;
+  /**
+     * Project Code
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project Name
+     * @nullable
+     */
+  projectName?: string | null;
+  /**
+     * Prepared By Name
+     * @nullable
+     */
+  preparedBy?: string | null;
+  /** Currency Code */
+  currency: string;
+  /** Exchange Rate */
+  fxRate: number;
+  /** Total Voucher Amount */
+  amount: number;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Status */
+  status: DisbursementVoucherRecordResponseDtoStatus;
+  /** Details / Line items */
+  details: DisbursementVoucherDetailResponseDto[];
+  /**
+     * Created By User Name
+     * @nullable
+     */
+  createdBy?: string | null;
+  /** Created Timestamp */
+  createdAt: string;
+  /**
+     * Updated By User Name
+     * @nullable
+     */
+  updatedBy?: string | null;
+  /**
+     * Updated Timestamp
+     * @nullable
+     */
+  updatedAt?: string | null;
+}
+
+export interface DisbursementVoucherPaginationMetaDto {
+  /** Current Page */
+  page: number;
+  /** Items per Page */
+  limit: number;
+  /** Total Records Count */
+  total: number;
+  /** Total Pages Count */
+  totalPages: number;
+}
+
+export interface DisbursementVoucherStatisticsDto {
+  /** Total Vouchers Count */
+  totalVouchers: number;
+  /** Draft Vouchers Count */
+  draftVouchers: number;
+  /** For Approval Vouchers Count */
+  forApprovalVouchers: number;
+  /** Posted Vouchers Count */
+  postedVouchers: number;
+  /** Disapproved Vouchers Count */
+  disapprovedVouchers: number;
+  /** Cancelled Vouchers Count */
+  cancelledVouchers: number;
+}
+
+export interface DisbursementVoucherListResponseDto {
+  /** List of Disbursement Vouchers */
+  data: DisbursementVoucherRecordResponseDto[];
+  /** Pagination Metadata */
+  meta: DisbursementVoucherPaginationMetaDto;
+  /** Voucher Status Statistics */
+  statistics?: DisbursementVoucherStatisticsDto;
+}
+
+export interface DisbursementVoucherSingleResponseDto {
+  /** Disbursement Voucher Record */
+  data: DisbursementVoucherRecordResponseDto;
+}
+
+export interface DisbursementVoucherDetailDto {
+  /** Line Detail ID */
+  id?: string;
+  /**
+     * Line Number (1-indexed)
+     * @minimum 1
+     */
+  lineNumber: number;
+  /**
+     * Account ID
+     * @nullable
+     */
+  accountId?: string | null;
+  /**
+     * Account Code
+     * @maxLength 80
+     * @nullable
+     */
+  accountCode?: string | null;
+  /**
+     * Account Title / Name
+     * @maxLength 255
+     * @nullable
+     */
+  accountTitle?: string | null;
+  /**
+     * Particulars
+     * @maxLength 500
+     * @nullable
+     */
+  particulars?: string | null;
+  /**
+     * Remarks
+     * @maxLength 500
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Debit Amount */
+  debit?: number;
+  /** Credit Amount */
+  credit?: number;
+  /** Gross Amount */
+  grossAmount?: number;
+  /** Net Amount */
+  netAmount?: number;
+  /**
+     * VAT Type / Label
+     * @maxLength 80
+     * @nullable
+     */
+  vatType?: string | null;
+  /**
+     * VAT Code
+     * @maxLength 80
+     * @nullable
+     */
+  vatCode?: string | null;
+  /** VAT Percent */
+  vatPercent?: number;
+  /** VAT Amount */
+  vatAmount?: number;
+  /**
+     * EWT Code
+     * @maxLength 80
+     * @nullable
+     */
+  ewtCode?: string | null;
+  /** EWT Percent */
+  ewtPercent?: number;
+  /** EWT Amount */
+  ewtAmount?: number;
+  /** Disburse Amount */
+  disburseAmount?: number;
+  /**
+     * Party ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /**
+     * Party Code
+     * @maxLength 80
+     * @nullable
+     */
+  partyCode?: string | null;
+  /**
+     * Party Name
+     * @maxLength 255
+     * @nullable
+     */
+  partyName?: string | null;
+  /**
+     * Responsibility Center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility Center Name / Snapshot
+     * @maxLength 150
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+  /**
+     * Reference ID / No
+     * @maxLength 120
+     * @nullable
+     */
+  refId?: string | null;
+  /**
+     * Check Date (YYYY-MM-DD)
+     * @nullable
+     */
+  checkDate?: string | null;
+  /**
+     * Check Number
+     * @maxLength 80
+     * @nullable
+     */
+  checkNo?: string | null;
+  /**
+     * Check Status
+     * @maxLength 50
+     * @nullable
+     */
+  checkStatus?: string | null;
+}
+
+/**
+ * Payment-specific bank, check, transfer, or payee fields
+ * @nullable
+ */
+export type CreateDisbursementVoucherDtoPaymentDetails = { [key: string]: unknown } | null;
+
+export type CreateDisbursementVoucherDtoAttachmentsItem = { [key: string]: unknown };
+
+/**
+ * Voucher Status
+ */
+export type CreateDisbursementVoucherDtoStatus = typeof CreateDisbursementVoucherDtoStatus[keyof typeof CreateDisbursementVoucherDtoStatus];
+
+
+export const CreateDisbursementVoucherDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
+} as const;
+
+export interface CreateDisbursementVoucherDto {
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
+  /**
+     * Transaction / Voucher Sequence No
+     * @maxLength 80
+     * @nullable
+     */
+  transactionNo?: string | null;
+  /**
+     * Voucher No (alias for transactionNo)
+     * @maxLength 80
+     * @nullable
+     */
+  voucherNo?: string | null;
+  /** Document Date in YYYY-MM-DD format */
+  documentDate?: string;
+  /** Voucher Date (alias for documentDate) */
+  voucherDate?: string;
+  /** Payment Due Date in YYYY-MM-DD format */
+  dueDate?: string;
+  /** Payment Due Date (alias for dueDate) */
+  paymentDueDate?: string;
+  /**
+     * Party Primary Key ID
+     * @maxLength 40
+     * @nullable
+     */
+  partyId?: string | null;
+  /**
+     * Party Code (Vendor/Employee/Customer)
+     * @maxLength 80
+     * @nullable
+     */
+  partyCode?: string | null;
+  /**
+     * Party Name
+     * @maxLength 255
+     * @nullable
+     */
+  partyName?: string | null;
+  /**
+     * Party Address snapshot
+     * @maxLength 500
+     * @nullable
+     */
+  address?: string | null;
+  /**
+     * Contact Person snapshot
+     * @maxLength 255
+     * @nullable
+     */
+  contactPerson?: string | null;
+  /**
+     * Contact Number snapshot
+     * @maxLength 40
+     * @nullable
+     */
+  contactNo?: string | null;
+  /**
+     * Chart Account Primary Key ID (Cash/Bank Credit Account)
+     * @maxLength 40
+     * @nullable
+     */
+  creditAccountId?: string | null;
+  /**
+     * Credit Account Code
+     * @maxLength 80
+     */
+  creditAccountCode?: string;
+  /**
+     * Credit Account Title
+     * @maxLength 255
+     */
+  creditAccountTitle?: string;
+  /**
+     * Reference No
+     * @maxLength 120
+     * @nullable
+     */
+  referenceNo?: string | null;
+  /**
+     * Source Reference Module
+     * @maxLength 80
+     * @nullable
+     */
+  referenceModule?: string | null;
+  /**
+     * Voucher Reference No
+     * @maxLength 120
+     * @nullable
+     */
+  voucherReferenceNo?: string | null;
+  /**
+     * Invoice Reference No
+     * @maxLength 120
+     * @nullable
+     */
+  invoiceReferenceNo?: string | null;
+  /**
+     * Payment Method
+     * @maxLength 50
+     * @nullable
+     */
+  paymentMethod?: string | null;
+  /**
+     * Payment-specific bank, check, transfer, or payee fields
+     * @nullable
+     */
+  paymentDetails?: CreateDisbursementVoucherDtoPaymentDetails;
+  /**
+     * Voucher attachment metadata
+     * @nullable
+     */
+  attachments?: CreateDisbursementVoucherDtoAttachmentsItem[] | null;
+  /**
+     * Disbursement Type
+     * @maxLength 100
+     * @nullable
+     */
+  disbursementType?: string | null;
+  /**
+     * Cost Center snapshot
+     * @maxLength 80
+     * @nullable
+     */
+  costCenter?: string | null;
+  /**
+     * Project Code
+     * @maxLength 80
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project Name
+     * @maxLength 255
+     * @nullable
+     */
+  projectName?: string | null;
+  /**
+     * Prepared By Name
+     * @maxLength 255
+     * @nullable
+     */
+  preparedBy?: string | null;
+  /**
+     * Currency Code
+     * @maxLength 10
+     * @nullable
+     */
+  currency?: string | null;
+  /**
+     * Currency Code (alias)
+     * @maxLength 10
+     * @nullable
+     */
+  currencyCode?: string | null;
+  /**
+     * Exchange Rate
+     * @minimum 0.000001
+     */
+  exchangeRate?: number;
+  /**
+     * FX Rate (alias for exchangeRate)
+     * @minimum 0.000001
+     */
+  fxRate?: number;
+  /** Total Voucher Amount */
+  amount?: number;
+  /**
+     * Remarks / Memo
+     * @maxLength 500
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Voucher Status */
+  status?: CreateDisbursementVoucherDtoStatus;
+  /** Voucher Line Entries / Details */
+  details?: DisbursementVoucherDetailDto[];
+  /** Journal Entries */
+  journalEntries?: JournalEntryDto[];
+}
+
+/**
+ * Payment-specific bank, check, transfer, or payee fields
+ * @nullable
+ */
+export type UpdateDisbursementVoucherDtoPaymentDetails = { [key: string]: unknown } | null;
+
+export type UpdateDisbursementVoucherDtoAttachmentsItem = { [key: string]: unknown };
+
+/**
+ * Voucher Status
+ */
+export type UpdateDisbursementVoucherDtoStatus = typeof UpdateDisbursementVoucherDtoStatus[keyof typeof UpdateDisbursementVoucherDtoStatus];
+
+
+export const UpdateDisbursementVoucherDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
+} as const;
+
+export interface UpdateDisbursementVoucherDto {
+  /**
+     * Branch Unit ID
+     * @minimum 1
+     */
+  branchUnitId?: number;
+  /**
+     * Transaction / Voucher Sequence No
+     * @maxLength 80
+     * @nullable
+     */
+  transactionNo?: string | null;
+  /**
+     * Voucher No (alias for transactionNo)
+     * @maxLength 80
+     * @nullable
+     */
+  voucherNo?: string | null;
+  /** Document Date in YYYY-MM-DD format */
+  documentDate?: string;
+  /** Voucher Date (alias for documentDate) */
+  voucherDate?: string;
+  /** Payment Due Date in YYYY-MM-DD format */
+  dueDate?: string;
+  /** Payment Due Date (alias for dueDate) */
+  paymentDueDate?: string;
+  /**
+     * Party Primary Key ID
+     * @maxLength 40
+     * @nullable
+     */
+  partyId?: string | null;
+  /**
+     * Party Code (Vendor/Employee/Customer)
+     * @maxLength 80
+     * @nullable
+     */
+  partyCode?: string | null;
+  /**
+     * Party Name
+     * @maxLength 255
+     * @nullable
+     */
+  partyName?: string | null;
+  /**
+     * Party Address snapshot
+     * @maxLength 500
+     * @nullable
+     */
+  address?: string | null;
+  /**
+     * Contact Person snapshot
+     * @maxLength 255
+     * @nullable
+     */
+  contactPerson?: string | null;
+  /**
+     * Contact Number snapshot
+     * @maxLength 40
+     * @nullable
+     */
+  contactNo?: string | null;
+  /**
+     * Chart Account Primary Key ID (Cash/Bank Credit Account)
+     * @maxLength 40
+     * @nullable
+     */
+  creditAccountId?: string | null;
+  /**
+     * Credit Account Code
+     * @maxLength 80
+     */
+  creditAccountCode?: string;
+  /**
+     * Credit Account Title
+     * @maxLength 255
+     */
+  creditAccountTitle?: string;
+  /**
+     * Reference No
+     * @maxLength 120
+     * @nullable
+     */
+  referenceNo?: string | null;
+  /**
+     * Source Reference Module
+     * @maxLength 80
+     * @nullable
+     */
+  referenceModule?: string | null;
+  /**
+     * Voucher Reference No
+     * @maxLength 120
+     * @nullable
+     */
+  voucherReferenceNo?: string | null;
+  /**
+     * Invoice Reference No
+     * @maxLength 120
+     * @nullable
+     */
+  invoiceReferenceNo?: string | null;
+  /**
+     * Payment Method
+     * @maxLength 50
+     * @nullable
+     */
+  paymentMethod?: string | null;
+  /**
+     * Payment-specific bank, check, transfer, or payee fields
+     * @nullable
+     */
+  paymentDetails?: UpdateDisbursementVoucherDtoPaymentDetails;
+  /**
+     * Voucher attachment metadata
+     * @nullable
+     */
+  attachments?: UpdateDisbursementVoucherDtoAttachmentsItem[] | null;
+  /**
+     * Disbursement Type
+     * @maxLength 100
+     * @nullable
+     */
+  disbursementType?: string | null;
+  /**
+     * Cost Center snapshot
+     * @maxLength 80
+     * @nullable
+     */
+  costCenter?: string | null;
+  /**
+     * Project Code
+     * @maxLength 80
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project Name
+     * @maxLength 255
+     * @nullable
+     */
+  projectName?: string | null;
+  /**
+     * Prepared By Name
+     * @maxLength 255
+     * @nullable
+     */
+  preparedBy?: string | null;
+  /**
+     * Currency Code
+     * @maxLength 10
+     * @nullable
+     */
+  currency?: string | null;
+  /**
+     * Currency Code (alias)
+     * @maxLength 10
+     * @nullable
+     */
+  currencyCode?: string | null;
+  /**
+     * Exchange Rate
+     * @minimum 0.000001
+     */
+  exchangeRate?: number;
+  /**
+     * FX Rate (alias for exchangeRate)
+     * @minimum 0.000001
+     */
+  fxRate?: number;
+  /** Total Voucher Amount */
+  amount?: number;
+  /**
+     * Remarks / Memo
+     * @maxLength 500
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Voucher Status */
+  status?: UpdateDisbursementVoucherDtoStatus;
+  /** Voucher Line Entries / Details */
+  details?: DisbursementVoucherDetailDto[];
+  /** Journal Entries */
+  journalEntries?: JournalEntryDto[];
+}
+
+export interface UpdateDisbursementVoucherStatusDto {
+  /** New voucher status */
+  status: string;
+}
+
+/**
+ * Status
+ */
+export type PettyCashVoucherResponseDtoStatus = typeof PettyCashVoucherResponseDtoStatus[keyof typeof PettyCashVoucherResponseDtoStatus];
+
+
+export const PettyCashVoucherResponseDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface PettyCashVoucherResponseDto {
+  /** ID */
+  id: string;
+  /** Company ID */
+  companyId: number;
+  /**
+     * Branch Unit ID
+     * @nullable
+     */
+  branchUnitId?: number | null;
+  /** Voucher Number */
+  voucherNo: string;
+  /** Transaction Number alias */
+  transactionNo: string;
+  /** Document Date */
+  documentDate: string;
+  /**
+     * Party ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /** Party Code Snapshot */
+  partyCodeSnapshot: string;
+  /** Party Name Snapshot */
+  partyNameSnapshot: string;
+  /** Party Code alias */
+  partyCode?: string;
+  /** Party Name alias */
+  partyName?: string;
+  /**
+     * Default Account / Credit Account ID
+     * @nullable
+     */
+  creditAccountId?: string | null;
+  /**
+     * Default Account ID alias
+     * @nullable
+     */
+  accountId?: string | null;
+  /** Account Code Snapshot */
+  accountCodeSnapshot: string;
+  /**
+     * Account Title Snapshot
+     * @nullable
+     */
+  accountTitleSnapshot?: string | null;
+  /** Default Account Code alias */
+  accountCode?: string;
+  /**
+     * Default Account Title alias
+     * @nullable
+     */
+  accountTitle?: string | null;
+  /**
+     * Responsibility Center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility Center Code Snapshot
+     * @nullable
+     */
+  responsibilityCenterCodeSnapshot?: string | null;
+  /**
+     * Responsibility Center Snapshot
+     * @nullable
+     */
+  responsibilityCenterSnapshot?: string | null;
+  /**
+     * Responsibility Center Code alias
+     * @nullable
+     */
+  responsibilityCenterCode?: string | null;
+  /**
+     * Responsibility Center Name alias
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+  /**
+     * Project Code
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project Name
+     * @nullable
+     */
+  projectName?: string | null;
+  /** Currency Code */
+  currencyCode: string;
+  /** Currency Code alias */
+  currency?: string;
+  /** Exchange Rate */
+  exchangeRate: number;
+  /** Amount */
+  amount: number;
+  /** Gross Amount */
+  grossAmount: number;
+  /** Net Amount */
+  netAmount: number;
+  /**
+     * VAT Type
+     * @nullable
+     */
+  vatType?: string | null;
+  /**
+     * VATable flag
+     * @nullable
+     */
+  vatable?: string | null;
+  /**
+     * VAT Rate Description
+     * @nullable
+     */
+  vatRate?: string | null;
+  /** VAT Percent */
+  vatPercent: number;
+  /** VAT Amount */
+  vatAmount: number;
+  /**
+     * EWT Code
+     * @nullable
+     */
+  ewtCode?: string | null;
+  /**
+     * EWT Rate Description
+     * @nullable
+     */
+  ewtRate?: string | null;
+  /** EWT Percent */
+  ewtPercent: number;
+  /** EWT Amount */
+  ewtAmount: number;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Status */
+  status: PettyCashVoucherResponseDtoStatus;
+  /** Created At */
+  createdAt: string;
+  /** Updated At */
+  updatedAt: string;
+}
+
+export interface PettyCashVoucherPaginationMetaDto {
+  /** Current page number */
+  page: number;
+  /** Items per page */
+  limit: number;
+  /** Total item count */
+  total: number;
+  /** Total pages count */
+  totalPages: number;
+  /** Has next page */
+  hasNextPage: boolean;
+  /** Has previous page */
+  hasPreviousPage: boolean;
+}
+
+export interface PettyCashVoucherListResponseDto {
+  items: PettyCashVoucherResponseDto[];
+  meta: PettyCashVoucherPaginationMetaDto;
+}
+
+/**
+ * Initial Status
+ */
+export type CreatePettyCashVoucherDtoStatus = typeof CreatePettyCashVoucherDtoStatus[keyof typeof CreatePettyCashVoucherDtoStatus];
+
+
+export const CreatePettyCashVoucherDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface CreatePettyCashVoucherDto {
+  /** Branch Unit ID */
+  branchUnitId?: number;
+  /** Party ID */
+  partyId?: string;
+  /**
+     * Party Code
+     * @maxLength 80
+     */
+  partyCode?: string;
+  /**
+     * Party Name
+     * @maxLength 255
+     */
+  partyName?: string;
+  /** Responsibility Center ID */
+  responsibilityCenterId?: string;
+  /**
+     * Responsibility Center Code
+     * @maxLength 80
+     */
+  responsibilityCenterCode?: string;
+  /**
+     * Responsibility Center Name
+     * @maxLength 150
+     */
+  responsibilityCenter?: string;
+  /**
+     * Project Code
+     * @maxLength 80
+     */
+  projectCode?: string;
+  /**
+     * Project Name
+     * @maxLength 255
+     */
+  projectName?: string;
+  /** Default Account ID */
+  accountId?: string;
+  /** Credit Account ID (Default Account) */
+  creditAccountId?: string;
+  /**
+     * Default Account Code
+     * @maxLength 80
+     */
+  accountCode?: string;
+  /**
+     * Default Account Title
+     * @maxLength 255
+     */
+  accountTitle?: string;
+  /**
+     * Transaction Voucher Number
+     * @maxLength 80
+     */
+  voucherNo?: string;
+  /**
+     * Transaction Number alias
+     * @maxLength 80
+     */
+  transactionNo?: string;
+  /** Document Date */
+  documentDate: string;
+  /**
+     * Currency code
+     * @maxLength 10
+     */
+  currencyCode?: string;
+  /**
+     * Currency alias
+     * @maxLength 10
+     */
+  currency?: string;
+  /**
+     * Exchange Rate
+     * @minimum 0
+     */
+  exchangeRate?: number;
+  /** Gross Amount */
+  grossAmount?: number;
+  /** Voucher Amount (alias for net amount/total) */
+  amount?: number;
+  /** Net Amount */
+  netAmount?: number;
+  /**
+     * VAT Type
+     * @maxLength 80
+     */
+  vatType?: string;
+  /**
+     * VATable flag
+     * @maxLength 20
+     */
+  vatable?: string;
+  /**
+     * VAT Rate Description or Code
+     * @maxLength 80
+     */
+  vatRate?: string;
+  /** VAT Percent */
+  vatPercent?: number;
+  /** VAT Amount */
+  vatAmount?: number;
+  /**
+     * EWT Code
+     * @maxLength 80
+     */
+  ewtCode?: string;
+  /**
+     * EWT Rate description
+     * @maxLength 80
+     */
+  ewtRate?: string;
+  /** EWT Percent */
+  ewtPercent?: number;
+  /** EWT Amount */
+  ewtAmount?: number;
+  /**
+     * Remarks
+     * @maxLength 500
+     */
+  remarks?: string;
+  /** Initial Status */
+  status?: CreatePettyCashVoucherDtoStatus;
+}
+
+/**
+ * Initial Status
+ */
+export type UpdatePettyCashVoucherDtoStatus = typeof UpdatePettyCashVoucherDtoStatus[keyof typeof UpdatePettyCashVoucherDtoStatus];
+
+
+export const UpdatePettyCashVoucherDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdatePettyCashVoucherDto {
+  /** Branch Unit ID */
+  branchUnitId?: number;
+  /** Party ID */
+  partyId?: string;
+  /**
+     * Party Code
+     * @maxLength 80
+     */
+  partyCode?: string;
+  /**
+     * Party Name
+     * @maxLength 255
+     */
+  partyName?: string;
+  /** Responsibility Center ID */
+  responsibilityCenterId?: string;
+  /**
+     * Responsibility Center Code
+     * @maxLength 80
+     */
+  responsibilityCenterCode?: string;
+  /**
+     * Responsibility Center Name
+     * @maxLength 150
+     */
+  responsibilityCenter?: string;
+  /**
+     * Project Code
+     * @maxLength 80
+     */
+  projectCode?: string;
+  /**
+     * Project Name
+     * @maxLength 255
+     */
+  projectName?: string;
+  /** Default Account ID */
+  accountId?: string;
+  /** Credit Account ID (Default Account) */
+  creditAccountId?: string;
+  /**
+     * Default Account Code
+     * @maxLength 80
+     */
+  accountCode?: string;
+  /**
+     * Default Account Title
+     * @maxLength 255
+     */
+  accountTitle?: string;
+  /**
+     * Transaction Voucher Number
+     * @maxLength 80
+     */
+  voucherNo?: string;
+  /**
+     * Transaction Number alias
+     * @maxLength 80
+     */
+  transactionNo?: string;
+  /** Document Date */
+  documentDate?: string;
+  /**
+     * Currency code
+     * @maxLength 10
+     */
+  currencyCode?: string;
+  /**
+     * Currency alias
+     * @maxLength 10
+     */
+  currency?: string;
+  /**
+     * Exchange Rate
+     * @minimum 0
+     */
+  exchangeRate?: number;
+  /** Gross Amount */
+  grossAmount?: number;
+  /** Voucher Amount (alias for net amount/total) */
+  amount?: number;
+  /** Net Amount */
+  netAmount?: number;
+  /**
+     * VAT Type
+     * @maxLength 80
+     */
+  vatType?: string;
+  /**
+     * VATable flag
+     * @maxLength 20
+     */
+  vatable?: string;
+  /**
+     * VAT Rate Description or Code
+     * @maxLength 80
+     */
+  vatRate?: string;
+  /** VAT Percent */
+  vatPercent?: number;
+  /** VAT Amount */
+  vatAmount?: number;
+  /**
+     * EWT Code
+     * @maxLength 80
+     */
+  ewtCode?: string;
+  /**
+     * EWT Rate description
+     * @maxLength 80
+     */
+  ewtRate?: string;
+  /** EWT Percent */
+  ewtPercent?: number;
+  /** EWT Amount */
+  ewtAmount?: number;
+  /**
+     * Remarks
+     * @maxLength 500
+     */
+  remarks?: string;
+  /** Initial Status */
+  status?: UpdatePettyCashVoucherDtoStatus;
+}
+
+/**
+ * Target Petty Cash Voucher status
+ */
+export type UpdatePettyCashVoucherStatusDtoStatus = typeof UpdatePettyCashVoucherStatusDtoStatus[keyof typeof UpdatePettyCashVoucherStatusDtoStatus];
+
+
+export const UpdatePettyCashVoucherStatusDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdatePettyCashVoucherStatusDto {
+  /** Target Petty Cash Voucher status */
+  status: UpdatePettyCashVoucherStatusDtoStatus;
+}
+
+export interface PettyCashFundDetailDto {
+  /** Line ID */
+  id?: string;
+  /**
+     * Line Number
+     * @minimum 1
+     */
+  lineNumber?: number;
+  /** Receipt/Disbursement Date */
+  date?: string;
+  /** Receipt/Disbursement Date alias */
+  itemDate?: string;
+  /** Supplier / Party ID */
+  partyId?: string;
+  /**
+     * Supplier Code Snapshot
+     * @maxLength 80
+     */
+  supplierCodeSnapshot?: string;
+  /**
+     * Supplier Name Snapshot
+     * @maxLength 255
+     */
+  supplierNameSnapshot?: string;
+  /**
+     * Supplier Code alias
+     * @maxLength 80
+     */
+  supplierCode?: string;
+  /**
+     * Supplier Name alias
+     * @maxLength 255
+     */
+  supplierName?: string;
+  /**
+     * Official Receipt Number
+     * @maxLength 80
+     */
+  orNo?: string;
+  /**
+     * TIN Number
+     * @maxLength 80
+     */
+  tinNo?: string;
+  /**
+     * Particulars
+     * @maxLength 500
+     */
+  particulars?: string;
+  /**
+     * Remarks
+     * @maxLength 500
+     */
+  remarks?: string;
+  /** Amount / Gross Amount */
+  amount?: number;
+  /** Gross Amount */
+  grossAmount?: number;
+  /** Net Amount */
+  netAmount?: number;
+  /** Disburse Amount */
+  disburseAmount?: number;
+  /**
+     * VAT Type
+     * @maxLength 80
+     */
+  vatType?: string;
+  /** VAT Percent */
+  vatPercent?: number;
+  /** VAT Amount */
+  vatAmount?: number;
+  /**
+     * EWT Code
+     * @maxLength 80
+     */
+  ewtCode?: string;
+  /** EWT Percent */
+  ewtPercent?: number;
+  /** EWT Amount */
+  ewtAmount?: number;
+  /**
+     * Expense Type
+     * @maxLength 100
+     */
+  expenseType?: string;
+  /** Responsibility Center ID */
+  responsibilityCenterId?: string;
+  /**
+     * Responsibility Center Code
+     * @maxLength 80
+     */
+  responsibilityCenterCodeSnapshot?: string;
+  /**
+     * Responsibility Center Name
+     * @maxLength 150
+     */
+  responsibilityCenterSnapshot?: string;
+  /**
+     * Responsibility Center Code alias
+     * @maxLength 80
+     */
+  responsibilityCenterCode?: string;
+  /**
+     * Responsibility Center Name alias
+     * @maxLength 150
+     */
+  responsibilityCenter?: string;
+}
+
+/**
+ * Status
+ */
+export type PettyCashFundResponseDtoStatus = typeof PettyCashFundResponseDtoStatus[keyof typeof PettyCashFundResponseDtoStatus];
+
+
+export const PettyCashFundResponseDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface PettyCashFundResponseDto {
+  /** ID */
+  id: string;
+  /** Company ID */
+  companyId: number;
+  /**
+     * Branch Unit ID
+     * @nullable
+     */
+  branchUnitId?: number | null;
+  /** Transaction Number */
+  transactionNo: string;
+  /** Document Date */
+  documentDate: string;
+  /**
+     * Party ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /** Party Code Snapshot */
+  partyCodeSnapshot: string;
+  /** Party Name Snapshot */
+  partyNameSnapshot: string;
+  /** Party Code alias */
+  partyCode?: string;
+  /** Party Name alias */
+  partyName?: string;
+  /**
+     * Credit Account ID / Default Account ID
+     * @nullable
+     */
+  creditAccountId?: string | null;
+  /**
+     * Default Account ID alias
+     * @nullable
+     */
+  accountId?: string | null;
+  /** Account Code Snapshot */
+  accountCodeSnapshot: string;
+  /**
+     * Account Title Snapshot
+     * @nullable
+     */
+  accountTitleSnapshot?: string | null;
+  /** Default Account Code alias */
+  accountCode?: string;
+  /**
+     * Default Account Title alias
+     * @nullable
+     */
+  accountTitle?: string | null;
+  /**
+     * Responsibility Center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility Center Code Snapshot
+     * @nullable
+     */
+  responsibilityCenterCodeSnapshot?: string | null;
+  /**
+     * Responsibility Center Snapshot
+     * @nullable
+     */
+  responsibilityCenterSnapshot?: string | null;
+  /**
+     * Responsibility Center Code alias
+     * @nullable
+     */
+  responsibilityCenterCode?: string | null;
+  /**
+     * Responsibility Center Name alias
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+  /**
+     * Project Code
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project Name
+     * @nullable
+     */
+  projectName?: string | null;
+  /** Currency Code */
+  currencyCode: string;
+  /** Currency Code alias */
+  currency?: string;
+  /** Exchange Rate */
+  exchangeRate: number;
+  /** Amount */
+  amount: number;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Status */
+  status: PettyCashFundResponseDtoStatus;
+  /** Fund Details */
+  details?: PettyCashFundDetailDto[];
+  /** Created At */
+  createdAt: string;
+  /** Updated At */
+  updatedAt: string;
+}
+
+export interface PettyCashFundPaginationMetaDto {
+  /** Current page number */
+  page: number;
+  /** Items per page */
+  limit: number;
+  /** Total item count */
+  total: number;
+  /** Total pages count */
+  totalPages: number;
+  /** Has next page */
+  hasNextPage: boolean;
+  /** Has previous page */
+  hasPreviousPage: boolean;
+}
+
+export interface PettyCashFundListResponseDto {
+  items: PettyCashFundResponseDto[];
+  meta: PettyCashFundPaginationMetaDto;
+}
+
+/**
+ * Initial Status
+ */
+export type CreatePettyCashFundDtoStatus = typeof CreatePettyCashFundDtoStatus[keyof typeof CreatePettyCashFundDtoStatus];
+
+
+export const CreatePettyCashFundDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface CreatePettyCashFundDto {
+  /** Branch Unit ID */
+  branchUnitId?: number;
+  /**
+     * Transaction Number
+     * @maxLength 80
+     */
+  transactionNo?: string;
+  /** Document Date */
+  documentDate: string;
+  /** Party ID (Custodian / Employee) */
+  partyId?: string;
+  /**
+     * Party Code
+     * @maxLength 80
+     */
+  partyCode?: string;
+  /**
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
+  partyName?: string;
+  /** Responsibility Center ID */
+  responsibilityCenterId?: string;
+  /**
+     * Responsibility Center Code
+     * @maxLength 80
+     */
+  responsibilityCenterCode?: string;
+  /**
+     * Responsibility Center Name
+     * @maxLength 150
+     */
+  responsibilityCenter?: string;
+  /**
+     * Project Code
+     * @maxLength 80
+     */
+  projectCode?: string;
+  /**
+     * Project Name
+     * @maxLength 255
+     */
+  projectName?: string;
+  /** Credit Account ID / Default Account ID */
+  accountId?: string;
+  /** Credit Account ID */
+  creditAccountId?: string;
+  /**
+     * Account Code Snapshot
+     * @maxLength 80
+     */
+  accountCode?: string;
+  /**
+     * Account Title Snapshot
+     * @maxLength 255
+     */
+  accountTitle?: string;
+  /**
+     * Currency code
+     * @maxLength 10
+     */
+  currencyCode?: string;
+  /**
+     * Currency alias
+     * @maxLength 10
+     */
+  currency?: string;
+  /**
+     * Exchange Rate
+     * @minimum 0
+     */
+  exchangeRate?: number;
+  /** Total Amount */
+  amount?: number;
+  /**
+     * Remarks
+     * @maxLength 500
+     */
+  remarks?: string;
+  /** Initial Status */
+  status?: CreatePettyCashFundDtoStatus;
+  /** Petty Cash Fund Details */
+  details?: PettyCashFundDetailDto[];
+}
+
+/**
+ * Initial Status
+ */
+export type UpdatePettyCashFundDtoStatus = typeof UpdatePettyCashFundDtoStatus[keyof typeof UpdatePettyCashFundDtoStatus];
+
+
+export const UpdatePettyCashFundDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdatePettyCashFundDto {
+  /** Branch Unit ID */
+  branchUnitId?: number;
+  /**
+     * Transaction Number
+     * @maxLength 80
+     */
+  transactionNo?: string;
+  /** Document Date */
+  documentDate?: string;
+  /** Party ID (Custodian / Employee) */
+  partyId?: string;
+  /**
+     * Party Code
+     * @maxLength 80
+     */
+  partyCode?: string;
+  /**
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
+  partyName?: string;
+  /** Responsibility Center ID */
+  responsibilityCenterId?: string;
+  /**
+     * Responsibility Center Code
+     * @maxLength 80
+     */
+  responsibilityCenterCode?: string;
+  /**
+     * Responsibility Center Name
+     * @maxLength 150
+     */
+  responsibilityCenter?: string;
+  /**
+     * Project Code
+     * @maxLength 80
+     */
+  projectCode?: string;
+  /**
+     * Project Name
+     * @maxLength 255
+     */
+  projectName?: string;
+  /** Credit Account ID / Default Account ID */
+  accountId?: string;
+  /** Credit Account ID */
+  creditAccountId?: string;
+  /**
+     * Account Code Snapshot
+     * @maxLength 80
+     */
+  accountCode?: string;
+  /**
+     * Account Title Snapshot
+     * @maxLength 255
+     */
+  accountTitle?: string;
+  /**
+     * Currency code
+     * @maxLength 10
+     */
+  currencyCode?: string;
+  /**
+     * Currency alias
+     * @maxLength 10
+     */
+  currency?: string;
+  /**
+     * Exchange Rate
+     * @minimum 0
+     */
+  exchangeRate?: number;
+  /** Total Amount */
+  amount?: number;
+  /**
+     * Remarks
+     * @maxLength 500
+     */
+  remarks?: string;
+  /** Initial Status */
+  status?: UpdatePettyCashFundDtoStatus;
+  /** Petty Cash Fund Details */
+  details?: PettyCashFundDetailDto[];
+}
+
+/**
+ * Target Petty Cash Fund status
+ */
+export type UpdatePettyCashFundStatusDtoStatus = typeof UpdatePettyCashFundStatusDtoStatus[keyof typeof UpdatePettyCashFundStatusDtoStatus];
+
+
+export const UpdatePettyCashFundStatusDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdatePettyCashFundStatusDto {
+  /** Target Petty Cash Fund status */
+  status: UpdatePettyCashFundStatusDtoStatus;
+}
+
+export interface PettyCashReplenishmentDetailDto {
+  /** Line ID */
+  id?: string;
+  /**
+     * Line Number
+     * @minimum 1
+     */
+  lineNumber?: number;
+  /** Petty Cash Date */
+  pettyCashDate?: string;
+  /** Petty Cash Date alias */
+  date?: string;
+  /**
+     * Petty Cash Voucher Number
+     * @maxLength 80
+     */
+  pettyCashNo?: string;
+  /**
+     * Petty Cash Number alias
+     * @maxLength 80
+     */
+  voucherNo?: string;
+  /** Supplier / Party ID */
+  partyId?: string;
+  /**
+     * Supplier Code Snapshot
+     * @maxLength 80
+     */
+  supplierCodeSnapshot?: string;
+  /**
+     * Supplier Name Snapshot
+     * @maxLength 255
+     */
+  supplierNameSnapshot?: string;
+  /**
+     * Supplier Code alias
+     * @maxLength 80
+     */
+  supplierCode?: string;
+  /**
+     * Supplier Name alias
+     * @maxLength 255
+     */
+  supplierName?: string;
+  /**
+     * Particulars
+     * @maxLength 500
+     */
+  particulars?: string;
+  /**
+     * Remarks
+     * @maxLength 500
+     */
+  remarks?: string;
+  /** Amount */
+  amount?: number;
+  /** Net Amount */
+  netAmount?: number;
+  /**
+     * VAT Type
+     * @maxLength 80
+     */
+  vatType?: string;
+  /** VAT Percent */
+  vatPercent?: number;
+  /** VAT Amount */
+  vatAmount?: number;
+  /**
+     * EWT Code
+     * @maxLength 80
+     */
+  ewtCode?: string;
+  /** EWT Percent */
+  ewtPercent?: number;
+  /** EWT Amount */
+  ewtAmount?: number;
+  /** Disburse Amount */
+  disburseAmount?: number;
+  /** Responsibility Center ID */
+  responsibilityCenterId?: string;
+  /**
+     * Responsibility Center Code
+     * @maxLength 80
+     */
+  responsibilityCenterCodeSnapshot?: string;
+  /**
+     * Responsibility Center Name
+     * @maxLength 150
+     */
+  responsibilityCenterSnapshot?: string;
+  /**
+     * Responsibility Center Code alias
+     * @maxLength 80
+     */
+  responsibilityCenterCode?: string;
+  /**
+     * Responsibility Center Name alias
+     * @maxLength 150
+     */
+  responsibilityCenter?: string;
+}
+
+/**
+ * Status
+ */
+export type PettyCashReplenishmentResponseDtoStatus = typeof PettyCashReplenishmentResponseDtoStatus[keyof typeof PettyCashReplenishmentResponseDtoStatus];
+
+
+export const PettyCashReplenishmentResponseDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface PettyCashReplenishmentResponseDto {
+  /** ID */
+  id: string;
+  /** Company ID */
+  companyId: number;
+  /**
+     * Branch Unit ID
+     * @nullable
+     */
+  branchUnitId?: number | null;
+  /** Transaction Number */
+  transactionNo: string;
+  /** Document Date */
+  documentDate: string;
+  /**
+     * Party ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /** Party Code Snapshot */
+  partyCodeSnapshot: string;
+  /** Party Name Snapshot */
+  partyNameSnapshot: string;
+  /** Party Code alias */
+  partyCode?: string;
+  /** Party Name alias */
+  partyName?: string;
+  /**
+     * Credit Account ID / Default Account ID
+     * @nullable
+     */
+  creditAccountId?: string | null;
+  /**
+     * Default Account ID alias
+     * @nullable
+     */
+  accountId?: string | null;
+  /** Account Code Snapshot */
+  accountCodeSnapshot: string;
+  /**
+     * Account Title Snapshot
+     * @nullable
+     */
+  accountTitleSnapshot?: string | null;
+  /** Default Account Code alias */
+  accountCode?: string;
+  /**
+     * Default Account Title alias
+     * @nullable
+     */
+  accountTitle?: string | null;
+  /**
+     * Responsibility Center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility Center Code Snapshot
+     * @nullable
+     */
+  responsibilityCenterCodeSnapshot?: string | null;
+  /**
+     * Responsibility Center Snapshot
+     * @nullable
+     */
+  responsibilityCenterSnapshot?: string | null;
+  /**
+     * Responsibility Center Code alias
+     * @nullable
+     */
+  responsibilityCenterCode?: string | null;
+  /**
+     * Responsibility Center Name alias
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+  /**
+     * Project Code
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project Name
+     * @nullable
+     */
+  projectName?: string | null;
+  /** Currency Code */
+  currencyCode: string;
+  /** Currency Code alias */
+  currency?: string;
+  /** Exchange Rate */
+  exchangeRate: number;
+  /** Amount */
+  amount: number;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Status */
+  status: PettyCashReplenishmentResponseDtoStatus;
+  /** Replenishment Details */
+  details?: PettyCashReplenishmentDetailDto[];
+  /** Created At */
+  createdAt: string;
+  /** Updated At */
+  updatedAt: string;
+}
+
+export interface PettyCashReplenishmentPaginationMetaDto {
+  /** Current page number */
+  page: number;
+  /** Items per page */
+  limit: number;
+  /** Total item count */
+  total: number;
+  /** Total pages count */
+  totalPages: number;
+  /** Has next page */
+  hasNextPage: boolean;
+  /** Has previous page */
+  hasPreviousPage: boolean;
+}
+
+export interface PettyCashReplenishmentListResponseDto {
+  items: PettyCashReplenishmentResponseDto[];
+  meta: PettyCashReplenishmentPaginationMetaDto;
+}
+
+/**
+ * Initial Status
+ */
+export type CreatePettyCashReplenishmentDtoStatus = typeof CreatePettyCashReplenishmentDtoStatus[keyof typeof CreatePettyCashReplenishmentDtoStatus];
+
+
+export const CreatePettyCashReplenishmentDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface CreatePettyCashReplenishmentDto {
+  /** Branch Unit ID */
+  branchUnitId?: number;
+  /**
+     * Transaction Number
+     * @maxLength 80
+     */
+  transactionNo?: string;
+  /** Document Date */
+  documentDate: string;
+  /** Party ID (Custodian / Employee) */
+  partyId?: string;
+  /**
+     * Party Code
+     * @maxLength 80
+     */
+  partyCode?: string;
+  /**
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
+  partyName?: string;
+  /** Responsibility Center ID */
+  responsibilityCenterId?: string;
+  /**
+     * Responsibility Center Code
+     * @maxLength 80
+     */
+  responsibilityCenterCode?: string;
+  /**
+     * Responsibility Center Name
+     * @maxLength 150
+     */
+  responsibilityCenter?: string;
+  /**
+     * Project Code
+     * @maxLength 80
+     */
+  projectCode?: string;
+  /**
+     * Project Name
+     * @maxLength 255
+     */
+  projectName?: string;
+  /** Credit Account ID / Default Account ID */
+  accountId?: string;
+  /** Credit Account ID */
+  creditAccountId?: string;
+  /**
+     * Account Code Snapshot
+     * @maxLength 80
+     */
+  accountCode?: string;
+  /**
+     * Account Title Snapshot
+     * @maxLength 255
+     */
+  accountTitle?: string;
+  /**
+     * Currency code
+     * @maxLength 10
+     */
+  currencyCode?: string;
+  /**
+     * Currency alias
+     * @maxLength 10
+     */
+  currency?: string;
+  /**
+     * Exchange Rate
+     * @minimum 0
+     */
+  exchangeRate?: number;
+  /** Total Amount */
+  amount?: number;
+  /**
+     * Remarks
+     * @maxLength 500
+     */
+  remarks?: string;
+  /** Initial Status */
+  status?: CreatePettyCashReplenishmentDtoStatus;
+  /** Petty Cash Replenishment Details */
+  details?: PettyCashReplenishmentDetailDto[];
+}
+
+/**
+ * Initial Status
+ */
+export type UpdatePettyCashReplenishmentDtoStatus = typeof UpdatePettyCashReplenishmentDtoStatus[keyof typeof UpdatePettyCashReplenishmentDtoStatus];
+
+
+export const UpdatePettyCashReplenishmentDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdatePettyCashReplenishmentDto {
+  /** Branch Unit ID */
+  branchUnitId?: number;
+  /**
+     * Transaction Number
+     * @maxLength 80
+     */
+  transactionNo?: string;
+  /** Document Date */
+  documentDate?: string;
+  /** Party ID (Custodian / Employee) */
+  partyId?: string;
+  /**
+     * Party Code
+     * @maxLength 80
+     */
+  partyCode?: string;
+  /**
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
+  partyName?: string;
+  /** Responsibility Center ID */
+  responsibilityCenterId?: string;
+  /**
+     * Responsibility Center Code
+     * @maxLength 80
+     */
+  responsibilityCenterCode?: string;
+  /**
+     * Responsibility Center Name
+     * @maxLength 150
+     */
+  responsibilityCenter?: string;
+  /**
+     * Project Code
+     * @maxLength 80
+     */
+  projectCode?: string;
+  /**
+     * Project Name
+     * @maxLength 255
+     */
+  projectName?: string;
+  /** Credit Account ID / Default Account ID */
+  accountId?: string;
+  /** Credit Account ID */
+  creditAccountId?: string;
+  /**
+     * Account Code Snapshot
+     * @maxLength 80
+     */
+  accountCode?: string;
+  /**
+     * Account Title Snapshot
+     * @maxLength 255
+     */
+  accountTitle?: string;
+  /**
+     * Currency code
+     * @maxLength 10
+     */
+  currencyCode?: string;
+  /**
+     * Currency alias
+     * @maxLength 10
+     */
+  currency?: string;
+  /**
+     * Exchange Rate
+     * @minimum 0
+     */
+  exchangeRate?: number;
+  /** Total Amount */
+  amount?: number;
+  /**
+     * Remarks
+     * @maxLength 500
+     */
+  remarks?: string;
+  /** Initial Status */
+  status?: UpdatePettyCashReplenishmentDtoStatus;
+  /** Petty Cash Replenishment Details */
+  details?: PettyCashReplenishmentDetailDto[];
+}
+
+/**
+ * Target Petty Cash Replenishment status
+ */
+export type UpdatePettyCashReplenishmentStatusDtoStatus = typeof UpdatePettyCashReplenishmentStatusDtoStatus[keyof typeof UpdatePettyCashReplenishmentStatusDtoStatus];
+
+
+export const UpdatePettyCashReplenishmentStatusDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdatePettyCashReplenishmentStatusDto {
+  /** Target Petty Cash Replenishment status */
+  status: UpdatePettyCashReplenishmentStatusDtoStatus;
+}
+
+export interface RevolvingFundDetailDto {
+  /** Line ID */
+  id?: string;
+  /**
+     * Line Number
+     * @minimum 1
+     */
+  lineNumber?: number;
+  /** Receipt/Disbursement Date */
+  date?: string;
+  /** Receipt/Disbursement Date alias */
+  itemDate?: string;
+  /** Supplier / Party ID */
+  partyId?: string;
+  /**
+     * Supplier Code Snapshot
+     * @maxLength 80
+     */
+  supplierCodeSnapshot?: string;
+  /**
+     * Supplier Name Snapshot
+     * @maxLength 255
+     */
+  supplierNameSnapshot?: string;
+  /**
+     * Supplier Code alias
+     * @maxLength 80
+     */
+  supplierCode?: string;
+  /**
+     * Supplier Name alias
+     * @maxLength 255
+     */
+  supplierName?: string;
+  /**
+     * Official Receipt Number
+     * @maxLength 80
+     */
+  orNo?: string;
+  /**
+     * TIN Number
+     * @maxLength 80
+     */
+  tinNo?: string;
+  /**
+     * Particulars
+     * @maxLength 500
+     */
+  particulars?: string;
+  /**
+     * Remarks
+     * @maxLength 500
+     */
+  remarks?: string;
+  /** Amount / Gross Amount */
+  amount?: number;
+  /** Gross Amount */
+  grossAmount?: number;
+  /** Net Amount */
+  netAmount?: number;
+  /** Disburse Amount */
+  disburseAmount?: number;
+  /**
+     * VAT Type
+     * @maxLength 80
+     */
+  vatType?: string;
+  /** VAT Percent */
+  vatPercent?: number;
+  /** VAT Amount */
+  vatAmount?: number;
+  /**
+     * EWT Code
+     * @maxLength 80
+     */
+  ewtCode?: string;
+  /** EWT Percent */
+  ewtPercent?: number;
+  /** EWT Amount */
+  ewtAmount?: number;
+  /**
+     * Expense Type
+     * @maxLength 100
+     */
+  expenseType?: string;
+  /** Responsibility Center ID */
+  responsibilityCenterId?: string;
+  /**
+     * Responsibility Center Code
+     * @maxLength 80
+     */
+  responsibilityCenterCodeSnapshot?: string;
+  /**
+     * Responsibility Center Name
+     * @maxLength 150
+     */
+  responsibilityCenterSnapshot?: string;
+  /**
+     * Responsibility Center Code alias
+     * @maxLength 80
+     */
+  responsibilityCenterCode?: string;
+  /**
+     * Responsibility Center Name alias
+     * @maxLength 150
+     */
+  responsibilityCenter?: string;
+}
+
+/**
+ * Status
+ */
+export type RevolvingFundResponseDtoStatus = typeof RevolvingFundResponseDtoStatus[keyof typeof RevolvingFundResponseDtoStatus];
+
+
+export const RevolvingFundResponseDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface RevolvingFundResponseDto {
+  /** ID */
+  id: string;
+  /** Company ID */
+  companyId: number;
+  /**
+     * Branch Unit ID
+     * @nullable
+     */
+  branchUnitId?: number | null;
+  /** Transaction Number */
+  transactionNo: string;
+  /** Document Date */
+  documentDate: string;
+  /**
+     * Party ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /** Party Code Snapshot */
+  partyCodeSnapshot: string;
+  /** Party Name Snapshot */
+  partyNameSnapshot: string;
+  /** Party Code alias */
+  partyCode?: string;
+  /** Party Name alias */
+  partyName?: string;
+  /**
+     * Credit Account ID / Default Account ID
+     * @nullable
+     */
+  creditAccountId?: string | null;
+  /**
+     * Default Account ID alias
+     * @nullable
+     */
+  accountId?: string | null;
+  /** Account Code Snapshot */
+  accountCodeSnapshot: string;
+  /**
+     * Account Title Snapshot
+     * @nullable
+     */
+  accountTitleSnapshot?: string | null;
+  /** Default Account Code alias */
+  accountCode?: string;
+  /**
+     * Default Account Title alias
+     * @nullable
+     */
+  accountTitle?: string | null;
+  /**
+     * Responsibility Center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility Center Code Snapshot
+     * @nullable
+     */
+  responsibilityCenterCodeSnapshot?: string | null;
+  /**
+     * Responsibility Center Snapshot
+     * @nullable
+     */
+  responsibilityCenterSnapshot?: string | null;
+  /**
+     * Responsibility Center Code alias
+     * @nullable
+     */
+  responsibilityCenterCode?: string | null;
+  /**
+     * Responsibility Center Name alias
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+  /**
+     * Project Code
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project Name
+     * @nullable
+     */
+  projectName?: string | null;
+  /** Currency Code */
+  currencyCode: string;
+  /** Currency Code alias */
+  currency?: string;
+  /** Exchange Rate */
+  exchangeRate: number;
+  /** Amount */
+  amount: number;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Status */
+  status: RevolvingFundResponseDtoStatus;
+  /** Fund Details */
+  details?: RevolvingFundDetailDto[];
+  /** Created At */
+  createdAt: string;
+  /** Updated At */
+  updatedAt: string;
+}
+
+export interface RevolvingFundPaginationMetaDto {
+  /** Current page number */
+  page: number;
+  /** Items per page */
+  limit: number;
+  /** Total item count */
+  total: number;
+  /** Total pages count */
+  totalPages: number;
+  /** Has next page */
+  hasNextPage: boolean;
+  /** Has previous page */
+  hasPreviousPage: boolean;
+}
+
+export interface RevolvingFundListResponseDto {
+  items: RevolvingFundResponseDto[];
+  meta: RevolvingFundPaginationMetaDto;
+}
+
+/**
+ * Initial Status
+ */
+export type CreateRevolvingFundDtoStatus = typeof CreateRevolvingFundDtoStatus[keyof typeof CreateRevolvingFundDtoStatus];
+
+
+export const CreateRevolvingFundDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface CreateRevolvingFundDto {
+  /** Branch Unit ID */
+  branchUnitId?: number;
+  /**
+     * Transaction Number
+     * @maxLength 80
+     */
+  transactionNo?: string;
+  /** Document Date */
+  documentDate: string;
+  /** Party ID (Custodian / Employee) */
+  partyId?: string;
+  /**
+     * Party Code
+     * @maxLength 80
+     */
+  partyCode?: string;
+  /**
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
+  partyName?: string;
+  /** Responsibility Center ID */
+  responsibilityCenterId?: string;
+  /**
+     * Responsibility Center Code
+     * @maxLength 80
+     */
+  responsibilityCenterCode?: string;
+  /**
+     * Responsibility Center Name
+     * @maxLength 150
+     */
+  responsibilityCenter?: string;
+  /**
+     * Project Code
+     * @maxLength 80
+     */
+  projectCode?: string;
+  /**
+     * Project Name
+     * @maxLength 255
+     */
+  projectName?: string;
+  /** Credit Account ID / Default Account ID */
+  accountId?: string;
+  /** Credit Account ID */
+  creditAccountId?: string;
+  /**
+     * Account Code Snapshot
+     * @maxLength 80
+     */
+  accountCode?: string;
+  /**
+     * Account Title Snapshot
+     * @maxLength 255
+     */
+  accountTitle?: string;
+  /**
+     * Currency code
+     * @maxLength 10
+     */
+  currencyCode?: string;
+  /**
+     * Currency alias
+     * @maxLength 10
+     */
+  currency?: string;
+  /**
+     * Exchange Rate
+     * @minimum 0
+     */
+  exchangeRate?: number;
+  /** Total Amount */
+  amount?: number;
+  /**
+     * Remarks
+     * @maxLength 500
+     */
+  remarks?: string;
+  /** Initial Status */
+  status?: CreateRevolvingFundDtoStatus;
+  /** Revolving Fund Details */
+  details?: RevolvingFundDetailDto[];
+}
+
+/**
+ * Initial Status
+ */
+export type UpdateRevolvingFundDtoStatus = typeof UpdateRevolvingFundDtoStatus[keyof typeof UpdateRevolvingFundDtoStatus];
+
+
+export const UpdateRevolvingFundDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdateRevolvingFundDto {
+  /** Branch Unit ID */
+  branchUnitId?: number;
+  /**
+     * Transaction Number
+     * @maxLength 80
+     */
+  transactionNo?: string;
+  /** Document Date */
+  documentDate?: string;
+  /** Party ID (Custodian / Employee) */
+  partyId?: string;
+  /**
+     * Party Code
+     * @maxLength 80
+     */
+  partyCode?: string;
+  /**
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
+  partyName?: string;
+  /** Responsibility Center ID */
+  responsibilityCenterId?: string;
+  /**
+     * Responsibility Center Code
+     * @maxLength 80
+     */
+  responsibilityCenterCode?: string;
+  /**
+     * Responsibility Center Name
+     * @maxLength 150
+     */
+  responsibilityCenter?: string;
+  /**
+     * Project Code
+     * @maxLength 80
+     */
+  projectCode?: string;
+  /**
+     * Project Name
+     * @maxLength 255
+     */
+  projectName?: string;
+  /** Credit Account ID / Default Account ID */
+  accountId?: string;
+  /** Credit Account ID */
+  creditAccountId?: string;
+  /**
+     * Account Code Snapshot
+     * @maxLength 80
+     */
+  accountCode?: string;
+  /**
+     * Account Title Snapshot
+     * @maxLength 255
+     */
+  accountTitle?: string;
+  /**
+     * Currency code
+     * @maxLength 10
+     */
+  currencyCode?: string;
+  /**
+     * Currency alias
+     * @maxLength 10
+     */
+  currency?: string;
+  /**
+     * Exchange Rate
+     * @minimum 0
+     */
+  exchangeRate?: number;
+  /** Total Amount */
+  amount?: number;
+  /**
+     * Remarks
+     * @maxLength 500
+     */
+  remarks?: string;
+  /** Initial Status */
+  status?: UpdateRevolvingFundDtoStatus;
+  /** Revolving Fund Details */
+  details?: RevolvingFundDetailDto[];
+}
+
+/**
+ * Target Revolving Fund status
+ */
+export type UpdateRevolvingFundStatusDtoStatus = typeof UpdateRevolvingFundStatusDtoStatus[keyof typeof UpdateRevolvingFundStatusDtoStatus];
+
+
+export const UpdateRevolvingFundStatusDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdateRevolvingFundStatusDto {
+  /** Target Revolving Fund status */
+  status: UpdateRevolvingFundStatusDtoStatus;
+}
+
+export interface RevolvingFundReplenishmentDetailDto {
+  /** Line ID */
+  id?: string;
+  /**
+     * Line Number
+     * @minimum 1
+     */
+  lineNumber?: number;
+  /** Revolving Fund Date */
+  revolvingFundDate?: string;
+  /** Revolving Fund Date alias */
+  date?: string;
+  /**
+     * Revolving Fund Number / Voucher Number
+     * @maxLength 80
+     */
+  revolvingFundNo?: string;
+  /**
+     * Revolving Fund Number alias
+     * @maxLength 80
+     */
+  voucherNo?: string;
+  /** Supplier / Party ID */
+  partyId?: string;
+  /**
+     * Supplier Code Snapshot
+     * @maxLength 80
+     */
+  supplierCodeSnapshot?: string;
+  /**
+     * Supplier Name Snapshot
+     * @maxLength 255
+     */
+  supplierNameSnapshot?: string;
+  /**
+     * Supplier Code alias
+     * @maxLength 80
+     */
+  supplierCode?: string;
+  /**
+     * Supplier Name alias
+     * @maxLength 255
+     */
+  supplierName?: string;
+  /**
+     * Particulars
+     * @maxLength 500
+     */
+  particulars?: string;
+  /**
+     * Remarks
+     * @maxLength 500
+     */
+  remarks?: string;
+  /** Amount */
+  amount?: number;
+  /** Net Amount */
+  netAmount?: number;
+  /**
+     * VAT Type
+     * @maxLength 80
+     */
+  vatType?: string;
+  /** VAT Percent */
+  vatPercent?: number;
+  /** VAT Amount */
+  vatAmount?: number;
+  /**
+     * EWT Code
+     * @maxLength 80
+     */
+  ewtCode?: string;
+  /** EWT Percent */
+  ewtPercent?: number;
+  /** EWT Amount */
+  ewtAmount?: number;
+  /** Disburse Amount */
+  disburseAmount?: number;
+  /** Responsibility Center ID */
+  responsibilityCenterId?: string;
+  /**
+     * Responsibility Center Code
+     * @maxLength 80
+     */
+  responsibilityCenterCodeSnapshot?: string;
+  /**
+     * Responsibility Center Name
+     * @maxLength 150
+     */
+  responsibilityCenterSnapshot?: string;
+  /**
+     * Responsibility Center Code alias
+     * @maxLength 80
+     */
+  responsibilityCenterCode?: string;
+  /**
+     * Responsibility Center Name alias
+     * @maxLength 150
+     */
+  responsibilityCenter?: string;
+}
+
+/**
+ * Status
+ */
+export type RevolvingFundReplenishmentResponseDtoStatus = typeof RevolvingFundReplenishmentResponseDtoStatus[keyof typeof RevolvingFundReplenishmentResponseDtoStatus];
+
+
+export const RevolvingFundReplenishmentResponseDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface RevolvingFundReplenishmentResponseDto {
+  /** ID */
+  id: string;
+  /** Company ID */
+  companyId: number;
+  /**
+     * Branch Unit ID
+     * @nullable
+     */
+  branchUnitId?: number | null;
+  /** Transaction Number */
+  transactionNo: string;
+  /** Document Date */
+  documentDate: string;
+  /**
+     * Party ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /** Party Code Snapshot */
+  partyCodeSnapshot: string;
+  /** Party Name Snapshot */
+  partyNameSnapshot: string;
+  /** Party Code alias */
+  partyCode?: string;
+  /** Party Name alias */
+  partyName?: string;
+  /**
+     * Credit Account ID / Default Account ID
+     * @nullable
+     */
+  creditAccountId?: string | null;
+  /**
+     * Default Account ID alias
+     * @nullable
+     */
+  accountId?: string | null;
+  /** Account Code Snapshot */
+  accountCodeSnapshot: string;
+  /**
+     * Account Title Snapshot
+     * @nullable
+     */
+  accountTitleSnapshot?: string | null;
+  /** Default Account Code alias */
+  accountCode?: string;
+  /**
+     * Default Account Title alias
+     * @nullable
+     */
+  accountTitle?: string | null;
+  /**
+     * Responsibility Center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility Center Code Snapshot
+     * @nullable
+     */
+  responsibilityCenterCodeSnapshot?: string | null;
+  /**
+     * Responsibility Center Snapshot
+     * @nullable
+     */
+  responsibilityCenterSnapshot?: string | null;
+  /**
+     * Responsibility Center Code alias
+     * @nullable
+     */
+  responsibilityCenterCode?: string | null;
+  /**
+     * Responsibility Center Name alias
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+  /**
+     * Project Code
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project Name
+     * @nullable
+     */
+  projectName?: string | null;
+  /** Currency Code */
+  currencyCode: string;
+  /** Currency Code alias */
+  currency?: string;
+  /** Exchange Rate */
+  exchangeRate: number;
+  /** Amount */
+  amount: number;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Status */
+  status: RevolvingFundReplenishmentResponseDtoStatus;
+  /** Replenishment Details */
+  details?: RevolvingFundReplenishmentDetailDto[];
+  /** Created At */
+  createdAt: string;
+  /** Updated At */
+  updatedAt: string;
+}
+
+export interface RevolvingFundReplenishmentPaginationMetaDto {
+  /** Current page number */
+  page: number;
+  /** Items per page */
+  limit: number;
+  /** Total item count */
+  total: number;
+  /** Total pages count */
+  totalPages: number;
+  /** Has next page */
+  hasNextPage: boolean;
+  /** Has previous page */
+  hasPreviousPage: boolean;
+}
+
+export interface RevolvingFundReplenishmentListResponseDto {
+  items: RevolvingFundReplenishmentResponseDto[];
+  meta: RevolvingFundReplenishmentPaginationMetaDto;
+}
+
+/**
+ * Initial Status
+ */
+export type CreateRevolvingFundReplenishmentDtoStatus = typeof CreateRevolvingFundReplenishmentDtoStatus[keyof typeof CreateRevolvingFundReplenishmentDtoStatus];
+
+
+export const CreateRevolvingFundReplenishmentDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface CreateRevolvingFundReplenishmentDto {
+  /** Branch Unit ID */
+  branchUnitId?: number;
+  /**
+     * Transaction Number
+     * @maxLength 80
+     */
+  transactionNo?: string;
+  /** Document Date */
+  documentDate: string;
+  /** Party ID (Custodian / Employee) */
+  partyId?: string;
+  /**
+     * Party Code
+     * @maxLength 80
+     */
+  partyCode?: string;
+  /**
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
+  partyName?: string;
+  /** Responsibility Center ID */
+  responsibilityCenterId?: string;
+  /**
+     * Responsibility Center Code
+     * @maxLength 80
+     */
+  responsibilityCenterCode?: string;
+  /**
+     * Responsibility Center Name
+     * @maxLength 150
+     */
+  responsibilityCenter?: string;
+  /**
+     * Project Code
+     * @maxLength 80
+     */
+  projectCode?: string;
+  /**
+     * Project Name
+     * @maxLength 255
+     */
+  projectName?: string;
+  /** Credit Account ID / Default Account ID */
+  accountId?: string;
+  /** Credit Account ID */
+  creditAccountId?: string;
+  /**
+     * Account Code Snapshot
+     * @maxLength 80
+     */
+  accountCode?: string;
+  /**
+     * Account Title Snapshot
+     * @maxLength 255
+     */
+  accountTitle?: string;
+  /**
+     * Currency code
+     * @maxLength 10
+     */
+  currencyCode?: string;
+  /**
+     * Currency alias
+     * @maxLength 10
+     */
+  currency?: string;
+  /**
+     * Exchange Rate
+     * @minimum 0
+     */
+  exchangeRate?: number;
+  /** Total Amount */
+  amount?: number;
+  /**
+     * Remarks
+     * @maxLength 500
+     */
+  remarks?: string;
+  /** Initial Status */
+  status?: CreateRevolvingFundReplenishmentDtoStatus;
+  /** Revolving Fund Replenishment Details */
+  details?: RevolvingFundReplenishmentDetailDto[];
+}
+
+/**
+ * Initial Status
+ */
+export type UpdateRevolvingFundReplenishmentDtoStatus = typeof UpdateRevolvingFundReplenishmentDtoStatus[keyof typeof UpdateRevolvingFundReplenishmentDtoStatus];
+
+
+export const UpdateRevolvingFundReplenishmentDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdateRevolvingFundReplenishmentDto {
+  /** Branch Unit ID */
+  branchUnitId?: number;
+  /**
+     * Transaction Number
+     * @maxLength 80
+     */
+  transactionNo?: string;
+  /** Document Date */
+  documentDate?: string;
+  /** Party ID (Custodian / Employee) */
+  partyId?: string;
+  /**
+     * Party Code
+     * @maxLength 80
+     */
+  partyCode?: string;
+  /**
+     * Party Name (Custodian)
+     * @maxLength 255
+     */
+  partyName?: string;
+  /** Responsibility Center ID */
+  responsibilityCenterId?: string;
+  /**
+     * Responsibility Center Code
+     * @maxLength 80
+     */
+  responsibilityCenterCode?: string;
+  /**
+     * Responsibility Center Name
+     * @maxLength 150
+     */
+  responsibilityCenter?: string;
+  /**
+     * Project Code
+     * @maxLength 80
+     */
+  projectCode?: string;
+  /**
+     * Project Name
+     * @maxLength 255
+     */
+  projectName?: string;
+  /** Credit Account ID / Default Account ID */
+  accountId?: string;
+  /** Credit Account ID */
+  creditAccountId?: string;
+  /**
+     * Account Code Snapshot
+     * @maxLength 80
+     */
+  accountCode?: string;
+  /**
+     * Account Title Snapshot
+     * @maxLength 255
+     */
+  accountTitle?: string;
+  /**
+     * Currency code
+     * @maxLength 10
+     */
+  currencyCode?: string;
+  /**
+     * Currency alias
+     * @maxLength 10
+     */
+  currency?: string;
+  /**
+     * Exchange Rate
+     * @minimum 0
+     */
+  exchangeRate?: number;
+  /** Total Amount */
+  amount?: number;
+  /**
+     * Remarks
+     * @maxLength 500
+     */
+  remarks?: string;
+  /** Initial Status */
+  status?: UpdateRevolvingFundReplenishmentDtoStatus;
+  /** Revolving Fund Replenishment Details */
+  details?: RevolvingFundReplenishmentDetailDto[];
+}
+
+/**
+ * Target Revolving Fund Replenishment status
+ */
+export type UpdateRevolvingFundReplenishmentStatusDtoStatus = typeof UpdateRevolvingFundReplenishmentStatusDtoStatus[keyof typeof UpdateRevolvingFundReplenishmentStatusDtoStatus];
+
+
+export const UpdateRevolvingFundReplenishmentStatusDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdateRevolvingFundReplenishmentStatusDto {
+  /** Target Revolving Fund Replenishment status */
+  status: UpdateRevolvingFundReplenishmentStatusDtoStatus;
+}
+
 export type AuthControllerLoginV1201 = { [key: string]: unknown };
 
 export type AuthControllerGoogleAuthV1Params = {
@@ -11234,9 +15802,7 @@ export const PaymentTypeMaintenanceControllerFindAllV1Classification = {
   BANK_TRANSFER: 'BANK_TRANSFER',
   CHECK: 'CHECK',
   DIGITAL_WALLET: 'DIGITAL_WALLET',
-  CASH: 'CASH',
   DEBIT_MEMO: 'DEBIT_MEMO',
-  NON_CASH_SETTLEMENT: 'NON_CASH_SETTLEMENT',
 } as const;
 
 export type PaymentTypeMaintenanceControllerFindAllV1Status = typeof PaymentTypeMaintenanceControllerFindAllV1Status[keyof typeof PaymentTypeMaintenanceControllerFindAllV1Status];
@@ -11282,8 +15848,7 @@ export const PaymentTypeMaintenanceControllerFindOptionsV1Classification = {
   BANK_TRANSFER: 'BANK_TRANSFER',
   CHECK: 'CHECK',
   DIGITAL_WALLET: 'DIGITAL_WALLET',
-  CASH: 'CASH',
-  NON_CASH_SETTLEMENT: 'NON_CASH_SETTLEMENT',
+  DEBIT_MEMO: 'DEBIT_MEMO',
 } as const;
 
 export type PaymentTypeMaintenanceControllerFindOptionsByTypeV1Params = {
@@ -11301,8 +15866,7 @@ export const PaymentTypeMaintenanceControllerFindOptionsByTypeV1Classification =
   BANK_TRANSFER: 'BANK_TRANSFER',
   CHECK: 'CHECK',
   DIGITAL_WALLET: 'DIGITAL_WALLET',
-  CASH: 'CASH',
-  NON_CASH_SETTLEMENT: 'NON_CASH_SETTLEMENT',
+  DEBIT_MEMO: 'DEBIT_MEMO',
 } as const;
 
 export type DiscountMaintenanceControllerFindAllV1Params = {
@@ -11330,8 +15894,8 @@ export type DiscountMaintenanceControllerFindAllV1Type = typeof DiscountMaintena
 
 
 export const DiscountMaintenanceControllerFindAllV1Type = {
-  PURCHASE: 'PURCHASE',
   SALES: 'SALES',
+  PURCHASES: 'PURCHASES',
 } as const;
 
 export type DiscountMaintenanceControllerFindAllV1ValueType = typeof DiscountMaintenanceControllerFindAllV1ValueType[keyof typeof DiscountMaintenanceControllerFindAllV1ValueType];
@@ -11384,8 +15948,8 @@ export type DiscountMaintenanceControllerFindOptionsV1Type = typeof DiscountMain
 
 
 export const DiscountMaintenanceControllerFindOptionsV1Type = {
-  PURCHASE: 'PURCHASE',
   SALES: 'SALES',
+  PURCHASES: 'PURCHASES',
 } as const;
 
 export type DiscountMaintenanceControllerFindOptionsV1ValueType = typeof DiscountMaintenanceControllerFindOptionsV1ValueType[keyof typeof DiscountMaintenanceControllerFindOptionsV1ValueType];
@@ -11409,8 +15973,8 @@ export type DiscountMaintenanceControllerFindOptionsByTypeV1Type = typeof Discou
 
 
 export const DiscountMaintenanceControllerFindOptionsByTypeV1Type = {
-  PURCHASE: 'PURCHASE',
   SALES: 'SALES',
+  PURCHASES: 'PURCHASES',
 } as const;
 
 export type DiscountMaintenanceControllerFindOptionsByTypeV1ValueType = typeof DiscountMaintenanceControllerFindOptionsByTypeV1ValueType[keyof typeof DiscountMaintenanceControllerFindOptionsByTypeV1ValueType];
@@ -11795,6 +16359,14 @@ export const DefaultAccountControllerFindOptionsByTypeV1Status = {
 
 export type ServicesMaintenanceControllerFindAllV1Params = {
 /**
+ * Filter by service type
+ */
+serviceType?: ServicesMaintenanceControllerFindAllV1ServiceType;
+/**
+ * Sort by field
+ */
+sortBy?: ServicesMaintenanceControllerFindAllV1SortBy;
+/**
  * @maxLength 120
  */
 search?: string;
@@ -11809,9 +16381,28 @@ page?: number;
  * @maximum 500
  */
 limit?: number;
-sortBy?: ServicesMaintenanceControllerFindAllV1SortBy;
 sortDirection?: ServicesMaintenanceControllerFindAllV1SortDirection;
 };
+
+export type ServicesMaintenanceControllerFindAllV1ServiceType = typeof ServicesMaintenanceControllerFindAllV1ServiceType[keyof typeof ServicesMaintenanceControllerFindAllV1ServiceType];
+
+
+export const ServicesMaintenanceControllerFindAllV1ServiceType = {
+  PURCHASES: 'PURCHASES',
+  SALES: 'SALES',
+} as const;
+
+export type ServicesMaintenanceControllerFindAllV1SortBy = typeof ServicesMaintenanceControllerFindAllV1SortBy[keyof typeof ServicesMaintenanceControllerFindAllV1SortBy];
+
+
+export const ServicesMaintenanceControllerFindAllV1SortBy = {
+  serviceName: 'serviceName',
+  serviceType: 'serviceType',
+  status: 'status',
+  accountSetupMode: 'accountSetupMode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
 
 export type ServicesMaintenanceControllerFindAllV1Status = typeof ServicesMaintenanceControllerFindAllV1Status[keyof typeof ServicesMaintenanceControllerFindAllV1Status];
 
@@ -11829,17 +16420,6 @@ export const ServicesMaintenanceControllerFindAllV1AccountSetupMode = {
   EXISTING: 'EXISTING',
 } as const;
 
-export type ServicesMaintenanceControllerFindAllV1SortBy = typeof ServicesMaintenanceControllerFindAllV1SortBy[keyof typeof ServicesMaintenanceControllerFindAllV1SortBy];
-
-
-export const ServicesMaintenanceControllerFindAllV1SortBy = {
-  serviceName: 'serviceName',
-  status: 'status',
-  accountSetupMode: 'accountSetupMode',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
 export type ServicesMaintenanceControllerFindAllV1SortDirection = typeof ServicesMaintenanceControllerFindAllV1SortDirection[keyof typeof ServicesMaintenanceControllerFindAllV1SortDirection];
 
 
@@ -11849,6 +16429,14 @@ export const ServicesMaintenanceControllerFindAllV1SortDirection = {
 } as const;
 
 export type ServicesMaintenanceControllerFindOptionsV1Params = {
+/**
+ * Filter by service type
+ */
+serviceType?: ServicesMaintenanceControllerFindOptionsV1ServiceType;
+/**
+ * Sort by field
+ */
+sortBy?: ServicesMaintenanceControllerFindOptionsV1SortBy;
 /**
  * @maxLength 120
  */
@@ -11864,9 +16452,28 @@ page?: number;
  * @maximum 500
  */
 limit?: number;
-sortBy?: ServicesMaintenanceControllerFindOptionsV1SortBy;
 sortDirection?: ServicesMaintenanceControllerFindOptionsV1SortDirection;
 };
+
+export type ServicesMaintenanceControllerFindOptionsV1ServiceType = typeof ServicesMaintenanceControllerFindOptionsV1ServiceType[keyof typeof ServicesMaintenanceControllerFindOptionsV1ServiceType];
+
+
+export const ServicesMaintenanceControllerFindOptionsV1ServiceType = {
+  PURCHASES: 'PURCHASES',
+  SALES: 'SALES',
+} as const;
+
+export type ServicesMaintenanceControllerFindOptionsV1SortBy = typeof ServicesMaintenanceControllerFindOptionsV1SortBy[keyof typeof ServicesMaintenanceControllerFindOptionsV1SortBy];
+
+
+export const ServicesMaintenanceControllerFindOptionsV1SortBy = {
+  serviceName: 'serviceName',
+  serviceType: 'serviceType',
+  status: 'status',
+  accountSetupMode: 'accountSetupMode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
 
 export type ServicesMaintenanceControllerFindOptionsV1Status = typeof ServicesMaintenanceControllerFindOptionsV1Status[keyof typeof ServicesMaintenanceControllerFindOptionsV1Status];
 
@@ -11882,17 +16489,6 @@ export type ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = typeof 
 export const ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = {
   AUTO: 'AUTO',
   EXISTING: 'EXISTING',
-} as const;
-
-export type ServicesMaintenanceControllerFindOptionsV1SortBy = typeof ServicesMaintenanceControllerFindOptionsV1SortBy[keyof typeof ServicesMaintenanceControllerFindOptionsV1SortBy];
-
-
-export const ServicesMaintenanceControllerFindOptionsV1SortBy = {
-  serviceName: 'serviceName',
-  status: 'status',
-  accountSetupMode: 'accountSetupMode',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
 } as const;
 
 export type ServicesMaintenanceControllerFindOptionsV1SortDirection = typeof ServicesMaintenanceControllerFindOptionsV1SortDirection[keyof typeof ServicesMaintenanceControllerFindOptionsV1SortDirection];
@@ -12588,12 +17184,6 @@ branchUnitId: number;
 userId?: string;
 applyScope?: string;
 };
-
-export type AiAssistantControllerChatV1201 = { [key: string]: unknown };
-
-export type AiAssistantControllerTranscribeV1201 = { [key: string]: unknown };
-
-export type AiAssistantControllerGetTranscriptionJobV1200 = { [key: string]: unknown };
 
 export type AccountsPayableVoucherControllerFindAllV1Params = {
 /**
@@ -14340,3 +18930,1098 @@ export const ProvisionalReceiptControllerFindOneV1SortDirection = {
   asc: 'asc',
   desc: 'desc',
 } as const;
+
+export type AdvancesToSuppliersControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
+};
+
+export type AdvancesToSuppliersControllerFindAllV1Params = {
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+limit?: number;
+search?: string;
+status?: string;
+partyCode?: string;
+startDate?: string;
+endDate?: string;
+sortBy?: string;
+sortOrder?: AdvancesToSuppliersControllerFindAllV1SortOrder;
+};
+
+export type AdvancesToSuppliersControllerFindAllV1SortOrder = typeof AdvancesToSuppliersControllerFindAllV1SortOrder[keyof typeof AdvancesToSuppliersControllerFindAllV1SortOrder];
+
+
+export const AdvancesToSuppliersControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type CashAdvanceControllerFindAllV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Records per page
+ * @minimum 1
+ * @maximum 100
+ */
+limit?: number;
+/**
+ * Search term (transNo, partyName, partyCode, remarks)
+ */
+search?: string;
+/**
+ * Status filter (DRAFT, FOR_APPROVAL, APPROVED, DISAPPROVED, POSTED, CANCELLED)
+ */
+status?: string;
+/**
+ * Party Code filter
+ */
+partyCode?: string;
+/**
+ * Start Date in YYYY-MM-DD format
+ */
+startDate?: string;
+/**
+ * End Date in YYYY-MM-DD format
+ */
+endDate?: string;
+/**
+ * Sort field
+ */
+sortBy?: string;
+/**
+ * Sort direction (asc/desc)
+ */
+sortOrder?: CashAdvanceControllerFindAllV1SortOrder;
+};
+
+export type CashAdvanceControllerFindAllV1SortOrder = typeof CashAdvanceControllerFindAllV1SortOrder[keyof typeof CashAdvanceControllerFindAllV1SortOrder];
+
+
+export const CashAdvanceControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type CashAdvanceControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
+};
+
+export type CashAdvanceControllerRemoveV1200 = {
+  message?: string;
+};
+
+export type CashAdvanceMultipleEntryControllerFindAllV1Params = {
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+limit?: number;
+/**
+ * Search transaction no, party, account, or remarks
+ */
+search?: string;
+/**
+ * DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, or CANCELLED
+ */
+status?: string;
+};
+
+export type CashAdvanceMultipleEntryControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
+};
+
+export type CashVoucherControllerFindAllV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Items per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Free-text search (voucherNo, partyName, partyCode, remarks)
+ */
+search?: string;
+/**
+ * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ */
+status?: string;
+/**
+ * Filter by Party Code
+ */
+partyCode?: string;
+/**
+ * Start Date (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End Date (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Document Date From (alias for startDate)
+ */
+documentDateFrom?: string;
+/**
+ * Document Date To (alias for endDate)
+ */
+documentDateTo?: string;
+/**
+ * Minimum Amount
+ */
+amountFrom?: number;
+/**
+ * Maximum Amount
+ */
+amountTo?: number;
+/**
+ * Field to sort by
+ */
+sortBy?: CashVoucherControllerFindAllV1SortBy;
+/**
+ * Sort direction
+ */
+sortOrder?: CashVoucherControllerFindAllV1SortOrder;
+/**
+ * Sort direction alias
+ */
+sortDirection?: CashVoucherControllerFindAllV1SortDirection;
+};
+
+export type CashVoucherControllerFindAllV1SortBy = typeof CashVoucherControllerFindAllV1SortBy[keyof typeof CashVoucherControllerFindAllV1SortBy];
+
+
+export const CashVoucherControllerFindAllV1SortBy = {
+  voucherDate: 'voucherDate',
+  documentDate: 'documentDate',
+  transactionNo: 'transactionNo',
+  voucherNo: 'voucherNo',
+  partyName: 'partyName',
+  partyCode: 'partyCode',
+  currency: 'currency',
+  amount: 'amount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  status: 'status',
+} as const;
+
+export type CashVoucherControllerFindAllV1SortOrder = typeof CashVoucherControllerFindAllV1SortOrder[keyof typeof CashVoucherControllerFindAllV1SortOrder];
+
+
+export const CashVoucherControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type CashVoucherControllerFindAllV1SortDirection = typeof CashVoucherControllerFindAllV1SortDirection[keyof typeof CashVoucherControllerFindAllV1SortDirection];
+
+
+export const CashVoucherControllerFindAllV1SortDirection = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type CashVoucherControllerSuggestTransactionNumberV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Items per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Free-text search (voucherNo, partyName, partyCode, remarks)
+ */
+search?: string;
+/**
+ * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ */
+status?: string;
+/**
+ * Filter by Party Code
+ */
+partyCode?: string;
+/**
+ * Start Date (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End Date (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Document Date From (alias for startDate)
+ */
+documentDateFrom?: string;
+/**
+ * Document Date To (alias for endDate)
+ */
+documentDateTo?: string;
+/**
+ * Minimum Amount
+ */
+amountFrom?: number;
+/**
+ * Maximum Amount
+ */
+amountTo?: number;
+/**
+ * Field to sort by
+ */
+sortBy?: CashVoucherControllerSuggestTransactionNumberV1SortBy;
+/**
+ * Sort direction
+ */
+sortOrder?: CashVoucherControllerSuggestTransactionNumberV1SortOrder;
+/**
+ * Sort direction alias
+ */
+sortDirection?: CashVoucherControllerSuggestTransactionNumberV1SortDirection;
+};
+
+export type CashVoucherControllerSuggestTransactionNumberV1SortBy = typeof CashVoucherControllerSuggestTransactionNumberV1SortBy[keyof typeof CashVoucherControllerSuggestTransactionNumberV1SortBy];
+
+
+export const CashVoucherControllerSuggestTransactionNumberV1SortBy = {
+  voucherDate: 'voucherDate',
+  documentDate: 'documentDate',
+  transactionNo: 'transactionNo',
+  voucherNo: 'voucherNo',
+  partyName: 'partyName',
+  partyCode: 'partyCode',
+  currency: 'currency',
+  amount: 'amount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  status: 'status',
+} as const;
+
+export type CashVoucherControllerSuggestTransactionNumberV1SortOrder = typeof CashVoucherControllerSuggestTransactionNumberV1SortOrder[keyof typeof CashVoucherControllerSuggestTransactionNumberV1SortOrder];
+
+
+export const CashVoucherControllerSuggestTransactionNumberV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type CashVoucherControllerSuggestTransactionNumberV1SortDirection = typeof CashVoucherControllerSuggestTransactionNumberV1SortDirection[keyof typeof CashVoucherControllerSuggestTransactionNumberV1SortDirection];
+
+
+export const CashVoucherControllerSuggestTransactionNumberV1SortDirection = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type CashVoucherControllerFindOneV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Items per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Free-text search (voucherNo, partyName, partyCode, remarks)
+ */
+search?: string;
+/**
+ * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ */
+status?: string;
+/**
+ * Filter by Party Code
+ */
+partyCode?: string;
+/**
+ * Start Date (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End Date (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Document Date From (alias for startDate)
+ */
+documentDateFrom?: string;
+/**
+ * Document Date To (alias for endDate)
+ */
+documentDateTo?: string;
+/**
+ * Minimum Amount
+ */
+amountFrom?: number;
+/**
+ * Maximum Amount
+ */
+amountTo?: number;
+/**
+ * Field to sort by
+ */
+sortBy?: CashVoucherControllerFindOneV1SortBy;
+/**
+ * Sort direction
+ */
+sortOrder?: CashVoucherControllerFindOneV1SortOrder;
+/**
+ * Sort direction alias
+ */
+sortDirection?: CashVoucherControllerFindOneV1SortDirection;
+};
+
+export type CashVoucherControllerFindOneV1SortBy = typeof CashVoucherControllerFindOneV1SortBy[keyof typeof CashVoucherControllerFindOneV1SortBy];
+
+
+export const CashVoucherControllerFindOneV1SortBy = {
+  voucherDate: 'voucherDate',
+  documentDate: 'documentDate',
+  transactionNo: 'transactionNo',
+  voucherNo: 'voucherNo',
+  partyName: 'partyName',
+  partyCode: 'partyCode',
+  currency: 'currency',
+  amount: 'amount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  status: 'status',
+} as const;
+
+export type CashVoucherControllerFindOneV1SortOrder = typeof CashVoucherControllerFindOneV1SortOrder[keyof typeof CashVoucherControllerFindOneV1SortOrder];
+
+
+export const CashVoucherControllerFindOneV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type CashVoucherControllerFindOneV1SortDirection = typeof CashVoucherControllerFindOneV1SortDirection[keyof typeof CashVoucherControllerFindOneV1SortDirection];
+
+
+export const CashVoucherControllerFindOneV1SortDirection = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type CashVoucherControllerRemoveV1200 = {
+  message?: string;
+};
+
+export type DisbursementVoucherControllerFindAllV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Items per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Free-text search (voucherNo, partyName, partyCode, remarks)
+ */
+search?: string;
+/**
+ * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ */
+status?: string;
+/**
+ * Filter by Party Code
+ */
+partyCode?: string;
+/**
+ * Start Date (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End Date (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Document Date From (alias for startDate)
+ */
+documentDateFrom?: string;
+/**
+ * Document Date To (alias for endDate)
+ */
+documentDateTo?: string;
+/**
+ * Minimum Amount
+ */
+amountFrom?: number;
+/**
+ * Maximum Amount
+ */
+amountTo?: number;
+/**
+ * Field to sort by
+ */
+sortBy?: DisbursementVoucherControllerFindAllV1SortBy;
+/**
+ * Sort direction
+ */
+sortOrder?: DisbursementVoucherControllerFindAllV1SortOrder;
+/**
+ * Sort direction alias
+ */
+sortDirection?: DisbursementVoucherControllerFindAllV1SortDirection;
+};
+
+export type DisbursementVoucherControllerFindAllV1SortBy = typeof DisbursementVoucherControllerFindAllV1SortBy[keyof typeof DisbursementVoucherControllerFindAllV1SortBy];
+
+
+export const DisbursementVoucherControllerFindAllV1SortBy = {
+  voucherDate: 'voucherDate',
+  documentDate: 'documentDate',
+  transactionNo: 'transactionNo',
+  voucherNo: 'voucherNo',
+  partyName: 'partyName',
+  partyCode: 'partyCode',
+  currency: 'currency',
+  amount: 'amount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  status: 'status',
+} as const;
+
+export type DisbursementVoucherControllerFindAllV1SortOrder = typeof DisbursementVoucherControllerFindAllV1SortOrder[keyof typeof DisbursementVoucherControllerFindAllV1SortOrder];
+
+
+export const DisbursementVoucherControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type DisbursementVoucherControllerFindAllV1SortDirection = typeof DisbursementVoucherControllerFindAllV1SortDirection[keyof typeof DisbursementVoucherControllerFindAllV1SortDirection];
+
+
+export const DisbursementVoucherControllerFindAllV1SortDirection = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type DisbursementVoucherControllerSuggestTransactionNumberV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Items per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Free-text search (voucherNo, partyName, partyCode, remarks)
+ */
+search?: string;
+/**
+ * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ */
+status?: string;
+/**
+ * Filter by Party Code
+ */
+partyCode?: string;
+/**
+ * Start Date (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End Date (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Document Date From (alias for startDate)
+ */
+documentDateFrom?: string;
+/**
+ * Document Date To (alias for endDate)
+ */
+documentDateTo?: string;
+/**
+ * Minimum Amount
+ */
+amountFrom?: number;
+/**
+ * Maximum Amount
+ */
+amountTo?: number;
+/**
+ * Field to sort by
+ */
+sortBy?: DisbursementVoucherControllerSuggestTransactionNumberV1SortBy;
+/**
+ * Sort direction
+ */
+sortOrder?: DisbursementVoucherControllerSuggestTransactionNumberV1SortOrder;
+/**
+ * Sort direction alias
+ */
+sortDirection?: DisbursementVoucherControllerSuggestTransactionNumberV1SortDirection;
+};
+
+export type DisbursementVoucherControllerSuggestTransactionNumberV1SortBy = typeof DisbursementVoucherControllerSuggestTransactionNumberV1SortBy[keyof typeof DisbursementVoucherControllerSuggestTransactionNumberV1SortBy];
+
+
+export const DisbursementVoucherControllerSuggestTransactionNumberV1SortBy = {
+  voucherDate: 'voucherDate',
+  documentDate: 'documentDate',
+  transactionNo: 'transactionNo',
+  voucherNo: 'voucherNo',
+  partyName: 'partyName',
+  partyCode: 'partyCode',
+  currency: 'currency',
+  amount: 'amount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  status: 'status',
+} as const;
+
+export type DisbursementVoucherControllerSuggestTransactionNumberV1SortOrder = typeof DisbursementVoucherControllerSuggestTransactionNumberV1SortOrder[keyof typeof DisbursementVoucherControllerSuggestTransactionNumberV1SortOrder];
+
+
+export const DisbursementVoucherControllerSuggestTransactionNumberV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type DisbursementVoucherControllerSuggestTransactionNumberV1SortDirection = typeof DisbursementVoucherControllerSuggestTransactionNumberV1SortDirection[keyof typeof DisbursementVoucherControllerSuggestTransactionNumberV1SortDirection];
+
+
+export const DisbursementVoucherControllerSuggestTransactionNumberV1SortDirection = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type DisbursementVoucherControllerFindOneV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Items per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Free-text search (voucherNo, partyName, partyCode, remarks)
+ */
+search?: string;
+/**
+ * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ */
+status?: string;
+/**
+ * Filter by Party Code
+ */
+partyCode?: string;
+/**
+ * Start Date (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End Date (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Document Date From (alias for startDate)
+ */
+documentDateFrom?: string;
+/**
+ * Document Date To (alias for endDate)
+ */
+documentDateTo?: string;
+/**
+ * Minimum Amount
+ */
+amountFrom?: number;
+/**
+ * Maximum Amount
+ */
+amountTo?: number;
+/**
+ * Field to sort by
+ */
+sortBy?: DisbursementVoucherControllerFindOneV1SortBy;
+/**
+ * Sort direction
+ */
+sortOrder?: DisbursementVoucherControllerFindOneV1SortOrder;
+/**
+ * Sort direction alias
+ */
+sortDirection?: DisbursementVoucherControllerFindOneV1SortDirection;
+};
+
+export type DisbursementVoucherControllerFindOneV1SortBy = typeof DisbursementVoucherControllerFindOneV1SortBy[keyof typeof DisbursementVoucherControllerFindOneV1SortBy];
+
+
+export const DisbursementVoucherControllerFindOneV1SortBy = {
+  voucherDate: 'voucherDate',
+  documentDate: 'documentDate',
+  transactionNo: 'transactionNo',
+  voucherNo: 'voucherNo',
+  partyName: 'partyName',
+  partyCode: 'partyCode',
+  currency: 'currency',
+  amount: 'amount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  status: 'status',
+} as const;
+
+export type DisbursementVoucherControllerFindOneV1SortOrder = typeof DisbursementVoucherControllerFindOneV1SortOrder[keyof typeof DisbursementVoucherControllerFindOneV1SortOrder];
+
+
+export const DisbursementVoucherControllerFindOneV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type DisbursementVoucherControllerFindOneV1SortDirection = typeof DisbursementVoucherControllerFindOneV1SortDirection[keyof typeof DisbursementVoucherControllerFindOneV1SortDirection];
+
+
+export const DisbursementVoucherControllerFindOneV1SortDirection = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type DisbursementVoucherControllerRemoveV1200 = {
+  message?: string;
+};
+
+export type PettyCashVoucherControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
+};
+
+export type PettyCashVoucherControllerFindAllV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Limit per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Search term
+ */
+search?: string;
+/**
+ * Status filter
+ */
+status?: PettyCashVoucherControllerFindAllV1Status;
+/**
+ * Party code filter
+ */
+partyCode?: string;
+/**
+ * Start date filter (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End date filter (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Minimum amount filter
+ */
+amountFrom?: number;
+/**
+ * Maximum amount filter
+ */
+amountTo?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Sort column
+ */
+sortBy?: string;
+/**
+ * Sort direction
+ */
+sortOrder?: PettyCashVoucherControllerFindAllV1SortOrder;
+};
+
+export type PettyCashVoucherControllerFindAllV1Status = typeof PettyCashVoucherControllerFindAllV1Status[keyof typeof PettyCashVoucherControllerFindAllV1Status];
+
+
+export const PettyCashVoucherControllerFindAllV1Status = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type PettyCashVoucherControllerFindAllV1SortOrder = typeof PettyCashVoucherControllerFindAllV1SortOrder[keyof typeof PettyCashVoucherControllerFindAllV1SortOrder];
+
+
+export const PettyCashVoucherControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type PettyCashFundControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
+};
+
+export type PettyCashFundControllerFindAllV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Limit per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Search term
+ */
+search?: string;
+/**
+ * Status filter
+ */
+status?: PettyCashFundControllerFindAllV1Status;
+/**
+ * Party code filter
+ */
+partyCode?: string;
+/**
+ * Start date filter (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End date filter (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Minimum amount filter
+ */
+amountFrom?: number;
+/**
+ * Maximum amount filter
+ */
+amountTo?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Sort column
+ */
+sortBy?: string;
+/**
+ * Sort direction
+ */
+sortOrder?: PettyCashFundControllerFindAllV1SortOrder;
+};
+
+export type PettyCashFundControllerFindAllV1Status = typeof PettyCashFundControllerFindAllV1Status[keyof typeof PettyCashFundControllerFindAllV1Status];
+
+
+export const PettyCashFundControllerFindAllV1Status = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type PettyCashFundControllerFindAllV1SortOrder = typeof PettyCashFundControllerFindAllV1SortOrder[keyof typeof PettyCashFundControllerFindAllV1SortOrder];
+
+
+export const PettyCashFundControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type PettyCashReplenishmentControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
+};
+
+export type PettyCashReplenishmentControllerFindAllV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Limit per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Search term
+ */
+search?: string;
+/**
+ * Status filter
+ */
+status?: PettyCashReplenishmentControllerFindAllV1Status;
+/**
+ * Party code filter
+ */
+partyCode?: string;
+/**
+ * Start date filter (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End date filter (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Minimum amount filter
+ */
+amountFrom?: number;
+/**
+ * Maximum amount filter
+ */
+amountTo?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Sort column
+ */
+sortBy?: string;
+/**
+ * Sort direction
+ */
+sortOrder?: PettyCashReplenishmentControllerFindAllV1SortOrder;
+};
+
+export type PettyCashReplenishmentControllerFindAllV1Status = typeof PettyCashReplenishmentControllerFindAllV1Status[keyof typeof PettyCashReplenishmentControllerFindAllV1Status];
+
+
+export const PettyCashReplenishmentControllerFindAllV1Status = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type PettyCashReplenishmentControllerFindAllV1SortOrder = typeof PettyCashReplenishmentControllerFindAllV1SortOrder[keyof typeof PettyCashReplenishmentControllerFindAllV1SortOrder];
+
+
+export const PettyCashReplenishmentControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type RevolvingFundControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
+};
+
+export type RevolvingFundControllerFindAllV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Limit per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Search term
+ */
+search?: string;
+/**
+ * Status filter
+ */
+status?: RevolvingFundControllerFindAllV1Status;
+/**
+ * Party code filter
+ */
+partyCode?: string;
+/**
+ * Start date filter (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End date filter (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Minimum amount filter
+ */
+amountFrom?: number;
+/**
+ * Maximum amount filter
+ */
+amountTo?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Sort column
+ */
+sortBy?: string;
+/**
+ * Sort direction
+ */
+sortOrder?: RevolvingFundControllerFindAllV1SortOrder;
+};
+
+export type RevolvingFundControllerFindAllV1Status = typeof RevolvingFundControllerFindAllV1Status[keyof typeof RevolvingFundControllerFindAllV1Status];
+
+
+export const RevolvingFundControllerFindAllV1Status = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type RevolvingFundControllerFindAllV1SortOrder = typeof RevolvingFundControllerFindAllV1SortOrder[keyof typeof RevolvingFundControllerFindAllV1SortOrder];
+
+
+export const RevolvingFundControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+
+export type RevolvingFundReplenishmentControllerSuggestTransactionNumberV1Params = {
+branchUnitId?: number;
+};
+
+export type RevolvingFundReplenishmentControllerFindAllV1Params = {
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Limit per page
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * Search term
+ */
+search?: string;
+/**
+ * Status filter
+ */
+status?: RevolvingFundReplenishmentControllerFindAllV1Status;
+/**
+ * Party code filter
+ */
+partyCode?: string;
+/**
+ * Start date filter (YYYY-MM-DD)
+ */
+startDate?: string;
+/**
+ * End date filter (YYYY-MM-DD)
+ */
+endDate?: string;
+/**
+ * Minimum amount filter
+ */
+amountFrom?: number;
+/**
+ * Maximum amount filter
+ */
+amountTo?: number;
+/**
+ * Branch Unit ID filter
+ */
+branchUnitId?: number;
+/**
+ * Sort column
+ */
+sortBy?: string;
+/**
+ * Sort direction
+ */
+sortOrder?: RevolvingFundReplenishmentControllerFindAllV1SortOrder;
+};
+
+export type RevolvingFundReplenishmentControllerFindAllV1Status = typeof RevolvingFundReplenishmentControllerFindAllV1Status[keyof typeof RevolvingFundReplenishmentControllerFindAllV1Status];
+
+
+export const RevolvingFundReplenishmentControllerFindAllV1Status = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type RevolvingFundReplenishmentControllerFindAllV1SortOrder = typeof RevolvingFundReplenishmentControllerFindAllV1SortOrder[keyof typeof RevolvingFundReplenishmentControllerFindAllV1SortOrder];
+
+
+export const RevolvingFundReplenishmentControllerFindAllV1SortOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
+

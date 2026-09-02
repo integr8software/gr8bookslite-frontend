@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
+import type { DefaultAccountOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import type { ModuleDataEntryClearAction, ModuleDataEntryColumn } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
@@ -10,7 +10,9 @@ import type {
   DisbursementTaxDetails,
   DisbursementVoucherBankAccount,
   DisbursementVoucherFormErrors,
+  DisbursementVoucherPartyDropdownOption,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 
 export type DisbursementEntryColumnId =
   | "accountCode"
@@ -54,15 +56,16 @@ export type ExpenseEntryColumnId =
   | "refId";
 
 export type VoucherDataEntryProps = {
-  bankAccount: DisbursementVoucherBankAccount | null;
+  bankAccount?: DisbursementVoucherBankAccount | null;
   canAddExpenseType: boolean;
   canAddPartyName: boolean;
   canAddResponsibilityCenter: boolean;
-  defaultAccounts: DefaultAccount[];
+  chartAccountOptions?: AppAdvancedDropdownOption[];
+  defaultAccounts: DefaultAccount[] | DefaultAccountOptionResponseDto[];
   entries: DisbursementLineEntry[];
   errors: DisbursementVoucherFormErrors;
   isReadonly: boolean;
-  isMultiCheckNumber: boolean;
+  isMultiCheckNumber?: boolean;
   onAddEntries: (count: number) => void;
   onAddExpenseType: () => void;
   onAddPartyName: () => void;
@@ -71,13 +74,15 @@ export type VoucherDataEntryProps = {
   onDuplicateEntry: (entryId: string) => void;
   onInsertEntry: (entryId: string, position: "above" | "below") => void;
   onMoveEntry: (fromEntryId: string, toEntryId: string) => void;
-  onReplaceEntries: (entries: DisbursementLineEntry[]) => void;
+  onReplaceEntries?: (entries: DisbursementLineEntry[]) => void;
   onUpdateEntry: (entryId: string, field: keyof DisbursementLineEntry, value: string | number) => void;
   onUpdateEntryFields: (entryId: string, updates: Partial<DisbursementLineEntry>) => void;
-  paymentMethod: string;
-  paymentTypeRecord: AppPaymentTypeRecord | null;
+  paymentMethod?: string;
+  paymentTypeRecord?: AppPaymentTypeRecord | null;
+  partyOptions: DisbursementVoucherPartyDropdownOption[];
   partyCode: string;
   partyName: string;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   totalCredit: number;
   totalDebit: number;
   onRemoveEntry: (entryId: string) => void;
@@ -97,7 +102,8 @@ export type DisbursementAccountingEntryColumnsParams = {
   onAddPartyName: () => void;
   onUpdateEntry: DisbursementEntryUpdater;
   onUpdateEntryFields: DisbursementEntryFieldsUpdater;
-  partyOptions: AppAdvancedDropdownOption[];
+  partyOptions: DisbursementVoucherPartyDropdownOption[];
+  taxCodes: AlphanumericTaxCode[];
   vatOptions?: AppAdvancedDropdownOption[];
 };
 

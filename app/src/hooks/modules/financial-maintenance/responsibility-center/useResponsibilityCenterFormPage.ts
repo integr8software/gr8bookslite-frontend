@@ -19,10 +19,18 @@ import type {
 } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import { validateResponsibilityCenterForm } from "@/app/src/validations/modules/financial-maintenance/responsibility-center/ResponsibilityCenterValidation";
 
-export function useResponsibilityCenterFormPage({ center, initialValues, isOpen = true, mode, onSaved }: ResponsibilityCenterFormPageOptions) {
+export function useResponsibilityCenterFormPage({
+  center,
+  initialValues,
+  isOpen = true,
+  mode,
+  onSaved,
+}: ResponsibilityCenterFormPageOptions) {
   const store = useResponsibilityCenterStore(undefined, { refetchOnMount: false });
   const isReadonly = mode === "view";
-  const defaultInitialValues = center ? createResponsibilityCenterFormValues(center) : (initialValues ?? ResponsibilityCenterInitialFormValues);
+  const defaultInitialValues = center
+    ? createResponsibilityCenterFormValues(center)
+    : (initialValues ?? ResponsibilityCenterInitialFormValues);
   const initialValuesRef = useRef<ResponsibilityCenterFormValues>(defaultInitialValues);
   const [errors, setErrors] = useState<ResponsibilityCenterFormErrors>({});
   const [values, setValues] = useState<ResponsibilityCenterFormValues>(defaultInitialValues);
@@ -173,15 +181,21 @@ export function useResponsibilityCenterFormPage({ center, initialValues, isOpen 
     }
 
     try {
-      if (mode === "edit" && center) {
-        const savedCenter = await store.updateCenter(updateResponsibilityCenterFromForm(center, values));
-        draft.clearDraft();
-        onSaved?.(savedCenter);
-      } else {
-        const savedCenter = await store.addCenter(createResponsibilityCenterFromForm(values));
-        draft.clearDraft();
-        onSaved?.(savedCenter);
+      const savedCenter =
+        mode === "edit" && center
+          ? await store.updateCenter(updateResponsibilityCenterFromForm(center, values))
+          : await store.addCenter(createResponsibilityCenterFromForm(values));
+
+      draft.clearDraft();
+      if (mode === "add") {
+        setValues(defaultInitialValues);
+        setErrors({});
+        setHasManualCode(false);
       }
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
+      onSaved?.(savedCenter);
     } catch {
       isSubmittingRef.current = false;
       setIsSubmitting(false);

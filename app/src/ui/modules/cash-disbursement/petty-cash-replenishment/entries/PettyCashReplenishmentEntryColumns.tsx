@@ -144,9 +144,14 @@ export function createPettyCashReplenishmentLineColumns({
             const selectedSupplier = supplierOptions.find(
               (option) => option.value === value || option.name === value || option.label === value,
             );
+            const vatType = getDefaultVatType(selectedSupplier, row.vatType, PettyCashReplenishmentEntryVatTypeOptions);
+            const ewtCode = getDefaultEwtCode(selectedSupplier, row.ewtCode, PettyCashReplenishmentEntryEwtCodeOptions);
             page.updateEntry(row.id, {
               supplierCode: String(selectedSupplier?.label ?? selectedSupplier?.value ?? ""),
               supplierName: selectedSupplier?.name ?? String(value),
+              vatType,
+              ewtCode,
+              ...calculatePettyCashReplenishmentEntryTaxFields(row.amount, vatType, ewtCode),
             });
           }}
         />
@@ -217,6 +222,51 @@ export function createPettyCashReplenishmentLineColumns({
       ),
     },
   };
+}
+
+function getDefaultVatType(
+  option: AppAdvancedDropdownOption | undefined,
+  fallback: string,
+  vatOptions: AppAdvancedDropdownOption[],
+) {
+  const taxOption = option as (AppAdvancedDropdownOption & {
+    defaultPurchaseInputVatTaxSourceKey?: string;
+    vatCode?: string;
+    vatType?: string;
+  }) | undefined;
+  const rawValue = taxOption?.vatType || taxOption?.vatCode || taxOption?.defaultPurchaseInputVatTaxSourceKey || "";
+  const normalized = rawValue.toLowerCase();
+  const matchedOption = vatOptions.find(
+    (vatOption) =>
+      vatOption.value.toLowerCase() === normalized ||
+      vatOption.name.toLowerCase() === normalized ||
+      (normalized.includes("12") && vatOption.value.toLowerCase().includes("12")) ||
+      (normalized.includes("zero") && vatOption.value.toLowerCase().includes("zero")) ||
+      (normalized.includes("exempt") && vatOption.value.toLowerCase().includes("exempt")),
+  );
+
+  return matchedOption?.value ?? fallback;
+}
+
+function getDefaultEwtCode(
+  option: AppAdvancedDropdownOption | undefined,
+  fallback: string,
+  ewtOptions: AppAdvancedDropdownOption[],
+) {
+  const taxOption = option as (AppAdvancedDropdownOption & {
+    defaultPurchaseEwtTaxSourceKey?: string;
+    ewtCode?: string;
+  }) | undefined;
+  const rawValue = taxOption?.ewtCode || taxOption?.defaultPurchaseEwtTaxSourceKey || "";
+  const normalized = rawValue.toLowerCase();
+  const matchedOption = ewtOptions.find(
+    (ewtOption) =>
+      ewtOption.value.toLowerCase() === normalized ||
+      ewtOption.name.toLowerCase() === normalized ||
+      ewtOption.name.toLowerCase().startsWith(`${normalized} `),
+  );
+
+  return matchedOption?.value ?? fallback;
 }
 
 export function createPettyCashReplenishmentAccountingColumns({

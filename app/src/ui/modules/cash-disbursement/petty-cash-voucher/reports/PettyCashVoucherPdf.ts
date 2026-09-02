@@ -34,19 +34,19 @@ function createPettyCashVoucherPdfDefinition(values: PettyCashVoucherFormValues)
       },
       {
         columns: [
-          {
-            text: [
-              { text: "Responsibility Center: ", bold: true },
-              `${values.responsibilityCenter || "-"} (${values.responsibilityCenterCode || "-"})`,
-            ],
-          },
+          { text: [{ text: "Default Account: ", bold: true }, `${values.accountTitle || "-"} (${values.accountCode || "-"})`] },
           { text: [{ text: "Status: ", bold: true }, values.status || "-"] },
         ],
         margin: [0, 0, 0, 10],
       },
       {
         columns: [
-          { text: [{ text: "Default Account: ", bold: true }, `${values.accountTitle || "-"} (${values.accountCode || "-"})`] },
+          {
+            text: [
+              { text: "Responsibility Center: ", bold: true },
+              `${values.responsibilityCenter || "-"} (${values.responsibilityCenterCode || "-"})`,
+            ],
+          },
           { text: [{ text: "VAT Type: ", bold: true }, values.vatType || "-"] },
         ],
         margin: [0, 0, 0, 10],

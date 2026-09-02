@@ -20,6 +20,7 @@ export type DisbursementVoucherTableColumnKey =
   | "remarks"
   | "currency"
   | "amount"
+  | "disburseAmount"
   | "status"
   | "createdBy"
   | "createdAt"
@@ -43,6 +44,15 @@ export type DisbursementVoucherActionPageState = ReturnType<typeof useDisburseme
 export type DisbursementVoucherActionTab = "details" | "payment-information" | "attachments";
 
 export type DisbursementVoucherStatusFilter = "all" | Exclude<DisbursementVoucherStatus, "Open">;
+
+export type DisbursementVoucherPartyDropdownOption = AppAdvancedDropdownOption & {
+  defaultPurchaseInputVatTaxSourceKey?: string;
+  defaultPurchaseEwtTaxSourceKey?: string;
+  defaultSalesOutputVatTaxSourceKey?: string;
+  defaultSalesCwtTaxSourceKey?: string;
+  vatCode?: string;
+  ewtCode?: string;
+};
 
 export type DisbursementVoucherHistoryEntry = {
   id: string;
@@ -190,10 +200,12 @@ export type DisbursementVoucherRecord = {
   currency: VoucherCurrency;
   fxRate: string;
   costCenter: string;
+  projectCode?: string | null;
   projectName?: string;
   partyCode: string;
   partyName: string;
   amount: number;
+  disburseAmount?: number;
   taxRate: string;
   taxDetails: DisbursementTaxDetails;
   remarks: string;
@@ -242,6 +254,7 @@ export type DisbursementVoucherFormValues = {
   currency: VoucherCurrency;
   fxRate: string;
   costCenter: string;
+  projectCode: string;
   projectName: string;
   partyCode: string;
   partyName: string;
@@ -295,6 +308,7 @@ export type DisbursementVoucherFormErrors = Partial<
   Record<
     | keyof Omit<DisbursementVoucherFormValues, "lineEntries" | "attachments">
     | DisbursementVoucherPaymentErrorField
+    | "attachments"
     | "lineEntries"
     | "entryDraft",
     string
@@ -345,7 +359,9 @@ export type DisbursementVoucherDetailsFormProps = {
   currencyOptions: AppAdvancedDropdownOption[];
   isExchangeRateLoading: boolean;
   isReadonly: boolean;
+  partyOptions: AppAdvancedDropdownOption[];
   paymentTypeRecords: AppPaymentTypeRecord[];
+  projectOptions: AppAdvancedDropdownOption[];
   values: DisbursementVoucherFormValues;
   onOpenPartyNameDrawer: () => void;
   onOpenPaymentTypeDrawer: () => void;

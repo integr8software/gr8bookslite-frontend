@@ -220,7 +220,9 @@ export const PartyCivilStatusOptions = ["Single", "Married", "Widowed", "Separat
 
 export const PartyDefaultNationality = "Filipino";
 
-export const PartyInformationStatusOptions = ["Active", "Inactive"] as const satisfies readonly PartyInformationStatus[];
+export const PartyManagementAllFilter = "All";
+export const PartyInformationActiveStatus = "Active";
+export const PartyInformationStatusOptions = [PartyInformationActiveStatus, "Inactive"] as const satisfies readonly PartyInformationStatus[];
 
 export const BIRAtcSourceUrl = "https://bir-cdn.bir.gov.ph/local/pdf/2307%20Jan%202018%20ENCS%20v3.pdf";
 

@@ -17,7 +17,7 @@ export function openCashAdvancePdf(values: CashAdvanceFormValues) {
 
 function createCashAdvancePdfDefinition(values: CashAdvanceFormValues): TDocumentDefinitions {
   const amount = Number(values.amount || 0);
-  const accountTitle = getCashAdvanceAccountTitle(values.accountCode);
+  const accountTitle = values.accountTitle || getCashAdvanceAccountTitle(values.accountCode);
   const purpose = [accountTitle, values.remarks].filter(Boolean).join(" - ");
 
   return {
@@ -88,7 +88,7 @@ function createCashAdvancePdfDefinition(values: CashAdvanceFormValues): TDocumen
             requestRow("Responsibility Center", values.costCenter),
             requestRow("Amount of Cash Advance", formatCashAdvanceCurrency(amount)),
             requestRow("Amount in Words", amountToWords(amount)),
-            requestRow("Project Name", values.referenceFields.projectRef, 30),
+            requestRow("Project Name", values.referenceFields.projectName, 30),
             requestRow("Purpose of Cash Advance", purpose, 40),
             [
               { text: "Prepared by:", margin: [4, 4, 0, 28] },

@@ -4,7 +4,6 @@ import {
 	approverSetupsControllerFindCompanyUsersV1,
 } from "@/app/src/generated/api/approver-setups/approver-setups";
 import type {
-	ApproverSetupResponseDto,
 	CreateApproverSetupDto,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
@@ -17,12 +16,16 @@ import type {
 } from "@/app/src/types/modules/system-administration/user-management/approver-setup/ApproverSetupTypes";
 import { OrvalApiClient } from "@/app/src/services/shared/api/OrvalApiClient";
 
-type ApproverSetupModulesResponse = {
-	modules: Array<{
-		code: string;
-		id: number;
-		name: string;
-	}>;
+type ApproverSetupResponseDto = {
+	id: string;
+	level?: number | null;
+	levelName: string;
+	moduleScope: string;
+	type?: string | null;
+	approverCondition?: string | null;
+	status?: string | null;
+	updatedAt: string;
+	approvers: Array<{ id: number | string; name: string; email: string }>;
 };
 
 type ApproverSetupApiRecord = ApproverSetupResponseDto & {
@@ -30,9 +33,17 @@ type ApproverSetupApiRecord = ApproverSetupResponseDto & {
 	validUntil?: string | null;
 };
 
-export type CreateApproverSetupPayload = CreateApproverSetupDto & {
+type ApproverSetupMutationPayload = CreateApproverSetupDto & {
 	levelName: string;
 	validUntil?: string;
+};
+
+type ApproverSetupModulesResponse = {
+	modules: Array<{
+		code: string;
+		id: number;
+		name: string;
+	}>;
 };
 
 export async function FetchApproverSetupModules() {
@@ -53,7 +64,7 @@ export async function FetchApproverSetupUsers(search = "") {
 		page: 1,
 		limit: 100,
 		search: search.trim() || undefined,
-	});
+	}) as unknown as Array<{ id: number | string; name: string; email: string }>;
 
 	return response.map<ApproverSetupUser>((user) => ({
 		id: String(user.id),
@@ -66,15 +77,15 @@ export async function FetchApproverSetups() {
 	const response = await approverSetupsControllerFindAllV1({
 		page: 1,
 		limit: 100,
-	});
+	}) as unknown as { items: ApproverSetupApiRecord[] };
 
 	return response.items.map((record) =>
 		MapApproverSetupApiRecord(record as ApproverSetupApiRecord),
 	);
 }
 
-export async function CreateApproverSetup(payload: CreateApproverSetupPayload) {
-	const response = await approverSetupsControllerCreateV1(payload);
+export async function CreateApproverSetup(payload: ApproverSetupMutationPayload) {
+	const response = await approverSetupsControllerCreateV1(payload) as unknown as { setup: ApproverSetupApiRecord };
 	return MapApproverSetupApiRecord(response.setup as ApproverSetupApiRecord);
 }
 
@@ -83,7 +94,7 @@ export async function UpdateApproverSetup({
 	payload,
 }: {
 	id: string;
-	payload: CreateApproverSetupPayload;
+	payload: ApproverSetupMutationPayload;
 }) {
 	const response = await OrvalApiClient<{ setup: ApproverSetupApiRecord }>({
 		data: payload,

@@ -8,10 +8,12 @@ export function ModuleDataEntryInputCell({
   className,
   id,
   isInvalid = false,
+  isWarning = false,
   name,
   onChange,
   placeholder,
   readOnly,
+  title,
   type = "text",
   value,
 }: {
@@ -19,10 +21,12 @@ export function ModuleDataEntryInputCell({
   className?: string;
   id: string;
   isInvalid?: boolean;
+  isWarning?: boolean;
   name: string;
   onChange?: (value: string) => void;
   placeholder?: string;
   readOnly?: boolean;
+  title?: string;
   type?: "text" | "date" | "number" | "password" | "email";
   value: string | number;
 }) {
@@ -33,9 +37,11 @@ export function ModuleDataEntryInputCell({
         ? "text-center"
         : "text-left";
 
-  const invalidClass = isInvalid
+  const statusClass = isInvalid
     ? "bg-coralpink/10 text-coralpink ring-2 ring-inset ring-coralpink/50 focus:bg-coralpink/10 focus:ring-coralpink/60"
-    : "";
+    : isWarning
+      ? "bg-amber-500/10 text-darknavy ring-2 ring-inset ring-amber-400 focus:bg-amber-500/10 focus:ring-amber-500"
+      : "";
 
   const displayValue =
     placeholder === "0.00" && (value === 0 || value === "0" || value === "0.00")
@@ -54,9 +60,9 @@ export function ModuleDataEntryInputCell({
         value={displayValue}
         readOnly={readOnly}
         placeholder={placeholder}
-        title={placeholder}
+        title={title ?? placeholder}
         onChange={(event: ChangeEvent<HTMLInputElement>) => onChange?.(event.target.value)}
-        className={`${moduleDataEntryInputClassName} ${alignClass} ${invalidClass} ${className ?? ""}`}
+        className={`${moduleDataEntryInputClassName} ${alignClass} ${statusClass} ${className ?? ""}`}
       />
     </>
   );

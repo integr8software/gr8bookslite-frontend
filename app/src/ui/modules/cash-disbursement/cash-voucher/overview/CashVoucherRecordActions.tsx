@@ -65,7 +65,7 @@ export function CashVoucherRecordActions({
       icon: isCancelled ? Undo2 : Ban,
       label: isCancelled ? "Undo Cancelled" : "Cancel",
       onSelect: () => setStatusToConfirm(cancelStatus),
-      tone: isCancelled ? "default" : "danger",
+      tone: isCancelled ? "default" : "warning",
       type: "button",
     },
   ];

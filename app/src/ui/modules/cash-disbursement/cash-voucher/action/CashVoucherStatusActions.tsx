@@ -68,7 +68,7 @@ function createCashVoucherStatusActionItems({
   transaction?: CashVoucherTransactionRecord;
   voucher?: CashVoucherRecord;
 }) {
-  const status = voucher?.status ?? transaction?.status ?? CashVoucherStatuses.draft;
+  const status = voucher?.status ?? transaction?.status ?? CashVoucherStatuses.open;
   const isPosted = status === CashVoucherStatuses.posted;
   const isDisapproved = status === CashVoucherStatuses.disapproved;
   const isCancelled = status === CashVoucherStatuses.cancelled;
@@ -99,7 +99,7 @@ function createCashVoucherStatusActionItems({
       icon: isCancelled ? Undo2 : Ban,
       label: isCancelled ? "Undo Cancelled" : "Cancel",
       onSelect: () => onRequestStatusConfirmation(cancelStatus),
-      tone: isCancelled ? "default" : "danger",
+      tone: isCancelled ? "default" : "warning",
       type: "button",
     },
   ];

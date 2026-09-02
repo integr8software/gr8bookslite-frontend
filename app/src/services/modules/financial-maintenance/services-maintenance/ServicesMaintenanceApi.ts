@@ -9,11 +9,13 @@ import {
 import type {
   CreateServiceMaintenanceDto,
   CreateServiceMaintenanceDtoAccountSetupMode,
+  CreateServiceMaintenanceDtoServiceType,
   CreateServiceMaintenanceDtoStatus,
   ServiceMaintenanceAccountOptionResponseDto,
   ServiceMaintenanceNextAccountCodeResponseDto,
   ServiceMaintenanceResponseDto,
   ServiceMaintenanceResponseDtoAccountSetupMode,
+  ServiceMaintenanceResponseDtoServiceType,
   ServiceMaintenanceResponseDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
@@ -22,6 +24,7 @@ import type {
   ServicesMaintenanceAccountSetupMode,
   ServicesMaintenanceFormValues,
   ServicesMaintenanceListResult,
+  ServicesMaintenanceServiceType,
   ServicesMaintenanceStatus,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
 
@@ -80,6 +83,7 @@ function mapApiService(service: ServiceMaintenanceResponseDto): ServicesMaintena
   return {
     id: service.id,
     serviceName: service.serviceName,
+    serviceType: mapServiceTypeFromApi(service.serviceType),
     description: service.description ?? "",
     status: mapStatusFromApi(service.status),
     accountSetupMode: mapSetupModeFromApi(service.accountSetupMode),
@@ -112,6 +116,7 @@ function mapApiAccountOption(account: ServiceMaintenanceAccountOptionResponseDto
 function toApiServicePayload(service: ServicesMaintenance | ServicesMaintenanceFormValues): CreateServiceMaintenanceDto {
   return {
     serviceName: service.serviceName.trim(),
+    serviceType: mapServiceTypeToApi(service.serviceType),
     description: service.description.trim(),
     status: mapStatusToApi(service.status),
     accountSetupMode: mapSetupModeToApi(service.accountSetupMode),
@@ -133,4 +138,12 @@ function mapSetupModeFromApi(value: ServiceMaintenanceResponseDtoAccountSetupMod
 
 function mapSetupModeToApi(value: ServicesMaintenanceAccountSetupMode): CreateServiceMaintenanceDtoAccountSetupMode {
   return value === "Auto" ? "AUTO" : "EXISTING";
+}
+
+function mapServiceTypeFromApi(value: ServiceMaintenanceResponseDtoServiceType): ServicesMaintenanceServiceType {
+  return value === "PURCHASES" ? "Purchases" : "Sales";
+}
+
+function mapServiceTypeToApi(value: ServicesMaintenanceServiceType): CreateServiceMaintenanceDtoServiceType {
+  return value === "Purchases" ? "PURCHASES" : "SALES";
 }

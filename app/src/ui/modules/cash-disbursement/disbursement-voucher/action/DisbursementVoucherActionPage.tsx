@@ -7,10 +7,6 @@ import {
   DisbursementVoucherPaymentInformationErrorFields,
   DisbursementVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
-import {
-  DisbursementVoucherCopyFromRecords,
-  DisbursementVoucherCopySources,
-} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { createProjectResponsibilityCenterInitialValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { useDisbursementVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucherActionPage";
 import type { DisbursementVoucherActionMode, DisbursementVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
@@ -83,23 +79,29 @@ function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: Di
   const hasDetailsError = Object.entries(voucherAction.errors).some(
     ([field, error]) =>
       Boolean(error) &&
+      field !== "attachments" &&
       !DisbursementVoucherPaymentInformationErrorFields.includes(
         field as (typeof DisbursementVoucherPaymentInformationErrorFields)[number],
       ),
   );
+  const hasAttachmentsError = Boolean(voucherAction.errors.attachments);
   const actionTabs = DisbursementVoucherActionTabs.filter(
     (tab) => tab.id !== "payment-information" || shouldShowPaymentInformation,
   ).map((tab) => ({
     ...tab,
     hasError:
-      tab.id === "details" ? hasDetailsError : tab.id === "payment-information" ? hasPaymentInformationError : false,
+      tab.id === "details"
+        ? hasDetailsError
+        : tab.id === "payment-information"
+          ? hasPaymentInformationError
+          : tab.id === "attachments"
+            ? hasAttachmentsError
+            : false,
   }));
 
   return (
     <>
       <DisbursementVoucherActionHeader
-        copyFromRecords={DisbursementVoucherCopyFromRecords.filter((record) => record.templateValues.paymentMethod !== "Cash")}
-        copyFromSources={DisbursementVoucherCopySources}
         hasDiscardableChanges={voucherAction.hasDiscardableChanges}
         mode={voucherAction.isReadonly ? "view" : voucherAction.mode}
         isSubmitting={voucherAction.isSubmitting}
@@ -111,7 +113,6 @@ function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: Di
         onDiscard={voucherAction.discardDraft}
         onCancelSubmit={voucherAction.cancelDisbursementVoucherSubmit}
         onConfirmSubmit={voucherAction.confirmDisbursementVoucherSubmit}
-        onCopyFrom={voucherAction.handleCopyFrom}
         onPreview={() => voucherAction.setIsReportPreviewOpen(true)}
         onSaveDraft={() => voucherAction.requestDisbursementVoucherSubmit(DisbursementVoucherStatuses.draft)}
         onSubmit={() => voucherAction.requestDisbursementVoucherSubmit(DisbursementVoucherStatuses.forApproval)}
@@ -164,7 +165,9 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
         errors={voucherAction.errors}
         isExchangeRateLoading={voucherAction.isExchangeRateLoading}
         isReadonly={voucherAction.isReadonly}
+        partyOptions={voucherAction.partyOptions}
         paymentTypeRecords={voucherAction.paymentTypeRecords}
+        projectOptions={voucherAction.projectOptions}
         values={values}
         onOpenPartyNameDrawer={() => voucherAction.setIsPartyNameDrawerOpen(true)}
         onOpenPaymentTypeDrawer={() => voucherAction.setIsPaymentTypeDrawerOpen(true)}
@@ -179,6 +182,7 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
         canAddExpenseType={voucherAction.defaultAccountStore.permissions.canCreate}
         canAddPartyName={voucherAction.partyStore.permissions.canCreate}
         canAddResponsibilityCenter={voucherAction.responsibilityCenterStore.permissions.canCreate}
+        chartAccountOptions={voucherAction.chartAccountOptions}
         defaultAccounts={voucherAction.defaultAccounts}
         entries={values.lineEntries}
         errors={voucherAction.errors}
@@ -188,6 +192,8 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
         partyName={values.partyName}
         paymentMethod={values.paymentMethod}
         paymentTypeRecord={voucherAction.selectedPaymentTypeRecord}
+        partyOptions={voucherAction.partyOptions}
+        responsibilityCenterOptions={voucherAction.responsibilityCenterOptions}
         totalCredit={voucherAction.totalCredit}
         totalDebit={voucherAction.totalDebit}
         onAddEntries={voucherAction.handleAddEntries}

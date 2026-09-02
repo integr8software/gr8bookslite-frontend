@@ -16,8 +16,10 @@ export type AdvancesToSuppliersFormValues = {
   transactionNo: string;
   documentDate: string;
   status: AdvancesToSuppliersFormStatus;
+  partyId?: string;
   partyCode: string;
   partyName: string;
+  accountId?: string;
   responsibilityCenter: string;
   responsibilityCenterCode: string;
   projectCode: string;
@@ -39,10 +41,17 @@ export type AdvancesToSuppliersRecord = {
   id: string;
   transactionNo: string;
   documentDate: string;
+  partyId?: string;
   partyCode: string;
   partyName: string;
   accountCode: string;
   accountTitle: string;
+  responsibilityCenter?: string;
+  responsibilityCenterCode?: string;
+  projectCode?: string;
+  projectName?: string;
+  currency?: string;
+  exchangeRate?: string;
   poReference: string;
   totalPoAmount: number;
   advancePaymentType?: AdvancesToSuppliersPaymentType;

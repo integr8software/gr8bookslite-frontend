@@ -17,7 +17,9 @@ export type CashVoucherTableColumnKey =
   | "partyName"
   | "remarks"
   | "currency"
+  | "exchangeRate"
   | "amount"
+  | "disburseAmount"
   | "status"
   | "createdBy"
   | "createdAt"
@@ -41,6 +43,15 @@ export type CashVoucherActionPageState = ReturnType<typeof useCashVoucherActionP
 export type CashVoucherActionTab = "details" | "attachments";
 
 export type CashVoucherStatusFilter = "all" | Exclude<CashVoucherStatus, "Open">;
+
+export type CashVoucherPartyDropdownOption = AppAdvancedDropdownOption & {
+  defaultPurchaseInputVatTaxSourceKey?: string;
+  defaultPurchaseEwtTaxSourceKey?: string;
+  defaultSalesOutputVatTaxSourceKey?: string;
+  defaultSalesCwtTaxSourceKey?: string;
+  vatCode?: string;
+  ewtCode?: string;
+};
 
 export type CashVoucherHistoryEntry = {
   id: string;
@@ -112,12 +123,15 @@ export type CashVoucherTransactionRecord = {
   payee: string;
   purpose: string;
   department: string;
+  projectCode?: string;
   projectName?: string;
   requestedBy: string;
   transactionDate: string;
   paymentDueDate: string;
   amount: number;
+  disburseAmount?: number;
   currency: VoucherCurrency;
+  fxRate?: string;
   paymentMethod: CashVoucherPaymentMethod;
   disbursementType: CashVoucherType;
   status: CashVoucherStatus;
@@ -188,10 +202,12 @@ export type CashVoucherRecord = {
   currency: VoucherCurrency;
   fxRate: string;
   costCenter: string;
+  projectCode?: string;
   projectName?: string;
   partyCode: string;
   partyName: string;
   amount: number;
+  disburseAmount?: number;
   taxRate: string;
   taxDetails: CashVoucherTaxDetails;
   remarks: string;
@@ -240,6 +256,7 @@ export type CashVoucherFormValues = {
   currency: VoucherCurrency;
   fxRate: string;
   costCenter: string;
+  projectCode: string;
   projectName: string;
   partyCode: string;
   partyName: string;
@@ -282,7 +299,13 @@ export type CashVoucherAccountingGridSession = {
 };
 
 export type CashVoucherFormErrors = Partial<
-  Record<keyof Omit<CashVoucherFormValues, "lineEntries" | "attachments"> | "lineEntries" | "entryDraft", string>
+  Record<
+    | keyof Omit<CashVoucherFormValues, "lineEntries" | "attachments">
+    | "attachments"
+    | "lineEntries"
+    | "entryDraft",
+    string
+  >
 >;
 
 export type CashVoucherCopyFromRecord = {
@@ -344,5 +367,3 @@ export type CashVoucherReportPreviewProps = {
 };
 
 export type CashVoucherPdfText = string | Array<string | { text: string; bold?: boolean }>;
-
-

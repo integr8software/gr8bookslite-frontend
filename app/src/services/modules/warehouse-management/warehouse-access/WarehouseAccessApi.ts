@@ -9,12 +9,16 @@ import {
 } from "@/app/src/generated/api/warehouse-access/warehouse-access";
 import type {
   CreateWarehouseAccessAssignmentDtoAccessLevel,
-  CreateWarehouseAccessAssignmentDtoPermissions,
+  CreateWarehouseAccessAssignmentDtoPermissionsItem,
   CreateWarehouseAccessAssignmentDtoStatus,
   WarehouseAccessResponseDto,
   WarehouseAccessResponseDtoAccessLevel,
-  WarehouseAccessResponseDtoPermissions,
+  WarehouseAccessResponseDtoPermissionsItem,
   WarehouseAccessResponseDtoStatus,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import {
+  CreateWarehouseAccessAssignmentDtoPermissionsItem as CreateWarehouseAccessPermission,
+  WarehouseAccessResponseDtoPermissionsItem as WarehouseAccessResponsePermission,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
   WarehouseAccessDirectoryResponse,
@@ -180,27 +184,27 @@ function mapAccessLevelToApi(
 }
 
 function mapPermissionFromApi(
-  value: WarehouseAccessResponseDtoPermissions,
+  value: WarehouseAccessResponseDtoPermissionsItem,
 ): WarehouseAccessPermission {
   if (value === "RECEIVE_STOCK") return "Receive Stock";
   if (value === "ISSUE_STOCK") return "Issue Stock";
   if (value === "TRANSFER_STOCK") return "Transfer Stock";
   if (value === "ADJUST_STOCK") return "Adjust Stock";
-  if (value === "MANAGE_LOCATIONS") return "Manage Locations";
-  if (value === "VIEW_HISTORY") return "View History";
+  if (value === WarehouseAccessResponsePermission.MANAGE_LOCATIONS) return "Manage Locations";
+  if (value === WarehouseAccessResponsePermission.VIEW_HISTORY) return "View History";
   return "View Stock";
 }
 
 function mapPermissionToApi(
   value: WarehouseAccessPermission,
-): CreateWarehouseAccessAssignmentDtoPermissions {
+): CreateWarehouseAccessAssignmentDtoPermissionsItem {
   if (value === "Receive Stock") return "RECEIVE_STOCK";
   if (value === "Issue Stock") return "ISSUE_STOCK";
   if (value === "Transfer Stock") return "TRANSFER_STOCK";
   if (value === "Adjust Stock") return "ADJUST_STOCK";
-  if (value === "Manage Locations") return "MANAGE_LOCATIONS";
-  if (value === "View History") return "VIEW_HISTORY";
-  return "VIEW_STOCK";
+  if (value === "Manage Locations") return CreateWarehouseAccessPermission.MANAGE_LOCATIONS;
+  if (value === "View History") return CreateWarehouseAccessPermission.VIEW_HISTORY;
+  return CreateWarehouseAccessPermission.VIEW_STOCK;
 }
 
 function mapStatusFromApi(value: WarehouseAccessResponseDtoStatus): WarehouseStatus {

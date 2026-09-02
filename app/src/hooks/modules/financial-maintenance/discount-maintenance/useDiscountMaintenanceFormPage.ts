@@ -135,9 +135,14 @@ export function useDiscountMaintenanceFormPage(options: DiscountMaintenanceFormP
         return;
       } else {
         await addDiscount(createDiscountFromForm(values));
+        setValues(DiscountMaintenanceInitialFormValues);
+        setErrors({});
       }
 
       draft.clearDraft();
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
       options.onSaved?.();
       if (!options.onSaved) router.push(DiscountMaintenanceHref);
     } catch {

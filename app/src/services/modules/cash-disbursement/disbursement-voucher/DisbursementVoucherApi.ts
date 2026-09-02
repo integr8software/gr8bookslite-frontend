@@ -58,25 +58,13 @@ export type FetchDisbursementVoucherListParams = {
   sortOrder?: "asc" | "desc";
 };
 
-export type FetchDisbursementVoucherListResponse = {
+type MappedDisbursementVoucherListResponse = Omit<DisbursementVoucherListResponseDto, "data"> & {
   data: DisbursementVoucherRecord[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-  statistics?: {
-    totalVouchers: number;
-    draftVouchers: number;
-    forApprovalVouchers: number;
-    postedVouchers: number;
-    disapprovedVouchers: number;
-    cancelledVouchers: number;
-  };
 };
 
-export async function fetchDisbursementVoucherList(params?: FetchDisbursementVoucherListParams): Promise<FetchDisbursementVoucherListResponse> {
+export async function fetchDisbursementVoucherList(
+  params?: FetchDisbursementVoucherListParams,
+): Promise<MappedDisbursementVoucherListResponse> {
   const response = await disbursementVoucherControllerFindAllV1({
     ...params,
     status: params?.status && params.status !== "all" ? mapDisbursementVoucherStatusToApi(params.status) : params?.status,

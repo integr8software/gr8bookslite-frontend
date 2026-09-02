@@ -35,6 +35,7 @@ import {
   CashAdvanceMultipleEntryStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
 import {
+  CashDisbursementActionModeAdd,
   CashDisbursementAllTimeSummary,
   CashDisbursementQuerySegment,
   CashDisbursementTotalEntriesLabel,
@@ -142,12 +143,12 @@ export function useCashAdvanceMultipleEntryActionForm(
   );
   const hasEditedCurrencyRef = useRef(false);
   const isSubmittingRef = useRef(false);
-  const [isLoading, setIsLoading] = useState(mode !== "add" && Boolean(recordId));
+  const [isLoading, setIsLoading] = useState(mode !== CashDisbursementActionModeAdd && Boolean(recordId));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<CashAdvanceMultipleEntryFormErrors>({});
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transNo"]) : rawIsDirty;
+  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transNo"]) : rawIsDirty;
   const availabilityWarning = useMemo(() => getCashAdvanceMultipleEntryAvailabilityWarning(values), [values]);
   const draft = useModuleDraft({
     enabled: mode !== "view",
@@ -172,7 +173,7 @@ export function useCashAdvanceMultipleEntryActionForm(
   }, [activeBranchId]);
 
   useEffect(() => {
-    if (mode !== "add") {
+    if (mode !== CashDisbursementActionModeAdd) {
       return;
     }
 
@@ -180,7 +181,7 @@ export function useCashAdvanceMultipleEntryActionForm(
   }, [mode, refreshNextTransactionNo]);
 
   useEffect(() => {
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       return;
     }
 
@@ -224,7 +225,7 @@ export function useCashAdvanceMultipleEntryActionForm(
   }, [mode, recordId]);
 
   useEffect(() => {
-    if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
       return;
     }
 
@@ -392,7 +393,7 @@ export function useCashAdvanceMultipleEntryActionForm(
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -412,7 +413,7 @@ export function useCashAdvanceMultipleEntryActionForm(
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isLoading,
     isSubmitting,
-    isRecordMissing: mode !== "add" && !isLoading && !loadedRecord,
+    isRecordMissing: mode !== CashDisbursementActionModeAdd && !isLoading && !loadedRecord,
     record: loadedRecord,
     submitEntry,
     updateAccountingEntries,

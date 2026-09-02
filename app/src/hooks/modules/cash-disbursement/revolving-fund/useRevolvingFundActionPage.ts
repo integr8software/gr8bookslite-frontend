@@ -31,6 +31,7 @@ import {
   updateRevolvingFundStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/revolving-fund/RevolvingFundApi";
 import {
+  CashDisbursementActionModeAdd,
   createCashDisbursementModuleQueryKey,
   createCashDisbursementRecordQueryKey,
 } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
@@ -48,7 +49,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   const recordQuery = useQuery({
     queryKey: createCashDisbursementRecordQueryKey(RevolvingFundQueryKey, params.recordId),
     queryFn: () => fetchRevolvingFundById(params.recordId!),
-    enabled: Boolean(params.recordId) && mode !== "add",
+    enabled: Boolean(params.recordId) && mode !== CashDisbursementActionModeAdd,
   });
 
   const record = recordQuery.data;
@@ -62,7 +63,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   const hasEditedCurrencyRef = useRef(false);
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
+  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
 
   async function refreshNextTransactionNo() {
     try {
@@ -88,7 +89,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   }, [record]);
 
   useEffect(() => {
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       queueMicrotask(() => void refreshNextTransactionNo());
     }
   }, [mode]);
@@ -105,7 +106,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   const totals = useMemo(() => calculateRevolvingFundTotals(values.items), [values.items]);
 
   useEffect(() => {
-    if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
       return;
     }
 
@@ -205,7 +206,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
 
   const saveMutation = useMutation({
     mutationFn: async (submitValues: RevolvingFundFormValues) => {
-      if (mode === "add") {
+      if (mode === CashDisbursementActionModeAdd) {
         return await createRevolvingFundApi(submitValues);
       }
       return await updateRevolvingFundApi(params.recordId!, submitValues);
@@ -213,7 +214,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(RevolvingFundQueryKey) });
       draft.clearDraft();
-      toast.success(`Revolving Fund ${mode === "add" ? "created" : "updated"} successfully.`);
+      toast.success(`Revolving Fund ${mode === CashDisbursementActionModeAdd ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
         options.onSaved();
       } else {
@@ -288,7 +289,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -314,7 +315,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     isLoading: recordQuery.isLoading,
     isPreviewOpen,
     isReadonly,
-    isRecordMissing: mode !== "add" && !recordQuery.isLoading && !record,
+    isRecordMissing: mode !== CashDisbursementActionModeAdd && !recordQuery.isLoading && !record,
     isSubmitting: saveMutation.isPending || updateStatusMutation.isPending,
     mode,
     moveItem,

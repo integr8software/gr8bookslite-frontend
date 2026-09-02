@@ -31,6 +31,7 @@ import {
   updatePettyCashFundStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/petty-cash-fund/PettyCashFundApi";
 import {
+  CashDisbursementActionModeAdd,
   createCashDisbursementModuleQueryKey,
   createCashDisbursementRecordQueryKey,
 } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
@@ -48,7 +49,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   const recordQuery = useQuery({
     queryKey: createCashDisbursementRecordQueryKey(PettyCashFundQueryKey, params.recordId),
     queryFn: () => fetchPettyCashFundById(params.recordId!),
-    enabled: Boolean(params.recordId) && mode !== "add",
+    enabled: Boolean(params.recordId) && mode !== CashDisbursementActionModeAdd,
   });
 
   const record = recordQuery.data;
@@ -62,7 +63,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   const hasEditedCurrencyRef = useRef(false);
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
+  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
 
   async function refreshNextTransactionNo() {
     try {
@@ -88,7 +89,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   }, [record]);
 
   useEffect(() => {
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       queueMicrotask(() => void refreshNextTransactionNo());
     }
   }, [mode]);
@@ -105,7 +106,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   const totals = useMemo(() => calculatePettyCashFundTotals(values.items), [values.items]);
 
   useEffect(() => {
-    if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
       return;
     }
 
@@ -205,7 +206,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
 
   const saveMutation = useMutation({
     mutationFn: async (submitValues: PettyCashFundFormValues) => {
-      if (mode === "add") {
+      if (mode === CashDisbursementActionModeAdd) {
         return await createPettyCashFundApi(submitValues);
       }
       return await updatePettyCashFundApi(params.recordId!, submitValues);
@@ -213,7 +214,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashFundQueryKey) });
       draft.clearDraft();
-      toast.success(`Petty Cash Fund ${mode === "add" ? "created" : "updated"} successfully.`);
+      toast.success(`Petty Cash Fund ${mode === CashDisbursementActionModeAdd ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
         options.onSaved();
       } else {
@@ -288,7 +289,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -314,7 +315,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
     isLoading: recordQuery.isLoading,
     isPreviewOpen,
     isReadonly,
-    isRecordMissing: mode !== "add" && !recordQuery.isLoading && !record,
+    isRecordMissing: mode !== CashDisbursementActionModeAdd && !recordQuery.isLoading && !record,
     isSubmitting: saveMutation.isPending || updateStatusMutation.isPending,
     mode,
     moveItem,

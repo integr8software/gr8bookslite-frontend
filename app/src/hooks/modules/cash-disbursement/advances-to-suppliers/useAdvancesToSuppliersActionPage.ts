@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
+import { CashDisbursementActionModeAdd } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { AdvancesToSuppliersStatuses } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
 import {
   calculateAdvancePayment,
@@ -57,7 +58,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   const hasEditedCurrencyRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(mode !== "add" && Boolean(recordId));
+  const [isLoading, setIsLoading] = useState(mode !== CashDisbursementActionModeAdd && Boolean(recordId));
   const [partyOptions, setPartyOptions] = useState<AppAdvancedDropdownOption[]>([]);
   const [accountOptions, setAccountOptions] = useState<AppAdvancedDropdownOption[]>([]);
   const [responsibilityCenterOptions, setResponsibilityCenterOptions] = useState<AppAdvancedDropdownOption[]>([]);
@@ -66,7 +67,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   const isReadonly = mode === "view";
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
+  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
   const draft = useModuleDraft({
     enabled: !isReadonly,
     initialValues,
@@ -121,13 +122,13 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   }, []);
 
   useEffect(() => {
-    if (mode !== "add") return;
+    if (mode !== CashDisbursementActionModeAdd) return;
 
     queueMicrotask(() => void refreshNextTransactionNo());
   }, [mode]);
 
   useEffect(() => {
-    if (mode === "add" || !recordId) return;
+    if (mode === CashDisbursementActionModeAdd || !recordId) return;
 
     let isMounted = true;
     queueMicrotask(() => {
@@ -175,7 +176,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   );
 
   useEffect(() => {
-    if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
+    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
     setValues((current) => ({
       ...current,
       currency: transactionCurrency.baseCurrencyCode,
@@ -410,7 +411,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -487,7 +488,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     isPreviewOpen,
     isSubmitting,
     isReadonly,
-    isRecordMissing: mode !== "add" && !isLoading && !record,
+    isRecordMissing: mode !== CashDisbursementActionModeAdd && !isLoading && !record,
     mode,
     partyOptions: resolvedPartyOptions,
     projectOptions: resolvedProjectOptions,

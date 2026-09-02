@@ -30,7 +30,12 @@ import {
   CashVoucherStatuses,
   canEditCashVoucherStatus,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
-import { CashDisbursementActiveStatus } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import {
+  CashDisbursementActionModeAdd,
+  CashDisbursementActiveStatus,
+  CashDisbursementTaxTypeEwt,
+  CashDisbursementTaxTypeVat,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { CashVoucherLineEntriesField } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
 import {
   validateCashVoucherDetails,
@@ -174,14 +179,14 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const recordQuery = useQuery({
     queryKey: CashVoucherQueryKeys.record(recordId, activeCompanyId, activeBranchId),
     queryFn: () => fetchCashVoucherById(recordId),
-    enabled: Boolean(recordId && mode !== "add"),
+    enabled: Boolean(recordId && mode !== CashDisbursementActionModeAdd),
   });
 
   const existingVoucher: CashVoucherRecord | undefined = recordQuery.data;
 
   // Auto-populate values when existing record is loaded
   useEffect(() => {
-    if (!existingVoucher || mode === "add") return;
+    if (!existingVoucher || mode === CashDisbursementActionModeAdd) return;
 
     const rawDetails: Array<Record<string, unknown>> = (
       existingVoucher.lineEntries && existingVoucher.lineEntries.length > 0
@@ -277,7 +282,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }, [existingVoucher, mode]);
 
   useEffect(() => {
-    if (!existingVoucher || mode === "add" || partyOptions.length === 0 || taxCodes.length === 0) {
+    if (!existingVoucher || mode === CashDisbursementActionModeAdd || partyOptions.length === 0 || taxCodes.length === 0) {
       return;
     }
 
@@ -318,7 +323,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
 
   // Load next transaction number on create mode
   useEffect(() => {
-    if (mode !== "add") return;
+    if (mode !== CashDisbursementActionModeAdd) return;
 
     void refreshNextTransactionNo();
   }, [mode]);
@@ -327,22 +332,22 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const isReadonly = mode === "view" || (mode === "edit" && !canEditCashVoucherStatus(currentStatus));
   const totalDebit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.debit, 0), [values.lineEntries]);
   const totalCredit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.credit, 0), [values.lineEntries]);
-  const isRecordMissing = mode !== "add" && !recordQuery.isLoading && !existingVoucher;
+  const isRecordMissing = mode !== CashDisbursementActionModeAdd && !recordQuery.isLoading && !existingVoucher;
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transactionId", "voucherNo"]) : rawIsDirty;
+  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transactionId", "voucherNo"]) : rawIsDirty;
   const draft = useModuleDraft({
     enabled: !isReadonly,
     initialValues,
     isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:cash-voucher", recordId: params.recordId }),
-    restoreValues: mode === "add" ? restoreCashVoucherAddDraftValues : undefined,
+    restoreValues: mode === CashDisbursementActionModeAdd ? restoreCashVoucherAddDraftValues : undefined,
     setValues,
     values,
   });
 
   async function resetAddValuesWithNextTransactionNo() {
-    const nextValues = createInitialCashVoucherFormValues({ mode: "add" });
+    const nextValues = createInitialCashVoucherFormValues({ mode: CashDisbursementActionModeAdd });
 
     try {
       const nextTransNo = await fetchNextCashVoucherTransactionNo();
@@ -383,7 +388,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -396,7 +401,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }, []);
 
   useEffect(() => {
-    if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
       return;
     }
 
@@ -496,8 +501,8 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       const previousPartyCode = current.partyCode;
       const previousPartyName = current.partyName;
       const selectedParty = partyStore.records.find((record) => record.partyCodeNo === partyCode);
-      const vatCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseInputVatTaxSourceKey, "VAT");
-      const ewtCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseEwtTaxSourceKey, "EWT");
+      const vatCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseInputVatTaxSourceKey, CashDisbursementTaxTypeVat);
+      const ewtCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseEwtTaxSourceKey, CashDisbursementTaxTypeEwt);
       const vatPercent = vatCode ? getVatPercentFromRate(getVatRateFromCode(vatCode, taxCodes)) : 0;
       const ewtPercent = ewtCode ? getEwtPercentFromCode(ewtCode, taxCodes) : 0;
       const nextEntries = current.lineEntries.map((entry) =>
@@ -966,8 +971,10 @@ function applyMissingPartyTaxDefaultsToEntries(
       return entry;
     }
 
-    const defaultVatCode = selectedParty.vatCode || findPartyTaxCode(taxCodes, selectedParty.defaultPurchaseInputVatTaxSourceKey, "VAT");
-    const defaultEwtCode = selectedParty.ewtCode || findPartyTaxCode(taxCodes, selectedParty.defaultPurchaseEwtTaxSourceKey, "EWT");
+    const defaultVatCode =
+      selectedParty.vatCode || findPartyTaxCode(taxCodes, selectedParty.defaultPurchaseInputVatTaxSourceKey, CashDisbursementTaxTypeVat);
+    const defaultEwtCode =
+      selectedParty.ewtCode || findPartyTaxCode(taxCodes, selectedParty.defaultPurchaseEwtTaxSourceKey, CashDisbursementTaxTypeEwt);
     const currentVatCode = entry.taxDetails?.vatCode || entry.vatType || "";
     const currentEwtCode = entry.taxDetails?.ewtCode || entry.ewtCode || "";
     const nextVatCode = currentVatCode || defaultVatCode;
@@ -1037,7 +1044,9 @@ function roundHydratedCashVoucherAmount(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-function findPartyTaxCode(taxCodes: AlphanumericTaxCode[], sourceKey: string | undefined, taxType: "EWT" | "VAT") {
+type CashVoucherPartyTaxType = typeof CashDisbursementTaxTypeEwt | typeof CashDisbursementTaxTypeVat;
+
+function findPartyTaxCode(taxCodes: AlphanumericTaxCode[], sourceKey: string | undefined, taxType: CashVoucherPartyTaxType) {
   if (!sourceKey) {
     return "";
   }
@@ -1045,10 +1054,12 @@ function findPartyTaxCode(taxCodes: AlphanumericTaxCode[], sourceKey: string | u
   const taxCode = taxCodes.find(
     (tax) =>
       tax.sourceKey === sourceKey &&
-      (taxType === "VAT" ? tax.taxType === "INPUT VAT" || tax.taxType === "VAT" : tax.taxType === "EWT" || tax.taxType === "CWT"),
+      (taxType === CashDisbursementTaxTypeVat
+        ? tax.taxType === "INPUT VAT" || tax.taxType === CashDisbursementTaxTypeVat
+        : tax.taxType === CashDisbursementTaxTypeEwt || tax.taxType === "CWT"),
   );
 
-  return taxCode ? (taxType === "EWT" ? taxCode.officialAtcCode || taxCode.taxCode : taxCode.taxCode) : "";
+  return taxCode ? (taxType === CashDisbursementTaxTypeEwt ? taxCode.officialAtcCode || taxCode.taxCode : taxCode.taxCode) : "";
 }
 
 function applyPartyTaxDefaults(entry: CashVoucherLineEntry, vatCode: string, ewtCode: string, vatPercent: number, ewtPercent: number) {

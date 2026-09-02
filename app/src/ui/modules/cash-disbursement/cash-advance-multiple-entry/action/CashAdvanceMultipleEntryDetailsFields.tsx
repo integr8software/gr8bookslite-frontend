@@ -1,10 +1,4 @@
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import {
-  fetchCashAdvanceAccountOptions,
-  fetchCashAdvancePartyOptions,
-} from "@/app/src/services/modules/cash-disbursement/cash-advance/CashAdvanceApi";
-import { PartyManagementQueryKeys } from "@/app/src/services/modules/party-management/PartyManagementQueryKeys";
+import { useCashAdvanceMultipleEntryDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/cash-advance-multiple-entry/useCashAdvanceMultipleEntryDetailsLookups";
 import type {
   CashAdvanceMultipleEntryFormController,
   CashAdvanceMultipleEntryFormErrors,
@@ -45,52 +39,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
   projectOptions: AppAdvancedDropdownOption[];
   onUpdateField: CashAdvanceMultipleEntryFormController["updateField"];
 }) {
-  const partyQuery = useQuery({
-    queryKey: PartyManagementQueryKeys.cashAdvancePartyOptions(),
-    queryFn: fetchCashAdvancePartyOptions,
-  });
-  const accountQuery = useQuery({
-    queryKey: ["cash-disbursement", "cash-advance-multiple-entry", "account-options"],
-    queryFn: fetchCashAdvanceAccountOptions,
-  });
-  const partyOptions = useMemo(() => {
-    const options = (partyQuery.data ?? []).map((party) => ({
-      ...party,
-      label: party.partyCode || party.label || party.name,
-      value: party.partyCode || party.label || party.name,
-    }));
-
-    if (values.partyCode && !options.some((option) => option.value === values.partyCode)) {
-      options.unshift({
-        name: values.partyName || values.partyCode,
-        label: values.partyCode,
-        value: values.partyCode,
-        partyCode: values.partyCode,
-        partyName: values.partyName,
-      });
-    }
-
-    return options;
-  }, [partyQuery.data, values.partyCode, values.partyName]);
-  const accountOptions = useMemo(() => {
-    const options = (accountQuery.data ?? []).map((account) => ({
-      ...account,
-      label: account.accountCode || account.label || account.name,
-      value: account.accountCode || account.label || account.name,
-    }));
-
-    if (values.accountCode && !options.some((option) => option.value === values.accountCode)) {
-      options.unshift({
-        name: values.accountTitle || values.accountCode,
-        label: values.accountCode,
-        value: values.accountCode,
-        accountCode: values.accountCode,
-        accountTitle: values.accountTitle,
-      });
-    }
-
-    return options;
-  }, [accountQuery.data, values.accountCode, values.accountTitle]);
+  const { accountOptions, isAccountLookupLoading, isPartyLookupLoading, partyOptions } = useCashAdvanceMultipleEntryDetailsLookups(values);
 
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
@@ -104,6 +53,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
               readOnly={isReadonly}
               placeholder="Select Employee Name"
               searchPlaceholder="Search Employee Name"
+              emptyMessage={isPartyLookupLoading ? "Loading Employee options..." : "No Employee options found."}
               addAction={!isReadonly ? { label: "Add Employee Name", onClick: onOpenPartyDrawer } : undefined}
               onChange={(code, name) => {
                 const selectedParty = partyOptions.find((option) => option.value === code);
@@ -136,6 +86,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
               readOnly={isReadonly}
               placeholder="Select Default Account Title"
               searchPlaceholder="Search Default Account"
+              emptyMessage={isAccountLookupLoading ? "Loading Default Account options..." : "No Default Account options found."}
               onChange={(code, name) => {
                 const selectedAccount = accountOptions.find((option) => option.value === code);
                 onUpdateField("accountCode", selectedAccount?.accountCode ?? code);

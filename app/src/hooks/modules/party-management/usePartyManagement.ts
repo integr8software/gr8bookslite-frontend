@@ -17,7 +17,9 @@ import {
 	PartyManagementDefaultColumnOrder,
 	PartyManagementDefaultColumnVisibility,
 	PartyManagementDefaultSorting,
+	PartyInformationActiveStatus,
 	PartyClassificationOptions,
+	PartyManagementAllFilter,
 	PartyInformationStatusOptions,
 	PartyManagementTableColumns,
 	PartyManagementTablePreferencesModuleKey,
@@ -280,14 +282,14 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 	});
 	const [query, setQueryState] = useState("");
 	const [classificationFilter, setClassificationFilterState] = useState<
-		PartyClassification | "All"
-	>("All");
+		PartyClassification | typeof PartyManagementAllFilter
+	>(PartyManagementAllFilter);
 	const [partyTypeFilter, setPartyTypeFilterState] = useState<
-		PartyType | "All"
-	>("All");
+		PartyType | typeof PartyManagementAllFilter
+	>(PartyManagementAllFilter);
 	const [statusFilter, setStatusFilterState] = useState<
-		PartyInformationStatus | "All"
-	>("Active");
+		PartyInformationStatus | typeof PartyManagementAllFilter
+	>(PartyInformationActiveStatus);
 	const queryParams = useMemo<PartyManagementListQuery>(
 		() => ({
 			classification: classificationFilter,
@@ -310,9 +312,9 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 	);
 	const hasActiveFilters =
 		query.trim().length > 0 ||
-		classificationFilter !== "All" ||
-		partyTypeFilter !== "All" ||
-		statusFilter !== "Active";
+		classificationFilter !== PartyManagementAllFilter ||
+		partyTypeFilter !== PartyManagementAllFilter ||
+		statusFilter !== PartyInformationActiveStatus;
 	const recordsVersion = useMemo(
 		() =>
 			records
@@ -425,9 +427,9 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 
 	const resetFilters = useCallback(() => {
 		setQueryState("");
-		setClassificationFilterState("All");
-		setPartyTypeFilterState("All");
-		setStatusFilterState("Active");
+		setClassificationFilterState(PartyManagementAllFilter);
+		setPartyTypeFilterState(PartyManagementAllFilter);
+		setStatusFilterState(PartyInformationActiveStatus);
 		resetPageIndex();
 	}, [resetPageIndex]);
 
@@ -437,20 +439,20 @@ export function usePartyManagementTable(records: PartyInformationRecord[]) {
 	}, [resetPageIndex]);
 
 	const setClassificationFilter = useCallback(
-		(value: PartyClassification | "All") => {
+		(value: PartyClassification | typeof PartyManagementAllFilter) => {
 			setClassificationFilterState(value);
 			resetPageIndex();
 		},
 		[resetPageIndex],
 	);
 
-	const setPartyTypeFilter = useCallback((value: PartyType | "All") => {
+	const setPartyTypeFilter = useCallback((value: PartyType | typeof PartyManagementAllFilter) => {
 		setPartyTypeFilterState(value);
 		resetPageIndex();
 	}, [resetPageIndex]);
 
 	const setStatusFilter = useCallback(
-		(value: PartyInformationStatus | "All") => {
+		(value: PartyInformationStatus | typeof PartyManagementAllFilter) => {
 			setStatusFilterState(value);
 			resetPageIndex();
 		},
@@ -506,10 +508,10 @@ function filterPartyManagementRecords(
 		const address = formatPartyAddress(record.address).toLowerCase();
 
 		return (
-			(query.classification === "All" ||
+			(query.classification === PartyManagementAllFilter ||
 				record.classification === query.classification) &&
-			(query.partyType === "All" || record.partyTypes.includes(query.partyType)) &&
-			(query.status === "All" || record.status === query.status) &&
+			(query.partyType === PartyManagementAllFilter || record.partyTypes.includes(query.partyType)) &&
+			(query.status === PartyManagementAllFilter || record.status === query.status) &&
 			(!normalizedQuery ||
 				name.includes(normalizedQuery) ||
 				record.partyCodeNo.toLowerCase().includes(normalizedQuery) ||

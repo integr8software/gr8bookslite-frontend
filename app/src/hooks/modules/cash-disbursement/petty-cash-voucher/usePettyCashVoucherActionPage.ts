@@ -10,6 +10,7 @@ import {
   PettyCashVoucherEwtCodeOptions,
   PettyCashVoucherVATableDropdownOptions,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
+import { CashDisbursementActionModeAdd } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import {
   calculatePettyCashVoucherTaxFields,
   createPettyCashVoucherFormValues,
@@ -51,7 +52,7 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherF
   const voucherQuery = useQuery({
     queryKey: [...PettyCashVoucherQueryKeys.vouchers(), params.recordId],
     queryFn: () => fetchPettyCashVoucherById(params.recordId!),
-    enabled: Boolean(params.recordId) && mode !== "add",
+    enabled: Boolean(params.recordId) && mode !== CashDisbursementActionModeAdd,
   });
 
   const record = voucherQuery.data;
@@ -67,7 +68,7 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherF
   const hasEditedCurrencyRef = useRef(false);
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
+  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
 
   async function refreshNextTransactionNo() {
     try {
@@ -93,7 +94,7 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherF
   }, [record]);
 
   useEffect(() => {
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       queueMicrotask(() => void refreshNextTransactionNo());
     }
   }, [mode]);
@@ -108,7 +109,7 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherF
   });
 
   useEffect(() => {
-    if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
+    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
     setValues((current) => ({
       ...current,
       currency: transactionCurrency.baseCurrencyCode,
@@ -153,7 +154,7 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherF
 
   const saveMutation = useMutation({
     mutationFn: async (submitValues: PettyCashVoucherFormValues) => {
-      if (mode === "add") {
+      if (mode === CashDisbursementActionModeAdd) {
         return await createPettyCashVoucherApi(submitValues);
       }
       return await updatePettyCashVoucherApi(params.recordId!, submitValues);
@@ -161,7 +162,7 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherF
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PettyCashVoucherQueryKeys.vouchers() });
       draft.clearDraft();
-      toast.success(`Petty Cash Voucher ${mode === "add" ? "created" : "updated"} successfully.`);
+      toast.success(`Petty Cash Voucher ${mode === CashDisbursementActionModeAdd ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
         options.onSaved();
       } else {
@@ -249,7 +250,7 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherF
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -281,12 +282,12 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherF
     isPartyDrawerOpen,
     isPreviewOpen: isReportPreviewOpen,
     isReadonly,
-    isRecordMissing: mode !== "add" && !voucherQuery.isLoading && !record,
+    isRecordMissing: mode !== CashDisbursementActionModeAdd && !voucherQuery.isLoading && !record,
     isReportPreviewOpen,
     isResponsibilityCenterDrawerOpen,
     isSubmitting: saveMutation.isPending || updateStatusMutation.isPending,
     mode,
-    needsRecord: mode !== "add",
+    needsRecord: mode !== CashDisbursementActionModeAdd,
     openPartyDrawer: () => setIsPartyDrawerOpen(true),
     openPreview: () => setIsReportPreviewOpen(true),
     openReportPreview: () => setIsReportPreviewOpen(true),

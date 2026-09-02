@@ -57,14 +57,8 @@ export type FetchPettyCashVoucherListParams = {
   sortOrder?: "asc" | "desc";
 };
 
-export type FetchPettyCashVoucherListResponse = {
+type MappedPettyCashVoucherListResponse = Omit<PettyCashVoucherListResponseDto, "items"> & {
   data: PettyCashVoucherRecord[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
 };
 
 export const StatusFromApi: Record<string, PettyCashVoucherStatus> = {
@@ -142,7 +136,7 @@ export function mapPettyCashVoucherFormValuesToUpdateDto(values: PettyCashVouche
   return mapPettyCashVoucherFormValuesToCreateDto(values) as UpdatePettyCashVoucherDto;
 }
 
-export async function fetchPettyCashVoucherList(params?: FetchPettyCashVoucherListParams): Promise<FetchPettyCashVoucherListResponse> {
+export async function fetchPettyCashVoucherList(params?: FetchPettyCashVoucherListParams): Promise<MappedPettyCashVoucherListResponse> {
   const queryParams: PettyCashVoucherQueryParams = {
     page: params?.page,
     limit: params?.limit,

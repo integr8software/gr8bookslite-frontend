@@ -30,6 +30,7 @@ import {
   updateRevolvingFundReplenishmentStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentApi";
 import {
+  CashDisbursementActionModeAdd,
   createCashDisbursementModuleQueryKey,
   createCashDisbursementRecordQueryKey,
 } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
@@ -47,7 +48,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
   const recordQuery = useQuery({
     queryKey: createCashDisbursementRecordQueryKey(RevolvingFundReplenishmentQueryKey, params.recordId),
     queryFn: () => fetchRevolvingFundReplenishmentById(params.recordId!),
-    enabled: Boolean(params.recordId) && mode !== "add",
+    enabled: Boolean(params.recordId) && mode !== CashDisbursementActionModeAdd,
   });
 
   const record = recordQuery.data;
@@ -61,7 +62,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
   const hasEditedCurrencyRef = useRef(false);
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
+  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
 
   async function refreshNextTransactionNo() {
     try {
@@ -87,7 +88,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
   }, [record]);
 
   useEffect(() => {
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       queueMicrotask(() => void refreshNextTransactionNo());
     }
   }, [mode]);
@@ -104,7 +105,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
   const totals = useMemo(() => calculateRevolvingFundReplenishmentTotals(values.entries), [values.entries]);
 
   useEffect(() => {
-    if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
+    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
     setValues((current) => ({
       ...current,
       currency: transactionCurrency.baseCurrencyCode,
@@ -193,7 +194,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
 
   const saveMutation = useMutation({
     mutationFn: async (submitValues: RevolvingFundReplenishmentFormValues) => {
-      if (mode === "add") {
+      if (mode === CashDisbursementActionModeAdd) {
         return await createRevolvingFundReplenishmentApi(submitValues);
       }
       return await updateRevolvingFundReplenishmentApi(params.recordId!, submitValues);
@@ -201,7 +202,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(RevolvingFundReplenishmentQueryKey) });
       draft.clearDraft();
-      toast.success(`Revolving Fund Replenishment ${mode === "add" ? "created" : "updated"} successfully.`);
+      toast.success(`Revolving Fund Replenishment ${mode === CashDisbursementActionModeAdd ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
         options.onSaved();
       } else {
@@ -276,7 +277,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -304,7 +305,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
     isLoading: recordQuery.isLoading,
     isPreviewOpen,
     isReadonly,
-    isRecordMissing: mode !== "add" && !recordQuery.isLoading && !record,
+    isRecordMissing: mode !== CashDisbursementActionModeAdd && !recordQuery.isLoading && !record,
     isSubmitting: saveMutation.isPending || updateStatusMutation.isPending,
     mode,
     openPreview: () => setIsPreviewOpen(true),

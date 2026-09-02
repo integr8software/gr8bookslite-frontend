@@ -16,6 +16,7 @@ export const ApprovalManagementEditFromViewQuery = `${ApprovalManagementEditFrom
 export const ApprovalStageCountOptions = [1, 2, 3, 4, 5] as const;
 export const ApprovalAmountConditionLimit = 5;
 export const ApprovalManagementAllStatusesFilter = "any";
+export const ApprovalManagementActiveStatus = "Active";
 
 export const ApprovalStageRequirementOptions = [
   { label: "Any one approver", value: "any" },
@@ -54,7 +55,7 @@ export const ApprovalAmountConditionOperatorOptions = [
 }>;
 
 export const ApprovalManagementStatusOptions = [
-  "Active",
+  ApprovalManagementActiveStatus,
   "Inactive",
 ] as const satisfies readonly ApprovalManagementStatus[];
 

@@ -16,6 +16,7 @@ import {
   fetchMaintenanceResponsibilityCenterOptions,
 } from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import { CashDisbursementApiAllStatusFilter } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { RevolvingFundStatuses } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import type {
   CreateRevolvingFundDto,
   RevolvingFundDetailDto,
@@ -66,18 +67,12 @@ export type FetchRevolvingFundListParams = {
   sortOrder?: "asc" | "desc";
 };
 
-export type FetchRevolvingFundListResponse = {
+type MappedRevolvingFundListResponse = Omit<RevolvingFundListResponseDto, "items"> & {
   data: RevolvingFundRecord[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
 };
 
 export const StatusFromApi: Record<string, RevolvingFundStatus> = {
-  DRAFT: "Draft",
+  DRAFT: RevolvingFundStatuses.draft,
   FOR_APPROVAL: "For Approval",
   APPROVED: "For Approval",
   POSTED: "Posted",
@@ -122,7 +117,7 @@ export function mapRevolvingFundRecordFromDto(dto: RevolvingFundResponseDto): Re
   const formValues: RevolvingFundFormValues = {
     transactionNo: dto.transactionNo,
     documentDate: dto.documentDate,
-    status: StatusFromApi[dto.status] ?? "Draft",
+    status: StatusFromApi[dto.status] ?? RevolvingFundStatuses.draft,
     partyCode: dto.partyCodeSnapshot ?? "",
     partyName: dto.partyNameSnapshot ?? "",
     responsibilityCenter: dto.responsibilityCenterSnapshot ?? "",
@@ -155,7 +150,7 @@ export function mapRevolvingFundRecordFromDto(dto: RevolvingFundResponseDto): Re
     amount: totals.grossAmount || (typeof dto.amount === "number" ? dto.amount : Number(dto.amount ?? 0)),
     disburseAmount: totals.disburseAmount || Number(dtoExtras.disburseAmount ?? dto.amount ?? 0),
     remarks: dto.remarks ?? "",
-    status: StatusFromApi[dto.status] ?? "Draft",
+    status: StatusFromApi[dto.status] ?? RevolvingFundStatuses.draft,
     createdBy: createdUser ? `${createdUser.firstName ?? ""} ${createdUser.lastName ?? ""}`.trim() : "",
     createdAt: dto.createdAt,
     updatedBy: updatedUser ? `${updatedUser.firstName ?? ""} ${updatedUser.lastName ?? ""}`.trim() : "",
@@ -165,7 +160,8 @@ export function mapRevolvingFundRecordFromDto(dto: RevolvingFundResponseDto): Re
 }
 
 export function mapRevolvingFundFormValuesToCreateDto(values: RevolvingFundFormValues): CreateRevolvingFundDto {
-  const items = values.status === "Draft" ? (values.items ?? []).filter(isRevolvingFundItemPopulated) : (values.items ?? []);
+  const items =
+    values.status === RevolvingFundStatuses.draft ? (values.items ?? []).filter(isRevolvingFundItemPopulated) : (values.items ?? []);
   const details = items.map((item, index) => ({
     lineNumber: index + 1,
     itemDate: item.date || undefined,
@@ -222,7 +218,7 @@ export function mapRevolvingFundFormValuesToUpdateDto(values: RevolvingFundFormV
   return mapRevolvingFundFormValuesToCreateDto(values) as UpdateRevolvingFundDto;
 }
 
-export async function fetchRevolvingFundList(params?: FetchRevolvingFundListParams): Promise<FetchRevolvingFundListResponse> {
+export async function fetchRevolvingFundList(params?: FetchRevolvingFundListParams): Promise<MappedRevolvingFundListResponse> {
   const queryParams: RevolvingFundQueryParams = {
     page: params?.page,
     limit: params?.limit,

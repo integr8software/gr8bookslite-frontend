@@ -3,6 +3,7 @@ import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAd
 
 export function AppLookupDropdown({
 	addAction,
+	emptyMessage,
 	id,
 	onChange,
 	options,
@@ -21,6 +22,7 @@ export function AppLookupDropdown({
 
 				onChange(idOrCode, option?.name ?? "");
 			}}
+			emptyMessage={emptyMessage}
 			options={options}
 			placeholder={placeholder}
 			readOnly={readOnly}

@@ -33,7 +33,7 @@ type ApproverSetupApiRecord = ApproverSetupResponseDto & {
 	validUntil?: string | null;
 };
 
-export type CreateApproverSetupPayload = CreateApproverSetupDto & {
+type ApproverSetupMutationPayload = CreateApproverSetupDto & {
 	levelName: string;
 	validUntil?: string;
 };
@@ -84,7 +84,7 @@ export async function FetchApproverSetups() {
 	);
 }
 
-export async function CreateApproverSetup(payload: CreateApproverSetupPayload) {
+export async function CreateApproverSetup(payload: ApproverSetupMutationPayload) {
 	const response = await approverSetupsControllerCreateV1(payload) as unknown as { setup: ApproverSetupApiRecord };
 	return MapApproverSetupApiRecord(response.setup as ApproverSetupApiRecord);
 }
@@ -94,7 +94,7 @@ export async function UpdateApproverSetup({
 	payload,
 }: {
 	id: string;
-	payload: CreateApproverSetupPayload;
+	payload: ApproverSetupMutationPayload;
 }) {
 	const response = await OrvalApiClient<{ setup: ApproverSetupApiRecord }>({
 		data: payload,

@@ -1,6 +1,8 @@
+const CashAdvanceMultipleEntryQuerySegment = "cash-advance-multiple-entry";
+
 export const CashAdvanceMultipleEntryQueryKeys = {
-  all: ["cash-advance-multiple-entry"] as const,
-  records: ["cash-advance-multiple-entry", "records"] as const,
-  record: (id: string) => ["cash-advance-multiple-entry", "record", id] as const,
-  transactionNo: ["cash-advance-multiple-entry", "transaction-no"] as const,
+  all: [CashAdvanceMultipleEntryQuerySegment] as const,
+  records: [CashAdvanceMultipleEntryQuerySegment, "records"] as const,
+  record: (id: string) => [CashAdvanceMultipleEntryQuerySegment, "record", id] as const,
+  transactionNo: [CashAdvanceMultipleEntryQuerySegment, "transaction-no"] as const,
 };

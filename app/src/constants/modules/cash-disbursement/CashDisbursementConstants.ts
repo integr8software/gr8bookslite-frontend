@@ -2,6 +2,9 @@ export const CashDisbursementQuerySegment = "cash-disbursement";
 export const CashDisbursementAllStatusFilter = "All";
 export const CashDisbursementApiAllStatusFilter = "all";
 export const CashDisbursementActiveStatus = "Active";
+export const CashDisbursementActionModeAdd = "add";
+export const CashDisbursementTaxTypeEwt = "EWT";
+export const CashDisbursementTaxTypeVat = "VAT";
 export const CashDisbursementTotalEntriesLabel = "Total Entries";
 export const CashDisbursementAllTimeSummary = "All time";
 

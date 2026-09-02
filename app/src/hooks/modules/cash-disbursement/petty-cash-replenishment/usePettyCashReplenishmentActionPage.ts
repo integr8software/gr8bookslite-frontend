@@ -31,6 +31,7 @@ import {
   updatePettyCashReplenishmentStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentApi";
 import {
+  CashDisbursementActionModeAdd,
   createCashDisbursementModuleQueryKey,
   createCashDisbursementRecordQueryKey,
 } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
@@ -48,7 +49,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   const recordQuery = useQuery({
     queryKey: createCashDisbursementRecordQueryKey(PettyCashReplenishmentQueryKey, params.recordId),
     queryFn: () => fetchPettyCashReplenishmentById(params.recordId!),
-    enabled: Boolean(params.recordId) && mode !== "add",
+    enabled: Boolean(params.recordId) && mode !== CashDisbursementActionModeAdd,
   });
 
   const record = recordQuery.data;
@@ -62,7 +63,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   const hasEditedCurrencyRef = useRef(false);
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
+  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
 
   async function refreshNextTransactionNo() {
     try {
@@ -88,7 +89,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   }, [record]);
 
   useEffect(() => {
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       queueMicrotask(() => void refreshNextTransactionNo());
     }
   }, [mode]);
@@ -105,7 +106,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   const totals = useMemo(() => calculatePettyCashReplenishmentTotals(values.entries), [values.entries]);
 
   useEffect(() => {
-    if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
+    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
     setValues((current) => ({
       ...current,
       currency: transactionCurrency.baseCurrencyCode,
@@ -196,7 +197,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
 
   const saveMutation = useMutation({
     mutationFn: async (submitValues: PettyCashReplenishmentFormValues) => {
-      if (mode === "add") {
+      if (mode === CashDisbursementActionModeAdd) {
         return await createPettyCashReplenishmentApi(submitValues);
       }
       return await updatePettyCashReplenishmentApi(params.recordId!, submitValues);
@@ -204,7 +205,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashReplenishmentQueryKey) });
       draft.clearDraft();
-      toast.success(`Petty Cash Replenishment ${mode === "add" ? "created" : "updated"} successfully.`);
+      toast.success(`Petty Cash Replenishment ${mode === CashDisbursementActionModeAdd ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
         options.onSaved();
       } else {
@@ -279,7 +280,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -313,7 +314,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     isLoading: recordQuery.isLoading,
     isPreviewOpen,
     isReadonly,
-    isRecordMissing: mode !== "add" && !recordQuery.isLoading && !record,
+    isRecordMissing: mode !== CashDisbursementActionModeAdd && !recordQuery.isLoading && !record,
     isSubmitting: saveMutation.isPending || updateStatusMutation.isPending,
     mode,
     openPreview: () => setIsPreviewOpen(true),

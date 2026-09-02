@@ -20,6 +20,7 @@ import type { MaintenanceResponsibilityCenterOption } from "@/app/src/services/s
 import type {
   AdvanceToSupplierResponseDto,
   AdvanceToSupplierListResponseDto,
+  AdvancesToSuppliersControllerFindAllV1Params,
   CreateAdvanceToSupplierDto,
   CreateAdvanceToSupplierDtoAdvancePaymentType,
   CreateAdvanceToSupplierDtoStatus,
@@ -35,32 +36,15 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
-export type FetchAdvancesToSuppliersListParams = {
-  page?: number;
-  limit?: number;
-  search?: string;
-  status?: string;
-  partyCode?: string;
-  startDate?: string;
-  endDate?: string;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
-};
-
-export type FetchAdvancesToSuppliersListResponse = {
+type FetchAdvancesToSuppliersListParams = AdvancesToSuppliersControllerFindAllV1Params;
+type MappedAdvancesToSuppliersListResponse = Omit<AdvanceToSupplierListResponseDto, "items"> & {
   data: AdvancesToSuppliersRecord[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
 };
 
 type AdvancesToSuppliersListApiResponse = {
   data?: AdvanceToSupplierResponseDto[];
   items?: AdvanceToSupplierResponseDto[];
-  meta?: FetchAdvancesToSuppliersListResponse["meta"];
+  meta?: MappedAdvancesToSuppliersListResponse["meta"];
 };
 
 type AdvancesToSuppliersApiResponse = AdvanceToSupplierResponseDto | {
@@ -96,7 +80,7 @@ const PaymentTypeToApi: Record<AdvancesToSuppliersPaymentType, CreateAdvanceToSu
 
 export async function fetchAdvancesToSuppliersList(
   params?: FetchAdvancesToSuppliersListParams,
-): Promise<FetchAdvancesToSuppliersListResponse> {
+): Promise<MappedAdvancesToSuppliersListResponse> {
   const response = (await advancesToSuppliersControllerFindAll({
     ...params,
     status: params?.status && params.status !== "All" ? StatusToApi[params.status as AdvancesToSuppliersStatus] : undefined,

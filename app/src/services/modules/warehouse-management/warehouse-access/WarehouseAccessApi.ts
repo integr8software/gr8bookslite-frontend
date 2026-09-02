@@ -16,6 +16,10 @@ import type {
   WarehouseAccessResponseDtoPermissionsItem,
   WarehouseAccessResponseDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import {
+  CreateWarehouseAccessAssignmentDtoPermissionsItem as CreateWarehouseAccessPermission,
+  WarehouseAccessResponseDtoPermissionsItem as WarehouseAccessResponsePermission,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
   WarehouseAccessDirectoryResponse,
   WarehouseAccessFormValues,
@@ -186,8 +190,8 @@ function mapPermissionFromApi(
   if (value === "ISSUE_STOCK") return "Issue Stock";
   if (value === "TRANSFER_STOCK") return "Transfer Stock";
   if (value === "ADJUST_STOCK") return "Adjust Stock";
-  if (value === "MANAGE_LOCATIONS") return "Manage Locations";
-  if (value === "VIEW_HISTORY") return "View History";
+  if (value === WarehouseAccessResponsePermission.MANAGE_LOCATIONS) return "Manage Locations";
+  if (value === WarehouseAccessResponsePermission.VIEW_HISTORY) return "View History";
   return "View Stock";
 }
 
@@ -198,9 +202,9 @@ function mapPermissionToApi(
   if (value === "Issue Stock") return "ISSUE_STOCK";
   if (value === "Transfer Stock") return "TRANSFER_STOCK";
   if (value === "Adjust Stock") return "ADJUST_STOCK";
-  if (value === "Manage Locations") return "MANAGE_LOCATIONS";
-  if (value === "View History") return "VIEW_HISTORY";
-  return "VIEW_STOCK";
+  if (value === "Manage Locations") return CreateWarehouseAccessPermission.MANAGE_LOCATIONS;
+  if (value === "View History") return CreateWarehouseAccessPermission.VIEW_HISTORY;
+  return CreateWarehouseAccessPermission.VIEW_STOCK;
 }
 
 function mapStatusFromApi(value: WarehouseAccessResponseDtoStatus): WarehouseStatus {

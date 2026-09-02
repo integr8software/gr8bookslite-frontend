@@ -33,6 +33,7 @@ import {
   CashAdvanceOverviewColumnWidths,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import {
+  CashDisbursementActionModeAdd,
   CashDisbursementAllTimeSummary,
   CashDisbursementQuerySegment,
   CashDisbursementTotalEntriesLabel,
@@ -136,11 +137,11 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
   const hasEditedCurrencyRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(mode !== "add" && Boolean(recordId));
+  const [isLoading, setIsLoading] = useState(mode !== CashDisbursementActionModeAdd && Boolean(recordId));
   const [errors, setErrors] = useState<CashAdvanceFormErrors>({});
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transNo"]) : rawIsDirty;
+  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transNo"]) : rawIsDirty;
   const availabilityWarning = useMemo(() => getCashAdvanceAvailabilityWarning(values), [values]);
   const draft = useModuleDraft({
     enabled: mode !== "view",
@@ -166,13 +167,13 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
   }
 
   useEffect(() => {
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       queueMicrotask(() => void refreshNextTransactionNo());
     }
   }, [mode]);
 
   useEffect(() => {
-    if (mode === "add" || !recordId) {
+    if (mode === CashDisbursementActionModeAdd || !recordId) {
       return;
     }
 
@@ -204,7 +205,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
   }, [mode, recordId]);
 
   useEffect(() => {
-    if (mode !== "add" || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
       return;
     }
 
@@ -408,7 +409,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === "add") {
+    if (mode === CashDisbursementActionModeAdd) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -426,7 +427,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isLoading,
     isSubmitting,
-    isRecordMissing: mode !== "add" && !isLoading && !loadedRecord,
+    isRecordMissing: mode !== CashDisbursementActionModeAdd && !isLoading && !loadedRecord,
     record: loadedRecord,
     submitAdvance,
     updateAdvanceStatus,

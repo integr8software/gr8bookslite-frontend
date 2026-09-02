@@ -44,6 +44,7 @@ jobs:
           $ErrorActionPreference = "Stop"
 
           Push-Location ".\qa-automation"
+
           try {
             npm ci
 
@@ -61,7 +62,9 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
 
-          $outputDirectory = Join-Path $env:GITHUB_WORKSPACE "reports\weekly-architecture"
+          $outputDirectory = Join-Path `
+            $env:GITHUB_WORKSPACE `
+            "reports\weekly-architecture"
 
           New-Item `
             -ItemType Directory `
@@ -70,6 +73,7 @@ jobs:
             Out-Null
 
           Push-Location ".\qa-automation"
+
           try {
             node .\scripts\frontend\analyze-frontend.mjs `
               --repository-root $env:GITHUB_WORKSPACE `
@@ -89,7 +93,9 @@ jobs:
             Pop-Location
           }
 
-          $reportPath = Join-Path $outputDirectory "frontend-architecture-results.json"
+          $reportPath = Join-Path `
+            $outputDirectory `
+            "frontend-architecture-results.json"
 
           if (-not (Test-Path -LiteralPath $reportPath -PathType Leaf)) {
             throw "Frontend architecture report was not generated: $reportPath"
@@ -124,39 +130,95 @@ jobs:
             -Encoding UTF8 |
             ConvertFrom-Json
 
-          $blockers = [int]$report.summary.blockers
-          $warnings = [int]$report.summary.warnings
-          $info = [int]$report.summary.info
-          $total = [int]$report.summary.total
+          # Weekly architecture review deliberately focuses on structural
+          # architecture signals. The full detector output is still preserved
+          # in the uploaded JSON artifact for QA investigation.
+          $architectureRulePrefixes = @(
+            "structure.",
+            "hooks.",
+            "types.",
+            "ui.",
+            "fetching."
+          )
+
+          $architectureFindings = @(
+            $report.findings |
+              Where-Object {
+                $ruleId = [string]$_.ruleId
+
+                $architectureRulePrefixes |
+                  Where-Object { $ruleId.StartsWith($_) } |
+                  Select-Object -First 1
+              }
+          )
+
+          $otherFindings = @(
+            $report.findings |
+              Where-Object {
+                $ruleId = [string]$_.ruleId
+
+                -not (
+                  $architectureRulePrefixes |
+                    Where-Object { $ruleId.StartsWith($_) } |
+                    Select-Object -First 1
+                )
+              }
+          )
+
+          $architectureBlockers = @(
+            $architectureFindings |
+              Where-Object { $_.severity -eq "blocker" }
+          ).Count
+
+          $architectureWarnings = @(
+            $architectureFindings |
+              Where-Object { $_.severity -eq "warning" }
+          ).Count
+
+          $architectureInfo = @(
+            $architectureFindings |
+              Where-Object { $_.severity -eq "info" }
+          ).Count
+
+          $architectureTotal = @($architectureFindings).Count
+          $otherTotal = @($otherFindings).Count
           $scannedFiles = [int]$report.analysis.changedFileCount
+          $fullFindingCount = [int]$report.summary.total
 
           @"
           # Weekly Frontend Architecture Review
 
-          This is an **advisory full-codebase review of `develop`**. It does not block PRs or merges.
+          This is an **advisory full-codebase architecture review of `develop`**.
+          It does **not** block PRs or merges.
+
+          ## Architecture Signal
 
           | Metric | Count |
           |---|---:|
           | Files scanned | $scannedFiles |
-          | Total findings | $total |
-          | Blocker-class findings | $blockers |
-          | Warnings | $warnings |
-          | Information | $info |
+          | Architecture findings | $architectureTotal |
+          | Blocker-class architecture findings | $architectureBlockers |
+          | Architecture warnings | $architectureWarnings |
+          | Architecture information | $architectureInfo |
+          | Other QA observations kept in artifact | $otherTotal |
+          | Full detector findings | $fullFindingCount |
 
           ## Interpretation
 
-          - A finding means existing code may not match the configured frontend standards.
-          - An unfinished module is **not** a failure merely because future files/features are missing.
-          - Review findings before changing code; preserve intentional legacy patterns and approved exceptions.
-          - This workflow is advisory only. The existing PR quality gate remains the merge gate.
+          - `Blocker-class` is the severity inherited from the normal PR detector. In this weekly review it is **advisory only**.
+          - An unfinished module is **not** a failure merely because future files or features are missing.
+          - Review existing structural violations before changing code.
+          - Preserve intentional legacy patterns and approved exceptions unless there is evidence they are causing a real problem.
+          - Repeated literals, hardcoded constants, and similar lower-level PR observations are retained in the JSON artifact but are not promoted into the weekly architecture list.
+          - The existing frontend PR quality gate remains the merge gate.
           "@ >> $env:GITHUB_STEP_SUMMARY
 
-          if ($total -gt 0) {
-            "## Findings" >> $env:GITHUB_STEP_SUMMARY
+          if ($architectureTotal -gt 0) {
+            "" >> $env:GITHUB_STEP_SUMMARY
+            "## Architecture Findings" >> $env:GITHUB_STEP_SUMMARY
             "" >> $env:GITHUB_STEP_SUMMARY
 
-            $report.findings |
-              Select-Object -First 100 |
+            $architectureFindings |
               ForEach-Object {
                 $location = if ([string]::IsNullOrWhiteSpace([string]$_.file)) {
                   ""
@@ -171,10 +233,6 @@ jobs:
                 "- **$($_.severity.ToUpper())** ``$($_.ruleId)``$location — $($_.message)" >> $env:GITHUB_STEP_SUMMARY
               }
 
-            if ($total -gt 100) {
-              "" >> $env:GITHUB_STEP_SUMMARY
-              "_Only the first 100 findings are shown here. Download the JSON artifact for the complete retained report._" >> $env:GITHUB_STEP_SUMMARY
-            }
           }
           else {
             "" >> $env:GITHUB_STEP_SUMMARY

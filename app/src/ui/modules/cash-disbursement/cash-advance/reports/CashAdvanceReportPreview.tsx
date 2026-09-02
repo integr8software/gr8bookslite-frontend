@@ -26,7 +26,7 @@ export function CashAdvanceReportPreview({ isOpen, onClose, onGeneratePdf, value
 
 function CashAdvanceReportDocument({ values }: { values: CashAdvanceFormValues }) {
   const amount = Number(values.amount || 0);
-  const accountTitle = getCashAdvanceAccountTitle(values.accountCode);
+  const accountTitle = values.accountTitle || getCashAdvanceAccountTitle(values.accountCode);
   const purpose = [accountTitle, values.remarks].filter(Boolean).join(" - ");
 
   return (

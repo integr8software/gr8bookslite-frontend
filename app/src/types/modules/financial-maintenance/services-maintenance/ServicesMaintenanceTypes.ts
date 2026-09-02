@@ -5,11 +5,12 @@ import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleCh
 
 export type ServicesMaintenanceStatus = "Active" | "Inactive";
 export type ServicesMaintenanceAccountSetupMode = "Auto" | "Existing";
+export type ServicesMaintenanceServiceType = "Purchases" | "Sales";
 
 export type ServicesMaintenance = {
   id: string;
   serviceName: string;
-  serviceType: string;
+  serviceType: ServicesMaintenanceServiceType;
   description: string;
   status: ServicesMaintenanceStatus;
   accountSetupMode: ServicesMaintenanceAccountSetupMode;
@@ -25,7 +26,7 @@ export type ServicesMaintenance = {
 
 export type ServicesMaintenanceFormValues = {
   serviceName: string;
-  serviceType: string;
+  serviceType: ServicesMaintenanceServiceType;
   description: string;
   status: ServicesMaintenanceStatus;
   accountSetupMode: ServicesMaintenanceAccountSetupMode;
@@ -174,7 +175,7 @@ export type ServicesMaintenanceCellContentProps = {
   onViewService: (service: ServicesMaintenance) => void;
 };
 
-export type ServicesMaintenanceImportColumnId = "serviceName" | "description" | "accountSetupMode" | "revenueCoaId";
+export type ServicesMaintenanceImportColumnId = "serviceName" | "serviceType" | "description" | "accountSetupMode" | "revenueCoaId";
 
 export type ServicesMaintenanceImportColumnHeader = {
   className: string;

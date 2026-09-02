@@ -1,4 +1,7 @@
-import { ServicesMaintenanceAccountSetupModeOptions } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
+import {
+  ServicesMaintenanceAccountSetupModeOptions,
+  ServicesMaintenanceServiceTypeOptions,
+} from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import { serviceImportRowHasErrors } from "@/app/src/data/modules/financial-maintenance/services-maintenance/ServicesMaintenanceData";
 import type {
   ServicesMaintenanceImportColumnId,
@@ -50,6 +53,15 @@ export function ServicesMaintenanceImportPreviewTableRow({
           />
         </td>
         <td className="px-3 py-2 align-middle">
+          <ModuleImportEditableSelect
+            value={row.service.serviceType}
+            errors={row.cellErrors.serviceType}
+            options={ServicesMaintenanceServiceTypeOptions}
+            onChange={(value) => onUpdateCell(row.id, "serviceType", value)}
+            onPaste={(text) => onPasteCell(row.id, "serviceType", text)}
+          />
+        </td>
+        <td className="px-3 py-2 align-middle">
           <ModuleImportEditableCell
             value={row.service.description}
             errors={row.cellErrors.description}
@@ -79,7 +91,7 @@ export function ServicesMaintenanceImportPreviewTableRow({
         <tr className={isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"}>
           <td />
           <td />
-          <td colSpan={4} className="px-3 pb-3 text-xs font-semibold text-coralpink">
+          <td colSpan={5} className="px-3 pb-3 text-xs font-semibold text-coralpink">
             {row.rowErrors.join(" ")}
           </td>
         </tr>

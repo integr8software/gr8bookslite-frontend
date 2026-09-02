@@ -46,11 +46,11 @@ export function DisbursementVoucherDetailsFields({
   const projectOptions = useMemo<AppAdvancedDropdownOption[]>(
     () =>
       createVoucherProjectOptions({
-        currentProjectCode: values.costCenter,
+        currentProjectCode: values.projectCode || values.costCenter,
         currentProjectName: values.projectName,
         options: maintenanceProjectOptions,
       }),
-    [maintenanceProjectOptions, values.costCenter, values.projectName],
+    [maintenanceProjectOptions, values.costCenter, values.projectCode, values.projectName],
   );
 
   const paymentTypeOptions = useMemo<AppAdvancedDropdownOption[]>(
@@ -82,9 +82,10 @@ export function DisbursementVoucherDetailsFields({
                   : undefined
               }
               onChange={(code, name) => {
-                const party = partyOptions.find((option) => option.value === code);
+                const party = partyOptions.find((option) => option.value === code || option.label === code);
                 const partyName = party?.name ?? name ?? values.partyName;
-                onPartyChange(code, partyName);
+                const partyCode = party?.label ?? code ?? values.partyCode;
+                onPartyChange(partyCode, partyName);
               }}
             />
           </TransactionField>
@@ -105,9 +106,10 @@ export function DisbursementVoucherDetailsFields({
                   : undefined
               }
               onChange={(projectName) => {
-                const project = projectOptions.find((option) => option.value === projectName);
+                const project = projectOptions.find((option) => option.value === projectName || option.name === projectName);
                 onUpdateField("projectName", projectName);
                 onUpdateField("costCenter", project?.label === projectName ? "" : (project?.label ?? ""));
+                onUpdateField("projectCode", project?.label === projectName ? "" : (project?.label ?? ""));
               }}
             />
           </TransactionField>
@@ -156,10 +158,13 @@ export function DisbursementVoucherDetailsFields({
           />
 
           <TransactionTextField
-            value={values.costCenter}
+            value={values.projectCode || values.costCenter}
             isReadonly
             label="Project Code"
-            onValueChange={(value) => onUpdateField("costCenter", value)}
+            onValueChange={(value) => {
+              onUpdateField("projectCode", value);
+              onUpdateField("costCenter", value);
+            }}
             placeholder="Project Code"
           />
 

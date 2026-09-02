@@ -40,88 +40,132 @@ export function createCashAdvanceMultipleEntryItemColumns({
       id: "partyName",
       width: 220,
       widthClassName: "w-[13.75rem]",
-      renderCell: (row, _index, context) => (
-        <ModuleDataEntryDropdownCell
-          id={context.fieldId}
-          name={context.fieldName}
-          readOnly={isReadonly}
-          options={getAvailableEmployeeOptions(partySelectOptions, rows, row.id)}
-          placeholder="Select Employee Name"
-          searchPlaceholder="Search Employee Name"
-          value={row.partyCode}
-          addAction={!isReadonly ? { label: "Add Employee Name", onClick: () => onOpenItemPartyDrawer(row.id) } : undefined}
-          onChange={(nextValue) => {
-            const partyCode = String(nextValue);
-            const employee = employeeOptions?.find((opt) => opt.partyCode === partyCode);
-            const partyName = employee?.partyName ?? "";
-            const cashAdvanceBalance = employee?.cashAdvanceBalance ?? "";
-            const cashAdvanceLimit = employee?.cashAdvanceLimit ?? "";
-            onUpdateEntry(row.id, { cashAdvanceBalance, cashAdvanceLimit, partyCode, partyName });
-          }}
-        />
-      ),
+      renderCell: (row, _index, context) => {
+        const availableOptions = getAvailableEmployeeOptions(partySelectOptions, rows, row.id);
+        const options =
+          row.partyCode && !availableOptions.some((opt) => opt.value === row.partyCode)
+            ? [{ label: row.partyCode, name: row.partyName || row.partyCode, value: row.partyCode }, ...availableOptions]
+            : availableOptions;
+
+        return (
+          <ModuleDataEntryDropdownCell
+            id={context.fieldId}
+            name={context.fieldName}
+            readOnly={isReadonly}
+            options={options}
+            placeholder="Select Employee Name"
+            searchPlaceholder="Search Employee Name"
+            value={row.partyCode}
+            addAction={!isReadonly ? { label: "Add Employee Name", onClick: () => onOpenItemPartyDrawer(row.id) } : undefined}
+            onChange={(nextValue) => {
+              const partyCode = String(nextValue);
+              const employee = employeeOptions?.find((opt) => opt.partyCode === partyCode);
+              const partyName = employee?.partyName ?? "";
+              const cashAdvanceBalance = employee?.cashAdvanceBalance ?? "";
+              const cashAdvanceLimit = employee?.cashAdvanceLimit ?? "";
+              onUpdateEntry(row.id, { cashAdvanceBalance, cashAdvanceLimit, partyCode, partyName });
+            }}
+          />
+        );
+      },
     },
     amount: {
       header: "Cash Advance Amount",
       id: "amount",
       width: 140,
       widthClassName: "w-[8.75rem]",
-      renderCell: (row, _index, context) => (
-        <ModuleDataEntryMoneyCell
-          id={context.fieldId}
-          name={context.fieldName}
-          readOnly={isReadonly}
-          value={row.amount}
-          placeholder="0.00"
-          onChange={(value) => onUpdateEntry(row.id, { amount: value })}
-        />
-      ),
+      renderCell: (row, _index, context) => {
+        const employee = employeeOptions?.find((opt) => opt.partyCode === row.partyCode);
+        const effectiveBalance = row.cashAdvanceBalance?.trim() || employee?.cashAdvanceBalance?.trim() || "";
+        const rowAmount = parseMoneyNumberInput(row.amount);
+        const hasBalance = Boolean(effectiveBalance);
+        const balance = parseMoneyNumberInput(effectiveBalance);
+        const partyKey = row.partyCode.trim() || row.partyName.trim();
+        const employeeTotal = partyKey
+          ? rows
+              .filter((r) => (r.partyCode.trim() || r.partyName.trim()) === partyKey)
+              .reduce((sum, r) => sum + parseMoneyNumberInput(r.amount), 0)
+          : rowAmount;
+        const isExceeded = hasBalance && rowAmount > 0 && (rowAmount > balance || employeeTotal > balance);
+        const warningMessage = isExceeded
+          ? `Total Cash Advance Amount for ${row.partyName.trim() || "the employee"} cannot exceed the Available Cash Advance of ${formatCashAdvanceMultipleEntryAmount(balance)}.`
+          : undefined;
+
+        return (
+          <ModuleDataEntryMoneyCell
+            id={context.fieldId}
+            name={context.fieldName}
+            readOnly={isReadonly}
+            value={row.amount}
+            placeholder="0.00"
+            isWarning={isExceeded}
+            title={warningMessage}
+            onChange={(value) => onUpdateEntry(row.id, { amount: value })}
+          />
+        );
+      },
     },
     cashAdvanceLimit: {
       header: "Cash Advance Limit",
       id: "cashAdvanceLimit",
       width: 155,
       widthClassName: "w-[9.75rem]",
-      renderCell: (row, _index, context) => (
-        <ModuleDataEntryInputCell
-          align="right"
-          id={context.fieldId}
-          name={context.fieldName}
-          readOnly
-          value={row.cashAdvanceLimit ? formatCashAdvanceMultipleEntryAmount(row.cashAdvanceLimit) : "Unlimited"}
-        />
-      ),
+      renderCell: (row, _index, context) => {
+        const employee = employeeOptions?.find((opt) => opt.partyCode === row.partyCode);
+        const effectiveLimit = row.cashAdvanceLimit?.trim() || employee?.cashAdvanceLimit?.trim() || "";
+
+        return (
+          <ModuleDataEntryInputCell
+            align="right"
+            id={context.fieldId}
+            name={context.fieldName}
+            readOnly
+            value={effectiveLimit ? formatCashAdvanceMultipleEntryAmount(effectiveLimit) : "Unlimited"}
+          />
+        );
+      },
     },
     totalCashAdvanced: {
       header: "Total Cash Advances",
       id: "totalCashAdvanced",
       width: 165,
       widthClassName: "w-[10.25rem]",
-      renderCell: (row, _index, context) => (
-        <ModuleDataEntryMoneyCell
-          id={context.fieldId}
-          name={context.fieldName}
-          readOnly
-          value={formatCashAdvanceMultipleEntryAmount(
-            calculateTotalCashAdvanced(row),
-          )}
-        />
-      ),
+      renderCell: (row, _index, context) => {
+        const employee = employeeOptions?.find((opt) => opt.partyCode === row.partyCode);
+        const effectiveLimit = row.cashAdvanceLimit?.trim() || employee?.cashAdvanceLimit?.trim() || "";
+        const effectiveBalance = row.cashAdvanceBalance?.trim() || employee?.cashAdvanceBalance?.trim() || "";
+
+        return (
+          <ModuleDataEntryMoneyCell
+            id={context.fieldId}
+            name={context.fieldName}
+            readOnly
+            value={formatCashAdvanceMultipleEntryAmount(
+              calculateTotalCashAdvanced(effectiveLimit, effectiveBalance),
+            )}
+          />
+        );
+      },
     },
     cashAdvanceBalance: {
       header: "Available Cash Advance",
       id: "cashAdvanceBalance",
       width: 155,
       widthClassName: "w-[9.75rem]",
-      renderCell: (row, _index, context) => (
-        <ModuleDataEntryInputCell
-          align="right"
-          id={context.fieldId}
-          name={context.fieldName}
-          readOnly
-          value={row.cashAdvanceBalance ? formatCashAdvanceMultipleEntryAmount(row.cashAdvanceBalance) : "Unlimited"}
-        />
-      ),
+      renderCell: (row, _index, context) => {
+        const employee = employeeOptions?.find((opt) => opt.partyCode === row.partyCode);
+        const effectiveBalance = row.cashAdvanceBalance?.trim() || employee?.cashAdvanceBalance?.trim() || "";
+
+        return (
+          <ModuleDataEntryInputCell
+            align="right"
+            id={context.fieldId}
+            name={context.fieldName}
+            readOnly
+            value={effectiveBalance ? formatCashAdvanceMultipleEntryAmount(effectiveBalance) : "Unlimited"}
+          />
+        );
+      },
     },
     responsibilityCenterCode: {
       header: "Responsibility Center Code",
@@ -376,11 +420,11 @@ function getAvailableEmployeeOptions(
   return options.filter((option) => !selectedEmployeeCodes.has(option.value));
 }
 
-function calculateTotalCashAdvanced(row: CashAdvanceMultipleEntryItem) {
-  const limit = parseMoneyNumberInput(row.cashAdvanceLimit);
-  const balance = parseMoneyNumberInput(row.cashAdvanceBalance);
+function calculateTotalCashAdvanced(limitStr: string, balanceStr: string) {
+  const limit = parseMoneyNumberInput(limitStr);
+  const balance = parseMoneyNumberInput(balanceStr);
 
-  if (!row.cashAdvanceLimit.trim() || !row.cashAdvanceBalance.trim()) {
+  if (!limitStr.trim() || !balanceStr.trim()) {
     return "";
   }
 

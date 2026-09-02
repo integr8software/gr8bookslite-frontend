@@ -8,15 +8,19 @@ import type {
   DisbursementVoucherEntryDraft,
   DisbursementVoucherFormValues,
   DisbursementVoucherHistoryEntry,
+  DisbursementVoucherPartyDropdownOption,
   DisbursementVoucherPaymentAccount,
   DisbursementVoucherPaymentDetails,
   DisbursementVoucherRecord,
   DisbursementVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { PaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import { DisbursementVoucherStatuses } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { getEwtPercentFromCode, getVatPercentFromRate, getVatRateFromCode } from "@/app/src/data/shared/tax/TaxData";
 import { formatCurrency as formatCurrencyValue } from "@/app/src/utils/currency.util";
+import { isGeneratedAccountingEntry } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
 
 const CashInHandAccount = {
   accountCode: "1001111",
@@ -90,6 +94,12 @@ export function ensureDisbursementLineEntries(entries: DisbursementLineEntry[]) 
   return entries.length > 0 ? entries : [createBlankDisbursementLineEntry()];
 }
 
+export function getDisbursementVoucherSourceGrossTotal(entries: DisbursementLineEntry[]) {
+  return entries
+    .filter((entry) => !isGeneratedAccountingEntry(entry))
+    .reduce((sum, entry) => sum + Number(entry.taxDetails?.grossAmount || entry.debit || 0), 0);
+}
+
 export function sanitizeDisbursementVoucherRecord(voucher: DisbursementVoucherRecord): DisbursementVoucherRecord {
   const createdAt = voucher.createdAt ?? voucher.history?.[0]?.createdAt ?? "";
   const updatedAt = voucher.updatedAt ?? voucher.history?.[voucher.history.length - 1]?.createdAt ?? createdAt;
@@ -118,6 +128,8 @@ export function createDisbursementVoucherFormValues(
   voucher?: DisbursementVoucherRecord,
 ): DisbursementVoucherFormValues {
   if (voucher) {
+    const voucherGrossAmount = getDisbursementVoucherSourceGrossTotal(voucher.lineEntries) || voucher.amount;
+
     return {
       transactionId: voucher.transactionId,
       voucherNo: voucher.voucherNo,
@@ -127,12 +139,13 @@ export function createDisbursementVoucherFormValues(
       currency: voucher.currency,
       fxRate: voucher.fxRate,
       costCenter: voucher.costCenter,
+      projectCode: voucher.projectCode ?? voucher.costCenter,
       projectName: voucher.projectName ?? transaction?.projectName ?? transaction?.department ?? "",
       partyCode: voucher.partyCode,
       partyName: voucher.partyName,
-      amount: voucher.amount.toFixed(2),
+      amount: voucherGrossAmount.toFixed(2),
       taxRate: voucher.taxRate,
-      taxDetails: voucher.taxDetails,
+      taxDetails: syncTaxDetailsAmount(voucher.taxDetails, voucherGrossAmount, voucher.taxRate),
       remarks: voucher.remarks,
       referenceModule: voucher.referenceModule ?? "",
       voucherReferenceNo: voucher.voucherReferenceNo,
@@ -150,6 +163,7 @@ export function createDisbursementVoucherFormValues(
     amount: transaction ? createDefaultTransactionTaxDetails(transaction).amount.toFixed(2) : "",
     attachments: [],
     costCenter: transaction?.costCenter ?? "",
+    projectCode: transaction?.costCenter ?? "",
     currency: transaction?.currency ?? "PHP",
     disbursementType: transaction?.disbursementType ?? "",
     fxRate: "1.00",
@@ -392,6 +406,151 @@ export function syncTaxDetailsAmount(currentTaxDetails: DisbursementTaxDetails |
     ewtAmount,
     amount: totalPayable,
   };
+}
+
+export function findPartyTaxCode(taxCodes: AlphanumericTaxCode[], sourceKey: string | undefined, taxType: "EWT" | "VAT") {
+  if (!sourceKey) {
+    return "";
+  }
+
+  const taxCode = taxCodes.find(
+    (tax) =>
+      tax.sourceKey === sourceKey &&
+      (taxType === "VAT" ? tax.taxType === "INPUT VAT" || tax.taxType === "VAT" : tax.taxType === "EWT" || tax.taxType === "CWT"),
+  );
+
+  return taxCode ? (taxType === "EWT" ? taxCode.officialAtcCode || taxCode.taxCode : taxCode.taxCode) : "";
+}
+
+export function applyPartyTaxDefaults(
+  entry: DisbursementLineEntry,
+  vatCode: string,
+  ewtCode: string,
+  vatPercent: number,
+  ewtPercent: number,
+): DisbursementLineEntry {
+  const taxDetails = syncTaxDetailsAmount(
+    {
+      ...entry.taxDetails,
+      ewtCode,
+      ewtPercent,
+      vatCode,
+      vatPercent,
+      vatType: vatCode,
+    },
+    parseMoneyNumberInput(entry.taxDetails?.grossAmount ?? entry.debit ?? entry.credit),
+    "0%",
+  );
+
+  return {
+    ...entry,
+    ewtCode,
+    partyCode: entry.partyCode,
+    partyName: entry.partyName,
+    taxDetails,
+    vatType: vatCode,
+  };
+}
+
+export function applyMissingPartyTaxDefaultsToEntries(
+  entries: DisbursementLineEntry[],
+  partyOptions: DisbursementVoucherPartyDropdownOption[],
+  taxCodes: AlphanumericTaxCode[],
+) {
+  let changed = false;
+
+  const nextEntries = entries.map((entry) => {
+    if (isGeneratedAccountingEntry(entry)) {
+      return entry;
+    }
+
+    const partyCode = (entry.partyCode ?? "").trim();
+    const partyName = (entry.partyName ?? "").trim();
+
+    if (!partyCode && !partyName) {
+      return entry;
+    }
+
+    const selectedParty = partyOptions.find(
+      (option) =>
+        option.value === partyCode ||
+        option.label === partyCode ||
+        option.name.trim().toLowerCase() === partyName.toLowerCase(),
+    );
+
+    if (!selectedParty) {
+      return entry;
+    }
+
+    const defaultVatCode = selectedParty.vatCode || findPartyTaxCode(taxCodes, selectedParty.defaultPurchaseInputVatTaxSourceKey, "VAT");
+    const defaultEwtCode = selectedParty.ewtCode || findPartyTaxCode(taxCodes, selectedParty.defaultPurchaseEwtTaxSourceKey, "EWT");
+    const currentVatCode = entry.taxDetails?.vatCode || entry.vatType || "";
+    const currentEwtCode = entry.taxDetails?.ewtCode || entry.ewtCode || "";
+    const nextVatCode = currentVatCode || defaultVatCode;
+    const nextEwtCode = currentEwtCode || defaultEwtCode;
+
+    if (currentVatCode === nextVatCode && currentEwtCode === nextEwtCode) {
+      return entry;
+    }
+
+    changed = true;
+
+    const nextTaxRate = nextVatCode ? getVatRateFromCode(nextVatCode, taxCodes) : entry.taxRate;
+    const nextVatPercent = nextVatCode ? getVatPercentFromRate(nextTaxRate) : (entry.taxDetails?.vatPercent ?? 0);
+    const nextEwtPercent = nextEwtCode ? getEwtPercentFromCode(nextEwtCode, taxCodes) : (entry.taxDetails?.ewtPercent ?? 0);
+
+    return {
+      ...applyPartyTaxDefaults(
+        {
+          ...entry,
+          partyCode: partyCode || selectedParty.label,
+          partyName: partyName || selectedParty.name,
+        },
+        nextVatCode,
+        nextEwtCode,
+        nextVatPercent,
+        nextEwtPercent,
+      ),
+      taxRate: nextTaxRate,
+    };
+  });
+
+  return { changed, entries: nextEntries };
+}
+
+export function getHydratedDisbursementVoucherGrossAmount(detail: Record<string, unknown>) {
+  const storedGrossAmount = getDisbursementVoucherDetailNumber(detail, "grossAmount");
+  const debitAmount = getDisbursementVoucherDetailNumber(detail, "debit");
+  const vatPercent = getDisbursementVoucherDetailNumber(detail, "vatPercent");
+
+  if (storedGrossAmount > 0 && debitAmount > 0 && vatPercent > 0 && Math.abs(storedGrossAmount - debitAmount) <= 0.01) {
+    const netRatio = 1 - vatPercent / 100;
+
+    if (netRatio > 0) {
+      return roundHydratedDisbursementVoucherAmount(debitAmount / netRatio);
+    }
+  }
+
+  return storedGrossAmount || debitAmount;
+}
+
+export function getDisbursementVoucherDetailNumber(detail: Record<string, unknown>, key: string) {
+  const taxDetails = detail.taxDetails as Record<string, unknown> | undefined;
+  const value = detail[key] ?? taxDetails?.[key];
+  const amount = Number(value || 0);
+
+  return Number.isFinite(amount) ? amount : 0;
+}
+
+export function getDisbursementVoucherDetailString(detail: Record<string, unknown>, key: string) {
+  const taxDetails = detail.taxDetails as Record<string, unknown> | undefined;
+  const value = detail[key] ?? taxDetails?.[key];
+
+  return typeof value === "string" ? value : "";
+}
+
+export function roundHydratedDisbursementVoucherAmount(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
 export function formatTaxRateSummary(taxDetails: DisbursementTaxDetails) {

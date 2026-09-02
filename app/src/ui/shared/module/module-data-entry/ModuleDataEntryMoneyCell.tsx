@@ -7,19 +7,23 @@ export function ModuleDataEntryMoneyCell({
   className,
   id,
   isInvalid = false,
+  isWarning = false,
   name,
   onChange,
   placeholder = "0.00",
   readOnly,
+  title,
   value,
 }: {
   className?: string;
   id: string;
   isInvalid?: boolean;
+  isWarning?: boolean;
   name: string;
   onChange?: (value: string) => void;
   placeholder?: string;
   readOnly?: boolean;
+  title?: string;
   value: string | number;
 }) {
   const displayValue =
@@ -27,9 +31,11 @@ export function ModuleDataEntryMoneyCell({
       ? ""
       : String(value);
 
-  const invalidClass = isInvalid
+  const statusClass = isInvalid
     ? "bg-coralpink/10 text-coralpink ring-2 ring-inset ring-coralpink/50 focus:bg-coralpink/10 focus:ring-coralpink/60"
-    : "";
+    : isWarning
+      ? "bg-amber-500/10 text-darknavy ring-2 ring-inset ring-amber-400 focus:bg-amber-500/10 focus:ring-amber-500"
+      : "";
 
   return (
     <>
@@ -39,11 +45,12 @@ export function ModuleDataEntryMoneyCell({
       <MoneyNumberField
         id={id}
         name={name}
+        title={title}
         value={displayValue}
         readOnly={readOnly}
         placeholder={placeholder}
         onValueChange={onChange ?? (() => undefined)}
-        className={`${moduleDataEntryMoneyClassName} ${invalidClass} ${className ?? ""}`}
+        className={`${moduleDataEntryMoneyClassName} ${statusClass} ${className ?? ""}`}
       />
     </>
   );

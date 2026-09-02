@@ -10,7 +10,9 @@ import type {
   DisbursementTaxDetails,
   DisbursementVoucherBankAccount,
   DisbursementVoucherFormErrors,
+  DisbursementVoucherPartyDropdownOption,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 
 export type DisbursementEntryColumnId =
   | "accountCode"
@@ -54,16 +56,16 @@ export type ExpenseEntryColumnId =
   | "refId";
 
 export type VoucherDataEntryProps = {
-  bankAccount: DisbursementVoucherBankAccount | null;
+  bankAccount?: DisbursementVoucherBankAccount | null;
   canAddExpenseType: boolean;
   canAddPartyName: boolean;
   canAddResponsibilityCenter: boolean;
-  chartAccountOptions: AppAdvancedDropdownOption[];
-  defaultAccounts: DefaultAccountOptionResponseDto[];
+  chartAccountOptions?: AppAdvancedDropdownOption[];
+  defaultAccounts: DefaultAccount[] | DefaultAccountOptionResponseDto[];
   entries: DisbursementLineEntry[];
   errors: DisbursementVoucherFormErrors;
   isReadonly: boolean;
-  isMultiCheckNumber: boolean;
+  isMultiCheckNumber?: boolean;
   onAddEntries: (count: number) => void;
   onAddExpenseType: () => void;
   onAddPartyName: () => void;
@@ -72,12 +74,12 @@ export type VoucherDataEntryProps = {
   onDuplicateEntry: (entryId: string) => void;
   onInsertEntry: (entryId: string, position: "above" | "below") => void;
   onMoveEntry: (fromEntryId: string, toEntryId: string) => void;
-  onReplaceEntries: (entries: DisbursementLineEntry[]) => void;
+  onReplaceEntries?: (entries: DisbursementLineEntry[]) => void;
   onUpdateEntry: (entryId: string, field: keyof DisbursementLineEntry, value: string | number) => void;
   onUpdateEntryFields: (entryId: string, updates: Partial<DisbursementLineEntry>) => void;
-  paymentMethod: string;
-  paymentTypeRecord: AppPaymentTypeRecord | null;
-  partyOptions: AppAdvancedDropdownOption[];
+  paymentMethod?: string;
+  paymentTypeRecord?: AppPaymentTypeRecord | null;
+  partyOptions: DisbursementVoucherPartyDropdownOption[];
   partyCode: string;
   partyName: string;
   responsibilityCenterOptions: AppAdvancedDropdownOption[];
@@ -100,7 +102,8 @@ export type DisbursementAccountingEntryColumnsParams = {
   onAddPartyName: () => void;
   onUpdateEntry: DisbursementEntryUpdater;
   onUpdateEntryFields: DisbursementEntryFieldsUpdater;
-  partyOptions: AppAdvancedDropdownOption[];
+  partyOptions: DisbursementVoucherPartyDropdownOption[];
+  taxCodes: AlphanumericTaxCode[];
   vatOptions?: AppAdvancedDropdownOption[];
 };
 

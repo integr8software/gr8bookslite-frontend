@@ -106,6 +106,7 @@ function CashAdvanceMultipleEntryActionInner({ mode }: { mode: CashAdvanceMultip
     <>
       <section className="grid gap-5">
         <CashAdvanceMultipleEntryActionHeader
+          availabilityWarning={form.availabilityWarning}
           mode={mode}
           hasDiscardableChanges={form.hasDiscardableChanges}
           isSubmitting={form.isSubmitting}
@@ -131,6 +132,7 @@ function CashAdvanceMultipleEntryActionInner({ mode }: { mode: CashAdvanceMultip
         {activeDetailsTab === "details" ? (
           <CashAdvanceMultipleEntryDetailsFields
             currencyOptions={form.currencyOptions}
+            errors={form.errors}
             isExchangeRateLoading={form.isExchangeRateLoading}
             isReadonly={isReadonly}
             projectOptions={projectOptions}

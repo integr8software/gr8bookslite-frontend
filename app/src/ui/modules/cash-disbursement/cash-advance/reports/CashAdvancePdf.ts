@@ -17,7 +17,7 @@ export function openCashAdvancePdf(values: CashAdvanceFormValues) {
 
 function createCashAdvancePdfDefinition(values: CashAdvanceFormValues): TDocumentDefinitions {
   const amount = Number(values.amount || 0);
-  const accountTitle = getCashAdvanceAccountTitle(values.accountCode);
+  const accountTitle = values.accountTitle || getCashAdvanceAccountTitle(values.accountCode);
   const purpose = [accountTitle, values.remarks].filter(Boolean).join(" - ");
 
   return {

@@ -79,16 +79,24 @@ function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: Di
   const hasDetailsError = Object.entries(voucherAction.errors).some(
     ([field, error]) =>
       Boolean(error) &&
+      field !== "attachments" &&
       !DisbursementVoucherPaymentInformationErrorFields.includes(
         field as (typeof DisbursementVoucherPaymentInformationErrorFields)[number],
       ),
   );
+  const hasAttachmentsError = Boolean(voucherAction.errors.attachments);
   const actionTabs = DisbursementVoucherActionTabs.filter(
     (tab) => tab.id !== "payment-information" || shouldShowPaymentInformation,
   ).map((tab) => ({
     ...tab,
     hasError:
-      tab.id === "details" ? hasDetailsError : tab.id === "payment-information" ? hasPaymentInformationError : false,
+      tab.id === "details"
+        ? hasDetailsError
+        : tab.id === "payment-information"
+          ? hasPaymentInformationError
+          : tab.id === "attachments"
+            ? hasAttachmentsError
+            : false,
   }));
 
   return (

@@ -7,12 +7,12 @@ import { RevolvingFundReplenishmentStatuses } from "@/app/src/constants/modules/
 import { parseAmount } from "@/app/src/utils/number.util";
 
 const draftSchema = z.object({
-  transactionNo: z.string().regex(/^RFR-\d{6}$/, "A valid RFR No. is required."),
+  transactionNo: z.string().regex(/^RFR-\d{6}$/, "RFR No. is required."),
   documentDate: z.string().min(1, "Select an RFR Date."),
 });
 
 const schema = z.object({
-  transactionNo: z.string().regex(/^RFR-\d{6}$/, "A valid RFR No. is required."),
+  transactionNo: z.string().regex(/^RFR-\d{6}$/, "RFR No. is required."),
   documentDate: z.string().min(1, "Select an RFR Date."),
   partyCode: z.string().trim().min(1, "Party Code is required."),
   partyName: z.string().trim().min(1, "Party Name is required."),

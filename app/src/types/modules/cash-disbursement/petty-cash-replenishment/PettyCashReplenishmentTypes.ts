@@ -98,6 +98,10 @@ export type PettyCashReplenishmentRecord = {
   partyName: string;
   accountCode: string;
   accountTitle: string;
+  responsibilityCenter?: string;
+  responsibilityCenterCode?: string;
+  projectCode?: string;
+  projectName?: string;
   currency?: string;
   exchangeRate?: string;
   amount: number;
@@ -108,6 +112,8 @@ export type PettyCashReplenishmentRecord = {
   createdAt: string;
   updatedBy: string;
   updatedAt: string;
+  entries?: PettyCashReplenishmentEntry[];
+  attachments?: TransactionAttachment[];
   formValues?: PettyCashReplenishmentFormValues;
 };
 

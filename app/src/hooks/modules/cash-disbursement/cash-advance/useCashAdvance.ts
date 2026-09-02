@@ -284,7 +284,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
-      toast.error("Please Fill Up the Required Fields! ");
+      toast.error("Please Fill Up the Required Fields!");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -373,7 +373,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
-      toast.error("Please Fill Up the Required Fields! ");
+      toast.error("Please Fill Up the Required Fields!");
       return false;
     }
 

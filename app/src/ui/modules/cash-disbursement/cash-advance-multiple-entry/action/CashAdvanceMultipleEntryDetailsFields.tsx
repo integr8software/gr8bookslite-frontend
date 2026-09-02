@@ -7,6 +7,7 @@ import {
 import { PartyManagementQueryKeys } from "@/app/src/services/modules/party-management/PartyManagementQueryKeys";
 import type {
   CashAdvanceMultipleEntryFormController,
+  CashAdvanceMultipleEntryFormErrors,
   CashAdvanceMultipleEntryFormValues,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
@@ -23,6 +24,7 @@ import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 
 export function CashAdvanceMultipleEntryDetailsFields({
   currencyOptions,
+  errors = {},
   isExchangeRateLoading,
   isReadonly,
   onOpenPartyDrawer,
@@ -33,6 +35,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
   values,
 }: {
   currencyOptions: AppAdvancedDropdownOption[];
+  errors?: CashAdvanceMultipleEntryFormErrors;
   isExchangeRateLoading: boolean;
   isReadonly: boolean;
   onOpenPartyDrawer: () => void;
@@ -94,7 +97,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
       <div className="grid gap-5 xl:grid-cols-3">
         {/* Column 1: Name & Lookup Fields */}
         <div className="grid min-w-0 content-start gap-5">
-          <TransactionField label="Employee Name" isRequired>
+          <TransactionField label="Employee Name" error={errors.partyName} isRequired>
             <AppLookupDropdown
               value={values.partyCode}
               options={partyOptions}
@@ -126,7 +129,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
             />
           </TransactionField>
 
-          <TransactionField label="Default Account Title" isRequired>
+          <TransactionField label="Default Account Title" error={errors.accountTitle} isRequired>
             <AppLookupDropdown
               value={values.accountCode}
               options={accountOptions}
@@ -160,6 +163,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
             isReadonly
             isRequired
             label="Employee Code"
+            error={errors.partyCode}
             onValueChange={(value) => onUpdateField("partyCode", value)}
             placeholder="Employee Code"
           />
@@ -177,6 +181,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
             isReadonly
             isRequired
             label="Default Account Code"
+            error={errors.accountCode}
             onValueChange={(value) => onUpdateField("accountCode", value)}
             placeholder="Default Account Code"
           />
@@ -222,6 +227,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
             isReadonly
             isRequired
             label="CAME No."
+            error={errors.transNo}
             onValueChange={(value) => onUpdateField("transNo", value)}
             placeholder="Auto Generated CAME Transaction Number"
           />
@@ -231,6 +237,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
             isReadonly={isReadonly}
             isRequired
             label="CAME Date"
+            error={errors.documentDate}
             type="date"
             onValueChange={(value) => onUpdateField("documentDate", value)}
           />

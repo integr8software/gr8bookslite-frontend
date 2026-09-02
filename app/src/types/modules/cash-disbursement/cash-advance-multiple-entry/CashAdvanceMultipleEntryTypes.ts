@@ -8,6 +8,7 @@ import type {
 
 export type CashAdvanceMultipleEntryActionMode = "add" | "edit" | "view";
 export type CashAdvanceMultipleEntrySubmitConfirmationAction = "save" | "draft";
+export type CashAdvanceMultipleEntryFormErrors = Partial<Record<keyof CashAdvanceMultipleEntryFormValues | "items", string>>;
 export type CashAdvanceMultipleEntryFormController = ReturnType<typeof useCashAdvanceMultipleEntryActionForm>;
 export type CashAdvanceMultipleEntryTableState = ReturnType<typeof useCashAdvanceMultipleEntryTable>;
 

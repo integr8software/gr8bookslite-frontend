@@ -195,7 +195,7 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherF
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
-      toast.error("Please complete required fields before saving.");
+      toast.error("Please Fill Up the Required Fields!");
       return false;
     }
 

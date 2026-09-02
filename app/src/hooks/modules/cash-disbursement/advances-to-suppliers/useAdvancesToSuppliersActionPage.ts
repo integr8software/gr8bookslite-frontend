@@ -315,7 +315,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     const nextErrors = status === AdvancesToSuppliersStatuses.draft ? {} : validateAdvancesToSuppliersForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
-      toast.error("Please fix the highlighted Advances to Suppliers fields.");
+      toast.error("Please Fill Up the Required Fields!");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -384,7 +384,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     const nextErrors = status === AdvancesToSuppliersStatuses.draft ? {} : validateAdvancesToSuppliersForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
-      toast.error("Please fix the highlighted Advances to Suppliers fields.");
+      toast.error("Please Fill Up the Required Fields!");
       return false;
     }
     return true;
@@ -418,12 +418,67 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     draft.discardDraft();
   }
 
+  const resolvedPartyOptions = useMemo(() => {
+    const options = [...partyOptions];
+    if (values.partyCode && !options.some((o) => o.value === values.partyCode || o.label === values.partyCode)) {
+      options.unshift({
+        name: values.partyName || values.partyCode,
+        label: values.partyCode,
+        value: values.partyCode,
+        description: values.partyName,
+      });
+    }
+    return options;
+  }, [partyOptions, values.partyCode, values.partyName]);
+
+  const resolvedAccountOptions = useMemo(() => {
+    const options = [...accountOptions];
+    if (values.accountCode && !options.some((o) => o.value === values.accountCode || o.label === values.accountCode)) {
+      options.unshift({
+        name: values.accountTitle || values.accountCode,
+        label: values.accountCode,
+        value: values.accountCode,
+        description: values.accountTitle,
+      });
+    }
+    return options;
+  }, [accountOptions, values.accountCode, values.accountTitle]);
+
+  const resolvedResponsibilityCenterOptions = useMemo(() => {
+    const options = [...responsibilityCenterOptions];
+    if (
+      values.responsibilityCenterCode &&
+      !options.some((o) => o.value === values.responsibilityCenterCode || o.label === values.responsibilityCenterCode)
+    ) {
+      options.unshift({
+        name: values.responsibilityCenter || values.responsibilityCenterCode,
+        label: values.responsibilityCenterCode,
+        value: values.responsibilityCenterCode,
+        description: values.responsibilityCenter,
+      });
+    }
+    return options;
+  }, [responsibilityCenterOptions, values.responsibilityCenterCode, values.responsibilityCenter]);
+
+  const resolvedProjectOptions = useMemo(() => {
+    const options = [...projectOptions];
+    if (values.projectCode && !options.some((o) => o.value === values.projectCode || o.label === values.projectCode)) {
+      options.unshift({
+        name: values.projectName || values.projectCode,
+        label: values.projectCode,
+        value: values.projectCode,
+        description: values.projectName,
+      });
+    }
+    return options;
+  }, [projectOptions, values.projectCode, values.projectName]);
+
   return {
     discardDraft,
     hasDiscardableChanges: isDirty,
     saveDraft: draft.saveDraft,
     activeTab,
-    accountOptions,
+    accountOptions: resolvedAccountOptions,
     currencyOptions: transactionCurrency.currencyOptions,
     errors,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
@@ -434,11 +489,11 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     isReadonly,
     isRecordMissing: mode !== "add" && !isLoading && !record,
     mode,
-    partyOptions,
-    projectOptions,
+    partyOptions: resolvedPartyOptions,
+    projectOptions: resolvedProjectOptions,
     purchaseOrderCopyRecords,
     record,
-    responsibilityCenterOptions,
+    responsibilityCenterOptions: resolvedResponsibilityCenterOptions,
     save,
     setActiveTab,
     setIsPreviewOpen,

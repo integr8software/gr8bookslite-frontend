@@ -21,18 +21,18 @@ const amount = z.preprocess(
 
 export const PettyCashVoucherDraftFormValidationSchema = z.object({
   documentDate: requiredText("Select a PCV Date."),
-  transactionNo: requiredText("Generate a PCV No.").regex(
+  transactionNo: requiredText("PCV No. is required.").regex(
     transactionNumberPattern,
     "Use the generated PCV No. format.",
   ),
 });
 
 export const PettyCashVoucherFormValidationSchema = z.object({
-  accountCode: requiredText("Enter an Account Code."),
-  accountTitle: requiredText("Enter an Account Title."),
-  amount: amount.refine((value) => value > 0, "Enter an Amount."),
+  accountCode: requiredText("Default Account Code is required."),
+  accountTitle: requiredText("Default Account Title is required."),
+  amount: amount.refine((value) => value > 0, "Amount is required."),
   documentDate: requiredText("Select a PCV Date."),
-  currency: requiredText("Select a Currency."),
+  currency: requiredText("Currency is required."),
   exchangeRate: requiredText("Enter an Exchange Rate.").refine((value) => Number(value) > 0, "Exchange Rate must be greater than zero."),
   ewtCode: z.string().optional(),
   ewtRate: z.string().optional(),
@@ -42,7 +42,7 @@ export const PettyCashVoucherFormValidationSchema = z.object({
   responsibilityCenter: z.string(),
   responsibilityCenterCode: z.string(),
   status: z.enum(PettyCashVoucherFormStatusOptions),
-  transactionNo: requiredText("Generate a PCV No.").regex(
+  transactionNo: requiredText("PCV No. is required.").regex(
     transactionNumberPattern,
     "Use the generated PCV No. format.",
   ),
@@ -50,8 +50,8 @@ export const PettyCashVoucherFormValidationSchema = z.object({
   vatable: z.enum(PettyCashVoucherVATableOptions).optional(),
   vatRate: z.string().optional(),
   vatAmount: amount,
-  partyCode: requiredText("Enter a Party Code."),
-  partyName: requiredText("Enter a Party Name."),
+  partyCode: requiredText("Party Code is required."),
+  partyName: requiredText("Party Name is required."),
 });
 
 export function validatePettyCashVoucherForm(values: PettyCashVoucherFormValues): PettyCashVoucherFormErrors {

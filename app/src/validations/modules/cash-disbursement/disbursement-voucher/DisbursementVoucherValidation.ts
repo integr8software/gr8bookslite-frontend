@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
+  DisbursementVoucherBankAccount,
   DisbursementVoucherEntryDraft,
   DisbursementVoucherFormErrors,
   DisbursementVoucherFormValues,
@@ -103,6 +104,7 @@ export const DisbursementVoucherEntryDraftValidationSchema = z
 export function validateDisbursementVoucherDetails(
   values: DisbursementVoucherFormValues,
   paymentTypeRecord?: PaymentTypeRecord | null,
+  bankAccounts?: DisbursementVoucherBankAccount[],
 ) {
   const errors: DisbursementVoucherFormErrors = {};
   const result = DisbursementVoucherDetailsValidationSchema.safeParse(values);
@@ -153,6 +155,33 @@ export function validateDisbursementVoucherDetails(
     if (!values.paymentDetails.bankAccountCode.trim()) errors.bankAccountCode = "From Bank is required.";
     if (!(values.paymentDetails.transferToBank ?? "").trim()) errors.transferToBank = "To Bank is required.";
     if (!(values.paymentDetails.transferAccountNo ?? "").trim()) errors.transferAccountNo = "Account No. is required.";
+
+    const fromBankCode = values.paymentDetails.bankAccountCode.trim();
+    const toBankName = (values.paymentDetails.transferToBank ?? "").trim();
+    const toAccountNo = (values.paymentDetails.transferAccountNo ?? "").trim();
+
+    if (fromBankCode && toBankName) {
+      const fromBank = bankAccounts?.find((b) => b.accountCode === fromBankCode || b.id === fromBankCode);
+      const isSameAccountNo = Boolean(
+        toAccountNo &&
+          (toAccountNo === values.paymentDetails.bankAccountNo?.trim() ||
+            (fromBank && toAccountNo === fromBank.accountNo?.trim())),
+      );
+      const isSameBankName = Boolean(
+        toBankName &&
+          ((values.paymentDetails.bankName &&
+            toBankName.toLowerCase() === values.paymentDetails.bankName.trim().toLowerCase()) ||
+            (fromBank && toBankName.toLowerCase() === fromBank.bankName.trim().toLowerCase())),
+      );
+
+      if (
+        isSameAccountNo ||
+        (isSameBankName && isSameAccountNo) ||
+        (isSameBankName && !toAccountNo && !values.paymentDetails.bankAccountNo)
+      ) {
+        errors.transferToBank = "From Bank and To Bank cannot be the same.";
+      }
+    }
   }
 
   return errors;

@@ -34,6 +34,18 @@ export function DisbursementVoucherPaymentFields({
   }
 
   if (kind === "bank-transfer") {
+    const fromBankAccounts = bankAccounts.filter((bankAccount) => {
+      if (!values.paymentDetails.transferToBank) return true;
+      const matchesBankName = bankAccount.bankName === values.paymentDetails.transferToBank;
+      const matchesAccountNo = !values.paymentDetails.transferAccountNo || bankAccount.accountNo === values.paymentDetails.transferAccountNo;
+      return !(matchesBankName && matchesAccountNo);
+    });
+
+    const toBankAccounts = bankAccounts.filter((bankAccount) => {
+      if (!values.paymentDetails.bankAccountCode) return true;
+      return bankAccount.accountCode !== values.paymentDetails.bankAccountCode && bankAccount.id !== values.paymentDetails.bankAccountCode;
+    });
+
     return (
       <div className="grid min-w-0 gap-4">
         <TransactionField
@@ -43,7 +55,7 @@ export function DisbursementVoucherPaymentFields({
           label="From Bank"
         >
           <BankAccountDropdown
-            bankAccounts={bankAccounts}
+            bankAccounts={fromBankAccounts}
             id="disbursement-voucher-from-bank"
             isReadonly={isReadonly}
             showAccountTitle
@@ -66,7 +78,7 @@ export function DisbursementVoucherPaymentFields({
           label="To Bank"
         >
           <ToBankDropdown
-            bankAccounts={bankAccounts}
+            bankAccounts={toBankAccounts}
             id="disbursement-voucher-to-bank"
             isReadonly={isReadonly}
             addAction={

@@ -7,12 +7,12 @@ import { PettyCashFundStatuses } from "@/app/src/constants/modules/cash-disburse
 import { parseAmount } from "@/app/src/utils/number.util";
 
 const draftSchema = z.object({
-  transactionNo: z.string().regex(/^PCF-\d{6}$/, "A valid PCF No. is required."),
+  transactionNo: z.string().regex(/^PCF-\d{6}$/, "PCF No. is required."),
   documentDate: z.string().min(1, "Select a PCF Date."),
 });
 
 const schema = z.object({
-  transactionNo: z.string().regex(/^PCF-\d{6}$/, "A valid PCF No. is required."),
+  transactionNo: z.string().regex(/^PCF-\d{6}$/, "PCF No. is required."),
   documentDate: z.string().min(1, "Select a PCF Date."),
   partyCode: z.string().trim().min(1, "Party Code is required."),
   partyName: z.string().trim().min(1, "Party Name is required."),

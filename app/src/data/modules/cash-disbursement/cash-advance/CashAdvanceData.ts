@@ -60,6 +60,7 @@ export function createCashAdvanceFormValuesFromRecord(record: CashAdvanceRecord)
       accountCode: record.accountCode || record.formValues.accountCode,
       accountTitle: record.accountTitle || record.formValues.accountTitle,
       availableCashAdvance: record.formValues.availableCashAdvance ?? legacyFormValues.cashAdvanceBalance ?? "",
+      cashAdvanceLimit: record.formValues.cashAdvanceLimit ?? "",
       costCenterId: record.formValues.costCenterId,
       costCenter: record.costCenter || record.formValues.costCenter,
       currency: record.currency ?? record.formValues.currency ?? "PHP",
@@ -92,12 +93,20 @@ export function createCashAdvanceFormValuesFromRecord(record: CashAdvanceRecord)
     };
   }
 
+  const recordWithBalances = record as CashAdvanceRecord & {
+    availableCashAdvance?: string;
+    cashAdvanceBalance?: string;
+    cashAdvanceLimit?: string;
+  };
+
   return {
     ...createCashAdvanceFormValues(),
     accountId: "",
     accountCode: record.accountCode,
     accountTitle: record.accountTitle || "",
     amount: formatMoneyNumberDisplayValue(record.amount || ""),
+    availableCashAdvance: recordWithBalances.availableCashAdvance ?? recordWithBalances.cashAdvanceBalance ?? "",
+    cashAdvanceLimit: recordWithBalances.cashAdvanceLimit ?? "",
     costCenterId: "",
     costCenter: record.costCenter,
     currency: record.currency ?? "PHP",

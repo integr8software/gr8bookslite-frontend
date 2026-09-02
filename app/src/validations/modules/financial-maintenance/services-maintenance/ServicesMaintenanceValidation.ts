@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   ServicesMaintenanceAccountSetupModeOptions,
+  ServicesMaintenanceServiceTypeOptions,
   ServicesMaintenanceStatusOptions,
 } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import type {
@@ -17,7 +18,8 @@ type ServicesMaintenanceValidationOptions = {
 
 const ServicesMaintenanceFormSchema = z
   .object({
-    serviceName: z.string().trim().min(1, "Name is required.").max(150, "Name must be 150 characters or fewer."),
+    serviceName: z.string().trim().min(1, "Service name is required.").max(150, "Service name must be 150 characters or fewer."),
+    serviceType: z.enum(ServicesMaintenanceServiceTypeOptions),
     description: z.string().trim().max(500, "Description can only be up to 500 characters."),
     status: z.enum(ServicesMaintenanceStatusOptions),
     accountSetupMode: z.enum(ServicesMaintenanceAccountSetupModeOptions),
@@ -76,5 +78,5 @@ export function validateServicesMaintenanceForm(
 }
 
 function isServicesMaintenanceField(value: unknown): value is keyof ServicesMaintenanceFormValues {
-  return typeof value === "string" && ["serviceName", "description", "status", "accountSetupMode", "revenueCoaId"].includes(value);
+  return typeof value === "string" && ["serviceName", "serviceType", "description", "status", "accountSetupMode", "revenueCoaId"].includes(value);
 }

@@ -68,6 +68,14 @@ export function createPettyCashVoucherFormValues(
     };
   }
 
+  if (record.formValues) {
+    return {
+      ...PettyCashVoucherInitialFormValues,
+      ...record.formValues,
+      attachments: record.formValues.attachments?.map((attachment) => ({ ...attachment })) ?? [],
+    };
+  }
+
   const amount = formatMoneyNumberDisplayValue(String(record.amount));
   const vatType = record.vatType ?? (record.vatable === "True" ? "VAT-12" : "");
   const ewtCode = record.ewtCode ?? "";
@@ -78,6 +86,7 @@ export function createPettyCashVoucherFormValues(
     accountCode: record.accountCode,
     accountTitle: record.accountTitle,
     amount,
+    attachments: record.attachments?.map((attachment) => ({ ...attachment })) ?? [],
     documentDate: record.documentDate,
     currency: record.currency ?? "PHP",
     exchangeRate: record.exchangeRate ?? "1.00",
@@ -86,6 +95,8 @@ export function createPettyCashVoucherFormValues(
     ewtAmount: record.ewtAmount !== undefined ? formatPettyCashVoucherAmount(record.ewtAmount) : taxes.ewtAmount,
     netAmount: record.netAmount !== undefined ? formatPettyCashVoucherAmount(record.netAmount) : taxes.netAmount,
     remarks: record.remarks,
+    responsibilityCenter: record.responsibilityCenter ?? "",
+    responsibilityCenterCode: record.responsibilityCenterCode ?? "",
     status: record.status,
     transactionNo: record.voucherNo,
     vatType,
@@ -127,6 +138,8 @@ export function createPettyCashVoucherRecord(
     partyCode: values.partyCode.trim(),
     partyName: values.partyName.trim(),
     remarks: values.remarks.trim(),
+    responsibilityCenter: values.responsibilityCenter.trim(),
+    responsibilityCenterCode: values.responsibilityCenterCode.trim(),
     status,
     updatedBy: "Current User",
     vatType: values.vatType,
@@ -134,6 +147,12 @@ export function createPettyCashVoucherRecord(
     vatRate: values.vatRate,
     vatAmount,
     voucherNo: values.transactionNo.trim(),
+    attachments: values.attachments.map((attachment) => ({ ...attachment })),
+    formValues: {
+      ...values,
+      status,
+      attachments: values.attachments.map((attachment) => ({ ...attachment })),
+    },
   };
 }
 

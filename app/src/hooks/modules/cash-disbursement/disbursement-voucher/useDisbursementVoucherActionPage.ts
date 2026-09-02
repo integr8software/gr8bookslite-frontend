@@ -5,9 +5,15 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
+  applyMissingPartyTaxDefaultsToEntries,
+  applyPartyTaxDefaults,
   createDisbursementVoucherPaymentTypeRecords,
   createBlankDisbursementLineEntry,
   createTaxDetails,
+  findPartyTaxCode,
+  getDisbursementVoucherDetailNumber,
+  getDisbursementVoucherDetailString,
+  getHydratedDisbursementVoucherGrossAmount,
   syncTaxDetailsAmount,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { clearAccountingGridSession } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingGridSessionData";
@@ -40,7 +46,9 @@ import { useDefaultAccountStore } from "@/app/src/hooks/modules/financial-mainte
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
+import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
+import { getEwtPercentFromCode, getVatPercentFromRate, getVatRateFromCode } from "@/app/src/data/shared/tax/TaxData";
 import type {
   DisbursementLineEntry,
   DisbursementVoucherActionMode,
@@ -48,20 +56,21 @@ import type {
   DisbursementVoucherBankAccount,
   DisbursementVoucherFormErrors,
   DisbursementVoucherFormValues,
+  DisbursementVoucherPartyDropdownOption,
   DisbursementVoucherStatus,
+  DisbursementVoucherRecord,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { DisbursementVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherQueryKeys";
+import { FetchChartAccountsTree } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
+import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsQueryKeys";
 import {
   createDisbursementVoucherApi,
   fetchDisbursementVoucherById,
   fetchDisbursementVoucherAccountOptions,
-  fetchDisbursementVoucherExpenseAccountOptions,
-  fetchDisbursementVoucherPartyOptions,
-  fetchDisbursementVoucherResponsibilityCenters,
   fetchNextDisbursementVoucherTransactionNo,
   updateDisbursementVoucherApi,
   updateDisbursementVoucherStatusApi,
@@ -96,26 +105,19 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     queryFn: () => fetchDisbursementVoucherById(routeTransactionId),
     enabled: Boolean(routeTransactionId && mode !== "add"),
   });
-  const partyOptionsQuery = useQuery({
-    queryKey: DisbursementVoucherQueryKeys.parties(activeCompanyId),
-    queryFn: fetchDisbursementVoucherPartyOptions,
-    enabled: activeCompanyId !== null,
-  });
   const accountOptionsQuery = useQuery({
     queryKey: DisbursementVoucherQueryKeys.accounts(activeCompanyId),
     queryFn: fetchDisbursementVoucherAccountOptions,
     enabled: activeCompanyId !== null,
   });
-  const responsibilityCenterOptionsQuery = useQuery({
-    queryKey: DisbursementVoucherQueryKeys.responsibilityCenters(activeCompanyId),
-    queryFn: fetchDisbursementVoucherResponsibilityCenters,
+  const chartAccountsQuery = useQuery({
+    queryKey: ChartsOfAccountsQueryKeys.tree(activeCompanyId),
+    queryFn: FetchChartAccountsTree,
     enabled: activeCompanyId !== null,
+    staleTime: 60_000,
   });
-  const expenseAccountOptionsQuery = useQuery({
-    queryKey: DisbursementVoucherQueryKeys.expenseTypes(activeCompanyId),
-    queryFn: fetchDisbursementVoucherExpenseAccountOptions,
-    enabled: activeCompanyId !== null,
-  });
+  const taxCodesQuery = useAlphanumericTaxCodes();
+  const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const routeVoucher = recordQuery.data ?? listVoucher;
   const returnLink = createVoucherActionReturnLink(searchParams.get("from"), routeTransactionId);
   const transactionCurrency = useTransactionCurrency();
@@ -140,18 +142,80 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const blankRemarksEntryIdsRef = useRef(new Set<string>());
   const generatedRemarksOverridesRef = useRef<Record<string, string>>({});
   const hasEditedCurrencyRef = useRef(false);
+  const hydratedPartyTaxDefaultsRecordIdRef = useRef("");
   const isSubmittingRef = useRef(false);
   const submitLockReleaseRef = useRef<null | (() => void)>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const bankMasterfileStore = useBankMasterfileStore();
   const defaultAccountStore = useDefaultAccountStore();
   const paymentTypeStore = usePaymentTypeStore();
+  const partyStore = usePartyManagementStore();
+  const responsibilityCenterStore = useResponsibilityCenterStore();
+  const defaultAccounts = defaultAccountStore.defaultAccounts;
   const paymentTypeRecords = useMemo(
     () => createDisbursementVoucherPaymentTypeRecords(paymentTypeStore.paymentTypes),
     [paymentTypeStore.paymentTypes],
   );
-  const partyStore = usePartyManagementStore();
-  const responsibilityCenterStore = useResponsibilityCenterStore();
+  const partyOptions = useMemo<DisbursementVoucherPartyDropdownOption[]>(() => {
+    const optionsByCode = new Map<string, DisbursementVoucherPartyDropdownOption>();
+
+    partyStore.records.forEach((record) => {
+      if (record.status !== "Active") {
+        return;
+      }
+
+      const partyCode = record.partyCodeNo.trim();
+      const partyName = getPartyDisplayName(record).trim() || partyCode;
+
+      if (!partyCode || optionsByCode.has(partyCode)) {
+        return;
+      }
+
+      const partyTypes = Array.isArray(record.partyTypes)
+        ? record.partyTypes.map((item) => (typeof item === "string" ? item : (item as { partyType?: string })?.partyType || "")).filter(Boolean).join(", ")
+        : "";
+
+      optionsByCode.set(partyCode, {
+        defaultPurchaseInputVatTaxSourceKey: record.defaultPurchaseInputVatTaxSourceKey ?? undefined,
+        defaultPurchaseEwtTaxSourceKey: record.defaultPurchaseEwtTaxSourceKey ?? undefined,
+        defaultSalesOutputVatTaxSourceKey: record.defaultSalesOutputVatTaxSourceKey ?? undefined,
+        defaultSalesCwtTaxSourceKey: record.defaultSalesCwtTaxSourceKey ?? undefined,
+        description: partyTypes,
+        label: partyCode,
+        name: partyName,
+        selectedDetails: partyCode,
+        value: partyCode,
+      });
+    });
+
+    return Array.from(optionsByCode.values());
+  }, [partyStore.records]);
+
+  const projectOptions = useMemo(
+    () =>
+      responsibilityCenterStore.centers
+        .filter((center) => center.status === "Active" && center.typeName?.toLowerCase().includes("project"))
+        .map((center) => ({
+          label: center.code,
+          name: center.name,
+          value: center.name,
+        })),
+    [responsibilityCenterStore.centers],
+  );
+
+  const responsibilityCenterOptions = useMemo(
+    () =>
+      responsibilityCenterStore.centers
+        .filter((center) => center.status === "Active" && !center.typeName?.toLowerCase().includes("project"))
+        .map((center) => ({
+          description: center.code,
+          label: center.code,
+          name: center.name,
+          value: center.name,
+        })),
+    [responsibilityCenterStore.centers],
+  );
+
   const bankAccounts = useMemo(
     () =>
       bankMasterfileStore.banks
@@ -167,7 +231,6 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         })),
     [bankMasterfileStore.banks],
   );
-  const defaultAccounts = expenseAccountOptionsQuery.data ?? [];
   const selectedTransaction = transactions.find((transaction) => transaction.id === values.transactionId);
   const existingVoucher = routeVoucher ?? vouchers.find((voucher) => voucher.transactionId === values.transactionId);
   const currentStatus = existingVoucher?.status ?? selectedTransaction?.status ?? values.status;
@@ -205,17 +268,146 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   useEffect(() => {
     if (!existingVoucher || mode === "add") return;
 
-    const nextValues = createInitialDisbursementVoucherFormValues({
-      mode,
-      transaction: routeTransaction,
-      voucher: existingVoucher,
+    const rawRecord = existingVoucher as DisbursementVoucherRecord & {
+      details?: Array<Record<string, unknown>>;
+      detailsEntries?: Array<Record<string, unknown>>;
+      lineEntries?: Array<Record<string, unknown>>;
+    };
+    const rawDetails: Array<Record<string, unknown>> = (
+      rawRecord.lineEntries && rawRecord.lineEntries.length > 0
+        ? rawRecord.lineEntries
+        : rawRecord.details || rawRecord.detailsEntries || []
+    ) as Array<Record<string, unknown>>;
+
+    const mappedEntries: DisbursementLineEntry[] = rawDetails.map((d, index) => {
+      const grossAmount = getHydratedDisbursementVoucherGrossAmount(d);
+      const vatPercent = getDisbursementVoucherDetailNumber(d, "vatPercent");
+      const ewtPercent = getDisbursementVoucherDetailNumber(d, "ewtPercent");
+      const taxDetails = syncTaxDetailsAmount(
+        {
+          ...createTaxDetails(grossAmount, "0%"),
+          vatType: (d.vatType as string) || "",
+          vatCode: getDisbursementVoucherDetailString(d, "vatCode"),
+          vatPercent,
+          ewtCode: getDisbursementVoucherDetailString(d, "ewtCode"),
+          ewtPercent,
+          refId: (d.refId as string) || existingVoucher.voucherNo,
+          responsibilityCenter: (d.responsibilityCenter as string) || existingVoucher.costCenter || "",
+        },
+        grossAmount,
+        "0%",
+      );
+
+      return {
+        id: d.id ? String(d.id) : `entry-${index + 1}`,
+        accountCode: (d.accountCode as string) || "",
+        accountName: (d.accountTitle as string) || (d.accountName as string) || "",
+        particulars: (d.particulars as string) || (d.remarks as string) || "",
+        remarks: (d.remarks as string) || "",
+        debit: Number(d.debit || 0),
+        credit: Number(d.credit || 0),
+        taxRate: vatPercent > 0 ? `${vatPercent}%` : "0%",
+        taxDetails,
+        partyCode: (d.partyCode as string) || existingVoucher.partyCode,
+        partyName: (d.partyName as string) || existingVoucher.partyName,
+        responsibilityCenter: (d.responsibilityCenter as string) || existingVoucher.costCenter || "",
+        refId: (d.refId as string) || existingVoucher.voucherNo,
+        checkDate: (d.checkDate as string) || "",
+        checkNo: (d.checkNo as string) || "",
+        checkStatus: (d.checkStatus as string) || "",
+        status: "Balanced",
+      };
     });
 
+    const voucherGrossAmount =
+      mappedEntries
+        .filter((entry) => !isGeneratedAccountingEntry(entry))
+        .reduce((sum, entry) => sum + Number(entry.taxDetails.grossAmount || 0), 0) || existingVoucher.amount || 0;
+
     queueMicrotask(() => {
+      const nextValues: DisbursementVoucherFormValues = {
+        transactionId: existingVoucher.id,
+        voucherNo: existingVoucher.voucherNo,
+        voucherDate: existingVoucher.voucherDate,
+        paymentDueDate: existingVoucher.paymentDueDate || existingVoucher.voucherDate,
+        paymentMethod: existingVoucher.paymentMethod || "",
+        disbursementType: existingVoucher.disbursementType || "Vendor Payment",
+        currency: existingVoucher.currency || "PHP",
+        fxRate: String(existingVoucher.fxRate ?? "1.00"),
+        costCenter: existingVoucher.projectCode || existingVoucher.costCenter || "",
+        projectCode: existingVoucher.projectCode || existingVoucher.costCenter || "",
+        projectName: existingVoucher.projectName || "",
+        partyCode: existingVoucher.partyCode || "",
+        partyName: existingVoucher.partyName || "",
+        amount: String(voucherGrossAmount),
+        taxRate: "0%",
+        taxDetails: createTaxDetails(voucherGrossAmount, "0%"),
+        remarks: existingVoucher.remarks || "",
+        referenceModule: existingVoucher.referenceModule || "",
+        voucherReferenceNo: existingVoucher.voucherReferenceNo || "",
+        invoiceReferenceNo: existingVoucher.invoiceReferenceNo || "",
+        paymentDetails: existingVoucher.paymentDetails || {
+          bankAccountCode: "",
+          bankAccountName: "",
+          bankAccountNo: "",
+          bankAccountTitle: "",
+          bankBranch: "",
+          bankName: "",
+          checkDate: "",
+          checkNo: "",
+          checkStatus: "",
+          isMultiCheckNumber: false,
+          payee: existingVoucher.partyName || "",
+          paymentReferenceNo: "",
+          transferAccountName: "",
+          transferAccountNo: "",
+          transferToBank: "",
+          transferTo: "",
+        },
+        preparedBy: existingVoucher.preparedBy || "",
+        status: existingVoucher.status || "Draft",
+        lineEntries: mappedEntries.length > 0 ? mappedEntries : createInitialDisbursementVoucherFormValues({ mode }).lineEntries,
+        attachments: existingVoucher.attachments || [],
+      };
       setValues(nextValues);
       setInitialValues(nextValues);
     });
   }, [existingVoucher, mode, routeTransaction]);
+
+  useEffect(() => {
+    if (!existingVoucher || mode === "add" || partyOptions.length === 0 || taxCodes.length === 0) {
+      return;
+    }
+
+    if (hydratedPartyTaxDefaultsRecordIdRef.current === existingVoucher.id) {
+      return;
+    }
+
+    const { changed, entries: nextEntries } = applyMissingPartyTaxDefaultsToEntries(
+      values.lineEntries,
+      partyOptions,
+      taxCodes,
+    );
+
+    if (!changed) {
+      hydratedPartyTaxDefaultsRecordIdRef.current = existingVoucher.id;
+      return;
+    }
+
+    hydratedPartyTaxDefaultsRecordIdRef.current = existingVoucher.id;
+    setValues((current) => {
+      const bankAccount = bankAccounts.find((account) => account.accountCode === current.paymentDetails.bankAccountCode) ?? null;
+      return {
+        ...current,
+        lineEntries: createAutomaticAccountingEntries(nextEntries, {
+          bankAccount,
+          blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
+          generatedRemarksOverrides: generatedRemarksOverridesRef.current,
+          paymentMethod: current.paymentMethod,
+        }),
+      };
+    });
+  }, [bankAccounts, existingVoucher, mode, partyOptions, taxCodes, values.lineEntries]);
 
   useEffect(() => {
     if (mode !== "add") return;
@@ -343,9 +535,42 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       return;
     }
 
+    const selectedParty = partyStore.records.find(
+      (record) =>
+        record.partyCodeNo === partyCode ||
+        getPartyDisplayName(record).trim().toLowerCase() === partyName.trim().toLowerCase(),
+    );
+    const defaultVatCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseInputVatTaxSourceKey, "VAT");
+    const defaultEwtCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseEwtTaxSourceKey, "EWT");
+    const nextTaxRate = defaultVatCode ? getVatRateFromCode(defaultVatCode, taxCodes) : "0%";
+    const vatPercent = defaultVatCode ? getVatPercentFromRate(nextTaxRate) : 0;
+    const ewtPercent = defaultEwtCode ? getEwtPercentFromCode(defaultEwtCode, taxCodes) : 0;
+
     setValues((current) => {
       const previousPartyCode = current.partyCode;
       const previousPartyName = current.partyName;
+      const bankAccount = bankAccounts.find((account) => account.accountCode === current.paymentDetails.bankAccountCode) ?? null;
+
+      const updatedEntries = current.lineEntries.map((entry) => {
+        if (!shouldSyncDisbursementEntryParty(entry, previousPartyCode, previousPartyName)) {
+          return entry;
+        }
+
+        return {
+          ...applyPartyTaxDefaults(
+            {
+              ...entry,
+              partyCode,
+              partyName,
+            },
+            defaultVatCode,
+            defaultEwtCode,
+            vatPercent,
+            ewtPercent,
+          ),
+          taxRate: nextTaxRate,
+        };
+      });
 
       return {
         ...current,
@@ -355,15 +580,12 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
           ...current.paymentDetails,
           payee: partyName,
         },
-        lineEntries: current.lineEntries.map((entry) =>
-          shouldSyncDisbursementEntryParty(entry, previousPartyCode, previousPartyName)
-            ? {
-                ...entry,
-                partyCode,
-                partyName,
-              }
-            : entry,
-        ),
+        lineEntries: createAutomaticAccountingEntries(updatedEntries, {
+          bankAccount,
+          blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
+          generatedRemarksOverrides: generatedRemarksOverridesRef.current,
+          paymentMethod: current.paymentMethod,
+        }),
       };
     });
     setErrors((current) => ({
@@ -419,6 +641,11 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       return;
     }
 
+    const isSameAsToBank =
+      Boolean(values.paymentDetails.transferToBank) &&
+      (values.paymentDetails.transferToBank === bankAccount.bankName ||
+        values.paymentDetails.transferAccountNo === bankAccount.accountNo);
+
     updatePaymentDetails({
       bankAccountCode: bankAccount.accountCode,
       bankAccountName: bankAccount.accountName,
@@ -426,6 +653,13 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       bankAccountTitle: bankAccount.accountTitle,
       bankBranch: bankAccount.branch,
       bankName: bankAccount.bankName,
+      ...(isSameAsToBank
+        ? {
+            transferAccountName: "",
+            transferAccountNo: "",
+            transferToBank: "",
+          }
+        : {}),
     });
     updateField(
       DisbursementVoucherLineEntriesField,
@@ -557,7 +791,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   function handleReplaceLineEntries(nextEntries: DisbursementLineEntry[]) {
     const amount = nextEntries
       .filter((entry) => !isGeneratedAccountingEntry(entry))
-      .reduce((sum, entry) => sum + Number(entry.taxDetails.amount || 0), 0);
+      .reduce((sum, entry) => sum + Number(entry.taxDetails.grossAmount || 0), 0);
 
     updateField(DisbursementVoucherLineEntriesField, nextEntries);
     updateField("amount", hasNonZeroAccountingAmount(amount) ? amount.toFixed(2) : "");
@@ -582,7 +816,9 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       transactionId: values.transactionId.trim() || createManualDisbursementTransactionId(),
     };
     const shouldValidate = status !== DisbursementVoucherStatuses.draft;
-    const detailsErrors = shouldValidate ? validateDisbursementVoucherDetails(valuesForSubmit, selectedPaymentTypeRecord) : {};
+    const detailsErrors = shouldValidate
+      ? validateDisbursementVoucherDetails(valuesForSubmit, selectedPaymentTypeRecord, bankAccounts)
+      : {};
     const entryErrors = shouldValidate ? validateDisbursementVoucherEntries(valuesForSubmit) : {};
     const nextErrors = { ...detailsErrors, ...entryErrors };
 
@@ -623,7 +859,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         voucherReferenceNo: pendingSubmitValues.voucherReferenceNo,
         invoiceReferenceNo: pendingSubmitValues.invoiceReferenceNo,
         costCenter: pendingSubmitValues.costCenter,
-        projectCode: pendingSubmitValues.costCenter,
+        projectCode: pendingSubmitValues.projectCode || pendingSubmitValues.costCenter,
         projectName: pendingSubmitValues.projectName,
         preparedBy: pendingSubmitValues.preparedBy,
         currency: pendingSubmitValues.currency,
@@ -736,6 +972,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   function handleCreateProject(project: ResponsibilityCenter) {
     updateField("projectName", project.name);
     updateField("costCenter", project.code);
+    updateField("projectCode", project.code);
     setIsProjectNameDrawerOpen(false);
   }
 
@@ -767,6 +1004,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     saveDraft: draft.saveDraft,
     activeTab,
     bankAccounts,
+    chartAccounts: chartAccountsQuery.data ?? [],
     chartAccountOptions: accountOptionsQuery.data ?? [],
     currentStatus,
     currencyOptions: transactionCurrency.currencyOptions,
@@ -786,17 +1024,18 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     isSubmitting,
     isResponsibilityCenterDrawerOpen,
     mode,
-    partyOptions: partyOptionsQuery.data ?? [],
+    partyOptions,
     partyStore,
     paymentTypeStore,
     paymentTypeRecords,
-    projectOptions: responsibilityCenterOptionsQuery.data?.projects ?? [],
-    responsibilityCenterOptions: responsibilityCenterOptionsQuery.data?.costCenters ?? [],
+    projectOptions,
+    responsibilityCenterOptions,
     responsibilityCenterStore,
     returnLink: isRecordMissing ? DisbursementVoucherLink : returnLink,
     selectedBankAccount,
     selectedPaymentTypeRecord,
     selectedTransaction,
+    taxCodes,
     totalCredit,
     totalDebit,
     values,

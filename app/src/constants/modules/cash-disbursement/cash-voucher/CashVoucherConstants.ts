@@ -263,6 +263,7 @@ export const CashVoucherDefaultColumnVisibility: VisibilityState = {
   remarks: false,
   updatedBy: false,
   updatedAt: false,
+  disburseAmount: false,
 };
 
 export const CashVoucherDefaultSorting: SortingState = [{ id: "documentDate", desc: true }];

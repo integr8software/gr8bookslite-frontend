@@ -7,12 +7,12 @@ import { PettyCashReplenishmentStatuses } from "@/app/src/constants/modules/cash
 import { parseAmount } from "@/app/src/utils/number.util";
 
 const draftSchema = z.object({
-  transactionNo: z.string().regex(/^PCR-\d{6}$/, "A valid PCR No. is required."),
+  transactionNo: z.string().regex(/^PCR-\d{6}$/, "PCR No. is required."),
   documentDate: z.string().min(1, "Select a PCR Date."),
 });
 
 const schema = z.object({
-  transactionNo: z.string().regex(/^PCR-\d{6}$/, "A valid PCR No. is required."),
+  transactionNo: z.string().regex(/^PCR-\d{6}$/, "PCR No. is required."),
   documentDate: z.string().min(1, "Select a PCR Date."),
   partyCode: z.string().trim().min(1, "Party Code is required."),
   partyName: z.string().trim().min(1, "Party Name is required."),

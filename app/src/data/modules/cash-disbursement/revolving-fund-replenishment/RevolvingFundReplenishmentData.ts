@@ -51,29 +51,31 @@ export function createRevolvingFundReplenishmentFormValues(
       status: record.status,
       partyCode: record.partyCode,
       partyName: record.partyName,
-      responsibilityCenter: "Administration",
-      responsibilityCenterCode: "RC-ADM",
-      projectCode: "",
-      projectName: "",
+      responsibilityCenter: record.responsibilityCenter ?? "",
+      responsibilityCenterCode: record.responsibilityCenterCode ?? "",
+      projectCode: record.projectCode ?? "",
+      projectName: record.projectName ?? "",
       accountCode: record.accountCode,
       accountTitle: record.accountTitle,
-      currency: baseCurrencyCode,
-      exchangeRate: "1.00",
+      currency: record.currency ?? baseCurrencyCode,
+      exchangeRate: record.exchangeRate ?? "1.00",
       remarks: record.remarks,
-      entries: [
-        {
-          ...createBlankRevolvingFundReplenishmentEntry(),
-          revolvingFundDate: record.documentDate,
-          revolvingFundNo: "RFV-000084",
-          supplierCode: record.partyCode,
-          supplierName: record.partyName,
-          amount,
-          ...calculateRevolvingFundReplenishmentEntryTaxFields(amount),
-          particulars: record.remarks,
-          remarks: record.remarks,
-        },
-      ],
-      attachments: [],
+      entries: record.entries?.length
+        ? record.entries.map(normalizeRevolvingFundReplenishmentEntry)
+        : [
+            {
+              ...createBlankRevolvingFundReplenishmentEntry(),
+              revolvingFundDate: record.documentDate,
+              revolvingFundNo: "RFV-000084",
+              supplierCode: record.partyCode,
+              supplierName: record.partyName,
+              amount,
+              ...calculateRevolvingFundReplenishmentEntryTaxFields(amount),
+              particulars: record.remarks,
+              remarks: record.remarks,
+            },
+          ],
+      attachments: record.attachments?.map((attachment) => ({ ...attachment })) ?? [],
     };
   }
   return {
@@ -129,6 +131,10 @@ export function createRevolvingFundReplenishmentRecord(
     partyName: values.partyName,
     accountCode: values.accountCode,
     accountTitle: values.accountTitle,
+    responsibilityCenter: values.responsibilityCenter,
+    responsibilityCenterCode: values.responsibilityCenterCode,
+    projectCode: values.projectCode,
+    projectName: values.projectName,
     currency: values.currency,
     exchangeRate: values.exchangeRate,
     amount: calculateRevolvingFundReplenishmentTotals(values.entries).totalAmount,
@@ -139,6 +145,8 @@ export function createRevolvingFundReplenishmentRecord(
     createdAt: existing?.createdAt ?? now,
     updatedBy: "Current User",
     updatedAt: now,
+    entries: values.entries.map((entry) => ({ ...entry })),
+    attachments: values.attachments.map((attachment) => ({ ...attachment })),
     formValues: nextValues,
   };
 }

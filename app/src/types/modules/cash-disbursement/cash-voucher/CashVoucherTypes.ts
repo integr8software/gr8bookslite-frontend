@@ -299,7 +299,13 @@ export type CashVoucherAccountingGridSession = {
 };
 
 export type CashVoucherFormErrors = Partial<
-  Record<keyof Omit<CashVoucherFormValues, "lineEntries" | "attachments"> | "lineEntries" | "entryDraft", string>
+  Record<
+    | keyof Omit<CashVoucherFormValues, "lineEntries" | "attachments">
+    | "attachments"
+    | "lineEntries"
+    | "entryDraft",
+    string
+  >
 >;
 
 export type CashVoucherCopyFromRecord = {

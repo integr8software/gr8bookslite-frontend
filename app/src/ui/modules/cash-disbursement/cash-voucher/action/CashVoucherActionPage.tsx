@@ -73,6 +73,15 @@ function CashVoucherActionShell({
 }
 
 function CashVoucherActionContent({ voucherAction }: { voucherAction: CashVoucherActionPageState }) {
+  const hasDetailsError = Object.entries(voucherAction.errors).some(
+    ([field, error]) => Boolean(error) && field !== "attachments",
+  );
+  const hasAttachmentsError = Boolean(voucherAction.errors.attachments);
+  const actionTabs = CashVoucherActionTabs.map((tab) => ({
+    ...tab,
+    hasError: tab.id === "details" ? hasDetailsError : tab.id === "attachments" ? hasAttachmentsError : false,
+  }));
+
   return (
     <>
       <CashVoucherActionHeader
@@ -98,7 +107,7 @@ function CashVoucherActionContent({ voucherAction }: { voucherAction: CashVouche
       <ModuleTabs
         activeTab={voucherAction.activeTab}
         ariaLabel="Cash voucher sections"
-        tabs={CashVoucherActionTabs}
+        tabs={actionTabs}
         onTabChange={voucherAction.setActiveTab}
       />
       {voucherAction.activeTab === "details" ? (
@@ -229,5 +238,3 @@ function CashVoucherActionSkeleton() {
     </section>
   );
 }
-
-

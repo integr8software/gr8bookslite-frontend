@@ -55,27 +55,29 @@ export function createPettyCashFundFormValues(
       status: record.status,
       partyCode: record.partyCode,
       partyName: record.partyName,
-      responsibilityCenter: "",
-      responsibilityCenterCode: "",
-      currency: "PHP",
-      exchangeRate: "1.00",
+      responsibilityCenter: record.responsibilityCenter ?? "",
+      responsibilityCenterCode: record.responsibilityCenterCode ?? "",
+      currency: record.currency ?? baseCurrencyCode,
+      exchangeRate: record.exchangeRate ?? "1.00",
       accountCode: record.accountCode,
       accountTitle: record.accountTitle,
-      projectCode: "",
-      projectName: "",
+      projectCode: record.projectCode ?? "",
+      projectName: record.projectName ?? "",
       remarks: record.remarks,
-      items: [
-        {
-          ...createBlankPettyCashFundItem(),
-          date: record.documentDate,
-          supplierCode: "V100006",
-          supplierName: "All4U Restaurant",
-          amount,
-          ...calculatePettyCashFundItemTaxFields(amount),
-          grossAmount: amount,
-        },
-      ],
-      attachments: [],
+      items: record.items?.length
+        ? record.items.map(normalizePettyCashFundItem)
+        : [
+            {
+              ...createBlankPettyCashFundItem(),
+              date: record.documentDate,
+              supplierCode: "V100006",
+              supplierName: "All4U Restaurant",
+              amount,
+              ...calculatePettyCashFundItemTaxFields(amount),
+              grossAmount: amount,
+            },
+          ],
+      attachments: record.attachments?.map((item) => ({ ...item })) ?? [],
     };
   }
   return {
@@ -157,6 +159,10 @@ export function createPettyCashFundRecord(
     partyName: values.partyName,
     accountCode: values.accountCode,
     accountTitle: values.accountTitle,
+    responsibilityCenter: values.responsibilityCenter,
+    responsibilityCenterCode: values.responsibilityCenterCode,
+    projectCode: values.projectCode,
+    projectName: values.projectName,
     currency: values.currency,
     exchangeRate: values.exchangeRate,
     amount: calculatePettyCashFundTotals(values.items).amount,
@@ -167,6 +173,8 @@ export function createPettyCashFundRecord(
     createdAt: existing?.createdAt ?? now,
     updatedBy: "Current User",
     updatedAt: now,
+    items: values.items.map((item) => ({ ...item })),
+    attachments: values.attachments.map((item) => ({ ...item })),
     formValues: nextValues,
   };
 }

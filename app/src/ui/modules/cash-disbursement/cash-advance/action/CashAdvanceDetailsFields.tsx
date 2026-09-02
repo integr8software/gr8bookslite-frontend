@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CashAdvanceTabs } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import {
@@ -185,6 +185,17 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
     [form.values.partyCode, form.values.partyId, partyOptions],
   );
 
+  useEffect(() => {
+    if (!selectedParty) return;
+
+    if (!form.values.availableCashAdvance && selectedParty.availableCashAdvance) {
+      form.updateField("availableCashAdvance", selectedParty.availableCashAdvance);
+    }
+    if (!form.values.cashAdvanceLimit && selectedParty.cashAdvanceLimit) {
+      form.updateField("cashAdvanceLimit", selectedParty.cashAdvanceLimit);
+    }
+  }, [form, selectedParty]);
+
   const totalAdvanced = useMemo(() => {
     return Number(selectedParty?.totalCashAdvance ?? 0);
   }, [selectedParty?.totalCashAdvance]);
@@ -212,6 +223,7 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
               isReadonly={isReadonly}
               partyOptions={partyOptions}
               projectOptions={projectOptions}
+              selectedParty={selectedParty}
               totalAdvanced={totalAdvanced}
               onOpenCostCenterDrawer={() => setIsCostCenterDrawerOpen(true)}
               onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
@@ -289,6 +301,7 @@ function CashAdvancePrimaryFields({
   onUpdateCurrency,
   partyOptions,
   projectOptions,
+  selectedParty,
   totalAdvanced,
 }: {
   accountOptions: CashAdvanceAccountDropdownOption[];
@@ -302,12 +315,13 @@ function CashAdvancePrimaryFields({
   onUpdateCurrency: (value: string) => void;
   partyOptions: CashAdvancePartyDropdownOption[];
   projectOptions: CashAdvanceResponsibilityCenterDropdownOption[];
+  selectedParty?: CashAdvancePartyDropdownOption;
   totalAdvanced: number;
 }) {
-  const cashAdvanceLimit = form.values.cashAdvanceLimit?.trim();
-  const availableCashAdvance = form.values.availableCashAdvance?.trim();
-  const cashAdvanceLimitDisplay = cashAdvanceLimit ? formatMoneyNumberDisplayValue(cashAdvanceLimit) : "Unlimited";
-  const availableCashAdvanceDisplay = availableCashAdvance ? formatMoneyNumberDisplayValue(availableCashAdvance) : "Unlimited";
+  const effectiveLimit = form.values.cashAdvanceLimit?.trim() || selectedParty?.cashAdvanceLimit?.trim() || "";
+  const effectiveAvailable = form.values.availableCashAdvance?.trim() || selectedParty?.availableCashAdvance?.trim() || "";
+  const cashAdvanceLimitDisplay = effectiveLimit ? formatMoneyNumberDisplayValue(effectiveLimit) : "Unlimited";
+  const availableCashAdvanceDisplay = effectiveAvailable ? formatMoneyNumberDisplayValue(effectiveAvailable) : "Unlimited";
   const totalCashAdvanceDisplay = formatMoneyNumberDisplayValue(String(totalAdvanced));
 
   const selectedPartyValue = form.values.partyId || form.values.partyCode;

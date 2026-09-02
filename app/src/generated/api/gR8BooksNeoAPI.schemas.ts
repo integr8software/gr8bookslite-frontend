@@ -4670,6 +4670,14 @@ export interface UpdateDefaultAccountTemplateStatusDto {
   status: UpdateDefaultAccountTemplateStatusDtoStatus;
 }
 
+export type ServiceMaintenanceResponseDtoServiceType = typeof ServiceMaintenanceResponseDtoServiceType[keyof typeof ServiceMaintenanceResponseDtoServiceType];
+
+
+export const ServiceMaintenanceResponseDtoServiceType = {
+  PURCHASES: 'PURCHASES',
+  SALES: 'SALES',
+} as const;
+
 export type ServiceMaintenanceResponseDtoStatus = typeof ServiceMaintenanceResponseDtoStatus[keyof typeof ServiceMaintenanceResponseDtoStatus];
 
 
@@ -4689,6 +4697,7 @@ export const ServiceMaintenanceResponseDtoAccountSetupMode = {
 export interface ServiceMaintenanceResponseDto {
   id: string;
   serviceName: string;
+  serviceType: ServiceMaintenanceResponseDtoServiceType;
   /** @nullable */
   description: string | null;
   status: ServiceMaintenanceResponseDtoStatus;
@@ -4735,6 +4744,14 @@ export interface ServiceMaintenanceListResponseDto {
   permissions: ServiceMaintenancePermissionsResponseDto;
 }
 
+export type ServiceMaintenanceOptionResponseDtoServiceType = typeof ServiceMaintenanceOptionResponseDtoServiceType[keyof typeof ServiceMaintenanceOptionResponseDtoServiceType];
+
+
+export const ServiceMaintenanceOptionResponseDtoServiceType = {
+  PURCHASES: 'PURCHASES',
+  SALES: 'SALES',
+} as const;
+
 export type ServiceMaintenanceOptionResponseDtoStatus = typeof ServiceMaintenanceOptionResponseDtoStatus[keyof typeof ServiceMaintenanceOptionResponseDtoStatus];
 
 
@@ -4747,6 +4764,7 @@ export interface ServiceMaintenanceOptionResponseDto {
   id: string;
   serviceName: string;
   name: string;
+  serviceType: ServiceMaintenanceOptionResponseDtoServiceType;
   status: ServiceMaintenanceOptionResponseDtoStatus;
 }
 
@@ -4820,6 +4838,14 @@ export interface ServiceMaintenanceContainerResponseDto {
   permissions: ServiceMaintenancePermissionsResponseDto;
 }
 
+export type CreateServiceMaintenanceDtoServiceType = typeof CreateServiceMaintenanceDtoServiceType[keyof typeof CreateServiceMaintenanceDtoServiceType];
+
+
+export const CreateServiceMaintenanceDtoServiceType = {
+  PURCHASES: 'PURCHASES',
+  SALES: 'SALES',
+} as const;
+
 export type CreateServiceMaintenanceDtoStatus = typeof CreateServiceMaintenanceDtoStatus[keyof typeof CreateServiceMaintenanceDtoStatus];
 
 
@@ -4839,6 +4865,7 @@ export const CreateServiceMaintenanceDtoAccountSetupMode = {
 export interface CreateServiceMaintenanceDto {
   /** @maxLength 150 */
   serviceName: string;
+  serviceType: CreateServiceMaintenanceDtoServiceType;
   /**
      * @maxLength 500
      * @nullable
@@ -4854,6 +4881,14 @@ export interface SaveServiceMaintenanceResponseDto {
   message: string;
   service: ServiceMaintenanceResponseDto;
 }
+
+export type UpdateServiceMaintenanceDtoServiceType = typeof UpdateServiceMaintenanceDtoServiceType[keyof typeof UpdateServiceMaintenanceDtoServiceType];
+
+
+export const UpdateServiceMaintenanceDtoServiceType = {
+  PURCHASES: 'PURCHASES',
+  SALES: 'SALES',
+} as const;
 
 export type UpdateServiceMaintenanceDtoStatus = typeof UpdateServiceMaintenanceDtoStatus[keyof typeof UpdateServiceMaintenanceDtoStatus];
 
@@ -4874,6 +4909,7 @@ export const UpdateServiceMaintenanceDtoAccountSetupMode = {
 export interface UpdateServiceMaintenanceDto {
   /** @maxLength 150 */
   serviceName?: string;
+  serviceType?: UpdateServiceMaintenanceDtoServiceType;
   /**
      * @maxLength 500
      * @nullable
@@ -16327,6 +16363,7 @@ export type ServicesMaintenanceControllerFindAllV1Params = {
 search?: string;
 status?: ServicesMaintenanceControllerFindAllV1Status;
 accountSetupMode?: ServicesMaintenanceControllerFindAllV1AccountSetupMode;
+serviceType?: ServicesMaintenanceControllerFindAllV1ServiceType;
 /**
  * @minimum 1
  */
@@ -16356,11 +16393,20 @@ export const ServicesMaintenanceControllerFindAllV1AccountSetupMode = {
   EXISTING: 'EXISTING',
 } as const;
 
+export type ServicesMaintenanceControllerFindAllV1ServiceType = typeof ServicesMaintenanceControllerFindAllV1ServiceType[keyof typeof ServicesMaintenanceControllerFindAllV1ServiceType];
+
+
+export const ServicesMaintenanceControllerFindAllV1ServiceType = {
+  SALES: 'SALES',
+  PURCHASES: 'PURCHASES',
+} as const;
+
 export type ServicesMaintenanceControllerFindAllV1SortBy = typeof ServicesMaintenanceControllerFindAllV1SortBy[keyof typeof ServicesMaintenanceControllerFindAllV1SortBy];
 
 
 export const ServicesMaintenanceControllerFindAllV1SortBy = {
   serviceName: 'serviceName',
+  serviceType: 'serviceType',
   status: 'status',
   accountSetupMode: 'accountSetupMode',
   createdAt: 'createdAt',
@@ -16382,6 +16428,7 @@ export type ServicesMaintenanceControllerFindOptionsV1Params = {
 search?: string;
 status?: ServicesMaintenanceControllerFindOptionsV1Status;
 accountSetupMode?: ServicesMaintenanceControllerFindOptionsV1AccountSetupMode;
+serviceType?: ServicesMaintenanceControllerFindOptionsV1ServiceType;
 /**
  * @minimum 1
  */
@@ -16411,11 +16458,20 @@ export const ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = {
   EXISTING: 'EXISTING',
 } as const;
 
+export type ServicesMaintenanceControllerFindOptionsV1ServiceType = typeof ServicesMaintenanceControllerFindOptionsV1ServiceType[keyof typeof ServicesMaintenanceControllerFindOptionsV1ServiceType];
+
+
+export const ServicesMaintenanceControllerFindOptionsV1ServiceType = {
+  SALES: 'SALES',
+  PURCHASES: 'PURCHASES',
+} as const;
+
 export type ServicesMaintenanceControllerFindOptionsV1SortBy = typeof ServicesMaintenanceControllerFindOptionsV1SortBy[keyof typeof ServicesMaintenanceControllerFindOptionsV1SortBy];
 
 
 export const ServicesMaintenanceControllerFindOptionsV1SortBy = {
   serviceName: 'serviceName',
+  serviceType: 'serviceType',
   status: 'status',
   accountSetupMode: 'accountSetupMode',
   createdAt: 'createdAt',

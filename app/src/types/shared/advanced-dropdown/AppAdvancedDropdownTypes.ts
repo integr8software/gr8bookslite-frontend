@@ -47,6 +47,7 @@ export type AppAdvancedDropdownProps = {
 	showSelectionIndicator?: boolean;
 	showSelectedDetails?: boolean;
 	showSelectionRemoveButton?: boolean;
+	title?: string;
 	value: string | string[];
 	onChange: (value: string | string[]) => void;
 	onSelectOption?: (option: AppAdvancedDropdownOption) => void;

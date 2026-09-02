@@ -30,6 +30,7 @@ import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
 export function CashAdvanceMultipleEntryActionHeader({
+  availabilityWarning,
   mode,
   hasDiscardableChanges,
   isSubmitting,
@@ -42,6 +43,7 @@ export function CashAdvanceMultipleEntryActionHeader({
   onValidate,
   record,
 }: {
+  availabilityWarning?: string | null;
   mode: CashAdvanceMultipleEntryActionMode;
   hasDiscardableChanges: boolean;
   isSubmitting?: boolean;
@@ -55,6 +57,7 @@ export function CashAdvanceMultipleEntryActionHeader({
   record: CashAdvanceMultipleEntryRecord | null;
 }) {
   const [submitConfirmation, setSubmitConfirmation] = useState<CashAdvanceMultipleEntrySubmitConfirmationAction | null>(null);
+  const [isAvailabilityWarningOpen, setIsAvailabilityWarningOpen] = useState(false);
   const [statusToConfirm, setStatusToConfirm] = useState<CashAdvanceStatus | null>(null);
   const approvalRecord = createCashAdvanceMultipleEntryApprovalRecord(record);
   const recordLabel = record?.transNo ?? "this cash advance multiple entry";
@@ -118,7 +121,11 @@ export function CashAdvanceMultipleEntryActionHeader({
                 label={isSaveAction ? "Save" : "Update"}
                 onAction={() => {
                   if (onValidate ? onValidate(CashAdvanceMultipleEntryStatuses.forApproval) : true) {
-                    setSubmitConfirmation("save");
+                    if (availabilityWarning) {
+                      setIsAvailabilityWarningOpen(true);
+                    } else {
+                      setSubmitConfirmation("save");
+                    }
                   }
                 }}
                 menuItems={
@@ -177,6 +184,21 @@ export function CashAdvanceMultipleEntryActionHeader({
           }}
         />
       ) : null}
+      <AppDialog
+        confirmLabel="Save Anyway"
+        description={`${availabilityWarning ?? "This Cash Advance exceeds the configured amount."} Do you want to save this transaction anyway?`}
+        iconTone="warning"
+        isOpen={isAvailabilityWarningOpen}
+        isPending={isSubmitting}
+        pendingLabel={isSaveAction ? "Saving..." : "Updating..."}
+        title="Cash Advance Amount Exceeds Available Amount"
+        tone="warning"
+        onCancel={() => setIsAvailabilityWarningOpen(false)}
+        onConfirm={() => {
+          setIsAvailabilityWarningOpen(false);
+          onSubmit();
+        }}
+      />
       {statusDialogCopy ? (
         <AppDialog
           isOpen

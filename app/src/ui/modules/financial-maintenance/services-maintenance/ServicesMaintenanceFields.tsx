@@ -17,12 +17,12 @@ export function ServicesMaintenanceFields({ errors, isReadonly, values, onInputC
           onChange={onInputChange}
           readOnly={isReadonly}
           className={ServicesMaintenanceFieldClassName}
-          placeholder="Enter name"
+          placeholder="Enter service name"
         />
       </FormField>
       <FormField label="Service Type" error={errors.serviceType} required className="lg:col-span-2">
         <select
-          id="service-maintenance-service-type"
+          id="services-maintenance-service-type"
           name="serviceType"
           value={values.serviceType}
           onChange={onInputChange}

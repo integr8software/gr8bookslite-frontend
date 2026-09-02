@@ -120,6 +120,20 @@ export function PettyCashVoucherDetailsFields({
             />
           </TransactionField>
 
+          <TransactionField label="Default Account Title" error={page.errors.accountTitle} isRequired>
+            <AppLookupDropdown
+              value={page.values.accountCode}
+              readOnly={page.isReadonly}
+              options={accountOptions}
+              placeholder="Select Default Account Title"
+              searchPlaceholder="Search Default Account Title"
+              onChange={(code, name) => {
+                page.updateField("accountCode", code);
+                page.updateField("accountTitle", name);
+              }}
+            />
+          </TransactionField>
+
           <TransactionField label="Responsibility Center">
             <AppLookupDropdown
               value={page.values.responsibilityCenterCode}
@@ -138,20 +152,6 @@ export function PettyCashVoucherDetailsFields({
               onChange={(code, name) => {
                 page.updateField("responsibilityCenterCode", code);
                 page.updateField("responsibilityCenter", name);
-              }}
-            />
-          </TransactionField>
-
-          <TransactionField label="Default Account Title" error={page.errors.accountTitle} isRequired>
-            <AppLookupDropdown
-              value={page.values.accountCode}
-              readOnly={page.isReadonly}
-              options={accountOptions}
-              placeholder="Select Default Account Title"
-              searchPlaceholder="Search Default Account Title"
-              onChange={(code, name) => {
-                page.updateField("accountCode", code);
-                page.updateField("accountTitle", name);
               }}
             />
           </TransactionField>
@@ -181,15 +181,6 @@ export function PettyCashVoucherDetailsFields({
           />
 
           <TransactionTextField
-            value={page.values.responsibilityCenterCode}
-            error={page.errors.responsibilityCenterCode}
-            isReadonly
-            label="Responsibility Center Code"
-            onValueChange={(value) => page.updateField("responsibilityCenterCode", value)}
-            placeholder="Responsibility Center Code"
-          />
-
-          <TransactionTextField
             value={page.values.accountCode}
             error={page.errors.accountCode}
             isRequired
@@ -197,6 +188,15 @@ export function PettyCashVoucherDetailsFields({
             label="Default Account Code"
             onValueChange={(value) => page.updateField("accountCode", value)}
             placeholder="Default Account Code"
+          />
+
+          <TransactionTextField
+            value={page.values.responsibilityCenterCode}
+            error={page.errors.responsibilityCenterCode}
+            isReadonly
+            label="Responsibility Center Code"
+            onValueChange={(value) => page.updateField("responsibilityCenterCode", value)}
+            placeholder="Responsibility Center Code"
           />
 
           <CurrencyExchangeRateRow

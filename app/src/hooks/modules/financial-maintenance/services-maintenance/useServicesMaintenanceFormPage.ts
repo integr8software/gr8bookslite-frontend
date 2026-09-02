@@ -63,7 +63,7 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
-  function handleInputChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+  function handleInputChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     const field = event.target.name as keyof ServicesMaintenanceFormValues;
 
     updateField(field, event.target.value as never);

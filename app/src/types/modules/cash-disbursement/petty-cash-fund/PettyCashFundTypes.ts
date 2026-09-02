@@ -88,6 +88,10 @@ export type PettyCashFundRecord = {
   partyName: string;
   accountCode: string;
   accountTitle: string;
+  responsibilityCenter?: string;
+  responsibilityCenterCode?: string;
+  projectCode?: string;
+  projectName?: string;
   currency?: string;
   exchangeRate?: string;
   amount: number;
@@ -98,6 +102,8 @@ export type PettyCashFundRecord = {
   createdAt: string;
   updatedBy: string;
   updatedAt: string;
+  items?: PettyCashFundItem[];
+  attachments?: TransactionAttachment[];
   formValues?: PettyCashFundFormValues;
 };
 

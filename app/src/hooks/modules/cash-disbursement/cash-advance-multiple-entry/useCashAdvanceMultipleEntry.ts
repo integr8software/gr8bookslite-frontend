@@ -38,12 +38,14 @@ import type { CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursemen
 import type {
   CashAdvanceMultipleEntryAccountingEntry,
   CashAdvanceMultipleEntryActionMode,
+  CashAdvanceMultipleEntryFormErrors,
   CashAdvanceMultipleEntryFormValues,
   CashAdvanceMultipleEntryItem,
   CashAdvanceMultipleEntryRecord,
   CashAdvanceMultipleEntryStoreState,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import {
+  getCashAdvanceMultipleEntryAvailabilityWarning,
   validateCashAdvanceMultipleEntryAmountsWithinBalances,
   validateCashAdvanceMultipleEntryForm,
 } from "@/app/src/validations/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryValidation";
@@ -135,9 +137,11 @@ export function useCashAdvanceMultipleEntryActionForm(
   const isSubmittingRef = useRef(false);
   const [isLoading, setIsLoading] = useState(mode !== "add" && Boolean(recordId));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<CashAdvanceMultipleEntryFormErrors>({});
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const isDirty = mode === "add" ? hasModuleDraftChanges(values, initialValues, ["transNo"]) : rawIsDirty;
+  const availabilityWarning = useMemo(() => getCashAdvanceMultipleEntryAvailabilityWarning(values), [values]);
   const draft = useModuleDraft({
     enabled: mode !== "view",
     initialValues,
@@ -231,12 +235,18 @@ export function useCashAdvanceMultipleEntryActionForm(
 
   function updateField<Key extends keyof CashAdvanceMultipleEntryFormValues>(key: Key, value: CashAdvanceMultipleEntryFormValues[Key]) {
     setValues((current) => ({ ...current, [key]: value }));
+    if (key in errors) {
+      setErrors((current) => ({ ...current, [key]: undefined }));
+    }
   }
 
   function updateItems(items: CashAdvanceMultipleEntryItem[]) {
     const totalAmount = formatCashAdvanceMultipleEntryAmount(calculateCashAdvanceMultipleEntryTotal(items));
 
     setValues((current) => ({ ...current, items, totalAmount }));
+    if (errors.items) {
+      setErrors((current) => ({ ...current, items: undefined }));
+    }
   }
 
   async function updateCurrency(currencyCode: string) {
@@ -279,20 +289,19 @@ export function useCashAdvanceMultipleEntryActionForm(
     isSubmittingRef.current = true;
     setIsSubmitting(true);
     const nextValues = { ...values, status };
-    const balanceValidation = validateCashAdvanceMultipleEntryAmountsWithinBalances(nextValues);
-    const validation = !balanceValidation.isValid
-      ? balanceValidation
-      : status === CashAdvanceMultipleEntryStatuses.draft
-        ? { isValid: true, message: null }
-        : validateCashAdvanceMultipleEntryForm(nextValues);
+    const shouldValidate = status !== CashAdvanceMultipleEntryStatuses.draft;
+    const nextErrors = shouldValidate ? validateCashAdvanceMultipleEntryForm(nextValues) : {};
 
-    if (!validation.isValid) {
-      toast.error(validation.message ?? "Review the Cash Advance Multiple Entry details.");
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      toast.error("Please Fill Up the Required Fields!");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
       return false;
     }
+
+    setErrors({});
 
     try {
       const nextRecord =
@@ -345,15 +354,12 @@ export function useCashAdvanceMultipleEntryActionForm(
       return false;
     }
     const nextValues = { ...values, status };
-    const balanceValidation = validateCashAdvanceMultipleEntryAmountsWithinBalances(nextValues);
-    const validation = !balanceValidation.isValid
-      ? balanceValidation
-      : status === CashAdvanceMultipleEntryStatuses.draft
-        ? { isValid: true, message: null }
-        : validateCashAdvanceMultipleEntryForm(nextValues);
+    const shouldValidate = status !== CashAdvanceMultipleEntryStatuses.draft;
+    const nextErrors = shouldValidate ? validateCashAdvanceMultipleEntryForm(nextValues) : {};
 
-    if (!validation.isValid) {
-      toast.error(validation.message ?? "Review the Cash Advance Multiple Entry details.");
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      toast.error("Please Fill Up the Required Fields!");
       return false;
     }
     return true;
@@ -388,7 +394,9 @@ export function useCashAdvanceMultipleEntryActionForm(
   }
 
   return {
+    availabilityWarning,
     discardDraft,
+    errors,
     hasDiscardableChanges: isDirty,
     saveDraft: draft.saveDraft,
     addAccountingEntries,

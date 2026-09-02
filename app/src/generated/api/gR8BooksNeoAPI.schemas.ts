@@ -11241,6 +11241,7 @@ export interface CashAdvanceMultipleEntryItemDto {
   cashAdvanceLimit?: string;
   cashAdvanceBalance?: string;
   particulars?: string;
+  remarks?: string;
   responsibilityCenter?: string;
   amount?: string;
 }

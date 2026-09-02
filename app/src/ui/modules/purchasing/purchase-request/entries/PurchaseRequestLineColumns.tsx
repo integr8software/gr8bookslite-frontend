@@ -1,4 +1,7 @@
-import { PurchaseRequestUomOptions } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
+import {
+	PurchaseRequestResponsibilityCenterOptions,
+	PurchaseRequestUomOptions,
+} from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import type { PurchaseRequestItem } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import {
@@ -30,8 +33,16 @@ type PurchaseRequestLineUpdater = (
 export function createPurchaseRequestLineColumns(
 	isReadonly: boolean,
 	onUpdateEntry: PurchaseRequestLineUpdater,
+	purchaseType?: string,
 ): ModuleDataEntryColumn<PurchaseRequestItem>[] {
-	return PurchaseRequestLineColumnConfigs.map((column) => ({
+	const isServices = purchaseType?.toLowerCase() === "services";
+	const activeConfigs = isServices
+		? PurchaseRequestLineColumnConfigs.filter(
+				(column) => !["itemCode", "barcode", "uom"].includes(column.id),
+			)
+		: PurchaseRequestLineColumnConfigs;
+
+	return activeConfigs.map((column) => ({
 		header: column.header,
 		id: column.id,
 		width: column.width,
@@ -65,6 +76,36 @@ function PurchaseRequestLineCell({
 	row: PurchaseRequestItem;
 }) {
 	const value = String(row[column.id] ?? "");
+
+	if (column.id === "responsibilityCenter") {
+		const options = [
+			...PurchaseRequestResponsibilityCenterOptions.map((option) => ({
+				name: option,
+				value: option,
+			})),
+			...(value &&
+			!PurchaseRequestResponsibilityCenterOptions.includes(
+				value as (typeof PurchaseRequestResponsibilityCenterOptions)[number],
+			)
+				? [{ name: value, value }]
+				: []),
+		];
+
+		return (
+			<AppAdvancedDropdown
+				id={fieldId}
+				name={fieldName}
+				value={value}
+				readOnly={isReadonly}
+				options={options}
+				placeholder=""
+				className={EntryDropdownClassName}
+				onChange={(nextValue) =>
+					onUpdateEntry(row.id, { [column.id]: String(nextValue) })
+				}
+			/>
+		);
+	}
 
 	if (column.kind === "select") {
 		return (
@@ -134,9 +175,9 @@ const PurchaseRequestLineColumnConfigs = [
 	column("Description", "description", TextColumnKind, 300, "w-[18.75rem]"),
 	column("UOM", "uom", SelectColumnKind, 120, "w-[7.5rem]"),
 	column("Qty", "quantity", AmountColumnKind, 150, "w-[9.5rem]"),
-	column("LotNo", "lotNo", TextColumnKind, 120, "w-[7.5rem]"),
+	column("Lot No", "lotNo", TextColumnKind, 120, "w-[7.5rem]"),
 	column("Cost", "cost", AmountColumnKind, 160, "w-[10rem]"),
-	column("Res. Center", "responsibilityCenter", TextColumnKind, 190, "w-[12rem]"),
+	column("Res. Center", "responsibilityCenter", SelectColumnKind, 190, "w-[12rem]"),
 ];
 
 function column(

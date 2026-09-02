@@ -31,6 +31,7 @@ type PurchaseRequestEntrySectionProps = {
   accountingRows: PurchaseRequestAccountingEntry[];
   error?: string;
   isReadonly: boolean;
+  purchaseType?: string;
   rows: PurchaseRequestItem[];
   onAccountingRowsChange: (rows: PurchaseRequestAccountingEntry[]) => void;
   onRowsChange: (rows: PurchaseRequestItem[]) => void;
@@ -40,6 +41,7 @@ export function PurchaseRequestEntrySection({
   accountingRows,
   error,
   isReadonly,
+  purchaseType,
   onAccountingRowsChange,
   onRowsChange,
   rows,
@@ -48,6 +50,7 @@ export function PurchaseRequestEntrySection({
   const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<
     PurchasingAccountingColumnId[]
   >([...PurchasingAccountingDefaultVisibleColumnIds]);
+  const isServices = purchaseType?.toLowerCase() === "services";
   const updateEntry = useCallback(
     (rowId: string, updates: Partial<PurchaseRequestItem>) => {
       onRowsChange(
@@ -70,8 +73,8 @@ export function PurchaseRequestEntrySection({
     [accountingRows, onAccountingRowsChange],
   );
   const columns = useMemo<ModuleDataEntryColumn<PurchaseRequestItem>[]>(
-    () => createPurchaseRequestLineColumns(isReadonly, updateEntry),
-    [isReadonly, updateEntry],
+    () => createPurchaseRequestLineColumns(isReadonly, updateEntry, purchaseType),
+    [isReadonly, purchaseType, updateEntry],
   );
   const accountingColumns = useMemo(
     () => createPurchasingAccountingEntryColumns(isReadonly, updateAccountingEntry),
@@ -191,7 +194,7 @@ export function PurchaseRequestEntrySection({
       return;
     }
 
-    const nextRows = rows.filter((row) => !shouldClearEntry(row, action));
+    const nextRows = rows.filter((row) => !shouldClearEntry(row, action, isServices));
     onRowsChange(nextRows.length > 0 ? nextRows : [createBlankPurchaseRequestItem()]);
   }
 
@@ -422,6 +425,7 @@ function normalizeEntry(entry: PurchaseRequestItem): PurchaseRequestItem {
 function shouldClearEntry(
   entry: PurchaseRequestItem,
   action: Exclude<ModuleDataEntryClearAction, "all">,
+  isServices = false,
 ) {
   const hasData = purchaseRequestEntryHasData(entry);
 
@@ -430,7 +434,7 @@ function shouldClearEntry(
   }
 
   if (action === "incomplete") {
-    return hasData && !purchaseRequestEntryIsComplete(entry);
+    return hasData && !purchaseRequestEntryIsComplete(entry, isServices);
   }
 
   return !hasData;
@@ -449,11 +453,11 @@ function purchaseRequestEntryHasData(entry: PurchaseRequestItem) {
   );
 }
 
-function purchaseRequestEntryIsComplete(entry: PurchaseRequestItem) {
+function purchaseRequestEntryIsComplete(entry: PurchaseRequestItem, isServices = false) {
   return Boolean(
-    entry.itemCode.trim() &&
+    (isServices || entry.itemCode.trim()) &&
     entry.description.trim() &&
-    entry.uom.trim() &&
+    (isServices || entry.uom.trim()) &&
     Number(entry.quantity) > 0 &&
     Number(entry.cost) >= 0,
   );

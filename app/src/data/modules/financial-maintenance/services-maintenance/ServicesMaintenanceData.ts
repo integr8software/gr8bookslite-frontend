@@ -5,6 +5,7 @@ import type {
   ServicesMaintenanceImportCellErrors,
   ServicesMaintenanceImportColumnId,
   ServicesMaintenanceImportPreviewRow,
+  ServicesMaintenanceServiceType,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
 import {
   ServicesMaintenanceAccountSetupModeOptions,
@@ -12,6 +13,7 @@ import {
   ServicesMaintenanceImportMaxFileSizeBytes,
   ServicesMaintenanceImportMinFileSizeBytes,
   ServicesMaintenanceImportTemplateHeaders,
+  ServicesMaintenanceServiceTypeOptions,
 } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { formatFileSize } from "@/app/src/utils/file.util";
@@ -19,6 +21,7 @@ import { getModuleImportOptionValue, isModuleImportOptionValue } from "@/app/src
 
 export const ServicesMaintenanceInitialFormValues: ServicesMaintenanceFormValues = {
   serviceName: "",
+  serviceType: "Sales",
   description: "",
   status: "Active",
   accountSetupMode: "Auto",
@@ -28,6 +31,7 @@ export const ServicesMaintenanceInitialFormValues: ServicesMaintenanceFormValues
 export function createServicesMaintenanceFormValues(service: ServicesMaintenance): ServicesMaintenanceFormValues {
   return {
     serviceName: service.serviceName,
+    serviceType: service.serviceType,
     description: service.description,
     status: service.status,
     accountSetupMode: service.accountSetupMode,
@@ -43,6 +47,7 @@ export function updateServicesMaintenanceFromForm(
     ...service,
     ...values,
     serviceName: values.serviceName.trim(),
+    serviceType: values.serviceType,
     description: values.description.trim(),
     revenueAccountTitle:
       values.accountSetupMode === "Auto" ? buildGeneratedServiceRevenueAccountTitle(values.serviceName) : service.revenueAccountTitle,
@@ -72,6 +77,7 @@ export function createBlankServicesMaintenanceImportRow(rowNumber: number): Serv
       description: "",
       revenueCoaId: "",
       serviceName: "",
+      serviceType: "Sales",
       status: "Active",
     },
   };
@@ -93,6 +99,9 @@ export function normalizeImportedServicesMaintenanceCellValue(field: ServicesMai
   if (field === "accountSetupMode") {
     return normalizeImportedServicesMaintenanceSetupMode(value);
   }
+  if (field === "serviceType") {
+    return normalizeImportedServicesMaintenanceServiceType(value);
+  }
   return value;
 }
 
@@ -104,14 +113,20 @@ export async function downloadServicesMaintenanceImportTemplate() {
 
     worksheet.addRow(ServicesMaintenanceImportTemplateHeaders);
     for (let rowNumber = 2; rowNumber <= 101; rowNumber += 1) {
-      worksheet.getCell(`C${rowNumber}`).dataValidation = {
+      worksheet.getCell(`B${rowNumber}`).dataValidation = {
+        allowBlank: false,
+        formulae: [`"${ServicesMaintenanceServiceTypeOptions.join(",")}"`],
+        showErrorMessage: true,
+        type: "list",
+      };
+      worksheet.getCell(`D${rowNumber}`).dataValidation = {
         allowBlank: false,
         formulae: [`"${ServicesMaintenanceAccountSetupModeOptions.join(",")}"`],
         showErrorMessage: true,
         type: "list",
       };
     }
-    worksheet.columns = [{ width: 30 }, { width: 42 }, { width: 18 }, { width: 28 }];
+    worksheet.columns = [{ width: 30 }, { width: 18 }, { width: 42 }, { width: 18 }, { width: 28 }];
 
     const buffer = await workbook.xlsx.writeBuffer();
 
@@ -170,6 +185,7 @@ export function parseServicesMaintenanceImportText(text: string, startRowNumber 
           description: getImportedValue(row, indexes.description),
           revenueCoaId: getImportedValue(row, indexes.revenueCoaId),
           serviceName: getImportedValue(row, indexes.serviceName),
+          serviceType: normalizeImportedServicesMaintenanceServiceType(getImportedValue(row, indexes.serviceType)),
           status: "Active",
         },
       };
@@ -209,6 +225,10 @@ export function validateServicesMaintenanceImportRows(
 
     if (normalizedName && (importedNameCounts.get(normalizedName) ?? 0) > 1) {
       cellErrors.serviceName = [...(cellErrors.serviceName ?? []), "Duplicate name in import."];
+    }
+
+    if (!isModuleImportOptionValue(row.service.serviceType, ServicesMaintenanceServiceTypeOptions)) {
+      cellErrors.serviceType = ["Choose Purchases or Sales."];
     }
 
     if (row.service.description.trim().length > 500) {
@@ -272,6 +292,17 @@ function normalizeImportedServicesMaintenanceSetupMode(value: string): ServicesM
   return (getModuleImportOptionValue(value, ServicesMaintenanceAccountSetupModeOptions) ?? value) as ServicesMaintenanceAccountSetupMode;
 }
 
+function normalizeImportedServicesMaintenanceServiceType(value: string): ServicesMaintenanceServiceType {
+  const normalized = value.trim().toLowerCase();
+
+  if (!normalized || normalized === "sales" || normalized === "sale") {
+    return "Sales";
+  }
+  if (normalized === "purchases" || normalized === "purchase") return "Purchases";
+
+  return (getModuleImportOptionValue(value, ServicesMaintenanceServiceTypeOptions) ?? "Sales") as ServicesMaintenanceServiceType;
+}
+
 function getServicesMaintenanceImportHeaderIndexes(row: string[]) {
   const indexes: Partial<Record<ServicesMaintenanceImportColumnId, number>> = {};
 
@@ -288,6 +319,7 @@ function normalizeServicesMaintenanceImportHeader(value: string): ServicesMainte
   const normalized = value.toLowerCase().replace(/[^a-z0-9]/g, "");
 
   if (["servicename", "service", "name"].includes(normalized)) return "serviceName";
+  if (["servicetype", "type"].includes(normalized)) return "serviceType";
   if (["description", "remarks", "details"].includes(normalized)) return "description";
   if (["accountsetup", "accountsetupmode", "setup"].includes(normalized)) return "accountSetupMode";
   if (["revenueaccountid", "revenuecoaid", "accountid"].includes(normalized)) return "revenueCoaId";

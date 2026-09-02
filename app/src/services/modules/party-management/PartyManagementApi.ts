@@ -11,12 +11,12 @@ import type {
   CreatePartyAddressDto,
   CreatePartyDto,
   CreatePartyDtoClassification,
-  CreatePartyDtoPartyTypes,
+  CreatePartyDtoPartyTypesItem,
   CreatePartyDtoStatus,
   PartyAddressResponseDto,
   PartyResponseDto,
   PartyResponseDtoClassification,
-  PartyResponseDtoPartyTypes,
+  PartyResponseDtoPartyTypesItem,
   PartyResponseDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
@@ -442,14 +442,14 @@ function mapPartyEntityTypeToApi(value: string): string | null {
   return normalizeOptionalText(value);
 }
 
-function mapPartyTypeFromApi(value: PartyResponseDtoPartyTypes): PartyType {
+function mapPartyTypeFromApi(value: PartyResponseDtoPartyTypesItem): PartyType {
   if (value === "CUSTOMER") return "Customer";
   if (value === EmployeeApiPartyType) return EmployeePartyType;
   if (value === "MEMBER") return "Member";
   return VendorPartyType;
 }
 
-function mapPartyTypeToApi(value: PartyType): CreatePartyDtoPartyTypes {
+function mapPartyTypeToApi(value: PartyType): CreatePartyDtoPartyTypesItem {
   if (value === CustomerPartyType) return "CUSTOMER";
   if (value === EmployeePartyType) return EmployeeApiPartyType;
   if (value === "Member") return "MEMBER";

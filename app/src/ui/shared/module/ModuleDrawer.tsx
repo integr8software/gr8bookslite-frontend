@@ -269,12 +269,12 @@ export function ModuleDrawer({
 				<AppDialog
 					confirmLabel="Confirm"
 					description="This will save the details entered in this module form."
-					iconTone="question"
+					iconTone="save"
 					isOpen={isSaveDialogOpen}
 					isPending={isConfirmSubmitPending}
 					pendingLabel={savingLabel}
 					title={`${submitLabel}?`}
-					tone="success"
+					tone="default"
 					onCancel={closeSaveDialog}
 					onConfirm={submitFromDialog}
 				/>

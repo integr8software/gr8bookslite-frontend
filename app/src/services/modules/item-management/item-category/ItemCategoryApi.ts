@@ -8,11 +8,11 @@ import {
   itemCategoryControllerFindAllV1,
   itemCategoryControllerFindOptionsV1,
   itemCategoryControllerUpdateV1,
-} from "@/app/src/generated/api/item-category/item-category";
+} from "@/app/src/generated/api/item-categories/item-categories";
 import type {
   CreateItemCategoryDto,
   CreateItemCategoryDtoAccountingSetupMode,
-  CreateItemCategoryDtoBehaviors,
+  CreateItemCategoryDtoBehaviorsItem,
   CreateItemCategoryDtoStatus,
   ItemCategoryResponseDto,
   ItemCategoryResponseDtoAccountingSetupMode,
@@ -193,8 +193,8 @@ function mapAccountingSetupModeToApi(
   return value === "own" ? "AUTO_CREATE" : "INHERIT";
 }
 
-function mapBehaviorToApi(value: ItemBehavior): CreateItemCategoryDtoBehaviors {
-  return value as CreateItemCategoryDtoBehaviors;
+function mapBehaviorToApi(value: ItemBehavior): CreateItemCategoryDtoBehaviorsItem {
+  return value as CreateItemCategoryDtoBehaviorsItem;
 }
 
 function mapStatusFromApi(value: ItemCategoryResponseDtoStatus): ItemStatus {

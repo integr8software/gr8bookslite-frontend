@@ -150,6 +150,7 @@ export function CashVoucherAccountingEntryTable({
       columns={columns}
       columnOptions={columnOptions}
       rows={accountingRows}
+      canConfigureColumnsWhenReadonly
       isDraggable={!isReadonly}
       isReadonly={isReadonly}
       onAddRows={onAddEntries ?? (() => undefined)}

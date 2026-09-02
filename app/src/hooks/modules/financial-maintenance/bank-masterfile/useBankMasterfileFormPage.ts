@@ -18,10 +18,9 @@ import type {
 import { validateBankMasterfileForm } from "@/app/src/validations/modules/financial-maintenance/bank-masterfile/BankMasterfileValidation";
 
 export function useBankMasterfileFormPage(options: BankMasterfileFormPageOptions = {}) {
-  const { addBank, isNextAccountCodeLoading, nextAccountCode, refreshNextAccountCode, updateBank } = useBankMasterfileStore(
-    undefined,
-    { refetchOnMount: false },
-  );
+  const { addBank, isNextAccountCodeLoading, nextAccountCode, refreshNextAccountCode, updateBank } = useBankMasterfileStore(undefined, {
+    refetchOnMount: false,
+  });
   const mode = options.mode ?? "add";
   const existingBank = options.existingBank;
   const isReadonly = mode === "view";
@@ -149,6 +148,9 @@ export function useBankMasterfileFormPage(options: BankMasterfileFormPageOptions
       }
 
       draft.clearDraft();
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
       options.onSaved?.();
     } catch {
       isSubmittingRef.current = false;

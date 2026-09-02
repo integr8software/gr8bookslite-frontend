@@ -129,7 +129,7 @@ export function MaintenanceSpotlightTutorial() {
       ariaLabel={`${config.label} tutorial`}
       badge={
         <SpotlightTourBadge>
-          {isMaintenanceModuleRoute(href) ? "Maintenance guide" : "Module guide"}
+          {isMaintenanceModuleRoute(href) ? "Maintenance Guide" : "Module Guide"}
         </SpotlightTourBadge>
       }
       isOpen={isOpen}

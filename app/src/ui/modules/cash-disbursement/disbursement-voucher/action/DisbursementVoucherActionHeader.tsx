@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Edit3 } from "lucide-react";
 import {
   DisbursementVoucherLink,
+  DisbursementVoucherStatuses,
   canEditDisbursementVoucherStatus,
   getDisbursementVoucherEditLink,
   getDisbursementVoucherStatusDialogCopy,
@@ -46,6 +47,9 @@ export function DisbursementVoucherActionHeader({
   const [statusToConfirm, setStatusToConfirm] = useState<DisbursementVoucherStatus | null>(null);
   const transactionLabel = transaction?.transactionNo ?? "Disbursement voucher";
   const recordLabel = voucher?.voucherNo ?? transaction?.transactionNo ?? "this disbursement voucher";
+  const isDraftEdit =
+    mode === "edit" && (voucher?.status ?? transaction?.status) === DisbursementVoucherStatuses.draft;
+  const isSaveAction = mode === "add" || isDraftEdit;
   const title =
     mode === "add" ? (
       "Add Disbursement Voucher"
@@ -62,7 +66,7 @@ export function DisbursementVoucherActionHeader({
       ? "Review the transaction source and choose whether to create or update a voucher."
       : "Complete the voucher header and accounting entries on one page before saving.";
   const submitDialogCopy = pendingSubmitStatus
-    ? getDisbursementVoucherSubmitDialogCopy(mode, pendingSubmitStatus, recordLabel)
+    ? getDisbursementVoucherSubmitDialogCopy(isDraftEdit ? "add" : mode, pendingSubmitStatus, recordLabel)
     : null;
   const statusDialogCopy = statusToConfirm
     ? getDisbursementVoucherStatusDialogCopy(statusToConfirm, recordLabel, voucher?.status ?? transaction?.status)
@@ -115,10 +119,10 @@ export function DisbursementVoucherActionHeader({
                 ) : null}
                 <ModuleActionButton
                   disabled={isSubmitting}
-                  label={mode === "edit" ? "Update" : "Save"}
+                  label={isSaveAction ? "Save" : "Update"}
                   onAction={onSubmit}
                   menuItems={
-                    mode === "add" && onSaveDraft
+                    isSaveAction && onSaveDraft
                       ? [
                           {
                             label: "Save As Draft",

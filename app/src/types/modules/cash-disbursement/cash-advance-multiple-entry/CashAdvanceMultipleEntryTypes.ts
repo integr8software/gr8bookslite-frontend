@@ -1,7 +1,4 @@
-import type {
-  CashAdvanceEmployeeOption,
-  CashAdvanceStatus,
-} from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import type { CashAdvanceEmployeeOption, CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import type { DisbursementAttachment } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type {
@@ -11,6 +8,7 @@ import type {
 
 export type CashAdvanceMultipleEntryActionMode = "add" | "edit" | "view";
 export type CashAdvanceMultipleEntrySubmitConfirmationAction = "save" | "draft";
+export type CashAdvanceMultipleEntryFormErrors = Partial<Record<keyof CashAdvanceMultipleEntryFormValues | "items", string>>;
 export type CashAdvanceMultipleEntryFormController = ReturnType<typeof useCashAdvanceMultipleEntryActionForm>;
 export type CashAdvanceMultipleEntryTableState = ReturnType<typeof useCashAdvanceMultipleEntryTable>;
 
@@ -64,7 +62,8 @@ export type CashAdvanceMultipleEntryFormValues = {
   partyCode: string;
   partyName: string;
   projectCode: string;
-  projectRef: string;
+  projectName: string;
+  projectRef?: string;
   contractNo: string;
   remarks: string;
   status: CashAdvanceStatus;
@@ -79,9 +78,13 @@ export type CashAdvanceMultipleEntryRecord = {
   partyCode: string;
   partyName: string;
   projectCode?: string;
+  projectName?: string;
+  projectRef?: string;
   accountCode: string;
   accountTitle: string;
   costCenter: string;
+  currency?: string;
+  exchangeRate?: string | number;
   amount: number;
   remarks: string;
   status: CashAdvanceStatus;
@@ -118,6 +121,7 @@ export type CashAdvanceMultipleEntryEntrySectionProps = {
 export type CashAdvanceMultipleEntryDetailEntryTableProps = {
   employeeOptions: CashAdvanceEmployeeOption[];
   isReadonly: boolean;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   rows: CashAdvanceMultipleEntryItem[];
   onAddRows: (count: number) => void;
   onOpenPartyDrawer: (rowId: string) => void;
@@ -142,6 +146,7 @@ export type CashAdvanceMultipleEntryItemColumnsParams = {
   onOpenItemPartyDrawer: (rowId: string) => void;
   onOpenItemResponsibilityCenterDrawer: (rowId: string) => void;
   onUpdateEntry: (rowId: string, updates: Partial<CashAdvanceMultipleEntryItem>) => void;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   rows: CashAdvanceMultipleEntryItem[];
 };
 

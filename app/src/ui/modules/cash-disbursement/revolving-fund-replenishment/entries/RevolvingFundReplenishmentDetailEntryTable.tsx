@@ -163,6 +163,7 @@ export function RevolvingFundReplenishmentDetailEntryTable({
       columns={columns}
       columnOptions={columnOptions}
       rows={page.values.entries}
+      canConfigureColumnsWhenReadonly
       isDraggable={!page.isReadonly}
       isReadonly={page.isReadonly}
       onAddRows={page.addEntries}

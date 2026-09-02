@@ -1,8 +1,4 @@
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
-import {
-  CashAdvanceAccountOptions,
-  CashAdvanceCostCenterOptions,
-} from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import type { ColumnOrderState, VisibilityState } from "@tanstack/react-table";
 import type {
@@ -16,7 +12,6 @@ export const CashAdvanceMultipleEntryLink = getModuleRoute("CAME");
 export const CashAdvanceMultipleEntryAddLink = `${CashAdvanceMultipleEntryLink}/add`;
 export const getCashAdvanceMultipleEntryEditLink = (recordId: string) => `${CashAdvanceMultipleEntryLink}/edit/${recordId}`;
 export const getCashAdvanceMultipleEntryViewLink = (recordId: string) => `${CashAdvanceMultipleEntryLink}/view/${recordId}`;
-export const CashAdvanceMultipleEntryStorageKey = "gr8books.cash-advance-multiple-entry.records";
 export const CashAdvanceMultipleEntryTransactionNumberPrefix = "CAME-";
 export const CashAdvanceMultipleEntryTransactionNumberPadding = 6;
 
@@ -24,7 +19,7 @@ export const CashAdvanceMultipleEntryTablePaginationStorageKey = "cash-disbursem
 
 export const CashAdvanceMultipleEntryOverviewColumnWidths = {
   ...TransactionOverviewColumnWidths,
-  partyName: 300,
+  partyName: 220,
   accountTitle: 230,
   actions: TransactionOverviewColumnWidths.actions,
 } as const;
@@ -38,10 +33,11 @@ export const CashAdvanceMultipleEntryStatuses = {
   posted: "Posted",
 } as const;
 
-export const CashAdvanceMultipleEntrySubmitConfirmationDialogTitles: Record<
-  CashAdvanceMultipleEntrySubmitConfirmationAction,
-  string
-> = {
+export function canEditCashAdvanceMultipleEntryStatus(status: CashAdvanceStatus) {
+  return status === CashAdvanceMultipleEntryStatuses.draft;
+}
+
+export const CashAdvanceMultipleEntrySubmitConfirmationDialogTitles: Record<CashAdvanceMultipleEntrySubmitConfirmationAction, string> = {
   save: "Save Cash Advance Multiple Entry?",
   draft: "Save Cash Advance Multiple Entry as Draft?",
 };
@@ -70,10 +66,7 @@ export function getCashAdvanceMultipleEntryStatusDialogCopy(
     };
   }
 
-  if (
-    status === CashAdvanceMultipleEntryStatuses.forApproval &&
-    currentStatus === CashAdvanceMultipleEntryStatuses.disapproved
-  ) {
+  if (status === CashAdvanceMultipleEntryStatuses.forApproval && currentStatus === CashAdvanceMultipleEntryStatuses.disapproved) {
     return {
       confirmLabel: "Undo Disapproved",
       description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,
@@ -133,6 +126,8 @@ export const CashAdvanceMultipleEntryDefaultColumnVisibility: VisibilityState = 
   accountCode: false,
   createdAt: false,
   createdBy: false,
+  currency: false,
+  exchangeRate: false,
   partyCode: false,
   remarks: false,
   updatedAt: false,
@@ -146,6 +141,8 @@ export const CashAdvanceMultipleEntryDefaultColumnOrder: ColumnOrderState = [
   "partyName",
   "accountCode",
   "accountTitle",
+  "currency",
+  "exchangeRate",
   "amount",
   "remarks",
   "createdBy",
@@ -215,8 +212,8 @@ export const CashAdvanceMultipleEntryItemColumnOrder = [
 ];
 
 export const CashAdvanceMultipleEntryItemColumnLabels: Record<string, string> = {
-  partyCode: "Party Code",
-  partyName: "Party Name",
+  partyCode: "Employee Code",
+  partyName: "Employee Name",
   amount: "Cash Advance Amount",
   cashAdvanceLimit: "Cash Advance Limit",
   totalCashAdvanced: "Total Cash Advances",
@@ -238,8 +235,7 @@ export const CashAdvanceMultipleEntryItemColumnWidths: Record<string, number> = 
   particulars: 300,
 };
 
-export const CashAdvanceMultipleEntryDetailTablePreferencesStorageKey =
-  "gr8books:cash-advance-multiple-entry:detail-table-preferences";
+export const CashAdvanceMultipleEntryDetailTablePreferencesStorageKey = "gr8books:cash-advance-multiple-entry:detail-table-preferences";
 
 export const CashAdvanceMultipleEntryDefaultItemColumnIds = [
   "partyName",
@@ -268,10 +264,5 @@ export const CashAdvanceMultipleEntryEntryDropdownClassName =
 export function getCashAdvanceMultipleEntryTableMinWidthClassName(visibleColumnCount: number) {
   if (visibleColumnCount >= 13) return "min-w-[158rem]";
   if (visibleColumnCount >= 10) return "min-w-[126rem]";
-  return "min-w-[82rem]";
+  return "min-w-[76rem]";
 }
-
-export {
-  CashAdvanceAccountOptions as CashAdvanceMultipleEntryAccountOptions,
-  CashAdvanceCostCenterOptions as CashAdvanceMultipleEntryCostCenterOptions,
-};

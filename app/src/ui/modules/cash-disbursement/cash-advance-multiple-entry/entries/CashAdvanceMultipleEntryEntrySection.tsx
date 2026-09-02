@@ -8,6 +8,7 @@ export function CashAdvanceMultipleEntryEntrySection({
   onOpenItemResponsibilityCenterDrawer,
   onOpenItemPartyDrawer,
   onRowsChange,
+  responsibilityCenterOptions = [],
   rows,
 }: CashAdvanceMultipleEntryEntrySectionProps) {
   const { employeeOptions } = useCashAdvanceEmployeeOptions("cash-advance-multiple-entry");
@@ -19,6 +20,7 @@ export function CashAdvanceMultipleEntryEntrySection({
       onAddRows={onAddRows}
       onOpenPartyDrawer={onOpenItemPartyDrawer}
       onOpenResponsibilityCenterDrawer={onOpenItemResponsibilityCenterDrawer}
+      responsibilityCenterOptions={responsibilityCenterOptions}
       onRowsChange={onRowsChange}
       rows={rows}
     />

@@ -41,11 +41,6 @@ export const DisbursementVoucherAddLink = `${DisbursementVoucherLink}/add`;
 export const getDisbursementVoucherEditLink = (recordId: string) => `${DisbursementVoucherLink}/edit/${recordId}`;
 export const getDisbursementVoucherViewLink = (recordId: string) => `${DisbursementVoucherLink}/view/${recordId}`;
 
-export const DisbursementVoucherQueryKeys = {
-  transactions: () => ["cash-disbursement", "disbursement-voucher", "transactions"] as const,
-  vouchers: () => ["cash-disbursement", "disbursement-voucher", "vouchers"] as const,
-};
-
 export const DisbursementVoucherTablePaginationStorageKey = "cash-disbursement-disbursement-voucher";
 
 export const DisbursementVoucherTablePreferencesStorageKey = "gr8booksneo:disbursement-voucher:table-preferences";
@@ -217,6 +212,12 @@ export const DisbursementVoucherTableColumns = [
     size: TransactionOverviewColumnWidths.amount,
   },
   {
+    key: "disburseAmount",
+    label: "Disburse Amount",
+    className: "",
+    size: TransactionOverviewColumnWidths.amount,
+  },
+  {
     key: "remarks",
     label: "Remarks",
     className: "",
@@ -271,12 +272,13 @@ export const DisbursementVoucherDefaultColumnVisibility: VisibilityState = {
   remarks: false,
   updatedBy: false,
   updatedAt: false,
+  disburseAmount: false,
 };
 
 export const DisbursementVoucherDefaultSorting: SortingState = [{ id: "documentDate", desc: true }];
 
 export function canEditDisbursementVoucherStatus(status: DisbursementVoucherStatus) {
-  return status === DisbursementVoucherStatuses.draft || status === DisbursementVoucherStatuses.forApproval;
+  return status === DisbursementVoucherStatuses.draft;
 }
 
 export function canApproveDisbursementVoucherStatus(status: DisbursementVoucherStatus) {

@@ -5,6 +5,7 @@ import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 export type ModuleTabItem<TabId extends string> = {
 	badge?: number;
 	badgeTone?: "error" | "info";
+	hasError?: boolean;
 	id: TabId;
 	label: string;
 };
@@ -62,7 +63,14 @@ export function ModuleTabs<TabId extends string>({
 								tabClassName,
 							)}
 						>
-							<span>{tab.label}</span>
+							<span className="inline-flex items-center">
+								{tab.label}
+								{tab.hasError ? (
+									<span className="ml-1 font-bold text-coralpink" aria-label="has error">
+										*
+									</span>
+								) : null}
+							</span>
 							{tab.badge ? (
 								<span
 									className={joinClasses(

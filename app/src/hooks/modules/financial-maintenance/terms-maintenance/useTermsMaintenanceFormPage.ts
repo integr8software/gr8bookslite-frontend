@@ -138,6 +138,9 @@ export function useTermsMaintenanceFormPage(options: TermsMaintenanceFormPageOpt
       }
 
       draft.clearDraft();
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+      releaseSubmitLock();
       options.onSaved?.();
       if (!options.onSaved) router.push(TermsMaintenanceHref);
     } catch {

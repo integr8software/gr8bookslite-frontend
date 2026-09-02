@@ -25,15 +25,11 @@ import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
-export function AdvancesToSuppliersActionHeader({
-  onPreview,
-  page,
-}: {
-  onPreview: () => void;
-  page: AdvancesToSuppliersActionPageState;
-}) {
+export function AdvancesToSuppliersActionHeader({ onPreview, page }: { onPreview: () => void; page: AdvancesToSuppliersActionPageState }) {
   const [confirmation, setConfirmation] = useState<AdvancesToSuppliersConfirmationAction | null>(null);
   const transactionNo = page.record?.transactionNo ?? page.values.transactionNo;
+  const isDraftEdit = page.mode === "edit" && page.record?.status === AdvancesToSuppliersStatuses.draft;
+  const isSaveAction = page.mode === "add" || isDraftEdit;
   const title =
     page.mode === "add" ? (
       "Add Advances to Suppliers"
@@ -53,9 +49,7 @@ export function AdvancesToSuppliersActionHeader({
         titleAs="h1"
         title={title}
         description={
-          page.mode === "view"
-            ? "Review supplier advance details and supporting files."
-            : "Record a purchase-order advance for a supplier."
+          page.mode === "view" ? "Review supplier advance details and supporting files." : "Record a purchase-order advance for a supplier."
         }
         actionsClassName="items-center justify-end gap-2"
         actions={
@@ -81,7 +75,7 @@ export function AdvancesToSuppliersActionHeader({
                 onApply={page.copyFromPurchaseOrder}
               />
             ) : null}
-            {page.mode !== "add" ? <AdvancesToSuppliersActionHistory record={page.record} /> : null}
+            {page.mode !== "add" ? <AdvancesToSuppliersActionHistory record={page.record ?? undefined} /> : null}
             {page.mode === "view" && page.record ? (
               <>
                 <AdvancesToSuppliersStatusActions record={page.record} onRequestConfirmation={setConfirmation} />
@@ -96,14 +90,14 @@ export function AdvancesToSuppliersActionHeader({
             {page.mode !== "view" ? (
               <ModuleActionButton
                 disabled={page.isSubmitting}
-                label={page.mode === "edit" ? "Update" : "Save"}
+                label={isSaveAction ? "Save" : "Update"}
                 onAction={() => {
                   if (page.validate(AdvancesToSuppliersStatuses.forApproval)) {
                     setConfirmation("save");
                   }
                 }}
                 menuItems={
-                  page.mode === "add"
+                  isSaveAction
                     ? [
                         {
                           label: "Save As Draft",
@@ -125,13 +119,13 @@ export function AdvancesToSuppliersActionHeader({
         <AppDialog
           isOpen
           title={
-            confirmation === "save" && page.mode === "edit"
+            confirmation === "save" && !isSaveAction
               ? "Update Advances to Suppliers?"
               : AdvancesToSuppliersConfirmationDialogTitles[confirmation]
           }
           description={
             confirmation === "save"
-              ? page.mode === "edit"
+              ? !isSaveAction
                 ? `This will update ${transactionNo}.`
                 : `This will save and submit ${transactionNo}.`
               : confirmation === "draft"
@@ -143,14 +137,12 @@ export function AdvancesToSuppliersActionHeader({
                     : `This will mark ${transactionNo} as cancelled.`
           }
           confirmLabel={
-            confirmation === "save" && page.mode === "edit"
-              ? "Update"
-              : AdvancesToSuppliersConfirmationDialogConfirmLabels[confirmation]
+            confirmation === "save" && !isSaveAction ? "Update" : AdvancesToSuppliersConfirmationDialogConfirmLabels[confirmation]
           }
           cancelLabel="Cancel"
-          iconTone={confirmation === "save" ? (page.mode === "edit" ? "update" : "save") : confirmation === "draft" ? "save" : undefined}
+          iconTone={confirmation === "save" ? (isSaveAction ? "save" : "update") : confirmation === "draft" ? "save" : undefined}
           isPending={page.isSubmitting}
-          pendingLabel={confirmation === "save" && page.mode === "edit" ? "Updating..." : "Saving..."}
+          pendingLabel={confirmation === "save" && !isSaveAction ? "Updating..." : "Saving..."}
           tone={
             confirmation === "approve"
               ? "success"
@@ -161,21 +153,21 @@ export function AdvancesToSuppliersActionHeader({
                   : "default"
           }
           onCancel={() => setConfirmation(null)}
-          onConfirm={() => {
+          onConfirm={async () => {
             if (confirmation === "save") {
-              const ok = page.save(AdvancesToSuppliersStatuses.forApproval);
+              const ok = await page.save(AdvancesToSuppliersStatuses.forApproval);
               if (ok) setConfirmation(null);
             } else if (confirmation === "draft") {
-              const ok = page.save(AdvancesToSuppliersStatuses.draft);
+              const ok = await page.save(AdvancesToSuppliersStatuses.draft);
               if (ok) setConfirmation(null);
             } else if (confirmation === "approve") {
-              const ok = page.updateStatus(AdvancesToSuppliersStatuses.posted);
+              const ok = await page.updateStatus(AdvancesToSuppliersStatuses.posted);
               if (ok) setConfirmation(null);
             } else if (confirmation === "disapprove") {
-              const ok = page.updateStatus(AdvancesToSuppliersStatuses.disapproved);
+              const ok = await page.updateStatus(AdvancesToSuppliersStatuses.disapproved);
               if (ok) setConfirmation(null);
             } else {
-              const ok = page.updateStatus(AdvancesToSuppliersStatuses.cancelled);
+              const ok = await page.updateStatus(AdvancesToSuppliersStatuses.cancelled);
               if (ok) setConfirmation(null);
             }
           }}

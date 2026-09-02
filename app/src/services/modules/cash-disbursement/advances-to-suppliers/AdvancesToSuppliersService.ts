@@ -1,37 +1,244 @@
+"use client";
+
 import {
-  AdvancesToSuppliersStorageKey,
-  AdvancesToSuppliersTransactionPrefix,
-} from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
-import { AdvancesToSuppliersSeedRecords } from "@/app/src/data/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersData";
-import type { AdvancesToSuppliersRecord } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
+  advancesToSuppliersControllerCreateV1 as advancesToSuppliersControllerCreate,
+  advancesToSuppliersControllerFindAllV1 as advancesToSuppliersControllerFindAll,
+  advancesToSuppliersControllerFindOneV1 as advancesToSuppliersControllerFindOne,
+  advancesToSuppliersControllerRemoveV1 as advancesToSuppliersControllerRemove,
+  advancesToSuppliersControllerSubmitApprovalV1 as advancesToSuppliersControllerSubmitApproval,
+  advancesToSuppliersControllerSuggestTransactionNumberV1,
+  advancesToSuppliersControllerUpdateStatusV1 as advancesToSuppliersControllerUpdateStatus,
+  advancesToSuppliersControllerUpdateV1 as advancesToSuppliersControllerUpdate,
+} from "@/app/src/generated/api/advances-to-suppliers/advances-to-suppliers";
+import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
+import {
+  fetchMaintenancePartyOptions,
+  fetchMaintenancePostingAccountOptions,
+  fetchMaintenanceResponsibilityCenterOptions,
+} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
+import type { MaintenanceResponsibilityCenterOption } from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
+import type {
+  AdvanceToSupplierResponseDto,
+  AdvanceToSupplierListResponseDto,
+  AdvancesToSuppliersControllerFindAllV1Params,
+  CreateAdvanceToSupplierDto,
+  CreateAdvanceToSupplierDtoAdvancePaymentType,
+  CreateAdvanceToSupplierDtoStatus,
+  UpdateAdvanceToSupplierDto,
+  UpdateAdvanceToSupplierStatusDtoStatus,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import type {
+  AdvancesToSuppliersFormValues,
+  AdvancesToSuppliersPaymentType,
+  AdvancesToSuppliersRecord,
+  AdvancesToSuppliersStatus,
+} from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
-export function getAdvancesToSuppliersRecords(): AdvancesToSuppliersRecord[] {
-  if (typeof window === "undefined") return AdvancesToSuppliersSeedRecords;
-  try {
-    const stored = window.localStorage.getItem(AdvancesToSuppliersStorageKey);
-    return stored ? (JSON.parse(stored) as AdvancesToSuppliersRecord[]) : AdvancesToSuppliersSeedRecords;
-  } catch {
-    return AdvancesToSuppliersSeedRecords;
-  }
+type FetchAdvancesToSuppliersListParams = AdvancesToSuppliersControllerFindAllV1Params;
+type MappedAdvancesToSuppliersListResponse = Omit<AdvanceToSupplierListResponseDto, "items"> & {
+  data: AdvancesToSuppliersRecord[];
+};
+
+type AdvancesToSuppliersListApiResponse = {
+  data?: AdvanceToSupplierResponseDto[];
+  items?: AdvanceToSupplierResponseDto[];
+  meta?: MappedAdvancesToSuppliersListResponse["meta"];
+};
+
+type AdvancesToSuppliersApiResponse = AdvanceToSupplierResponseDto | {
+  data?: AdvanceToSupplierResponseDto;
+};
+
+const StatusFromApi: Record<string, AdvancesToSuppliersStatus> = {
+  APPROVED: "Posted",
+  CANCELLED: "Cancelled",
+  DISAPPROVED: "Disapproved",
+  DRAFT: "Draft",
+  FOR_APPROVAL: "For Approval",
+  POSTED: "Posted",
+};
+
+const StatusToApi: Record<AdvancesToSuppliersStatus, UpdateAdvanceToSupplierStatusDtoStatus> = {
+  Cancelled: "CANCELLED",
+  Disapproved: "DISAPPROVED",
+  Draft: "DRAFT",
+  "For Approval": "FOR_APPROVAL",
+  Posted: "POSTED",
+};
+
+const PaymentTypeFromApi: Record<string, AdvancesToSuppliersPaymentType> = {
+  FIXED_AMOUNT: "Fixed Amount",
+  PERCENTAGE: "Percentage",
+};
+
+const PaymentTypeToApi: Record<AdvancesToSuppliersPaymentType, CreateAdvanceToSupplierDtoAdvancePaymentType> = {
+  "Fixed Amount": "FIXED_AMOUNT",
+  Percentage: "PERCENTAGE",
+};
+
+export async function fetchAdvancesToSuppliersList(
+  params?: FetchAdvancesToSuppliersListParams,
+): Promise<MappedAdvancesToSuppliersListResponse> {
+  const response = (await advancesToSuppliersControllerFindAll({
+    ...params,
+    status: params?.status && params.status !== "All" ? StatusToApi[params.status as AdvancesToSuppliersStatus] : undefined,
+  })) as AdvanceToSupplierListResponseDto & AdvancesToSuppliersListApiResponse;
+
+  return {
+    data: (response.items ?? response.data ?? []).map(mapAdvancesToSuppliersRecordFromDto),
+    meta: response?.meta ?? { page: 1, limit: 10, total: 0, totalPages: 1 },
+  };
 }
 
-export function saveAdvancesToSuppliersRecords(records: AdvancesToSuppliersRecord[]) {
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(AdvancesToSuppliersStorageKey, JSON.stringify(records));
-  }
+export async function fetchAdvancesToSuppliersById(id: string): Promise<AdvancesToSuppliersRecord> {
+  const response = (await advancesToSuppliersControllerFindOne(id)) as AdvancesToSuppliersApiResponse;
+  return mapAdvancesToSuppliersRecordFromDto(unwrapAdvancesToSuppliersResponse(response));
 }
 
-export function upsertAdvancesToSuppliersRecord(record: AdvancesToSuppliersRecord) {
-  const records = getAdvancesToSuppliersRecords();
-  return records.some((item) => item.id === record.id)
-    ? records.map((item) => (item.id === record.id ? record : item))
-    : [record, ...records];
+export async function fetchNextAdvancesToSuppliersNumber(): Promise<string> {
+  return fetchTransactionNumber(advancesToSuppliersControllerSuggestTransactionNumberV1);
 }
 
-export function createNextAdvancesToSuppliersNumber() {
-  const highest = getAdvancesToSuppliersRecords().reduce(
-    (value, record) => Math.max(value, Number(record.transactionNo.match(/(\d+)$/)?.[1] ?? 0)),
-    0,
-  );
-  return `${AdvancesToSuppliersTransactionPrefix}-${String(highest + 1).padStart(6, "0")}`;
+export async function createAdvancesToSuppliersApi(values: AdvancesToSuppliersFormValues): Promise<AdvancesToSuppliersRecord> {
+  const response = (await advancesToSuppliersControllerCreate(mapFormValuesToCreateDto(values))) as AdvancesToSuppliersApiResponse;
+  return mapAdvancesToSuppliersRecordFromDto(unwrapAdvancesToSuppliersResponse(response));
+}
+
+export async function updateAdvancesToSuppliersApi(id: string, values: AdvancesToSuppliersFormValues): Promise<AdvancesToSuppliersRecord> {
+  const response = (await advancesToSuppliersControllerUpdate(
+    id,
+    mapFormValuesToCreateDto(values) as UpdateAdvanceToSupplierDto,
+  )) as AdvancesToSuppliersApiResponse;
+  return mapAdvancesToSuppliersRecordFromDto(unwrapAdvancesToSuppliersResponse(response));
+}
+
+export async function submitAdvancesToSuppliersApprovalApi(id: string): Promise<AdvancesToSuppliersRecord> {
+  const response = (await advancesToSuppliersControllerSubmitApproval(id)) as AdvancesToSuppliersApiResponse;
+  return mapAdvancesToSuppliersRecordFromDto(unwrapAdvancesToSuppliersResponse(response));
+}
+
+export async function updateAdvancesToSuppliersStatusApi(
+  id: string,
+  status: AdvancesToSuppliersStatus,
+): Promise<AdvancesToSuppliersRecord> {
+  const response = (await advancesToSuppliersControllerUpdateStatus(id, { status: StatusToApi[status] })) as AdvancesToSuppliersApiResponse;
+  return mapAdvancesToSuppliersRecordFromDto(unwrapAdvancesToSuppliersResponse(response));
+}
+
+export async function deleteAdvancesToSuppliersApi(id: string): Promise<{ success: boolean; message: string }> {
+  await advancesToSuppliersControllerRemove(id);
+  return { success: true, message: "Deleted successfully" };
+}
+
+export async function fetchAdvancesToSuppliersPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
+  return fetchMaintenancePartyOptions();
+}
+
+export async function fetchAdvancesToSuppliersAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
+  const accounts = await fetchMaintenancePostingAccountOptions();
+  const supplierAdvanceAccounts = accounts.filter((account) => {
+    const title = String(account.accountTitle ?? account.name ?? "").toLowerCase();
+    return title.includes("advance") || title.includes("supplier") || title.includes("deposit");
+  });
+  const finalAccounts = supplierAdvanceAccounts.length > 0 ? supplierAdvanceAccounts : accounts;
+
+  return finalAccounts;
+}
+
+export async function fetchAdvancesToSuppliersResponsibilityCenters(): Promise<{
+  responsibilityCenters: AppAdvancedDropdownOption[];
+  projects: AppAdvancedDropdownOption[];
+}> {
+  const centers = await fetchMaintenanceResponsibilityCenterOptions();
+  const isProject = (center: MaintenanceResponsibilityCenterOption) =>
+    String(center.category ?? "").toLowerCase() === "project" ||
+    String(center.typeName ?? "")
+      .toLowerCase()
+      .includes("project") ||
+    String(center.name ?? "")
+      .toLowerCase()
+      .includes("project");
+
+  return {
+    responsibilityCenters: centers.filter((center) => !isProject(center)).map(mapResponsibilityCenterOption),
+    projects: centers.filter((center) => isProject(center)).map(mapResponsibilityCenterOption),
+  };
+}
+
+function mapFormValuesToCreateDto(values: AdvancesToSuppliersFormValues): CreateAdvanceToSupplierDto {
+  return {
+    partyId: values.partyId,
+    partyCode: values.partyCode,
+    partyName: values.partyName,
+    creditAccountId: values.accountId,
+    accountCode: values.accountCode,
+    accountTitle: values.accountTitle,
+    responsibilityCenter: values.responsibilityCenter,
+    responsibilityCenterCode: values.responsibilityCenterCode,
+    projectName: values.projectName,
+    projectCode: values.projectCode,
+    currency: values.currency || "PHP",
+    exchangeRate: values.exchangeRate || "1.00",
+    poReference: values.poReference,
+    totalPoAmount: String(parseMoneyNumberInput(values.totalPoAmount)),
+    advancePaymentType: PaymentTypeToApi[values.advancePaymentType],
+    advancePaymentPercentage: String(parseMoneyNumberInput(values.advancePaymentPercentage)),
+    advancePaymentAmount: String(parseMoneyNumberInput(values.advancePaymentAmount)),
+    documentDate: values.documentDate,
+    transactionNo: values.transactionNo,
+    remarks: values.remarks,
+    status:
+      values.status && values.status !== "Open"
+        ? (StatusToApi[values.status as AdvancesToSuppliersStatus] as CreateAdvanceToSupplierDtoStatus)
+        : "DRAFT",
+  };
+}
+
+function mapAdvancesToSuppliersRecordFromDto(dto: AdvanceToSupplierResponseDto): AdvancesToSuppliersRecord {
+  const status = StatusFromApi[dto.status] ?? "Draft";
+  const paymentType = PaymentTypeFromApi[dto.advancePaymentType] ?? "Percentage";
+  const exchangeRate = dto.exchangeRate !== undefined && dto.exchangeRate !== null ? String(dto.exchangeRate) : "1.00";
+
+  return {
+    id: dto.id,
+    transactionNo: dto.transactionNo,
+    documentDate: dto.documentDate,
+    partyId: dto.partyId ?? undefined,
+    partyCode: dto.partyCode,
+    partyName: dto.partyName,
+    accountCode: dto.accountCode,
+    accountTitle: dto.accountTitle ?? "",
+    responsibilityCenter: dto.responsibilityCenter ?? "",
+    responsibilityCenterCode: dto.responsibilityCenterCode ?? "",
+    projectCode: dto.projectCode ?? "",
+    projectName: dto.projectName ?? "",
+    currency: dto.currency,
+    exchangeRate,
+    poReference: dto.poReference,
+    totalPoAmount: Number(dto.totalPoAmount ?? 0),
+    advancePaymentType: paymentType,
+    advancePaymentPercentage: Number(dto.advancePaymentPercentage ?? 0),
+    amount: Number(dto.amount ?? 0),
+    remarks: dto.remarks ?? "",
+    status,
+    createdBy: dto.createdBy ?? "",
+    createdAt: dto.createdAt,
+    updatedBy: dto.updatedBy ?? "",
+    updatedAt: dto.updatedAt ?? "",
+  };
+}
+
+function mapResponsibilityCenterOption(center: MaintenanceResponsibilityCenterOption): AppAdvancedDropdownOption {
+  return {
+    name: center.name,
+    label: center.code || center.label,
+    value: center.code || center.value,
+    description: center.name,
+  };
+}
+
+function unwrapAdvancesToSuppliersResponse(response: AdvancesToSuppliersApiResponse): AdvanceToSupplierResponseDto {
+  return "data" in response && response.data ? response.data : (response as AdvanceToSupplierResponseDto);
 }

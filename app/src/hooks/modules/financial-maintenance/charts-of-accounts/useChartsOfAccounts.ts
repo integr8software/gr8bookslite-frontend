@@ -33,6 +33,10 @@ import {
   UpdateChartAccountStatus,
 } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsQueryKeys";
+import { DefaultAccountQueryKeys } from "@/app/src/services/modules/financial-maintenance/default-account/DefaultAccountQueryKeys";
+import { ServicesMaintenanceQueryKeys } from "@/app/src/services/modules/financial-maintenance/services-maintenance/ServicesMaintenanceQueryKeys";
+import { PartyManagementQueryKeys } from "@/app/src/services/modules/party-management/PartyManagementQueryKeys";
+import { TaxDefinitionQueryKeys } from "@/app/src/services/shared/tax/TaxDefinitionApi";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
@@ -112,6 +116,12 @@ export function useChartsOfAccounts() {
       await queryClient.invalidateQueries({
         queryKey: ChartsOfAccountsQueryKeys.tree(companyId),
       });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: DefaultAccountQueryKeys.expenseParentOptions(companyId) }),
+        queryClient.invalidateQueries({ queryKey: ServicesMaintenanceQueryKeys.accountOptions(companyId) }),
+        queryClient.invalidateQueries({ queryKey: PartyManagementQueryKeys.accountingOptions() }),
+        queryClient.invalidateQueries({ queryKey: TaxDefinitionQueryKeys.lookup(companyId) }),
+      ]);
       setExpandedIds(
         (current) =>
           new Set([...current, ...getAccountAncestorIds(accounts, account.parentId), ...(account.parentId ? [account.parentId] : [])]),
@@ -134,6 +144,12 @@ export function useChartsOfAccounts() {
       await queryClient.invalidateQueries({
         queryKey: ChartsOfAccountsQueryKeys.tree(companyId),
       });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: DefaultAccountQueryKeys.expenseParentOptions(companyId) }),
+        queryClient.invalidateQueries({ queryKey: ServicesMaintenanceQueryKeys.accountOptions(companyId) }),
+        queryClient.invalidateQueries({ queryKey: PartyManagementQueryKeys.accountingOptions() }),
+        queryClient.invalidateQueries({ queryKey: TaxDefinitionQueryKeys.lookup(companyId) }),
+      ]);
       toast.success("Chart account status updated.");
     },
     onError: (error) => {

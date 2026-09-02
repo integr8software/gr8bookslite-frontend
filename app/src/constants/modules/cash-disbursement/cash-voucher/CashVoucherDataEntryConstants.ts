@@ -158,7 +158,7 @@ export const DefaultExpenseEntryColumnWidths: Record<ExpenseEntryColumnId, numbe
   checkNo: 150,
   checkStatus: 170,
   netAmount: 155,
-  vatCode: 160,
+  vatCode: 220,
   vatPercent: 115,
   vatAmount: 155,
   ewtCode: 175,
@@ -222,7 +222,7 @@ export const DefaultCashVoucherEntryColumnWidths: Record<CashVoucherEntryColumnI
   accountName: 220,
   debit: 135,
   credit: 135,
-  vatType: 160,
+  vatType: 220,
   ewtCode: 175,
   responsibilityCenterCode: 240,
   responsibilityCenter: 235,
@@ -244,5 +244,3 @@ export const MultiCheckColumnIds = new Set<string>(["checkNo", "checkStatus", "c
 
 export const CashVoucherDetailTablePreferencesStorageKey = "gr8books:cash-voucher:detail-table-preferences";
 export const CashVoucherAccountingTablePreferencesStorageKey = "gr8books:cash-voucher:accounting-table-preferences";
-
-

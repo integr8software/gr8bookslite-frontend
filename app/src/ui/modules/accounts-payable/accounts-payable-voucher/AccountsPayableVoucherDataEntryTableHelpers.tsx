@@ -17,10 +17,7 @@ import type {
   AccountsPayableVoucherLookupParty,
   AccountsPayableVoucherLookupResponsibilityCenter,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
-import {
-  AppAdvancedDropdown,
-  type AppAdvancedDropdownOption,
-} from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import {
   createVatOptions,
   getEwtPercentFromCode,
@@ -30,11 +27,7 @@ import {
 import { ModuleTextareaDialog } from "@/app/src/ui/shared/module/ModuleTextareaDialog";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import {
-  MoneyNumberField,
-  formatMoneyNumberInput,
-  parseMoneyNumberInput,
-} from "@/app/src/ui/shared/money/MoneyNumberField";
+import { MoneyNumberField, formatMoneyNumberInput, parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 
 type PartyBearingRow = {
   partyCode: string;
@@ -48,9 +41,7 @@ const PartyFallbackValuePrefix = "apv-party:";
 const EntryDropdownBaseClassName =
   "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
 
-export function isManualGeneratedTaxAccountingEntry(
-  entry: AccountsPayableVoucherAccountingEntry,
-) {
+export function isManualGeneratedTaxAccountingEntry(entry: AccountsPayableVoucherAccountingEntry) {
   return (
     entry.id.startsWith(ManualInputVatAccountingEntryIdPrefix) ||
     entry.id.startsWith(ManualEwtAccountingEntryIdPrefix) ||
@@ -102,15 +93,8 @@ export function applyAccountingEntryPartyTaxDefaults(
   }
 }
 
-function getPartyPurchaseTaxDefaults(
-  party: AccountsPayableVoucherLookupParty,
-  taxCodes: Parameters<typeof createVatOptions>[0],
-) {
-  const inputVatCode = getTaxCodeBySourceKey(
-    taxCodes,
-    party.defaultPurchaseInputVatTaxSourceKey,
-    "INPUT VAT",
-  );
+function getPartyPurchaseTaxDefaults(party: AccountsPayableVoucherLookupParty, taxCodes: Parameters<typeof createVatOptions>[0]) {
+  const inputVatCode = getTaxCodeBySourceKey(taxCodes, party.defaultPurchaseInputVatTaxSourceKey, "INPUT VAT");
   const ewtCode = getTaxCodeBySourceKey(taxCodes, party.defaultPurchaseEwtTaxSourceKey, "EWT");
   const inputVatRate = getVatRateFromCode(inputVatCode, taxCodes);
 
@@ -122,11 +106,7 @@ function getPartyPurchaseTaxDefaults(
   };
 }
 
-function getTaxCodeBySourceKey(
-  taxCodes: Parameters<typeof createVatOptions>[0],
-  sourceKey: string,
-  taxType: "EWT" | "INPUT VAT",
-) {
+function getTaxCodeBySourceKey(taxCodes: Parameters<typeof createVatOptions>[0], sourceKey: string, taxType: "EWT" | "INPUT VAT") {
   if (!sourceKey) {
     return "";
   }
@@ -141,10 +121,7 @@ function getTaxCodeBySourceKey(
   );
 }
 
-export function findPartyRecordByCode(
-  partyRecords: AccountsPayableVoucherLookupParty[],
-  partyCode: string,
-) {
+export function findPartyRecordByCode(partyRecords: AccountsPayableVoucherLookupParty[], partyCode: string) {
   return partyRecords.find((record) => record.partyCodeNo === partyCode);
 }
 
@@ -181,16 +158,12 @@ export function PartyDropdown({
       placeholder="Select Party Name"
       searchPlaceholder="Search Party Name"
       className={entryDropdownClassName()}
-      showSelectedDetails
       onChange={(value) => {
         const selectedValue = String(value);
         const party = options.find((option) => option.value === selectedValue);
         const isFallbackValue = selectedValue.startsWith(PartyFallbackValuePrefix);
 
-        onSelect(
-          isFallbackValue ? "" : (party?.value ?? ""),
-          party?.name ?? (isFallbackValue ? selectedValue : ""),
-        );
+        onSelect(isFallbackValue ? "" : (party?.value ?? ""), party?.name ?? (isFallbackValue ? selectedValue : ""));
       }}
     />
   );
@@ -289,11 +262,7 @@ export function LineAmountInput({
 }) {
   const [draftValue, setDraftValue] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const displayValue = isEditing
-    ? draftValue
-    : value !== 0
-      ? formatMoneyNumberInput(value.toFixed(2), true)
-      : "";
+  const displayValue = isEditing ? draftValue : value !== 0 ? formatMoneyNumberInput(value.toFixed(2), true) : "";
 
   function handleValueChange(nextValue: string) {
     setDraftValue(nextValue);
@@ -315,9 +284,7 @@ export function LineAmountInput({
       }}
       disabled={disabled}
       title={error}
-      className={entryCellControlClassName(
-        joinClasses("text-right tabular-nums", error ? "ring-2 ring-inset ring-red-500/45" : ""),
-      )}
+      className={entryCellControlClassName(joinClasses("text-right tabular-nums", error ? "ring-2 ring-inset ring-red-500/45" : ""))}
     />
   );
 }
@@ -451,26 +418,15 @@ export function createResponsibilityCenterOptions(
   return [...options, ...customOptions];
 }
 
-export function isExpenseColumnId(
-  columnId: string,
-): columnId is AccountsPayableVoucherExpenseColumnId {
-  return AccountsPayableVoucherExpenseColumnIds.includes(
-    columnId as AccountsPayableVoucherExpenseColumnId,
-  );
+export function isExpenseColumnId(columnId: string): columnId is AccountsPayableVoucherExpenseColumnId {
+  return AccountsPayableVoucherExpenseColumnIds.includes(columnId as AccountsPayableVoucherExpenseColumnId);
 }
 
-export function isAccountingColumnId(
-  columnId: string,
-): columnId is AccountsPayableVoucherAccountingColumnId {
-  return AccountsPayableVoucherAccountingColumnIds.includes(
-    columnId as AccountsPayableVoucherAccountingColumnId,
-  );
+export function isAccountingColumnId(columnId: string): columnId is AccountsPayableVoucherAccountingColumnId {
+  return AccountsPayableVoucherAccountingColumnIds.includes(columnId as AccountsPayableVoucherAccountingColumnId);
 }
 
-function getExpenseExportCell(
-  line: AccountsPayableVoucherExpenseLine,
-  columnId: AccountsPayableVoucherExpenseColumnId,
-) {
+function getExpenseExportCell(line: AccountsPayableVoucherExpenseLine, columnId: AccountsPayableVoucherExpenseColumnId) {
   if (isExpenseAmountColumn(columnId)) {
     return Number(line[columnId] || 0) > 0 ? Number(line[columnId] || 0).toFixed(2) : "";
   }
@@ -497,10 +453,7 @@ export function getExpenseColumnTotal(
   return lines.reduce((sum, line) => sum + Number(line[columnId] || 0), 0);
 }
 
-function getAccountingExportCell(
-  entry: AccountsPayableVoucherAccountingEntry,
-  columnId: AccountsPayableVoucherAccountingColumnId,
-) {
+function getAccountingExportCell(entry: AccountsPayableVoucherAccountingEntry, columnId: AccountsPayableVoucherAccountingColumnId) {
   switch (columnId) {
     case "debit":
     case "credit":
@@ -521,8 +474,7 @@ export function calculateExpenseColumnFitWidth({
 }) {
   const headerWidth = estimateTextWidth(columnLabels[columnId], 76);
   const contentWidth = lines.reduce(
-    (currentWidth, line) =>
-      Math.max(currentWidth, estimateTextWidth(String(getExpenseExportCell(line, columnId)), 24)),
+    (currentWidth, line) => Math.max(currentWidth, estimateTextWidth(String(getExpenseExportCell(line, columnId)), 24)),
     50,
   );
 
@@ -540,11 +492,7 @@ export function calculateAccountingColumnFitWidth({
 }) {
   const headerWidth = estimateTextWidth(columnLabels[columnId], 76);
   const contentWidth = entries.reduce(
-    (currentWidth, entry) =>
-      Math.max(
-        currentWidth,
-        estimateTextWidth(String(getAccountingExportCell(entry, columnId)), 24),
-      ),
+    (currentWidth, entry) => Math.max(currentWidth, estimateTextWidth(String(getAccountingExportCell(entry, columnId)), 24)),
     50,
   );
 
@@ -555,11 +503,7 @@ function estimateTextWidth(value: string, padding: number) {
   return clampColumnWidth(value.trim().length * 7.5 + padding);
 }
 
-export function moveColumnId<TColumnId extends string>(
-  columnOrder: TColumnId[],
-  fromColumnId: TColumnId,
-  toColumnId: TColumnId,
-) {
+export function moveColumnId<TColumnId extends string>(columnOrder: TColumnId[], fromColumnId: TColumnId, toColumnId: TColumnId) {
   const fromIndex = columnOrder.indexOf(fromColumnId);
   const toIndex = columnOrder.indexOf(toColumnId);
 

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import type {
+  DisbursementVoucherBankAccount,
   DisbursementVoucherEntryDraft,
   DisbursementVoucherFormErrors,
   DisbursementVoucherFormValues,
@@ -8,9 +9,9 @@ import type {
 import type { PaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 
 export const DisbursementVoucherDetailsValidationSchema = z.object({
-  paymentMethod: z.string().trim().min(1, "Payment method is required."),
-  partyCode: z.string().trim().min(1, "Party code is required."),
-  partyName: z.string().trim().min(1, "Party name is required."),
+  paymentMethod: z.string().trim().min(1, "Payment Type is required."),
+  partyCode: z.string().trim().min(1, "Party Code is required."),
+  partyName: z.string().trim().min(1, "Party Name is required."),
   voucherDate: z.string().trim().min(1, "Select a DV Date."),
 });
 
@@ -41,7 +42,7 @@ export const DisbursementVoucherEntriesValidationSchema = z
     if (hasIncompleteEntry) {
       context.addIssue({
         code: CUSTOM_ISSUE_CODE,
-        message: "Each line needs an account title, account code, and either a debit or credit amount.",
+        message: "Each line needs an Account Title, Account Code, and either a Debit or Credit Amount.",
       });
       return;
     }
@@ -49,7 +50,7 @@ export const DisbursementVoucherEntriesValidationSchema = z
     if (entries.some((entry) => entry.debit > 0 && entry.credit > 0)) {
       context.addIssue({
         code: CUSTOM_ISSUE_CODE,
-        message: "Each line can only carry a debit or a credit amount.",
+        message: "Each line can only carry a Debit or Credit Amount.",
       });
       return;
     }
@@ -60,7 +61,7 @@ export const DisbursementVoucherEntriesValidationSchema = z
     if (totalDebit <= 0 || totalCredit <= 0) {
       context.addIssue({
         code: CUSTOM_ISSUE_CODE,
-        message: "Entries must include both debit and credit values.",
+        message: "Entries must include both Debit and Credit values.",
       });
       return;
     }
@@ -68,15 +69,15 @@ export const DisbursementVoucherEntriesValidationSchema = z
     if (Math.abs(totalDebit - totalCredit) > 0.001) {
       context.addIssue({
         code: CUSTOM_ISSUE_CODE,
-        message: "Debit and credit totals must balance before review.",
+        message: "Debit and Credit totals must balance before review.",
       });
     }
   });
 
 export const DisbursementVoucherEntryDraftValidationSchema = z
   .object({
-    accountCode: z.string().trim().min(1, "Account code is required."),
-    accountName: z.string().trim().min(1, "Account title is required."),
+    accountCode: z.string().trim().min(1, "Account Code is required."),
+    accountName: z.string().trim().min(1, "Account Title is required."),
     debit: z.string(),
     credit: z.string(),
   })
@@ -87,7 +88,7 @@ export const DisbursementVoucherEntryDraftValidationSchema = z
     if (debit <= 0 && credit <= 0) {
       context.addIssue({
         code: CUSTOM_ISSUE_CODE,
-        message: "Enter a debit or credit amount.",
+        message: "Enter a Debit or Credit Amount.",
       });
       return;
     }
@@ -95,7 +96,7 @@ export const DisbursementVoucherEntryDraftValidationSchema = z
     if (debit > 0 && credit > 0) {
       context.addIssue({
         code: CUSTOM_ISSUE_CODE,
-        message: "Each line can only carry a debit or a credit amount.",
+        message: "Each line can only carry a Debit or Credit Amount.",
       });
     }
   });
@@ -103,6 +104,7 @@ export const DisbursementVoucherEntryDraftValidationSchema = z
 export function validateDisbursementVoucherDetails(
   values: DisbursementVoucherFormValues,
   paymentTypeRecord?: PaymentTypeRecord | null,
+  bankAccounts?: DisbursementVoucherBankAccount[],
 ) {
   const errors: DisbursementVoucherFormErrors = {};
   const result = DisbursementVoucherDetailsValidationSchema.safeParse(values);
@@ -143,16 +145,43 @@ export function validateDisbursementVoucherDetails(
     if (!(values.paymentDetails.payee ?? values.partyName).trim()) errors.payee = "Payee is required.";
     if (!values.paymentDetails.isMultiCheckNumber && !values.paymentDetails.checkNo.trim()) {
       errors.checkNo = paymentType === "Debit Memo" || normalizedPaymentMethod.includes("debit memo")
-        ? "Debit memo number is required."
-        : "Check number is required.";
+        ? "Debit Memo No. is required."
+        : "Check No. is required.";
     }
-    if (!(values.paymentDetails.checkDate || values.voucherDate).trim()) errors.checkDate = "Check date is required.";
+    if (!(values.paymentDetails.checkDate || values.voucherDate).trim()) errors.checkDate = "Check Date is required.";
   }
 
   if (requiresTransferDetails) {
-    if (!values.paymentDetails.bankAccountCode.trim()) errors.bankAccountCode = "From bank is required.";
-    if (!(values.paymentDetails.transferToBank ?? "").trim()) errors.transferToBank = "To bank is required.";
-    if (!(values.paymentDetails.transferAccountNo ?? "").trim()) errors.transferAccountNo = "Account number is required.";
+    if (!values.paymentDetails.bankAccountCode.trim()) errors.bankAccountCode = "From Bank is required.";
+    if (!(values.paymentDetails.transferToBank ?? "").trim()) errors.transferToBank = "To Bank is required.";
+    if (!(values.paymentDetails.transferAccountNo ?? "").trim()) errors.transferAccountNo = "Account No. is required.";
+
+    const fromBankCode = values.paymentDetails.bankAccountCode.trim();
+    const toBankName = (values.paymentDetails.transferToBank ?? "").trim();
+    const toAccountNo = (values.paymentDetails.transferAccountNo ?? "").trim();
+
+    if (fromBankCode && toBankName) {
+      const fromBank = bankAccounts?.find((b) => b.accountCode === fromBankCode || b.id === fromBankCode);
+      const isSameAccountNo = Boolean(
+        toAccountNo &&
+          (toAccountNo === values.paymentDetails.bankAccountNo?.trim() ||
+            (fromBank && toAccountNo === fromBank.accountNo?.trim())),
+      );
+      const isSameBankName = Boolean(
+        toBankName &&
+          ((values.paymentDetails.bankName &&
+            toBankName.toLowerCase() === values.paymentDetails.bankName.trim().toLowerCase()) ||
+            (fromBank && toBankName.toLowerCase() === fromBank.bankName.trim().toLowerCase())),
+      );
+
+      if (
+        isSameAccountNo ||
+        (isSameBankName && isSameAccountNo) ||
+        (isSameBankName && !toAccountNo && !values.paymentDetails.bankAccountNo)
+      ) {
+        errors.transferToBank = "From Bank and To Bank cannot be the same.";
+      }
+    }
   }
 
   return errors;
@@ -166,7 +195,7 @@ export function validateDisbursementVoucherEntries(values: DisbursementVoucherFo
   }
 
   return {
-    lineEntries: result.error.issues[0]?.message ?? "Review the accounting entries.",
+    lineEntries: result.error.issues[0]?.message ?? "Review the Accounting Entries.",
   } satisfies DisbursementVoucherFormErrors;
 }
 

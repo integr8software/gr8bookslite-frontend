@@ -501,6 +501,11 @@ export function PartyManagementDrawer({
       const savedRecord = await onAddRecord(record);
 
       draft.clearDraft();
+      setValues(createPartyDrawerInitialValues([...records, savedRecord], suggestedPartyType));
+      setErrors({});
+      setSyncedAddressSources({});
+      setAccountTitleDialog(null);
+      setIsTermDialogOpen(false);
       onCreateParty(savedRecord);
       onClose();
     } catch {

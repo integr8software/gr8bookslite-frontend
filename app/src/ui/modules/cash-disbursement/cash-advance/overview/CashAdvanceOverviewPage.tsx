@@ -18,7 +18,7 @@ import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/
 import { CashAdvanceRecordActions } from "@/app/src/ui/modules/cash-disbursement/cash-advance/overview/CashAdvanceRecordActions";
 
 export function CashAdvanceOverviewPage() {
-  const { advances, lastSyncedAt, refreshRecords, updateAdvanceStatus } = useCashAdvanceStore();
+  const { advances, isLoading, lastSyncedAt, refreshRecords, updateAdvanceStatus } = useCashAdvanceStore();
   const tableState = useCashAdvanceTable(advances);
 
   return (
@@ -46,18 +46,19 @@ export function CashAdvanceOverviewPage() {
         }
       />
 
-      <ModuleStatisticCards className="2xl:grid-cols-6" items={tableState.statisticCards} />
+      <ModuleStatisticCards className="2xl:grid-cols-6" isLoading={isLoading} items={tableState.statisticCards} />
 
       <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm" data-spotlight-id="maintenance-table">
         <ModuleTable
           variant="embedded"
-          emptyDescription="Try another Cash Advance No., remarks, date range, amount range, or status."
+          emptyDescription="Try another Cash Advance No., Remarks, Date Range, Amount Range, or Status."
           emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
-          emptyTitle="No Cash Advance Transaction Found."
+          emptyTitle="No Cash Advance Transaction Found"
           minWidthClassName={getCashAdvanceTableMinWidthClassName(tableState.table.getVisibleLeafColumns().length)}
           paginationLabel="entries"
           paginationStorageKey={CashAdvanceTablePaginationStorageKey}
           lastSyncedAt={lastSyncedAt}
+          isLoading={isLoading}
           table={tableState.table}
           tableTitle="Cash Advances"
           useColumnSizing

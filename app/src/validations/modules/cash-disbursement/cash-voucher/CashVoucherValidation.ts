@@ -17,11 +17,11 @@ export function validateCashVoucherDetails(values: CashVoucherFormValues) {
   }
 
   if (!values.partyCode.trim()) {
-    errors.partyCode = "Party code is required.";
+    errors.partyCode = "Party Code is required.";
   }
 
   if (!values.partyName.trim()) {
-    errors.partyName = "Party name is required.";
+    errors.partyName = "Party Name is required.";
   }
 
   return errors;
@@ -35,13 +35,13 @@ export function validateCashVoucherEntries(values: CashVoucherFormValues) {
   if (values.lineEntries.length < 2) {
     errors.lineEntries = "Add at least two line entries.";
   } else if (values.lineEntries.some(entryHasMissingRequiredFields)) {
-    errors.lineEntries = "Each line needs an account title, account code, and either a debit or credit amount.";
+    errors.lineEntries = "Each line needs an Account Title, Account Code, and either a Debit or Credit Amount.";
   } else if (values.lineEntries.some(entryHasBothDebitAndCredit)) {
-    errors.lineEntries = "Each line can only carry a debit or a credit amount.";
+    errors.lineEntries = "Each line can only carry a Debit or Credit Amount.";
   } else if (totalDebit <= 0 || totalCredit <= 0) {
-    errors.lineEntries = "Entries must include both debit and credit values.";
+    errors.lineEntries = "Entries must include both Debit and Credit values.";
   } else if (Math.abs(totalDebit - totalCredit) > 0.001) {
-    errors.lineEntries = "Debit and credit totals must balance before review.";
+    errors.lineEntries = "Debit and Credit totals must balance before review.";
   }
 
   return errors;
@@ -49,22 +49,22 @@ export function validateCashVoucherEntries(values: CashVoucherFormValues) {
 
 export function validateCashVoucherEntryDraft(draft: CashVoucherEntryDraft) {
   if (!draft.accountCode.trim()) {
-    return "Account code is required.";
+    return "Account Code is required.";
   }
 
   if (!draft.accountName.trim()) {
-    return "Account title is required.";
+    return "Account Title is required.";
   }
 
   const debit = parseMoneyNumberInput(draft.debit);
   const credit = parseMoneyNumberInput(draft.credit);
 
   if (debit <= 0 && credit <= 0) {
-    return "Enter a debit or credit amount.";
+    return "Enter a Debit or Credit Amount.";
   }
 
   if (debit > 0 && credit > 0) {
-    return "Each line can only carry a debit or a credit amount.";
+    return "Each line can only carry a Debit or Credit Amount.";
   }
 
   return undefined;

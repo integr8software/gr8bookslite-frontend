@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   CashAdvanceMultipleEntryDetailsTabs,
@@ -34,9 +34,18 @@ import { openCashAdvanceMultipleEntryPdf } from "@/app/src/ui/modules/cash-disbu
 import { CashAdvanceMultipleEntryFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryFileAttachmentFields";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { AppSkeleton, AppSkeletonCard } from "@/app/src/ui/shared/app/AppSkeleton";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvanceMultipleEntryActionMode }) {
+  return (
+    <Suspense fallback={<CashAdvanceMultipleEntryActionSkeleton />}>
+      <CashAdvanceMultipleEntryActionInner mode={mode} />
+    </Suspense>
+  );
+}
+
+function CashAdvanceMultipleEntryActionInner({ mode }: { mode: CashAdvanceMultipleEntryActionMode }) {
   const params = useParams<{ recordId?: string }>();
   const router = useRouter();
   const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
@@ -59,9 +68,9 @@ export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvance
       createCashAdvanceMultipleEntryProjectOptions({
         centers: responsibilityCenterStore.centers,
         currentProjectCode: form.values.projectCode,
-        currentProjectName: form.values.projectRef,
+        currentProjectName: form.values.projectName,
       }),
-    [form.values.projectCode, form.values.projectRef, responsibilityCenterStore.centers],
+    [form.values.projectCode, form.values.projectName, responsibilityCenterStore.centers],
   );
   const projectInitialValues = useMemo(
     () => createCashAdvanceMultipleEntryProjectInitialValues(responsibilityCenterStore.classifications, responsibilityCenterStore.types),
@@ -83,6 +92,10 @@ export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvance
     [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
   );
 
+  if (form.isLoading) {
+    return <CashAdvanceMultipleEntryActionSkeleton />;
+  }
+
   if (form.isRecordMissing) {
     return <CashAdvanceMultipleEntryNotFound />;
   }
@@ -93,6 +106,7 @@ export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvance
     <>
       <section className="grid gap-5">
         <CashAdvanceMultipleEntryActionHeader
+          availabilityWarning={form.availabilityWarning}
           mode={mode}
           hasDiscardableChanges={form.hasDiscardableChanges}
           isSubmitting={form.isSubmitting}
@@ -100,8 +114,12 @@ export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvance
           onDiscard={form.discardDraft}
           record={form.record}
           onPreview={() => setIsReportPreviewOpen(true)}
-          onSaveDraft={() => form.submitEntry(CashAdvanceMultipleEntryStatuses.draft)}
-          onSubmit={() => form.submitEntry(CashAdvanceMultipleEntryStatuses.forApproval)}
+          onSaveDraft={() => {
+            void form.submitEntry(CashAdvanceMultipleEntryStatuses.draft);
+          }}
+          onSubmit={() => {
+            void form.submitEntry(CashAdvanceMultipleEntryStatuses.forApproval);
+          }}
           onUpdateStatus={form.updateEntryStatus}
           onValidate={form.validateEntry}
         />
@@ -114,6 +132,7 @@ export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvance
         {activeDetailsTab === "details" ? (
           <CashAdvanceMultipleEntryDetailsFields
             currencyOptions={form.currencyOptions}
+            errors={form.errors}
             isExchangeRateLoading={form.isExchangeRateLoading}
             isReadonly={isReadonly}
             projectOptions={projectOptions}
@@ -214,7 +233,7 @@ export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvance
         onClose={() => setIsProjectDrawerOpen(false)}
         onSaved={(center) => {
           form.updateField("projectCode", center.code);
-          form.updateField("projectRef", center.name);
+          form.updateField("projectName", center.name);
           setIsProjectDrawerOpen(false);
         }}
       />
@@ -255,5 +274,32 @@ export function CashAdvanceMultipleEntryActionPage({ mode }: { mode: CashAdvance
         onGeneratePdf={() => openCashAdvanceMultipleEntryPdf(form.values, responsibilityCenterOptions)}
       />
     </>
+  );
+}
+
+function CashAdvanceMultipleEntryActionSkeleton() {
+  return (
+    <section className="grid gap-5 p-6">
+      <AppSkeletonCard className="grid gap-3 rounded-lg p-5">
+        <AppSkeleton className="h-4 w-40" />
+        <AppSkeleton className="h-7 w-80 max-w-full" />
+        <AppSkeleton className="h-4 w-full max-w-2xl" />
+      </AppSkeletonCard>
+      <AppSkeletonCard className="grid gap-4 rounded-lg p-5">
+        <div className="grid gap-5 xl:grid-cols-3">
+          {Array.from({ length: 3 }, (_, index) => (
+            <div key={index} className="grid gap-4">
+              <AppSkeleton className="h-10 w-full" />
+              <AppSkeleton className="h-10 w-full" />
+              <AppSkeleton className="h-10 w-full" />
+            </div>
+          ))}
+        </div>
+      </AppSkeletonCard>
+      <AppSkeletonCard className="grid gap-4 rounded-lg p-5">
+        <AppSkeleton className="h-10 w-full" />
+        <AppSkeleton className="h-80 w-full rounded-lg" />
+      </AppSkeletonCard>
+    </section>
   );
 }

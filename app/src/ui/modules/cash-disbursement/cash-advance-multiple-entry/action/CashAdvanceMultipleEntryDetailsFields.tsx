@@ -1,11 +1,7 @@
-import { useMemo } from "react";
-import { CashAdvanceMultipleEntryAccountOptions } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
-import {
-  createCashAdvanceMultipleEntryPartyOptions,
-  createCashAdvanceMultipleEntrySelectOptions,
-} from "@/app/src/data/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryData";
+import { useCashAdvanceMultipleEntryDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/cash-advance-multiple-entry/useCashAdvanceMultipleEntryDetailsLookups";
 import type {
   CashAdvanceMultipleEntryFormController,
+  CashAdvanceMultipleEntryFormErrors,
   CashAdvanceMultipleEntryFormValues,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
@@ -22,6 +18,7 @@ import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 
 export function CashAdvanceMultipleEntryDetailsFields({
   currencyOptions,
+  errors = {},
   isExchangeRateLoading,
   isReadonly,
   onOpenPartyDrawer,
@@ -32,6 +29,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
   values,
 }: {
   currencyOptions: AppAdvancedDropdownOption[];
+  errors?: CashAdvanceMultipleEntryFormErrors;
   isExchangeRateLoading: boolean;
   isReadonly: boolean;
   onOpenPartyDrawer: () => void;
@@ -41,35 +39,33 @@ export function CashAdvanceMultipleEntryDetailsFields({
   projectOptions: AppAdvancedDropdownOption[];
   onUpdateField: CashAdvanceMultipleEntryFormController["updateField"];
 }) {
-  const partyOptions = useMemo(
-    () => createCashAdvanceMultipleEntryPartyOptions(values.partyCode, values.partyName),
-    [values.partyCode, values.partyName],
-  );
-  const accountOptions = useMemo(() => createCashAdvanceMultipleEntrySelectOptions(CashAdvanceMultipleEntryAccountOptions), []);
+  const { accountOptions, isAccountLookupLoading, isPartyLookupLoading, partyOptions } = useCashAdvanceMultipleEntryDetailsLookups(values);
 
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid gap-5 xl:grid-cols-3">
         {/* Column 1: Name & Lookup Fields */}
         <div className="grid min-w-0 content-start gap-5">
-          <TransactionField label="Party Name" isRequired>
+          <TransactionField label="Employee Name" error={errors.partyName} isRequired>
             <AppLookupDropdown
               value={values.partyCode}
               options={partyOptions}
               readOnly={isReadonly}
-              placeholder="Select Party Name"
-              searchPlaceholder="Search Party Name"
-              addAction={!isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
+              placeholder="Select Employee Name"
+              searchPlaceholder="Search Employee Name"
+              emptyMessage={isPartyLookupLoading ? "Loading Employee options..." : "No Employee options found."}
+              addAction={!isReadonly ? { label: "Add Employee Name", onClick: onOpenPartyDrawer } : undefined}
               onChange={(code, name) => {
-                onUpdateField("partyCode", code);
-                onUpdateField("partyName", name);
+                const selectedParty = partyOptions.find((option) => option.value === code);
+                onUpdateField("partyCode", selectedParty?.partyCode ?? code);
+                onUpdateField("partyName", selectedParty?.partyName ?? name);
               }}
             />
           </TransactionField>
 
           <TransactionField label="Project Name">
             <AppLookupDropdown
-              value={values.projectRef}
+              value={values.projectName}
               options={projectOptions}
               readOnly={isReadonly}
               placeholder="Select Project Name"
@@ -77,22 +73,24 @@ export function CashAdvanceMultipleEntryDetailsFields({
               addAction={!isReadonly ? { label: "Add Project Name", onClick: onOpenProjectDrawer } : undefined}
               onChange={(projectName) => {
                 const project = projectOptions.find((option) => option.value === projectName);
-                onUpdateField("projectRef", projectName);
+                onUpdateField("projectName", projectName);
                 onUpdateField("projectCode", project?.label === projectName ? "" : (project?.label ?? ""));
               }}
             />
           </TransactionField>
 
-          <TransactionField label="Default Account Title" isRequired>
+          <TransactionField label="Default Account Title" error={errors.accountTitle} isRequired>
             <AppLookupDropdown
               value={values.accountCode}
               options={accountOptions}
               readOnly={isReadonly}
               placeholder="Select Default Account Title"
               searchPlaceholder="Search Default Account"
+              emptyMessage={isAccountLookupLoading ? "Loading Default Account options..." : "No Default Account options found."}
               onChange={(code, name) => {
-                onUpdateField("accountCode", code);
-                onUpdateField("accountTitle", name);
+                const selectedAccount = accountOptions.find((option) => option.value === code);
+                onUpdateField("accountCode", selectedAccount?.accountCode ?? code);
+                onUpdateField("accountTitle", selectedAccount?.accountTitle ?? name);
               }}
             />
           </TransactionField>
@@ -115,9 +113,10 @@ export function CashAdvanceMultipleEntryDetailsFields({
             value={values.partyCode}
             isReadonly
             isRequired
-            label="Party Code"
+            label="Employee Code"
+            error={errors.partyCode}
             onValueChange={(value) => onUpdateField("partyCode", value)}
-            placeholder="Party Code"
+            placeholder="Employee Code"
           />
 
           <TransactionTextField
@@ -133,6 +132,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
             isReadonly
             isRequired
             label="Default Account Code"
+            error={errors.accountCode}
             onValueChange={(value) => onUpdateField("accountCode", value)}
             placeholder="Default Account Code"
           />
@@ -178,6 +178,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
             isReadonly
             isRequired
             label="CAME No."
+            error={errors.transNo}
             onValueChange={(value) => onUpdateField("transNo", value)}
             placeholder="Auto Generated CAME Transaction Number"
           />
@@ -187,6 +188,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
             isReadonly={isReadonly}
             isRequired
             label="CAME Date"
+            error={errors.documentDate}
             type="date"
             onValueChange={(value) => onUpdateField("documentDate", value)}
           />

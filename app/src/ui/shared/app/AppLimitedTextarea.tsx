@@ -12,7 +12,7 @@ type AppLimitedTextareaProps = Omit<
   counterMode?: "remaining" | "used";
   maxLength?: number;
   showCounter?: boolean;
-  value: string;
+  value?: string | number | null;
 };
 
 export function AppLimitedTextarea({
@@ -23,15 +23,16 @@ export function AppLimitedTextarea({
   value,
   ...textareaProps
 }: AppLimitedTextareaProps) {
-  const remainingCharacters = Math.max(0, maxLength - value.length);
+  const textareaValue = value == null ? "" : String(value);
+  const remainingCharacters = Math.max(0, maxLength - textareaValue.length);
   const counterText =
     counterMode === "used"
-      ? `${value.length}/${maxLength} characters`
+      ? `${textareaValue.length}/${maxLength} characters`
       : `Characters remaining: ${remainingCharacters}`;
 
   return (
     <>
-      <textarea {...textareaProps} value={value} maxLength={maxLength} />
+      <textarea {...textareaProps} value={textareaValue} maxLength={maxLength} />
       {showCounter ? <span className={counterClassName}>{counterText}</span> : null}
     </>
   );

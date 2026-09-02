@@ -38,7 +38,10 @@ export const PettyCashReplenishmentColumnLabels = {
   partyName: "Party Name",
   accountCode: "Default Account Code",
   accountTitle: "Default Account Title",
+  currency: "Currency",
+  exchangeRate: "Exchange Rate",
   amount: "Total Amount",
+  disburseAmount: "Disburse Amount",
   remarks: "Remarks",
   createdBy: "Created By",
   createdAt: "Date Created",
@@ -54,7 +57,10 @@ export const PettyCashReplenishmentOverviewColumnWidths: Record<keyof typeof Pet
   partyName: TransactionOverviewColumnWidths.partyName,
   accountCode: TransactionOverviewColumnWidths.accountCode,
   accountTitle: TransactionOverviewColumnWidths.accountTitle,
+  currency: TransactionOverviewColumnWidths.currency,
+  exchangeRate: TransactionOverviewColumnWidths.exchangeRate,
   amount: TransactionOverviewColumnWidths.amount,
+  disburseAmount: TransactionOverviewColumnWidths.amount,
   remarks: TransactionOverviewColumnWidths.remarks,
   createdBy: TransactionOverviewColumnWidths.auditUser,
   createdAt: TransactionOverviewColumnWidths.auditDate,
@@ -68,6 +74,7 @@ export const PettyCashReplenishmentDefaultVisibleColumnIds = [
   "documentDate",
   "partyName",
   "amount",
+  "disburseAmount",
   "status",
   "actions",
 ] as const;
@@ -244,7 +251,6 @@ export const PettyCashReplenishmentEntryEwtCodeOptions: AppAdvancedDropdownOptio
 export function canEditPettyCashReplenishment(status: PettyCashReplenishmentStatus) {
   return (
     status === PettyCashReplenishmentStatuses.draft ||
-    status === PettyCashReplenishmentStatuses.forApproval ||
     status === PettyCashReplenishmentStatuses.disapproved
   );
 }

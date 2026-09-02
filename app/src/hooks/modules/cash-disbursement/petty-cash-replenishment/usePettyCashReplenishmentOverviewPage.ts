@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -21,9 +22,12 @@ import {
   PettyCashReplenishmentStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentConstants";
 import {
-  getPettyCashReplenishmentRecords,
-  savePettyCashReplenishmentRecords,
-} from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentService";
+  CashDisbursementAllStatusFilter,
+  CashDisbursementAllTimeSummary,
+  CashDisbursementTotalEntriesLabel,
+  createCashDisbursementListQueryKey,
+  createCashDisbursementModuleQueryKey,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type {
   PettyCashReplenishmentRecord,
   PettyCashReplenishmentStatus,
@@ -33,36 +37,81 @@ import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateR
 import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
-import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
+import { parseAmount } from "@/app/src/utils/number.util";
+import {
+  deletePettyCashReplenishmentApi,
+  fetchPettyCashReplenishmentList,
+  updatePettyCashReplenishmentStatusApi,
+} from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentApi";
 
 const columnHelper = createColumnHelper<PettyCashReplenishmentRecord>();
+const PettyCashReplenishmentQueryKey = "petty-cash-replenishment";
 
 export function usePettyCashReplenishmentOverviewPage() {
-  const [records, setRecords] = useState(getPettyCashReplenishmentRecords);
+  const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [statusFilter, setStatusFilter] = useState<string>(CashDisbursementAllStatusFilter);
   const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
   const [amountRange, setAmountRange] = useState<AmountRangeValue>({ from: "", to: "" });
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => PettyCashReplenishmentDefaultColumnVisibility);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
-  const filteredRecords = useMemo(() => {
-    const needle = normalizeLowercaseWhitespace(query);
-    return records.filter((record) => {
-      const searchableText = normalizeLowercaseWhitespace(
-        [record.transactionNo, record.partyCode, record.partyName, record.accountCode, record.accountTitle, record.remarks].join(" "),
-      );
-      return (
-        (!needle || searchableText.includes(needle)) &&
-        (statusFilter === "All" || record.status === statusFilter) &&
-        (!dateRange.from || record.documentDate >= dateRange.from) &&
-        (!dateRange.to || record.documentDate <= dateRange.to) &&
-        (!amountRange.from || record.amount >= Number(amountRange.from)) &&
-        (!amountRange.to || record.amount <= Number(amountRange.to))
-      );
-    });
-  }, [amountRange, dateRange, query, records, statusFilter]);
+
+  const amountFrom = parseAmount(amountRange.from);
+  const amountTo = parseAmount(amountRange.to);
+
+  const listQuery = useQuery({
+    queryKey: createCashDisbursementListQueryKey(PettyCashReplenishmentQueryKey, {
+      query,
+      statusFilter,
+      startDate: dateRange.from || undefined,
+      endDate: dateRange.to || undefined,
+      amountFrom: amountFrom !== null ? amountFrom : undefined,
+      amountTo: amountTo !== null ? amountTo : undefined,
+    }),
+    queryFn: async () => {
+      const res = await fetchPettyCashReplenishmentList({
+        search: query || undefined,
+        status: statusFilter !== CashDisbursementAllStatusFilter ? statusFilter : undefined,
+        startDate: dateRange.from || undefined,
+        endDate: dateRange.to || undefined,
+        amountFrom: amountFrom !== null ? amountFrom : undefined,
+        amountTo: amountTo !== null ? amountTo : undefined,
+      });
+      setLastSyncedAt(Date.now());
+      return res;
+    },
+  });
+
+  const records = useMemo(() => listQuery.data?.data ?? [], [listQuery.data?.data]);
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: PettyCashReplenishmentStatus }) => {
+      return await updatePettyCashReplenishmentStatusApi(id, status);
+    },
+    onSuccess: (_, { status }) => {
+      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashReplenishmentQueryKey) });
+      toast.success(`Petty Cash Replenishment marked as ${status}.`);
+    },
+    onError: () => {
+      toast.error("Could not update the Petty Cash Replenishment status.");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await deletePettyCashReplenishmentApi(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashReplenishmentQueryKey) });
+      toast.success("Petty Cash Replenishment deleted successfully.");
+    },
+    onError: () => {
+      toast.error("Could not delete Petty Cash Replenishment.");
+    },
+  });
+
   const columns = useMemo(
     () => [
       columnHelper.accessor("transactionNo", {
@@ -99,6 +148,11 @@ export function usePettyCashReplenishmentOverviewPage() {
         header: PettyCashReplenishmentColumnLabels.amount,
         size: PettyCashReplenishmentOverviewColumnWidths.amount,
         meta: { label: PettyCashReplenishmentColumnLabels.amount },
+      }),
+      columnHelper.accessor("disburseAmount", {
+        header: PettyCashReplenishmentColumnLabels.disburseAmount,
+        size: PettyCashReplenishmentOverviewColumnWidths.disburseAmount,
+        meta: { label: PettyCashReplenishmentColumnLabels.disburseAmount },
       }),
       columnHelper.accessor("remarks", {
         header: PettyCashReplenishmentColumnLabels.remarks,
@@ -139,67 +193,82 @@ export function usePettyCashReplenishmentOverviewPage() {
     ],
     [],
   );
-  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns its state handlers.
+
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns the table state lifecycle.
   const table = useReactTable({
+    data: records,
     columns,
-    data: filteredRecords,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     initialState: { columnVisibility: PettyCashReplenishmentDefaultColumnVisibility },
+    state: { columnVisibility, pagination, sorting },
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
-    state: { columnVisibility, pagination, sorting },
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   });
-  const statisticCards = useMemo<ModuleStatisticCardItem[]>(
-    () => [
+
+  const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => {
+    const total = records.length;
+    return [
       {
+        label: CashDisbursementTotalEntriesLabel,
+        value: total,
         icon: ReceiptText,
-        label: "Total Entries",
-        value: records.length,
-        summary: "All time",
         tone: "violet",
-        onClick: () => setStatusFilter("All"),
-        isActive: statusFilter === "All",
+        summary: CashDisbursementAllTimeSummary,
+        isActive: statusFilter === CashDisbursementAllStatusFilter,
+        onClick: () => setStatusFilter(CashDisbursementAllStatusFilter),
       },
       ...PettyCashReplenishmentRecordStatuses.map((status) => {
-        const count = records.filter((record) => record.status === status).length;
+        const count = records.filter((item) => item.status === status).length;
+        const tone =
+          status === PettyCashReplenishmentStatuses.posted
+            ? ("emerald" as const)
+            : status === PettyCashReplenishmentStatuses.forApproval
+              ? ("amber" as const)
+              : status === PettyCashReplenishmentStatuses.draft
+                ? ("blue" as const)
+                : status === PettyCashReplenishmentStatuses.disapproved
+                  ? ("red" as const)
+                  : ("slate" as const);
+
         return {
-          icon: getModuleStatusMetricIcon(status),
-          iconClassName: getModuleStatusMetricIconClassName(status),
           label: status,
           value: count,
-          summary: formatPartOfTotalPercentage(count, records.length),
-          tone: getMetricTone(status),
-          onClick: () => setStatusFilter(status),
+          icon: getModuleStatusMetricIcon(status),
+          iconClassName: getModuleStatusMetricIconClassName(status),
+          tone,
+          summary: formatPartOfTotalPercentage(count, total),
           isActive: statusFilter === status,
+          onClick: () => setStatusFilter(status),
         };
       }),
-    ],
-    [records, statusFilter],
-  );
+    ];
+  }, [records, statusFilter]);
 
-  function updateStatus(record: PettyCashReplenishmentRecord, status: PettyCashReplenishmentStatus) {
-    const next = records.map((item) =>
-      item.id === record.id ? { ...item, status, updatedAt: new Date().toISOString(), updatedBy: "Current User" } : item,
-    );
-    setRecords(next);
-    savePettyCashReplenishmentRecords(next);
-    setLastSyncedAt(Date.now());
-    toast.success(`Petty Cash Replenishment Marked as ${status}.`);
-  }
+  const onUpdateStatus = (record: PettyCashReplenishmentRecord, status: PettyCashReplenishmentStatus) => {
+    updateStatusMutation.mutate({ id: record.id, status });
+  };
 
-  function refreshRecords() {
-    setRecords(getPettyCashReplenishmentRecords());
-    setLastSyncedAt(Date.now());
-  }
+  const onDeleteRecord = (record: PettyCashReplenishmentRecord) => {
+    deleteMutation.mutate(record.id);
+  };
+
+  const refreshRecords = () => {
+    listQuery.refetch();
+  };
 
   return {
     amountRange,
     dateRange,
-    isLoading: false,
+    filteredRecords: records,
+    isLoading: listQuery.isLoading,
+    isUpdatingStatus: updateStatusMutation.isPending || deleteMutation.isPending,
     lastSyncedAt,
+    onDeleteRecord,
+    onUpdateStatus,
+    updateStatus: onUpdateStatus,
     query,
     refreshRecords,
     setAmountRange,
@@ -207,16 +276,8 @@ export function usePettyCashReplenishmentOverviewPage() {
     setQuery,
     setStatusFilter,
     statisticCards,
+    statistics: statisticCards,
     statusFilter,
     table,
-    updateStatus,
   };
-}
-
-function getMetricTone(status: PettyCashReplenishmentStatus) {
-  if (status === PettyCashReplenishmentStatuses.posted) return "emerald" as const;
-  if (status === PettyCashReplenishmentStatuses.forApproval) return "amber" as const;
-  if (status === PettyCashReplenishmentStatuses.disapproved) return "red" as const;
-  if (status === PettyCashReplenishmentStatuses.cancelled) return "slate" as const;
-  return "blue" as const;
 }

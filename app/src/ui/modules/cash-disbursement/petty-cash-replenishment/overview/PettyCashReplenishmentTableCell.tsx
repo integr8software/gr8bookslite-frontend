@@ -13,7 +13,9 @@ export function renderPettyCashReplenishmentTableCell(
   if (columnId === "transactionNo") {
     return <span className={joinClasses("font-semibold", moduleAccentClassNames.iconText)}>{record.transactionNo}</span>;
   }
-  if (columnId === "amount") return <span className="font-semibold tabular-nums">{formatCurrency(record.amount)}</span>;
+  if (columnId === "amount" || columnId === "disburseAmount") {
+    return <span className="font-semibold tabular-nums">{formatCurrency(record[columnId])}</span>;
+  }
   if (columnId === "documentDate" || columnId === "createdAt" || columnId === "updatedAt") {
     return formatDate(record[columnId], { emptyValue: "" });
   }

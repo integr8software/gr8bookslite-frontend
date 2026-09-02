@@ -15,14 +15,12 @@ import type { CashVoucherLineEntry } from "@/app/src/types/modules/cash-disburse
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
 import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
 import { ModuleDataEntryReadonlyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryReadonlyCell";
 import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
-import {
-  DefaultAccountingEntryEwtOptions,
-  DefaultAccountingEntryVatOptions,
-} from "@/app/src/data/shared/tax/TaxData";
+import { DefaultAccountingEntryEwtOptions, DefaultAccountingEntryVatOptions } from "@/app/src/data/shared/tax/TaxData";
 import {
   getEwtPercentFromCode,
   getVatPercentFromRate,
@@ -30,6 +28,10 @@ import {
   normalizeVatDropdownValue,
 } from "@/app/src/data/shared/tax/TaxData";
 import { CashVoucherAccountingDropdownClassName } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
+import {
+  CashDisbursementTaxTypeEwt,
+  CashDisbursementTaxTypeVat,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { formatAmount } from "@/app/src/utils/currency.util";
 
 export function createCashVoucherAccountingEntryColumns({
@@ -43,6 +45,7 @@ export function createCashVoucherAccountingEntryColumns({
   onUpdateEntry,
   onUpdateEntryFields,
   partyOptions,
+  taxCodes,
   vatOptions,
 }: CashVoucherAccountingEntryColumnsParams): Record<CashVoucherEntryColumnId, ModuleDataEntryColumn<CashVoucherLineEntry>> {
   return {
@@ -86,10 +89,7 @@ export function createCashVoucherAccountingEntryColumns({
       width: columnWidths.debit,
       widthClassName: "w-[11rem]",
       renderCell: (entry) => (
-        <ModuleDataEntryReadonlyCell
-          align="right"
-          value={Number(entry.debit) !== 0 ? formatAmount(entry.debit) : "0.00"}
-        />
+        <ModuleDataEntryReadonlyCell align="right" value={Number(entry.debit) !== 0 ? formatAmount(entry.debit) : "0.00"} />
       ),
     },
     credit: {
@@ -98,10 +98,7 @@ export function createCashVoucherAccountingEntryColumns({
       width: columnWidths.credit,
       widthClassName: "w-[11rem]",
       renderCell: (entry) => (
-        <ModuleDataEntryReadonlyCell
-          align="right"
-          value={Number(entry.credit) !== 0 ? formatAmount(entry.credit) : "0.00"}
-        />
+        <ModuleDataEntryReadonlyCell align="right" value={Number(entry.credit) !== 0 ? formatAmount(entry.credit) : "0.00"} />
       ),
     },
     checkNo: {
@@ -187,15 +184,9 @@ export function createCashVoucherAccountingEntryColumns({
       renderCell: (entry) => {
         const partyName = (entry.partyName ?? "").trim();
         const selectedOption = partyOptions.find(
-          (option) =>
-            option.name.toLowerCase() === partyName.toLowerCase() ||
-            (entry.partyCode && option.value === entry.partyCode),
+          (option) => option.name.toLowerCase() === partyName.toLowerCase() || (entry.partyCode && option.value === entry.partyCode),
         );
-        const dropdownValue = selectedOption
-          ? selectedOption.value
-          : partyName
-            ? `${AccountingPartyFallbackValuePrefix}${partyName}`
-            : "";
+        const dropdownValue = selectedOption ? selectedOption.value : partyName ? `${AccountingPartyFallbackValuePrefix}${partyName}` : "";
 
         return (
           <AppAdvancedDropdown
@@ -216,12 +207,35 @@ export function createCashVoucherAccountingEntryColumns({
             value={dropdownValue}
             onChange={(value) => {
               const selectedParty = partyOptions.find((option) => option.value === value);
+              const vatCode =
+                selectedParty?.vatCode ||
+                findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseInputVatTaxSourceKey, CashDisbursementTaxTypeVat);
+              const ewtCode =
+                selectedParty?.ewtCode ||
+                findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseEwtTaxSourceKey, CashDisbursementTaxTypeEwt);
+              const nextTaxRate = vatCode ? getVatRateFromCode(vatCode, taxCodes) : "0%";
+              const vatPercent = vatCode ? getVatPercentFromRate(getVatRateFromCode(vatCode, taxCodes)) : 0;
+              const ewtPercent = ewtCode ? getEwtPercentFromCode(ewtCode, taxCodes) : 0;
+              const taxDetails = syncTaxDetailsAmount(
+                {
+                  ...entry.taxDetails,
+                  vatCode,
+                  vatType: vatCode,
+                  vatPercent,
+                  ewtCode,
+                  ewtPercent,
+                },
+                parseMoneyNumberInput(entry.taxDetails?.grossAmount ?? entry.debit ?? entry.credit),
+                nextTaxRate,
+              );
 
               onUpdateEntryFields(entry.id, {
-                partyCode: selectedParty?.value.startsWith(AccountingPartyFallbackValuePrefix)
-                  ? ""
-                  : (selectedParty?.label ?? ""),
+                partyCode: selectedParty?.value.startsWith(AccountingPartyFallbackValuePrefix) ? "" : (selectedParty?.label ?? ""),
                 partyName: selectedParty?.name ?? "",
+                ewtCode,
+                taxDetails,
+                taxRate: nextTaxRate,
+                vatType: vatCode,
               });
             }}
           />
@@ -262,13 +276,14 @@ export function createCashVoucherAccountingEntryColumns({
       header: columnLabels.vatType,
       id: "vatType",
       width: columnWidths.vatType,
-      widthClassName: "w-[12rem]",
+      widthClassName: "w-[18rem]",
       renderCell: (entry) => {
         const availableOptions = vatOptions && vatOptions.length > 0 ? vatOptions : DefaultAccountingEntryVatOptions;
         return (
           <AppAdvancedDropdown
             className={CashVoucherAccountingDropdownClassName}
             isClearable
+            menuMinWidth={360}
             options={availableOptions}
             placeholder="Select VAT Type"
             searchPlaceholder="Search VAT Type"
@@ -283,16 +298,17 @@ export function createCashVoucherAccountingEntryColumns({
       header: columnLabels.ewtCode,
       id: "ewtCode",
       width: columnWidths.ewtCode,
-      widthClassName: "w-[10rem]",
+      widthClassName: "w-[12rem]",
       renderCell: (entry) => {
         const availableOptions = ewtOptions && ewtOptions.length > 0 ? ewtOptions : DefaultAccountingEntryEwtOptions;
         return (
           <AppAdvancedDropdown
             className={CashVoucherAccountingDropdownClassName}
             isClearable
+            optionViewToggle
             options={availableOptions}
             placeholder="Select EWT Code"
-            searchPlaceholder="Search EWT Code"
+            searchPlaceholder="Search tax name, code, rate, or description"
             readOnly={isReadonly}
             value={isGeneratedEwtEntry(entry) ? (entry.ewtCode ?? entry.taxDetails?.ewtCode ?? "") : ""}
             onChange={(value) => onUpdateEntry(entry.id, "ewtCode", String(value ?? ""))}
@@ -301,6 +317,24 @@ export function createCashVoucherAccountingEntryColumns({
       },
     },
   };
+}
+
+type CashVoucherPartyTaxType = typeof CashDisbursementTaxTypeEwt | typeof CashDisbursementTaxTypeVat;
+
+function findPartyTaxCode(taxCodes: AlphanumericTaxCode[], sourceKey: string | undefined, taxType: CashVoucherPartyTaxType) {
+  if (!sourceKey) {
+    return "";
+  }
+
+  const taxCode = taxCodes.find(
+    (tax) =>
+      tax.sourceKey === sourceKey &&
+      (taxType === CashDisbursementTaxTypeVat
+        ? tax.taxType === "INPUT VAT" || tax.taxType === CashDisbursementTaxTypeVat
+        : tax.taxType === CashDisbursementTaxTypeEwt || tax.taxType === "CWT"),
+  );
+
+  return taxCode ? (taxType === CashDisbursementTaxTypeEwt ? taxCode.officialAtcCode || taxCode.taxCode : taxCode.taxCode) : "";
 }
 
 export function createCashVoucherExpenseEntryColumns({
@@ -346,9 +380,7 @@ export function createCashVoucherExpenseEntryColumns({
       widthClassName: "w-[18rem]",
       renderCell: (entry) => {
         const isInvalid = Boolean(
-          lineErrors[entry.id]?.expenseType ||
-          lineErrors[entry.id]?.accountName ||
-          lineErrors[entry.id]?.accountCode,
+          lineErrors[entry.id]?.expenseType || lineErrors[entry.id]?.accountName || lineErrors[entry.id]?.accountCode,
         );
 
         return (
@@ -387,11 +419,7 @@ export function createCashVoucherExpenseEntryColumns({
       width: expenseColumnWidths.amount,
       widthClassName: "w-[10rem]",
       renderCell: (entry, _rowIndex, context) => {
-        const isInvalid = Boolean(
-          lineErrors[entry.id]?.amount ||
-          lineErrors[entry.id]?.debit ||
-          lineErrors[entry.id]?.credit,
-        );
+        const isInvalid = Boolean(lineErrors[entry.id]?.amount || lineErrors[entry.id]?.debit || lineErrors[entry.id]?.credit);
 
         return (
           <ModuleDataEntryMoneyCell
@@ -442,7 +470,7 @@ export function createCashVoucherExpenseEntryColumns({
       header: expenseColumnLabels.vatCode,
       id: "vatCode",
       width: expenseColumnWidths.vatCode,
-      widthClassName: "w-[12rem]",
+      widthClassName: "w-[18rem]",
       renderCell: (entry) => {
         const isInvalid = Boolean(lineErrors[entry.id]?.vatCode || lineErrors[entry.id]?.vatType);
 
@@ -453,7 +481,7 @@ export function createCashVoucherExpenseEntryColumns({
             readOnly={isReadonly}
             isClearable
             options={vatOptions}
-            menuMinWidth={320}
+            menuMinWidth={360}
             placeholder="Select VAT Code"
             searchPlaceholder="Search VAT Code"
             className={CashVoucherAccountingDropdownClassName}
@@ -486,9 +514,7 @@ export function createCashVoucherExpenseEntryColumns({
       id: "vatPercent",
       width: expenseColumnWidths.vatPercent,
       widthClassName: "w-[8rem]",
-      renderCell: (entry) => (
-        <ModuleDataEntryReadonlyCell align="right" value={`${formatAmount(entry.taxDetails.vatPercent)}%`} />
-      ),
+      renderCell: (entry) => <ModuleDataEntryReadonlyCell align="right" value={`${formatAmount(entry.taxDetails.vatPercent)}%`} />,
     },
     vatAmount: {
       header: expenseColumnLabels.vatAmount,
@@ -543,9 +569,7 @@ export function createCashVoucherExpenseEntryColumns({
       id: "ewtPercent",
       width: expenseColumnWidths.ewtPercent,
       widthClassName: "w-[8rem]",
-      renderCell: (entry) => (
-        <ModuleDataEntryReadonlyCell align="right" value={`${formatAmount(entry.taxDetails.ewtPercent)}%`} />
-      ),
+      renderCell: (entry) => <ModuleDataEntryReadonlyCell align="right" value={`${formatAmount(entry.taxDetails.ewtPercent)}%`} />,
     },
     ewtAmount: {
       header: expenseColumnLabels.ewtAmount,

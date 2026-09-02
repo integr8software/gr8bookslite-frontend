@@ -15,6 +15,7 @@ import type { DisbursementLineEntry } from "@/app/src/types/modules/cash-disburs
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
 import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
 import { ModuleDataEntryReadonlyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryReadonlyCell";
@@ -22,14 +23,16 @@ import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-da
 import {
   DefaultAccountingEntryEwtOptions,
   DefaultAccountingEntryVatOptions,
-} from "@/app/src/data/shared/tax/TaxData";
-import {
   getEwtPercentFromCode,
   getVatPercentFromRate,
   getVatRateFromCode,
   normalizeVatDropdownValue,
-} from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
+} from "@/app/src/data/shared/tax/TaxData";
 import { DisbursementVoucherAccountingDropdownClassName } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
+import {
+  CashDisbursementTaxTypeEwt,
+  CashDisbursementTaxTypeVat,
+} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { formatAmount } from "@/app/src/utils/currency.util";
 
 export function createDisbursementAccountingEntryColumns({
@@ -43,6 +46,7 @@ export function createDisbursementAccountingEntryColumns({
   onUpdateEntry,
   onUpdateEntryFields,
   partyOptions,
+  taxCodes,
   vatOptions,
 }: DisbursementAccountingEntryColumnsParams): Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>> {
   return {
@@ -216,12 +220,37 @@ export function createDisbursementAccountingEntryColumns({
             value={dropdownValue}
             onChange={(value) => {
               const selectedParty = partyOptions.find((option) => option.value === value);
+              const vatCode =
+                selectedParty?.vatCode ||
+                findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseInputVatTaxSourceKey, CashDisbursementTaxTypeVat);
+              const ewtCode =
+                selectedParty?.ewtCode ||
+                findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseEwtTaxSourceKey, CashDisbursementTaxTypeEwt);
+              const nextTaxRate = vatCode ? getVatRateFromCode(vatCode, taxCodes) : "0%";
+              const vatPercent = vatCode ? getVatPercentFromRate(getVatRateFromCode(vatCode, taxCodes)) : 0;
+              const ewtPercent = ewtCode ? getEwtPercentFromCode(ewtCode, taxCodes) : 0;
+              const taxDetails = syncTaxDetailsAmount(
+                {
+                  ...entry.taxDetails,
+                  vatCode,
+                  vatType: vatCode,
+                  vatPercent,
+                  ewtCode,
+                  ewtPercent,
+                },
+                parseMoneyNumberInput(entry.taxDetails?.grossAmount ?? entry.debit ?? entry.credit),
+                nextTaxRate,
+              );
 
               onUpdateEntryFields(entry.id, {
                 partyCode: selectedParty?.value.startsWith(AccountingPartyFallbackValuePrefix)
                   ? ""
                   : (selectedParty?.label ?? ""),
                 partyName: selectedParty?.name ?? "",
+                ewtCode,
+                taxDetails,
+                taxRate: nextTaxRate,
+                vatType: vatCode,
               });
             }}
           />
@@ -301,6 +330,24 @@ export function createDisbursementAccountingEntryColumns({
       },
     },
   };
+}
+
+type DisbursementVoucherPartyTaxType = typeof CashDisbursementTaxTypeEwt | typeof CashDisbursementTaxTypeVat;
+
+function findPartyTaxCode(taxCodes: AlphanumericTaxCode[], sourceKey: string | undefined, taxType: DisbursementVoucherPartyTaxType) {
+  if (!sourceKey) {
+    return "";
+  }
+
+  const taxCode = taxCodes.find(
+    (tax) =>
+      tax.sourceKey === sourceKey &&
+      (taxType === CashDisbursementTaxTypeVat
+        ? tax.taxType === "INPUT VAT" || tax.taxType === CashDisbursementTaxTypeVat
+        : tax.taxType === CashDisbursementTaxTypeEwt || tax.taxType === "CWT"),
+  );
+
+  return taxCode ? (taxType === CashDisbursementTaxTypeEwt ? taxCode.officialAtcCode || taxCode.taxCode : taxCode.taxCode) : "";
 }
 
 export function createDisbursementExpenseEntryColumns({

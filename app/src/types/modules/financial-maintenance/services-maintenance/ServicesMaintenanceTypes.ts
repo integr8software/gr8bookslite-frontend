@@ -24,6 +24,10 @@ export type ServicesMaintenance = {
   updatedAt?: string;
 };
 
+export type ServicesMaintenanceOption = Pick<ServicesMaintenance, "id" | "serviceName" | "serviceType" | "status"> & {
+  name: string;
+};
+
 export type ServicesMaintenanceFormValues = {
   serviceName: string;
   serviceType: ServicesMaintenanceServiceType;

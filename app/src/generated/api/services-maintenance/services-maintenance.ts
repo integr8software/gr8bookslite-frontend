@@ -33,6 +33,7 @@ import type {
   ServiceMaintenanceNextAccountCodeResponseDto,
   ServiceMaintenanceOptionsResponseDto,
   ServicesMaintenanceControllerFindAllV1Params,
+  ServicesMaintenanceControllerFindOptionsByTypeV1Params,
   ServicesMaintenanceControllerFindOptionsV1Params,
   UpdateServiceMaintenanceDto,
   UpdateServiceMaintenanceStatusDto
@@ -298,6 +299,106 @@ export function useServicesMaintenanceControllerFindOptionsV1<TData = Awaited<Re
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getServicesMaintenanceControllerFindOptionsV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Get service options by type
+ */
+export const servicesMaintenanceControllerFindOptionsByTypeV1 = (
+    type: string,
+    params?: ServicesMaintenanceControllerFindOptionsByTypeV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<ServiceMaintenanceOptionsResponseDto>(
+      {url: `/api/v1/maintenance/financial-management/services-maintenance/options/${type}`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getServicesMaintenanceControllerFindOptionsByTypeV1QueryKey = (type: string,
+    params?: ServicesMaintenanceControllerFindOptionsByTypeV1Params,) => {
+    return [
+    `/api/v1/maintenance/financial-management/services-maintenance/options/${type}`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getServicesMaintenanceControllerFindOptionsByTypeV1QueryOptions = <TData = Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>, TError = unknown>(type: string,
+    params?: ServicesMaintenanceControllerFindOptionsByTypeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getServicesMaintenanceControllerFindOptionsByTypeV1QueryKey(type,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>> = ({ signal }) => servicesMaintenanceControllerFindOptionsByTypeV1(type,params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: type !== null && type !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ServicesMaintenanceControllerFindOptionsByTypeV1QueryResult = NonNullable<Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>>
+export type ServicesMaintenanceControllerFindOptionsByTypeV1QueryError = unknown
+
+
+export function useServicesMaintenanceControllerFindOptionsByTypeV1<TData = Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>, TError = unknown>(
+ type: string,
+    params: undefined |  ServicesMaintenanceControllerFindOptionsByTypeV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>,
+          TError,
+          Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useServicesMaintenanceControllerFindOptionsByTypeV1<TData = Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>, TError = unknown>(
+ type: string,
+    params?: ServicesMaintenanceControllerFindOptionsByTypeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>,
+          TError,
+          Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useServicesMaintenanceControllerFindOptionsByTypeV1<TData = Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>, TError = unknown>(
+ type: string,
+    params?: ServicesMaintenanceControllerFindOptionsByTypeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get service options by type
+ */
+
+export function useServicesMaintenanceControllerFindOptionsByTypeV1<TData = Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>, TError = unknown>(
+ type: string,
+    params?: ServicesMaintenanceControllerFindOptionsByTypeV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicesMaintenanceControllerFindOptionsByTypeV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getServicesMaintenanceControllerFindOptionsByTypeV1QueryOptions(type,params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

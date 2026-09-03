@@ -73,7 +73,7 @@ export function usePurchaseRequestFormPage() {
   const [showPreview, setShowPreview] = useState(searchParams.get("preview") === "1");
   const serviceOptionsQuery = useQuery({
     queryKey: ServicesMaintenanceQueryKeys.options(companyId),
-    queryFn: fetchServicesMaintenanceOptions,
+    queryFn: () => fetchServicesMaintenanceOptions("Purchases"),
     enabled: Boolean(companyId),
     retry: false,
   });

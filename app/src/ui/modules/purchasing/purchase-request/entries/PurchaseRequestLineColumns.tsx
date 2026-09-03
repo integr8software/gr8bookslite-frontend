@@ -40,7 +40,9 @@ export function createPurchaseRequestLineColumns(
 	itemDescriptionOptions: ItemRecord[] = [],
 ): ModuleDataEntryColumn<PurchaseRequestItem>[] {
 	const isServices = purchaseType?.toLowerCase() === "services";
-	const isGoods = purchaseType?.toLowerCase() === "goods";
+	const usesItemMaintenance = ["goods", "assets"].includes(
+		purchaseType?.toLowerCase() ?? "",
+	);
 	const activeConfigs = isServices
 		? PurchaseRequestLineColumnConfigs.filter(
 				(column) => !["itemCode", "barcode", "uom"].includes(column.id),
@@ -48,7 +50,7 @@ export function createPurchaseRequestLineColumns(
 		: PurchaseRequestLineColumnConfigs;
 
 	return activeConfigs.map((column) => ({
-		header: isGoods && column.id === "uom" ? "Box" : column.header,
+		header: column.header,
 		id: column.id,
 		width: column.width,
 		widthClassName: column.widthClassName,
@@ -57,7 +59,7 @@ export function createPurchaseRequestLineColumns(
 				column={column}
 				fieldId={context.fieldId}
 				fieldName={context.fieldName}
-				isGoods={isGoods}
+				usesItemMaintenance={usesItemMaintenance}
 				isServices={isServices}
 				isReadonly={isReadonly}
 				itemDescriptionOptions={itemDescriptionOptions}
@@ -73,7 +75,7 @@ function PurchaseRequestLineCell({
 	column,
 	fieldId,
 	fieldName,
-	isGoods,
+	usesItemMaintenance,
 	isServices,
 	isReadonly,
 	itemDescriptionOptions,
@@ -84,7 +86,7 @@ function PurchaseRequestLineCell({
 	column: PurchaseRequestLineColumnConfig;
 	fieldId: string;
 	fieldName: string;
-	isGoods: boolean;
+	usesItemMaintenance: boolean;
 	isServices: boolean;
 	isReadonly: boolean;
 	itemDescriptionOptions: ItemRecord[];
@@ -94,7 +96,7 @@ function PurchaseRequestLineCell({
 }) {
 	const value = String(row[column.id] ?? "");
 
-	if (isGoods && column.id === "description") {
+	if (usesItemMaintenance && column.id === "description") {
 		return (
 			<AppAdvancedDropdown
 				id={fieldId}
@@ -125,13 +127,19 @@ function PurchaseRequestLineCell({
 				placeholder=""
 				className={EntryDropdownClassName}
 				onChange={(nextValue) =>
-					onUpdateEntry(row.id, { [column.id]: String(nextValue) })
+					onUpdateEntry(
+						row.id,
+						getPurchaseRequestServiceUpdates(
+							serviceDescriptionOptions,
+							String(nextValue),
+						),
+					)
 				}
 			/>
 		);
 	}
 
-	if (isGoods && ["itemCode", "barcode", "uom"].includes(column.id)) {
+	if (usesItemMaintenance && ["itemCode", "barcode", "uom"].includes(column.id)) {
 		return (
 			<input
 				id={fieldId}
@@ -265,8 +273,27 @@ function getPurchaseRequestItemAutoFillUpdates(
 	return {
 		barcode: selectedItem.barcode,
 		description: selectedItem.name,
+		itemId: selectedItem.id,
 		itemCode: selectedItem.code,
+		serviceMaintenanceId: "",
 		uom: selectedItem.uom,
+	};
+}
+
+function getPurchaseRequestServiceUpdates(
+	serviceOptions: ServiceMaintenanceOptionResponseDto[],
+	description: string,
+): Partial<PurchaseRequestItem> {
+	const selectedService = serviceOptions.find((service) =>
+		(service.serviceName || service.name)
+			.trim()
+			.toLowerCase() === description.trim().toLowerCase(),
+	);
+
+	return {
+		description,
+		itemId: "",
+		serviceMaintenanceId: selectedService?.id ?? "",
 	};
 }
 

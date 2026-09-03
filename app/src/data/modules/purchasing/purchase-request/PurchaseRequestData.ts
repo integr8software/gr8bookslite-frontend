@@ -62,6 +62,8 @@ export const purchaseRequestSeedRecords: PurchaseRequestRecord[] = [
     items: [
       {
         id: "pr-000292-item-1",
+        itemId: "",
+        serviceMaintenanceId: "",
         itemCode: "IM0020",
         barcode: "",
         description: "Topcoat Matte",
@@ -78,6 +80,8 @@ export const purchaseRequestSeedRecords: PurchaseRequestRecord[] = [
 
 export const emptyPurchaseRequestItem: PurchaseRequestItem = {
   id: "draft-item",
+  itemId: "",
+  serviceMaintenanceId: "",
   itemCode: "",
   barcode: "",
   description: "",

@@ -34,6 +34,10 @@ import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleAct
 import { fetchServicesMaintenanceOptions } from "@/app/src/services/modules/financial-maintenance/services-maintenance/ServicesMaintenanceApi";
 import { ServicesMaintenanceQueryKeys } from "@/app/src/services/modules/financial-maintenance/services-maintenance/ServicesMaintenanceQueryKeys";
 import { recordPurchaseRequestAuditLog } from "@/app/src/services/modules/purchasing/purchase-request/PurchaseRequestAuditLog";
+import {
+  createPurchaseRequest,
+  updatePurchaseRequest,
+} from "@/app/src/services/modules/purchasing/purchase-request/PurchaseRequestApi";
 
 export function usePurchaseRequestFormPage() {
   const router = useRouter();
@@ -109,9 +113,29 @@ export function usePurchaseRequestFormPage() {
       field === "vatRegTin" && typeof value === "string" ? FormatTinNumber(value) : value;
 
     setValues((current) => {
+      if (field === "purchaseType" && nextValue !== current.purchaseType) {
+        return {
+          ...current,
+          purchaseType: String(nextValue),
+          items: current.items.map((item) => ({
+            ...item,
+            itemId: "",
+            serviceMaintenanceId: "",
+            itemCode: "",
+            barcode: "",
+            description: "",
+            uom: "",
+          })),
+        };
+      }
+
       return { ...current, [field]: nextValue };
     });
-    setErrors((current) => ({ ...current, [field]: undefined }));
+    setErrors((current) => ({
+      ...current,
+      [field]: undefined,
+      ...(field === "purchaseType" ? { items: undefined } : {}),
+    }));
   }
 
   function updateItem(itemId: string, field: keyof PurchaseRequestItem, value: string | number) {
@@ -210,7 +234,7 @@ export function usePurchaseRequestFormPage() {
     toast.success("Source transaction copied.");
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (isReadonly || isSubmittingRef.current) {
       return;
     }
@@ -237,7 +261,14 @@ export function usePurchaseRequestFormPage() {
     }
 
     try {
-      const nextRequest = createPurchaseRequestRecord(values, params.recordId);
+      const response =
+        mode === "edit" && params.recordId
+          ? await updatePurchaseRequest(params.recordId, values, activeBranchId)
+          : await createPurchaseRequest(values, activeBranchId);
+      const nextRequest = createPurchaseRequestRecord(
+        values,
+        response.purchaseRequest.id,
+      );
 
       if (mode === "edit") {
         updateRequest(nextRequest);
@@ -257,8 +288,12 @@ export function usePurchaseRequestFormPage() {
 
       draft.clearDraft();
       router.push(`${PurchaseRequestHref}/view/${nextRequest.id}`);
-    } catch {
-      toast.error("Could not save the purchase request. Please try again.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not save the purchase request. Please try again.",
+      );
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();

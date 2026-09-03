@@ -15346,6 +15346,291 @@ export interface UpdateRevolvingFundReplenishmentStatusDto {
   status: UpdateRevolvingFundReplenishmentStatusDtoStatus;
 }
 
+export interface PurchaseRequestEntryResponseDto {
+  id: string;
+  /** @nullable */
+  itemId?: string | null;
+  /** @nullable */
+  serviceMaintenanceId?: string | null;
+  /** @nullable */
+  itemCode?: string | null;
+  /** @nullable */
+  barcode?: string | null;
+  description: string;
+  /** @nullable */
+  uom?: string | null;
+  qty: number;
+  /** @nullable */
+  lotNo?: string | null;
+  cost: number;
+  /** @nullable */
+  responsibilityCenterId?: string | null;
+  /** @nullable */
+  responsibilityCenter?: string | null;
+}
+
+export type PurchaseRequestResponseDtoStatus = typeof PurchaseRequestResponseDtoStatus[keyof typeof PurchaseRequestResponseDtoStatus];
+
+
+export const PurchaseRequestResponseDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface PurchaseRequestResponseDto {
+  id: string;
+  branchUnitId: number;
+  branchName: string;
+  transNo: string;
+  prDate: string;
+  partyId: string;
+  partyCode: string;
+  partyName: string;
+  purchaseType: string;
+  /** @nullable */
+  vendorAddress?: string | null;
+  /** @nullable */
+  projectResponsibilityCenterId?: string | null;
+  /** @nullable */
+  projectCode?: string | null;
+  /** @nullable */
+  projectName?: string | null;
+  currency: string;
+  exchangeRate: number;
+  /** @nullable */
+  forDepartment?: string | null;
+  /** @nullable */
+  bomNo?: string | null;
+  /** @nullable */
+  remarks?: string | null;
+  status: PurchaseRequestResponseDtoStatus;
+  items: PurchaseRequestEntryResponseDto[];
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface PurchaseRequestPaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface PurchaseRequestListResponseDto {
+  purchaseRequests: PurchaseRequestResponseDto[];
+  pagination: PurchaseRequestPaginationResponseDto;
+}
+
+export type PurchaseRequestTypeResponseDtoStatus = typeof PurchaseRequestTypeResponseDtoStatus[keyof typeof PurchaseRequestTypeResponseDtoStatus];
+
+
+export const PurchaseRequestTypeResponseDtoStatus = {
+  ACTIVE: 'ACTIVE',
+} as const;
+
+export interface PurchaseRequestTypeResponseDto {
+  id: string;
+  code: string;
+  name: string;
+  status: PurchaseRequestTypeResponseDtoStatus;
+}
+
+export interface PurchaseRequestTypesResponseDto {
+  purchaseTypes: PurchaseRequestTypeResponseDto[];
+}
+
+export interface PurchaseRequestContainerResponseDto {
+  purchaseRequest: PurchaseRequestResponseDto;
+}
+
+export interface PurchaseRequestItemDto {
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  itemId?: string | null;
+  /** @nullable */
+  serviceMaintenanceId?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  itemCode?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  barcode?: string | null;
+  /** @maxLength 255 */
+  description?: string;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  uom?: string | null;
+  /** @minimum 0 */
+  qty?: number;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  lotNo?: string | null;
+  /** @minimum 0 */
+  cost?: number;
+  /** @nullable */
+  responsibilityCenterId?: string | null;
+  /**
+     * @maxLength 150
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+}
+
+export interface CreatePurchaseRequestDto {
+  /** @minimum 1 */
+  branchUnitId?: number;
+  /** @maxLength 80 */
+  transNo: string;
+  prDate: string;
+  /** @nullable */
+  partyId?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  partyCode?: string | null;
+  /**
+     * @maxLength 255
+     * @nullable
+     */
+  partyName?: string | null;
+  /** @maxLength 80 */
+  purchaseType: string;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  vendorAddress?: string | null;
+  /** @nullable */
+  projectResponsibilityCenterId?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * @maxLength 255
+     * @nullable
+     */
+  projectName?: string | null;
+  /**
+     * @maxLength 10
+     * @nullable
+     */
+  currency?: string | null;
+  /** @minimum 0 */
+  exchangeRate?: number;
+  /**
+     * @maxLength 150
+     * @nullable
+     */
+  forDepartment?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  bomNo?: string | null;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  remarks?: string | null;
+  /** @minItems 1 */
+  items: PurchaseRequestItemDto[];
+}
+
+export interface UpdatePurchaseRequestDto {
+  /** @minimum 1 */
+  branchUnitId?: number;
+  /** @maxLength 80 */
+  transNo?: string;
+  prDate?: string;
+  /** @nullable */
+  partyId?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  partyCode?: string | null;
+  /**
+     * @maxLength 255
+     * @nullable
+     */
+  partyName?: string | null;
+  /** @maxLength 80 */
+  purchaseType?: string;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  vendorAddress?: string | null;
+  /** @nullable */
+  projectResponsibilityCenterId?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * @maxLength 255
+     * @nullable
+     */
+  projectName?: string | null;
+  /**
+     * @maxLength 10
+     * @nullable
+     */
+  currency?: string | null;
+  /** @minimum 0 */
+  exchangeRate?: number;
+  /**
+     * @maxLength 150
+     * @nullable
+     */
+  forDepartment?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  bomNo?: string | null;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  remarks?: string | null;
+  /** @minItems 1 */
+  items?: PurchaseRequestItemDto[];
+}
+
+export type UpdatePurchaseRequestStatusDtoStatus = typeof UpdatePurchaseRequestStatusDtoStatus[keyof typeof UpdatePurchaseRequestStatusDtoStatus];
+
+
+export const UpdatePurchaseRequestStatusDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface UpdatePurchaseRequestStatusDto {
+  status: UpdatePurchaseRequestStatusDtoStatus;
+}
+
 export type AuthControllerLoginV1201 = { [key: string]: unknown };
 
 export type AuthControllerGoogleAuthV1Params = {
@@ -20095,4 +20380,20 @@ export const RevolvingFundReplenishmentControllerFindAllV1SortOrder = {
   asc: 'asc',
   desc: 'desc',
 } as const;
+
+export type PurchaseRequestControllerFindAllV1Params = {
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+search?: string;
+};
 

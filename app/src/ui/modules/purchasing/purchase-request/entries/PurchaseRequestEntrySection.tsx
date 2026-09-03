@@ -9,6 +9,8 @@ import type {
   PurchaseRequestAccountingEntry,
   PurchaseRequestItem,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+import type { ItemRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
+import type { ServiceMaintenanceOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
   PurchasingAccountingColumnId,
   PurchasingEntryTab,
@@ -30,9 +32,11 @@ import {
 type PurchaseRequestEntrySectionProps = {
   accountingRows: PurchaseRequestAccountingEntry[];
   error?: string;
+  itemDescriptionOptions: ItemRecord[];
   isReadonly: boolean;
   purchaseType?: string;
   rows: PurchaseRequestItem[];
+  serviceDescriptionOptions: ServiceMaintenanceOptionResponseDto[];
   onAccountingRowsChange: (rows: PurchaseRequestAccountingEntry[]) => void;
   onRowsChange: (rows: PurchaseRequestItem[]) => void;
 };
@@ -40,8 +44,10 @@ type PurchaseRequestEntrySectionProps = {
 export function PurchaseRequestEntrySection({
   accountingRows,
   error,
+  itemDescriptionOptions,
   isReadonly,
   purchaseType,
+  serviceDescriptionOptions,
   onAccountingRowsChange,
   onRowsChange,
   rows,
@@ -73,8 +79,15 @@ export function PurchaseRequestEntrySection({
     [accountingRows, onAccountingRowsChange],
   );
   const columns = useMemo<ModuleDataEntryColumn<PurchaseRequestItem>[]>(
-    () => createPurchaseRequestLineColumns(isReadonly, updateEntry, purchaseType),
-    [isReadonly, purchaseType, updateEntry],
+    () =>
+      createPurchaseRequestLineColumns(
+        isReadonly,
+        updateEntry,
+        purchaseType,
+        serviceDescriptionOptions,
+        itemDescriptionOptions,
+      ),
+    [isReadonly, itemDescriptionOptions, purchaseType, serviceDescriptionOptions, updateEntry],
   );
   const accountingColumns = useMemo(
     () => createPurchasingAccountingEntryColumns(isReadonly, updateAccountingEntry),

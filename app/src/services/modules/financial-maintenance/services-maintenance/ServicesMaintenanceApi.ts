@@ -1,6 +1,7 @@
 import {
   servicesMaintenanceControllerCreateV1,
   servicesMaintenanceControllerFindAllV1,
+  servicesMaintenanceControllerFindOptionsByTypeV1,
   servicesMaintenanceControllerGetAccountOptionsV1,
   servicesMaintenanceControllerGetNextAccountCodeV1,
   servicesMaintenanceControllerUpdateStatusV1,
@@ -13,6 +14,9 @@ import type {
   CreateServiceMaintenanceDtoStatus,
   ServiceMaintenanceAccountOptionResponseDto,
   ServiceMaintenanceNextAccountCodeResponseDto,
+  ServiceMaintenanceOptionResponseDto,
+  ServiceMaintenanceOptionResponseDtoServiceType,
+  ServiceMaintenanceOptionResponseDtoStatus,
   ServiceMaintenanceResponseDto,
   ServiceMaintenanceResponseDtoAccountSetupMode,
   ServiceMaintenanceResponseDtoServiceType,
@@ -24,6 +28,7 @@ import type {
   ServicesMaintenanceAccountSetupMode,
   ServicesMaintenanceFormValues,
   ServicesMaintenanceListResult,
+  ServicesMaintenanceOption,
   ServicesMaintenanceServiceType,
   ServicesMaintenanceStatus,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
@@ -53,6 +58,12 @@ export async function fetchServicesMaintenanceAccountOptions(): Promise<ModuleCh
   const response = await servicesMaintenanceControllerGetAccountOptionsV1();
 
   return response.accounts.map(mapApiAccountOption);
+}
+
+export async function fetchServicesMaintenanceOptions(serviceType: ServicesMaintenanceServiceType): Promise<ServicesMaintenanceOption[]> {
+  const response = await servicesMaintenanceControllerFindOptionsByTypeV1(mapServiceTypeToApi(serviceType));
+
+  return response.services.map(mapApiServiceOption);
 }
 
 export async function fetchNextServiceRevenueAccountCode(): Promise<ServiceMaintenanceNextAccountCodeResponseDto> {
@@ -113,6 +124,16 @@ function mapApiAccountOption(account: ServiceMaintenanceAccountOptionResponseDto
   };
 }
 
+function mapApiServiceOption(service: ServiceMaintenanceOptionResponseDto): ServicesMaintenanceOption {
+  return {
+    id: service.id,
+    serviceName: service.serviceName,
+    name: service.name,
+    serviceType: mapServiceTypeFromApi(service.serviceType),
+    status: mapStatusFromApi(service.status),
+  };
+}
+
 function toApiServicePayload(service: ServicesMaintenance | ServicesMaintenanceFormValues): CreateServiceMaintenanceDto {
   return {
     serviceName: service.serviceName.trim(),
@@ -124,7 +145,9 @@ function toApiServicePayload(service: ServicesMaintenance | ServicesMaintenanceF
   };
 }
 
-function mapStatusFromApi(value: ServiceMaintenanceResponseDtoStatus): ServicesMaintenanceStatus {
+function mapStatusFromApi(
+  value: ServiceMaintenanceResponseDtoStatus | ServiceMaintenanceOptionResponseDtoStatus,
+): ServicesMaintenanceStatus {
   return value === "ACTIVE" ? "Active" : "Inactive";
 }
 
@@ -140,7 +163,9 @@ function mapSetupModeToApi(value: ServicesMaintenanceAccountSetupMode): CreateSe
   return value === "Auto" ? "AUTO" : "EXISTING";
 }
 
-function mapServiceTypeFromApi(value: ServiceMaintenanceResponseDtoServiceType): ServicesMaintenanceServiceType {
+function mapServiceTypeFromApi(
+  value: ServiceMaintenanceResponseDtoServiceType | ServiceMaintenanceOptionResponseDtoServiceType,
+): ServicesMaintenanceServiceType {
   return value === "PURCHASES" ? "Purchases" : "Sales";
 }
 

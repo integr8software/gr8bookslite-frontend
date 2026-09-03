@@ -72,9 +72,6 @@ function UserListPageInner() {
 				);
 			}
 			queryClient.invalidateQueries({ queryKey: AuthQueryKeys.profiles() });
-			queryClient.invalidateQueries({
-				queryKey: ["user-sidebar-customization"],
-			});
 
 			toast.success("User role updated.");
 		},

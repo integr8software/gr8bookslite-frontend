@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { useSortable, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useApprovalAlertStore } from "@/app/src/hooks/modules/approval-management/useApprovalAlertStore";
 import { useIncrementalVisibleCount } from "@/app/src/hooks/shared/main-layout/sidebar/useIncrementalVisibleCount";
 import type {
@@ -29,6 +31,7 @@ type SidebarSectionProps = {
 	activeHref: string;
 	expandedKeys: string[];
 	section: MainNavigationSection;
+	isDraggable?: boolean;
 	onInteract: () => void;
 	onNavigateFromSidebar: (href: string) => () => void;
 	onToggleExpandedKey: (key: string) => void;
@@ -38,23 +41,44 @@ export function SidebarCategorySection({
 	activeHref,
 	expandedKeys,
 	section,
+	isDraggable = false,
 	onInteract,
 	onNavigateFromSidebar,
 	onToggleExpandedKey,
 }: SidebarSectionProps) {
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id: section.key, disabled: !isDraggable });
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+	};
+
 	const Icon = MainIcons[section.icon];
 	const hasActiveItem = section.items.some((item) =>
 		itemMatchesActiveHref(item, activeHref),
 	);
 
 	return (
-		<section className="space-y-1.5">
+		<section
+			ref={setNodeRef}
+			style={style}
+			className={joinClasses("space-y-1.5 transition-opacity", isDragging && "opacity-40")}
+		>
 			<div
+				{...(isDraggable ? { ...attributes, ...listeners } : {})}
 				data-main-sidebar-active-ancestor={
 					hasActiveItem ? "true" : undefined
 				}
 				className={joinClasses(
-					"flex min-h-8 items-center gap-2 rounded-md px-3 text-xs font-semibold uppercase tracking-[0.16em]",
+					"flex min-h-8 select-none items-center gap-2 rounded-md px-3 text-xs font-semibold uppercase tracking-[0.16em]",
+					isDraggable && "cursor-pointer active:cursor-grabbing",
 					hasActiveItem
 						? "bg-skyblue/8 text-darknavy"
 						: "text-darknavy/42",
@@ -67,22 +91,28 @@ export function SidebarCategorySection({
 					)}
 					aria-hidden="true"
 				/>
-				<span className="min-w-0 truncate">{section.title}</span>
+				<span className="min-w-0 flex-1 truncate">{section.title}</span>
 			</div>
-			<div className="space-y-1">
-				{section.items.map((item) => (
-					<SidebarItem
-						key={item.key}
-						activeHref={activeHref}
-						expandedKeys={expandedKeys}
-						item={item}
-						depth={0}
-						onInteract={onInteract}
-						onNavigateFromSidebar={onNavigateFromSidebar}
-						onToggleExpandedKey={onToggleExpandedKey}
-					/>
-				))}
-			</div>
+			<SortableContext
+				items={section.items.map((item) => item.key)}
+				strategy={verticalListSortingStrategy}
+			>
+				<div className="space-y-1">
+					{section.items.map((item) => (
+						<SidebarItem
+							key={item.key}
+							activeHref={activeHref}
+							expandedKeys={expandedKeys}
+							item={item}
+							depth={0}
+							isDraggable={isDraggable}
+							onInteract={onInteract}
+							onNavigateFromSidebar={onNavigateFromSidebar}
+							onToggleExpandedKey={onToggleExpandedKey}
+						/>
+					))}
+				</div>
+			</SortableContext>
 		</section>
 	);
 }
@@ -91,10 +121,25 @@ export function SidebarSection({
 	activeHref,
 	expandedKeys,
 	section,
+	isDraggable = true,
 	onInteract,
 	onNavigateFromSidebar,
 	onToggleExpandedKey,
 }: SidebarSectionProps) {
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id: section.key, disabled: !isDraggable });
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+	};
+
 	const pendingApprovalCount = useApprovalAlertStore(
 		(state) => state.pendingApprovalCount,
 	);
@@ -137,21 +182,31 @@ export function SidebarSection({
 			sectionBatchSize,
 			isExpanded,
 		);
-	const visibleSectionItems = section.items.slice(0, sectionVisibleCount);
+	const visibleSectionItems = isDraggable
+		? section.items
+		: section.items.slice(0, sectionVisibleCount);
 	const showPendingApprovalCount =
 		section.key === "approval-management" && pendingApprovalCount > 0;
 
 	if (directItem) {
 		return (
-			<section>
+			<section
+				ref={setNodeRef}
+				style={style}
+				className={joinClasses("relative transition-opacity", isDragging && "opacity-40")}
+			>
 				<Link
 					href={directItem.href}
+					draggable={false}
+					onDragStart={(e) => e.preventDefault()}
+					{...(isDraggable ? { ...attributes, ...listeners } : {})}
 					onClick={onNavigateFromSidebar(directItem.href)}
 					data-main-sidebar-active-item={
 						isDirectActive ? "true" : undefined
 					}
 					className={joinClasses(
-						"group relative flex min-h-10 w-full items-center gap-2 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+						"group relative flex min-h-10 w-full select-none items-center gap-2 rounded-md px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+						isDraggable && "cursor-pointer active:cursor-grabbing",
 						isDirectActive
 							? "bg-skyblue/14 text-darknavy hover:bg-skyblue/18"
 							: "text-darknavy hover:bg-darknavy/5",
@@ -175,9 +230,14 @@ export function SidebarSection({
 	}
 
 	return (
-		<section>
+		<section
+			ref={setNodeRef}
+			style={style}
+			className={joinClasses("relative transition-opacity", isDragging && "opacity-40")}
+		>
 			<button
 				type="button"
+				{...(isDraggable ? { ...attributes, ...listeners } : {})}
 				onClick={() => {
 					onInteract();
 					onToggleExpandedKey(section.key);
@@ -187,7 +247,8 @@ export function SidebarSection({
 					hasActiveItem ? "true" : undefined
 				}
 				className={joinClasses(
-					"flex min-h-10 w-full items-center gap-2 rounded-md px-3 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25",
+					"flex min-h-10 w-full select-none items-center gap-2 rounded-md px-3 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-darknavy/25",
+					isDraggable && "cursor-pointer active:cursor-grabbing",
 					hasActiveItem
 						? "bg-skyblue/10 text-darknavy hover:bg-skyblue/14"
 						: "text-darknavy hover:bg-darknavy/5 hover:text-darknavy",
@@ -224,28 +285,34 @@ export function SidebarSection({
 				)}
 			>
 				<div className="min-h-0 overflow-hidden">
-					<div className="mt-1 space-y-1">
-						{visibleSectionItems.map((item) => (
-							<SidebarItem
-								key={item.key}
-								activeHref={activeHref}
-								expandedKeys={expandedKeys}
-								item={item}
-								depth={0}
-								isInteractive={isExpanded}
-								onInteract={onInteract}
-								onNavigateFromSidebar={onNavigateFromSidebar}
-								onToggleExpandedKey={onToggleExpandedKey}
-							/>
-						))}
-						{hasMoreSectionItems ? (
-							<div
-								ref={setSectionSentinel}
-								className="h-3"
-								aria-hidden="true"
-							/>
-						) : null}
-					</div>
+					<SortableContext
+						items={section.items.map((item) => item.key)}
+						strategy={verticalListSortingStrategy}
+					>
+						<div className="mt-1 space-y-1">
+							{visibleSectionItems.map((item) => (
+								<SidebarItem
+									key={item.key}
+									activeHref={activeHref}
+									expandedKeys={expandedKeys}
+									item={item}
+									depth={0}
+									isDraggable={isDraggable}
+									isInteractive={isExpanded}
+									onInteract={onInteract}
+									onNavigateFromSidebar={onNavigateFromSidebar}
+									onToggleExpandedKey={onToggleExpandedKey}
+								/>
+							))}
+							{hasMoreSectionItems ? (
+								<div
+									ref={setSectionSentinel}
+									className="h-3"
+									aria-hidden="true"
+								/>
+							) : null}
+						</div>
+					</SortableContext>
 				</div>
 			</div>
 		</section>
@@ -256,6 +323,7 @@ type SidebarItemProps = {
 	activeHref: string;
 	depth: number;
 	expandedKeys: string[];
+	isDraggable?: boolean;
 	isInteractive?: boolean;
 	item: MainNavigationItem;
 	onInteract: () => void;
@@ -267,12 +335,29 @@ export function SidebarItem({
 	activeHref,
 	depth,
 	expandedKeys,
+	isDraggable = true,
 	isInteractive = true,
 	item,
 	onInteract,
 	onNavigateFromSidebar,
 	onToggleExpandedKey,
 }: SidebarItemProps) {
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id: item.key, disabled: !isDraggable });
+
+	const { tabIndex: _sortableTabIndex, ...sortableAttributes } = attributes;
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+	};
+
 	const pendingApprovalCount = useApprovalAlertStore(
 		(state) => state.pendingApprovalCount,
 	);
@@ -327,14 +412,24 @@ export function SidebarItem({
 			NestedBatchSize,
 			hasChildren && isExpanded,
 		);
-	const visibleChildItems = childItems.slice(0, childVisibleCount);
+	const visibleChildItems = isDraggable
+		? childItems
+		: childItems.slice(0, childVisibleCount);
 
 	if (hasChildren) {
 		return (
-			<div>
+			<div
+				ref={setNodeRef}
+				style={style}
+				className={joinClasses(
+					"relative rounded-md transition-opacity",
+					isDragging && "opacity-40",
+				)}
+			>
 				<button
 					type="button"
 					tabIndex={isInteractive ? undefined : -1}
+					{...(isDraggable ? { ...sortableAttributes, ...listeners } : {})}
 					onClick={() => {
 						onInteract();
 						onToggleExpandedKey(item.key);
@@ -347,8 +442,9 @@ export function SidebarItem({
 						isAncestorActive ? "true" : undefined
 					}
 					className={joinClasses(
-						"group relative flex min-h-9 w-full items-center gap-2 rounded-md py-2 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+						"group relative flex min-h-9 w-full select-none items-center gap-2 rounded-md py-2 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
 						paddingClass,
+						isDraggable && "cursor-pointer active:cursor-grabbing",
 						isAncestorActive
 							? depth <= 0
 								? "bg-skyblue/8 font-semibold text-darknavy hover:bg-skyblue/12"
@@ -395,30 +491,36 @@ export function SidebarItem({
 					)}
 				>
 					<div className="min-h-0 overflow-hidden">
-						<div className="mt-1 space-y-1">
-							{visibleChildItems.map((childItem) => (
-								<SidebarItem
-									key={childItem.key}
-									activeHref={activeHref}
-									expandedKeys={expandedKeys}
-									item={childItem}
-									depth={depth + 1}
-									isInteractive={isInteractive && isExpanded}
-									onInteract={onInteract}
-									onNavigateFromSidebar={
-										onNavigateFromSidebar
-									}
-									onToggleExpandedKey={onToggleExpandedKey}
-								/>
-							))}
-							{hasMoreChildItems ? (
-								<div
-									ref={setChildSentinel}
-									className="h-3"
-									aria-hidden="true"
-								/>
-							) : null}
-						</div>
+						<SortableContext
+							items={childItems.map((child) => child.key)}
+							strategy={verticalListSortingStrategy}
+						>
+							<div className="mt-1 space-y-1">
+								{visibleChildItems.map((childItem) => (
+									<SidebarItem
+										key={childItem.key}
+										activeHref={activeHref}
+										expandedKeys={expandedKeys}
+										item={childItem}
+										depth={depth + 1}
+										isDraggable={isDraggable}
+										isInteractive={isInteractive && isExpanded}
+										onInteract={onInteract}
+										onNavigateFromSidebar={
+											onNavigateFromSidebar
+										}
+										onToggleExpandedKey={onToggleExpandedKey}
+									/>
+								))}
+								{hasMoreChildItems ? (
+									<div
+										ref={setChildSentinel}
+										className="h-3"
+										aria-hidden="true"
+									/>
+								) : null}
+							</div>
+						</SortableContext>
 					</div>
 				</div>
 			</div>
@@ -426,31 +528,44 @@ export function SidebarItem({
 	}
 
 	return (
-		<Link
-			href={item.href}
-			tabIndex={isInteractive ? undefined : -1}
-			onClick={onNavigateFromSidebar(item.href)}
-			data-main-sidebar-active-item={isActive ? "true" : undefined}
+		<div
+			ref={setNodeRef}
+			style={style}
 			className={joinClasses(
-				"group relative flex min-h-9 items-center gap-2 rounded-md py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
-				paddingClass,
-				depth < 0 && "font-semibold",
-				isActive
-					? "bg-skyblue/14 font-semibold text-darknavy hover:bg-skyblue/18"
-					: "text-darknavy/65 hover:bg-skyblue/10 hover:text-darknavy",
+				"relative rounded-md transition-opacity",
+				isDragging && "opacity-40",
 			)}
 		>
-			{shouldShowIcon
-				? renderSidebarItemIcon(item, isActive, false)
-				: null}
-			{shouldShowModuleDot ? (
-				<SidebarModuleDot isActive={isActive} />
-			) : null}
-			<span className="min-w-0 flex-1 truncate">{item.label}</span>
-			{showPendingApprovalCount ? (
-				<PendingApprovalBadge count={pendingApprovalCount} />
-			) : null}
-		</Link>
+			<Link
+				href={item.href}
+				draggable={false}
+				onDragStart={(e) => e.preventDefault()}
+				tabIndex={isInteractive ? undefined : -1}
+				{...(isDraggable ? { ...sortableAttributes, ...listeners } : {})}
+				onClick={onNavigateFromSidebar(item.href)}
+				data-main-sidebar-active-item={isActive ? "true" : undefined}
+				className={joinClasses(
+					"group relative flex min-h-9 w-full select-none items-center gap-2 rounded-md py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-skyblue/35",
+					paddingClass,
+					depth < 0 && "font-semibold",
+					isDraggable && "cursor-pointer active:cursor-grabbing",
+					isActive
+						? "bg-skyblue/14 font-semibold text-darknavy hover:bg-skyblue/18"
+						: "text-darknavy/65 hover:bg-skyblue/10 hover:text-darknavy",
+				)}
+			>
+				{shouldShowIcon
+					? renderSidebarItemIcon(item, isActive, false)
+					: null}
+				{shouldShowModuleDot ? (
+					<SidebarModuleDot isActive={isActive} />
+				) : null}
+				<span className="min-w-0 flex-1 truncate">{item.label}</span>
+				{showPendingApprovalCount ? (
+					<PendingApprovalBadge count={pendingApprovalCount} />
+				) : null}
+			</Link>
+		</div>
 	);
 }
 

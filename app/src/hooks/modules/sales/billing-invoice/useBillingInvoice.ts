@@ -43,6 +43,7 @@ import {
   fetchBillingInvoices,
   updateBillingInvoice,
 } from "@/app/src/services/modules/sales/billing-invoice/BillingInvoiceApi";
+import { BillingInvoiceQueryKeys } from "@/app/src/services/modules/sales/billing-invoice/BillingInvoiceQueryKeys";
 import { fetchPartyOptions } from "@/app/src/services/modules/party-management/PartyManagementApi";
 import { PartyManagementQueryKeys } from "@/app/src/services/modules/party-management/PartyManagementQueryKeys";
 import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
@@ -58,7 +59,7 @@ type BillingInvoiceStoreState = {
 export function useBillingInvoiceStore<TSelected = BillingInvoiceStoreState>(selector?: (state: BillingInvoiceStoreState) => TSelected) {
   const queryClient = useQueryClient();
   const invoicesQuery = useQuery({
-    queryKey: ["billing-invoices"],
+    queryKey: BillingInvoiceQueryKeys.records(),
     queryFn: fetchBillingInvoices,
   });
   const [invoices, setInvoices] = useState<BillingInvoiceRecord[]>([]);
@@ -112,7 +113,7 @@ export function useBillingInvoiceActionForm(
   const isEditOrView = mode === "edit" || mode === "view";
 
   const recordQuery = useQuery({
-    queryKey: ["billing-invoice", recordId],
+    queryKey: BillingInvoiceQueryKeys.detail(undefined, undefined, recordId),
     queryFn: () => fetchBillingInvoice(recordId!),
     enabled: isEditOrView && !!recordId,
     retry: false,
@@ -192,7 +193,7 @@ export function useBillingInvoiceActionForm(
           ? await updateBillingInvoice(recordId, valuesWithDefaultAccount)
           : await createBillingInvoice(valuesWithDefaultAccount);
       setLoadedRecord(nextRecord);
-      void queryClient.invalidateQueries({ queryKey: ["billing-invoices"] });
+      void queryClient.invalidateQueries({ queryKey: BillingInvoiceQueryKeys.all() });
       toast.success(mode === "edit" ? "Billing invoice updated successfully." : "Billing invoice saved to the database.");
       onSaved?.(nextRecord);
     } catch (error) {

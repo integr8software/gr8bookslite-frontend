@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { CashDisbursementActionModeAdd } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
-import { AdvancesToSuppliersStatuses } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
+import {
+  AdvancesToSuppliersActionModes,
+  AdvancesToSuppliersStatuses,
+} from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
 import {
   calculateAdvancePayment,
   calculateAdvancePaymentPercentage,
@@ -58,16 +60,16 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   const hasEditedCurrencyRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(mode !== CashDisbursementActionModeAdd && Boolean(recordId));
+  const [isLoading, setIsLoading] = useState(mode !== AdvancesToSuppliersActionModes.Add && Boolean(recordId));
   const [partyOptions, setPartyOptions] = useState<AppAdvancedDropdownOption[]>([]);
   const [accountOptions, setAccountOptions] = useState<AppAdvancedDropdownOption[]>([]);
   const [responsibilityCenterOptions, setResponsibilityCenterOptions] = useState<AppAdvancedDropdownOption[]>([]);
   const [projectOptions, setProjectOptions] = useState<AppAdvancedDropdownOption[]>([]);
   const [isLookupLoading, setIsLookupLoading] = useState(true);
-  const isReadonly = mode === "view";
+  const isReadonly = mode === AdvancesToSuppliersActionModes.View;
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
+  const isDirty = mode === AdvancesToSuppliersActionModes.Add ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
   const draft = useModuleDraft({
     enabled: !isReadonly,
     initialValues,
@@ -104,6 +106,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     ])
       .then(([parties, accounts, centers]) => {
         if (!isMounted) return;
+
         setPartyOptions(parties);
         setAccountOptions(accounts);
         setResponsibilityCenterOptions(centers.responsibilityCenters);
@@ -122,13 +125,13 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   }, []);
 
   useEffect(() => {
-    if (mode !== CashDisbursementActionModeAdd) return;
+    if (mode !== AdvancesToSuppliersActionModes.Add) return;
 
     queueMicrotask(() => void refreshNextTransactionNo());
   }, [mode]);
 
   useEffect(() => {
-    if (mode === CashDisbursementActionModeAdd || !recordId) return;
+    if (mode === AdvancesToSuppliersActionModes.Add || !recordId) return;
 
     let isMounted = true;
     queueMicrotask(() => {
@@ -158,7 +161,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   const purchaseOrderCopyRecords = useMemo<AppCopyFromRecord[]>(
     () =>
       loadPurchaseOrders()
-        .filter((order) => order.status !== AdvancesToSuppliersStatuses.cancelled)
+        .filter((order) => order.status !== AdvancesToSuppliersStatuses.Cancelled)
         .map((order) => {
           const party = getPurchaseOrderParty(order);
 
@@ -176,7 +179,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   );
 
   useEffect(() => {
-    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
+    if (mode !== AdvancesToSuppliersActionModes.Add || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
     setValues((current) => ({
       ...current,
       currency: transactionCurrency.baseCurrencyCode,
@@ -303,7 +306,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
 
   async function save(status: AdvancesToSuppliersStatus) {
     if (isReadonly || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty && status === record?.status) {
+    if (mode === AdvancesToSuppliersActionModes.Edit && !isDirty && status === record?.status) {
       toast.error("No changes to save.");
       return false;
     }
@@ -313,7 +316,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     if (!releaseSubmitLock) return false;
     isSubmittingRef.current = true;
     setIsSubmitting(true);
-    const nextErrors = status === AdvancesToSuppliersStatuses.draft ? {} : validateAdvancesToSuppliersForm(values);
+    const nextErrors = status === AdvancesToSuppliersStatuses.Draft ? {} : validateAdvancesToSuppliersForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
       toast.error("Please Fill Up the Required Fields!");
@@ -324,11 +327,11 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     }
     try {
       const savedRecord =
-        mode === "edit" && record?.id
+        mode === AdvancesToSuppliersActionModes.Edit && record?.id
           ? await updateAdvancesToSuppliersApi(record.id, { ...values, status })
           : await createAdvancesToSuppliersApi({ ...values, status });
       const nextRecord =
-        status === AdvancesToSuppliersStatuses.forApproval && savedRecord.id
+        status === AdvancesToSuppliersStatuses.ForApproval && savedRecord.id
           ? await submitAdvancesToSuppliersApprovalApi(savedRecord.id)
           : savedRecord;
       const nextValues = createAdvancesToSuppliersFormValues(nextRecord, "", transactionCurrency.baseCurrencyCode);
@@ -337,7 +340,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
       setInitialValues(nextValues);
       draft.clearDraft();
       toast.success(
-        status === AdvancesToSuppliersStatuses.draft
+        status === AdvancesToSuppliersStatuses.Draft
           ? "Advances to Suppliers Saved as Draft."
           : "Advances to Suppliers Submitted for Approval.",
       );
@@ -359,7 +362,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     if (!releaseActionLock) return false;
     try {
       const nextRecord =
-        status === AdvancesToSuppliersStatuses.forApproval
+        status === AdvancesToSuppliersStatuses.ForApproval
           ? await submitAdvancesToSuppliersApprovalApi(record.id)
           : await updateAdvancesToSuppliersStatusApi(record.id, status);
       const nextValues = createAdvancesToSuppliersFormValues(nextRecord, "", transactionCurrency.baseCurrencyCode);
@@ -376,13 +379,13 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     }
   }
 
-  function validate(status: AdvancesToSuppliersStatus = AdvancesToSuppliersStatuses.forApproval): boolean {
+  function validate(status: AdvancesToSuppliersStatus = AdvancesToSuppliersStatuses.ForApproval): boolean {
     if (isReadonly || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty && status === record?.status) {
+    if (mode === AdvancesToSuppliersActionModes.Edit && !isDirty && status === record?.status) {
       toast.error("No changes to save.");
       return false;
     }
-    const nextErrors = status === AdvancesToSuppliersStatuses.draft ? {} : validateAdvancesToSuppliersForm(values);
+    const nextErrors = status === AdvancesToSuppliersStatuses.Draft ? {} : validateAdvancesToSuppliersForm(values);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
       toast.error("Please Fill Up the Required Fields!");
@@ -411,7 +414,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === CashDisbursementActionModeAdd) {
+    if (mode === AdvancesToSuppliersActionModes.Add) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -488,7 +491,7 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
     isPreviewOpen,
     isSubmitting,
     isReadonly,
-    isRecordMissing: mode !== CashDisbursementActionModeAdd && !isLoading && !record,
+    isRecordMissing: mode !== AdvancesToSuppliersActionModes.Add && !isLoading && !record,
     mode,
     partyOptions: resolvedPartyOptions,
     projectOptions: resolvedProjectOptions,

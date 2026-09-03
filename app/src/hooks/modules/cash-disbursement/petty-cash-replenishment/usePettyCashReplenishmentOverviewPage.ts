@@ -15,19 +15,14 @@ import {
 import { ReceiptText } from "lucide-react";
 import toast from "react-hot-toast";
 import {
+  PettyCashReplenishmentAllStatusFilter,
   PettyCashReplenishmentColumnLabels,
   PettyCashReplenishmentDefaultColumnVisibility,
   PettyCashReplenishmentOverviewColumnWidths,
   PettyCashReplenishmentRecordStatuses,
   PettyCashReplenishmentStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentConstants";
-import {
-  CashDisbursementAllStatusFilter,
-  CashDisbursementAllTimeSummary,
-  CashDisbursementTotalEntriesLabel,
-  createCashDisbursementListQueryKey,
-  createCashDisbursementModuleQueryKey,
-} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { PettyCashReplenishmentQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentQueryKeys";
 import type {
   PettyCashReplenishmentRecord,
   PettyCashReplenishmentStatus,
@@ -45,12 +40,11 @@ import {
 } from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentApi";
 
 const columnHelper = createColumnHelper<PettyCashReplenishmentRecord>();
-const PettyCashReplenishmentQueryKey = "petty-cash-replenishment";
 
 export function usePettyCashReplenishmentOverviewPage() {
   const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>(CashDisbursementAllStatusFilter);
+  const [statusFilter, setStatusFilter] = useState<string>(PettyCashReplenishmentAllStatusFilter);
   const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
   const [amountRange, setAmountRange] = useState<AmountRangeValue>({ from: "", to: "" });
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
@@ -62,7 +56,7 @@ export function usePettyCashReplenishmentOverviewPage() {
   const amountTo = parseAmount(amountRange.to);
 
   const listQuery = useQuery({
-    queryKey: createCashDisbursementListQueryKey(PettyCashReplenishmentQueryKey, {
+    queryKey: PettyCashReplenishmentQueryKeys.list({
       query,
       statusFilter,
       startDate: dateRange.from || undefined,
@@ -73,7 +67,7 @@ export function usePettyCashReplenishmentOverviewPage() {
     queryFn: async () => {
       const res = await fetchPettyCashReplenishmentList({
         search: query || undefined,
-        status: statusFilter !== CashDisbursementAllStatusFilter ? statusFilter : undefined,
+        status: statusFilter !== PettyCashReplenishmentAllStatusFilter ? statusFilter : undefined,
         startDate: dateRange.from || undefined,
         endDate: dateRange.to || undefined,
         amountFrom: amountFrom !== null ? amountFrom : undefined,
@@ -91,7 +85,7 @@ export function usePettyCashReplenishmentOverviewPage() {
       return await updatePettyCashReplenishmentStatusApi(id, status);
     },
     onSuccess: (_, { status }) => {
-      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashReplenishmentQueryKey) });
+      queryClient.invalidateQueries({ queryKey: PettyCashReplenishmentQueryKeys.all() });
       toast.success(`Petty Cash Replenishment marked as ${status}.`);
     },
     onError: () => {
@@ -104,7 +98,7 @@ export function usePettyCashReplenishmentOverviewPage() {
       return await deletePettyCashReplenishmentApi(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashReplenishmentQueryKey) });
+      queryClient.invalidateQueries({ queryKey: PettyCashReplenishmentQueryKeys.all() });
       toast.success("Petty Cash Replenishment deleted successfully.");
     },
     onError: () => {
@@ -212,24 +206,24 @@ export function usePettyCashReplenishmentOverviewPage() {
     const total = records.length;
     return [
       {
-        label: CashDisbursementTotalEntriesLabel,
+        label: "Total Entries",
         value: total,
         icon: ReceiptText,
         tone: "violet",
-        summary: CashDisbursementAllTimeSummary,
-        isActive: statusFilter === CashDisbursementAllStatusFilter,
-        onClick: () => setStatusFilter(CashDisbursementAllStatusFilter),
+        summary: "All time",
+        isActive: statusFilter === PettyCashReplenishmentAllStatusFilter,
+        onClick: () => setStatusFilter(PettyCashReplenishmentAllStatusFilter),
       },
       ...PettyCashReplenishmentRecordStatuses.map((status) => {
         const count = records.filter((item) => item.status === status).length;
         const tone =
-          status === PettyCashReplenishmentStatuses.posted
+          status === PettyCashReplenishmentStatuses.Posted
             ? ("emerald" as const)
-            : status === PettyCashReplenishmentStatuses.forApproval
+            : status === PettyCashReplenishmentStatuses.ForApproval
               ? ("amber" as const)
-              : status === PettyCashReplenishmentStatuses.draft
+              : status === PettyCashReplenishmentStatuses.Draft
                 ? ("blue" as const)
-                : status === PettyCashReplenishmentStatuses.disapproved
+                : status === PettyCashReplenishmentStatuses.Disapproved
                   ? ("red" as const)
                   : ("slate" as const);
 

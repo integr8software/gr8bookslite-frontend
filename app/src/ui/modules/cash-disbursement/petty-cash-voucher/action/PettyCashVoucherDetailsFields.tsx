@@ -58,8 +58,8 @@ export function PettyCashVoucherDetailsFields({
                   : undefined
               }
               onChange={(code, name) => {
-                page.updateField("partyCode", code);
-                page.updateField("partyName", name);
+                const selectedParty = partyOptions.find((option) => option.value === code || option.label === code);
+                page.handlePartyChange(code, name, selectedParty);
               }}
             />
           </TransactionField>

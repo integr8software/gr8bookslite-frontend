@@ -27,6 +27,7 @@ import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import {
+  CashAdvanceMultipleEntryActionModes,
   CashAdvanceMultipleEntryAllStatusFilter,
   CashAdvanceMultipleEntryDefaultColumnOrder,
   CashAdvanceMultipleEntryDefaultColumnVisibility,
@@ -34,13 +35,7 @@ import {
   CashAdvanceMultipleEntryStatusFilters,
   CashAdvanceMultipleEntryStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
-import {
-  CashDisbursementActionModeAdd,
-  CashDisbursementAllTimeSummary,
-  CashDisbursementQuerySegment,
-  CashDisbursementTotalEntriesLabel,
-  createCashDisbursementModuleQueryKey,
-} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+
 import type { CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import type {
   CashAdvanceMultipleEntryAccountingEntry,
@@ -79,7 +74,7 @@ export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultiple
 ) {
   const queryClient = useQueryClient();
   const activeCompanyId = useAppStore((state) => state.activeCompanyId);
-  const queryKey = [CashDisbursementQuerySegment, CashAdvanceMultipleEntryQueryKey, "records", activeCompanyId] as const;
+  const queryKey = ["cash-disbursement", CashAdvanceMultipleEntryQueryKey, "records", activeCompanyId] as const;
   const entriesQuery = useQuery({
     queryKey,
     queryFn: async () => {
@@ -96,7 +91,7 @@ export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultiple
   const entries = entriesQuery.data ?? EmptyCashAdvanceMultipleEntries;
 
   const refreshRecords = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(CashAdvanceMultipleEntryQueryKey) });
+    void queryClient.invalidateQueries({ queryKey: ["cash-disbursement", CashAdvanceMultipleEntryQueryKey] });
   }, [queryClient]);
 
   const updateStatusMutation = useMutation({
@@ -143,15 +138,15 @@ export function useCashAdvanceMultipleEntryActionForm(
   );
   const hasEditedCurrencyRef = useRef(false);
   const isSubmittingRef = useRef(false);
-  const [isLoading, setIsLoading] = useState(mode !== CashDisbursementActionModeAdd && Boolean(recordId));
+  const [isLoading, setIsLoading] = useState(mode !== CashAdvanceMultipleEntryActionModes.Add && Boolean(recordId));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<CashAdvanceMultipleEntryFormErrors>({});
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transNo"]) : rawIsDirty;
+  const isDirty = mode === CashAdvanceMultipleEntryActionModes.Add ? hasModuleDraftChanges(values, initialValues, ["transNo"]) : rawIsDirty;
   const availabilityWarning = useMemo(() => getCashAdvanceMultipleEntryAvailabilityWarning(values), [values]);
   const draft = useModuleDraft({
-    enabled: mode !== "view",
+    enabled: mode !== CashAdvanceMultipleEntryActionModes.View,
     initialValues,
     isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:cash-advance-multiple-entry", recordId }),
@@ -173,7 +168,7 @@ export function useCashAdvanceMultipleEntryActionForm(
   }, [activeBranchId]);
 
   useEffect(() => {
-    if (mode !== CashDisbursementActionModeAdd) {
+    if (mode !== CashAdvanceMultipleEntryActionModes.Add) {
       return;
     }
 
@@ -181,7 +176,7 @@ export function useCashAdvanceMultipleEntryActionForm(
   }, [mode, refreshNextTransactionNo]);
 
   useEffect(() => {
-    if (mode === CashDisbursementActionModeAdd) {
+    if (mode === CashAdvanceMultipleEntryActionModes.Add) {
       return;
     }
 
@@ -225,7 +220,7 @@ export function useCashAdvanceMultipleEntryActionForm(
   }, [mode, recordId]);
 
   useEffect(() => {
-    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+    if (mode !== CashAdvanceMultipleEntryActionModes.Add || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
       return;
     }
 
@@ -251,10 +246,29 @@ export function useCashAdvanceMultipleEntryActionForm(
   function updateItems(items: CashAdvanceMultipleEntryItem[]) {
     const totalAmount = formatCashAdvanceMultipleEntryAmount(calculateCashAdvanceMultipleEntryTotal(items));
 
-    setValues((current) => ({ ...current, items, totalAmount }));
-    if (errors.items) {
-      setErrors((current) => ({ ...current, items: undefined }));
-    }
+    setValues((current) => ({
+      ...current,
+      amount: totalAmount,
+      items,
+    }));
+  }
+
+  function updateAccountingEntries(accountingEntries: CashAdvanceMultipleEntryAccountingEntry[]) {
+    setValues((current) => ({
+      ...current,
+      accountingEntries,
+    }));
+  }
+
+  function addItems(count = 1) {
+    updateItems([...values.items, ...Array.from({ length: count }, () => createBlankCashAdvanceMultipleEntryItem())]);
+  }
+
+  function addAccountingEntries(count = 1) {
+    updateAccountingEntries([
+      ...values.accountingEntries,
+      ...Array.from({ length: count }, () => createBlankCashAdvanceMultipleEntryAccountingEntry()),
+    ]);
   }
 
   async function updateCurrency(currencyCode: string) {
@@ -272,21 +286,9 @@ export function useCashAdvanceMultipleEntryActionForm(
     }
   }
 
-  function updateAccountingEntries(accountingEntries: CashAdvanceMultipleEntryAccountingEntry[]) {
-    setValues((current) => ({ ...current, accountingEntries }));
-  }
-
-  function addItems(count: number) {
-    updateItems([...values.items, ...createRows(count, createBlankCashAdvanceMultipleEntryItem)]);
-  }
-
-  function addAccountingEntries(count: number) {
-    updateAccountingEntries([...values.accountingEntries, ...createRows(count, createBlankCashAdvanceMultipleEntryAccountingEntry)]);
-  }
-
-  async function submitEntry(status: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.forApproval) {
-    if (mode === "view" || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty && status === loadedRecord?.status) {
+  async function submitEntry(status: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.ForApproval) {
+    if (mode === CashAdvanceMultipleEntryActionModes.View || isSubmittingRef.current) return false;
+    if (mode === CashAdvanceMultipleEntryActionModes.Edit && !isDirty && status === loadedRecord?.status) {
       toast.error("No changes to save.");
       return false;
     }
@@ -297,7 +299,7 @@ export function useCashAdvanceMultipleEntryActionForm(
     isSubmittingRef.current = true;
     setIsSubmitting(true);
     const nextValues = { ...values, status };
-    const shouldValidate = status !== CashAdvanceMultipleEntryStatuses.draft;
+    const shouldValidate = status !== CashAdvanceMultipleEntryStatuses.Draft;
     const nextErrors = shouldValidate ? validateCashAdvanceMultipleEntryForm(nextValues) : {};
 
     if (Object.keys(nextErrors).length > 0) {
@@ -313,7 +315,7 @@ export function useCashAdvanceMultipleEntryActionForm(
 
     try {
       const nextRecord =
-        mode === "edit" && loadedRecord
+        mode === CashAdvanceMultipleEntryActionModes.Edit && loadedRecord
           ? await updateCashAdvanceMultipleEntryApi(loadedRecord.id, nextValues, { branchUnitId: activeBranchId ?? undefined })
           : await createCashAdvanceMultipleEntryApi(nextValues, { branchUnitId: activeBranchId ?? undefined });
       const refreshedValues = createCashAdvanceMultipleEntryFormValuesFromRecord(nextRecord);
@@ -321,7 +323,9 @@ export function useCashAdvanceMultipleEntryActionForm(
       setValues(refreshedValues);
       setInitialValues(refreshedValues);
       draft.clearDraft();
-      toast.success(mode === "edit" ? "Cash Advance Multiple Entry Updated." : "Cash Advance Multiple Entry Saved.");
+      toast.success(
+        mode === CashAdvanceMultipleEntryActionModes.Edit ? "Cash Advance Multiple Entry Updated." : "Cash Advance Multiple Entry Saved.",
+      );
       onSaved?.(nextRecord);
       return true;
     } catch {
@@ -355,14 +359,14 @@ export function useCashAdvanceMultipleEntryActionForm(
     }
   }
 
-  function validateEntry(status: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.forApproval): boolean {
-    if (mode === "view" || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty && status === loadedRecord?.status) {
+  function validateEntry(status: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.ForApproval): boolean {
+    if (mode === CashAdvanceMultipleEntryActionModes.View || isSubmittingRef.current) return false;
+    if (mode === CashAdvanceMultipleEntryActionModes.Edit && !isDirty && status === loadedRecord?.status) {
       toast.error("No changes to save.");
       return false;
     }
     const nextValues = { ...values, status };
-    const shouldValidate = status !== CashAdvanceMultipleEntryStatuses.draft;
+    const shouldValidate = status !== CashAdvanceMultipleEntryStatuses.Draft;
     const nextErrors = shouldValidate ? validateCashAdvanceMultipleEntryForm(nextValues) : {};
 
     if (Object.keys(nextErrors).length > 0) {
@@ -393,7 +397,7 @@ export function useCashAdvanceMultipleEntryActionForm(
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === CashDisbursementActionModeAdd) {
+    if (mode === CashAdvanceMultipleEntryActionModes.Add) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -407,15 +411,15 @@ export function useCashAdvanceMultipleEntryActionForm(
     errors,
     hasDiscardableChanges: isDirty,
     saveDraft: draft.saveDraft,
-    addAccountingEntries,
-    addItems,
     currencyOptions: transactionCurrency.currencyOptions,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isLoading,
     isSubmitting,
-    isRecordMissing: mode !== CashDisbursementActionModeAdd && !isLoading && !loadedRecord,
+    isRecordMissing: mode !== CashAdvanceMultipleEntryActionModes.Add && !isLoading && !loadedRecord,
     record: loadedRecord,
     submitEntry,
+    addAccountingEntries,
+    addItems,
     updateAccountingEntries,
     updateEntryStatus,
     updateField,
@@ -650,71 +654,71 @@ export function useCashAdvanceMultipleEntryTable(records: CashAdvanceMultipleEnt
   }
 
   const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => {
-    const postedCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.posted).length;
-    const forApprovalCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.forApproval).length;
-    const draftCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.draft).length;
-    const disapprovedCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.disapproved).length;
-    const cancelledCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.cancelled).length;
+    const postedCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.Posted).length;
+    const forApprovalCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.ForApproval).length;
+    const draftCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.Draft).length;
+    const disapprovedCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.Disapproved).length;
+    const cancelledCount = records.filter((record) => record.status === CashAdvanceMultipleEntryStatuses.Cancelled).length;
 
     return [
       {
-        label: CashDisbursementTotalEntriesLabel,
+        label: "Total Entries",
         value: records.length,
-        summary: CashDisbursementAllTimeSummary,
+        summary: "All time",
         icon: ReceiptText,
         tone: "violet",
         isActive: statusFilter === CashAdvanceMultipleEntryAllStatusFilter,
         onClick: () => setStatusFilter(CashAdvanceMultipleEntryAllStatusFilter),
       },
       {
-        label: CashAdvanceMultipleEntryStatuses.posted,
+        label: CashAdvanceMultipleEntryStatuses.Posted,
         value: postedCount,
         summary: formatPartOfTotalPercentage(postedCount, records.length),
-        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.posted),
-        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.posted),
+        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.Posted),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.Posted),
         tone: "emerald",
-        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.posted,
-        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.posted),
+        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.Posted,
+        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.Posted),
       },
       {
-        label: CashAdvanceMultipleEntryStatuses.forApproval,
+        label: CashAdvanceMultipleEntryStatuses.ForApproval,
         value: forApprovalCount,
         summary: formatPartOfTotalPercentage(forApprovalCount, records.length),
-        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.forApproval),
-        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.forApproval),
+        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.ForApproval),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.ForApproval),
         tone: "amber",
-        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.forApproval,
-        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.forApproval),
+        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.ForApproval,
+        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.ForApproval),
       },
       {
-        label: CashAdvanceMultipleEntryStatuses.draft,
+        label: CashAdvanceMultipleEntryStatuses.Draft,
         value: draftCount,
         summary: formatPartOfTotalPercentage(draftCount, records.length),
-        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.draft),
-        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.draft),
+        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.Draft),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.Draft),
         tone: "blue",
-        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.draft,
-        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.draft),
+        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.Draft,
+        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.Draft),
       },
       {
-        label: CashAdvanceMultipleEntryStatuses.disapproved,
+        label: CashAdvanceMultipleEntryStatuses.Disapproved,
         value: disapprovedCount,
         summary: formatPartOfTotalPercentage(disapprovedCount, records.length),
-        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.disapproved),
-        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.disapproved),
+        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.Disapproved),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.Disapproved),
         tone: "red",
-        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.disapproved,
-        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.disapproved),
+        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.Disapproved,
+        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.Disapproved),
       },
       {
-        label: CashAdvanceMultipleEntryStatuses.cancelled,
+        label: CashAdvanceMultipleEntryStatuses.Cancelled,
         value: cancelledCount,
         summary: formatPartOfTotalPercentage(cancelledCount, records.length),
-        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.cancelled),
-        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.cancelled),
+        icon: getModuleStatusMetricIcon(CashAdvanceMultipleEntryStatuses.Cancelled),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceMultipleEntryStatuses.Cancelled),
         tone: "slate",
-        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.cancelled,
-        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.cancelled),
+        isActive: statusFilter === CashAdvanceMultipleEntryStatuses.Cancelled,
+        onClick: () => setStatusFilter(CashAdvanceMultipleEntryStatuses.Cancelled),
       },
     ];
   }, [records, setStatusFilter, statusFilter]);

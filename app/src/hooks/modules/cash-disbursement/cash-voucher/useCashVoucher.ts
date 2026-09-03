@@ -18,16 +18,14 @@ import {
   CashVoucherDefaultColumnVisibility,
   CashVoucherDefaultSorting,
   CashVoucherAllStatusFilter,
+  CashVoucherRecordStatuses,
   CashVoucherStatusFilters,
   CashVoucherStatuses,
   CashVoucherTableColumns,
   CashVoucherTablePreferencesModuleKey,
   CashVoucherTablePreferencesStorageKey,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
-import {
-  CashDisbursementAllTimeSummary,
-  CashDisbursementTotalEntriesLabel,
-} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+
 import { CashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherQueryKeys";
 import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
@@ -54,9 +52,7 @@ import {
   updateCashVoucherStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherApi";
 
-export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
-  selector?: (state: CashVoucherStoreState) => TSelected,
-) {
+export function useCashVoucherStore<TSelected = CashVoucherStoreState>(selector?: (state: CashVoucherStoreState) => TSelected) {
   const queryClient = useQueryClient();
   const activeBranchId = useAppStore((state) => state.activeBranchId);
   const activeCompanyId = useAppStore((state) => state.activeCompanyId);
@@ -88,9 +84,8 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       return await updateCashVoucherStatusApi(id, status);
     },
     onSuccess: (updated) => {
-      queryClient.setQueryData<CashVoucherRecord[]>(
-        CashVoucherQueryKeys.records(activeCompanyId, activeBranchId),
-        (current = []) => current.map((v) => (v.id === updated.id ? updated : v)),
+      queryClient.setQueryData<CashVoucherRecord[]>(CashVoucherQueryKeys.records(activeCompanyId, activeBranchId), (current = []) =>
+        current.map((v) => (v.id === updated.id ? updated : v)),
       );
       refreshRecords();
       toast.success("Cash Voucher status updated.");
@@ -106,9 +101,8 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(
       return voucherId;
     },
     onSuccess: (voucherId) => {
-      queryClient.setQueryData<CashVoucherRecord[]>(
-        CashVoucherQueryKeys.records(activeCompanyId, activeBranchId),
-        (current = []) => current.filter((v) => v.id !== voucherId),
+      queryClient.setQueryData<CashVoucherRecord[]>(CashVoucherQueryKeys.records(activeCompanyId, activeBranchId), (current = []) =>
+        current.filter((v) => v.id !== voucherId),
       );
       refreshRecords();
       toast.success("Cash Voucher Deleted.");
@@ -209,8 +203,7 @@ export function useCashVoucherPreviewTable(previewRows: CashVoucherPreviewRow[])
     moduleKey: CashVoucherTablePreferencesModuleKey,
     storageKey: CashVoucherTablePreferencesStorageKey,
   });
-  const [statusFilter, setStatusFilterState] =
-    useState<(typeof CashVoucherStatusFilters)[number]>(CashVoucherAllStatusFilter);
+  const [statusFilter, setStatusFilterState] = useState<(typeof CashVoucherStatusFilters)[number]>(CashVoucherAllStatusFilter);
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = normalizeLowercaseWhitespace(deferredQuery);
   const filteredRows = useMemo(
@@ -291,10 +284,13 @@ export function useCashVoucherPreviewTable(previewRows: CashVoucherPreviewRow[])
     table.setPageIndex(0);
   }
 
-  const setStatusFilter = useCallback((value: (typeof CashVoucherStatusFilters)[number]) => {
-    setStatusFilterState(value);
-    table.setPageIndex(0);
-  }, [table]);
+  const setStatusFilter = useCallback(
+    (value: (typeof CashVoucherStatusFilters)[number]) => {
+      setStatusFilterState(value);
+      table.setPageIndex(0);
+    },
+    [table],
+  );
 
   function setDateRange(value: DateRangeValue) {
     setDateRangeState(value);
@@ -318,38 +314,43 @@ export function useCashVoucherPreviewTable(previewRows: CashVoucherPreviewRow[])
     const statusCounts = Object.fromEntries(
       Object.values(CashVoucherStatuses).map((status) => [
         status,
-        previewRows.filter(
-          (row) => getCashVoucherDisplayStatus(row.voucher?.status ?? row.transaction.status) === status,
-        ).length,
+        previewRows.filter((row) => getCashVoucherDisplayStatus(row.voucher?.status ?? row.transaction.status) === status).length,
       ]),
     ) as Record<CashVoucherStatus, number>;
 
     return [
       {
-        label: CashDisbursementTotalEntriesLabel,
+        label: "Total Entries",
         value: previewRows.length,
-        summary: CashDisbursementAllTimeSummary,
+        summary: "All time",
         icon: ReceiptText,
         tone: "violet",
         isActive: statusFilter === CashVoucherAllStatusFilter,
         onClick: () => setStatusFilter(CashVoucherAllStatusFilter),
       },
-      ...[
-        CashVoucherStatuses.posted,
-        CashVoucherStatuses.forApproval,
-        CashVoucherStatuses.draft,
-        CashVoucherStatuses.disapproved,
-        CashVoucherStatuses.cancelled,
-      ].map((status, index) => ({
-        label: status,
-        value: statusCounts[status] ?? 0,
-        summary: formatPartOfTotalPercentage(statusCounts[status] ?? 0, previewRows.length),
-        icon: getModuleStatusMetricIcon(status),
-        iconClassName: getModuleStatusMetricIconClassName(status),
-        tone: (["emerald", "amber", "blue", "red", "slate"] as const)[index],
-        isActive: statusFilter === status,
-        onClick: () => setStatusFilter(status),
-      })),
+      ...CashVoucherRecordStatuses.map((status) => {
+        const tone =
+          status === CashVoucherStatuses.Posted
+            ? ("emerald" as const)
+            : status === CashVoucherStatuses.ForApproval
+              ? ("amber" as const)
+              : status === CashVoucherStatuses.Draft
+                ? ("blue" as const)
+                : status === CashVoucherStatuses.Disapproved
+                  ? ("red" as const)
+                  : ("slate" as const);
+
+        return {
+          label: status,
+          value: statusCounts[status] ?? 0,
+          summary: formatPartOfTotalPercentage(statusCounts[status] ?? 0, previewRows.length),
+          icon: getModuleStatusMetricIcon(status),
+          iconClassName: getModuleStatusMetricIconClassName(status),
+          tone,
+          isActive: statusFilter === status,
+          onClick: () => setStatusFilter(status),
+        };
+      }),
     ];
   }, [previewRows, setStatusFilter, statusFilter]);
 

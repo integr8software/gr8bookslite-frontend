@@ -13,29 +13,17 @@ import type {
   DisbursementVoucherPaymentDetails,
   DisbursementVoucherRecord,
   DisbursementVoucherStatus,
+  DisbursementVoucherGeneratedAccount,
+  DisbursementVoucherGeneratedAccountOptions,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { PaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import { DisbursementVoucherStatuses } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { getEwtPercentFromCode, getVatPercentFromRate, getVatRateFromCode } from "@/app/src/data/shared/tax/TaxData";
-import { formatCurrency as formatCurrencyValue } from "@/app/src/utils/currency.util";
+import { formatCurrency as formatCurrencyValue, roundCurrency } from "@/app/src/utils/currency.util";
+import { parseTaxPercent } from "@/app/src/utils/percentage.util";
 import { isGeneratedAccountingEntry } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
-
-const CashInHandAccount = {
-  accountCode: "1001111",
-  accountName: "Cash in Hand",
-} as const;
-
-const InputVatAccount = {
-  accountCode: "2010002011",
-  accountName: "Input VAT",
-} as const;
-
-const ExpandedWithholdingTaxAccount = {
-  accountCode: "2010002002",
-  accountName: "Expanded Withholding Tax",
-} as const;
 
 export function createDisbursementVoucherPaymentTypeRecords(paymentTypes: PaymentTypeRecord[]) {
   return paymentTypes;
@@ -180,9 +168,9 @@ export function createDisbursementVoucherFormValues(
     projectName: transaction?.projectName ?? transaction?.department ?? "",
     referenceModule: "Disbursement Voucher",
     remarks: transaction?.purpose ?? "",
-    status: DisbursementVoucherStatuses.open,
+    status: DisbursementVoucherStatuses.Open,
     taxDetails: transaction ? createDefaultTransactionTaxDetails(transaction) : createTaxDetails(0, "0%"),
-    taxRate: transaction ? getDefaultTaxRate(transaction) : "0%",
+    taxRate: transaction ? getDefaultTaxRate() : "0%",
     transactionId: transaction?.id ?? "",
     voucherDate: todayDateValue(),
     voucherNo: "",
@@ -224,17 +212,14 @@ export function createDisbursementLineEntry(draft: DisbursementVoucherEntryDraft
 export function createAutoDisbursementLineEntries(
   transaction: DisbursementTransactionRecord,
   bankAccount?: DisbursementVoucherBankAccount | null,
+  accountOptions: DisbursementVoucherGeneratedAccountOptions = {},
 ): DisbursementLineEntry[] {
   const debitAccount = getDebitAccountTemplate(transaction);
-  const creditAccount = getCreditAccountTemplate(transaction, bankAccount);
-  const taxProfile = getDefaultTaxProfile(transaction);
+  const creditAccount = getCreditAccountTemplate(transaction, bankAccount, accountOptions.cashAccount);
+  const taxProfile = getDefaultTaxProfile();
   const taxDetails = createDisbursementTaxDetails({ amount: transaction.amount, ...taxProfile });
   const refId = transaction.transactionNo || transaction.id;
-  const generatedRemarks = createAutoDisbursementGeneratedRemarks(
-    transaction.purpose,
-    debitAccount.accountName,
-    transaction.paymentMethod,
-  );
+  const generatedRemarks = createAutoDisbursementGeneratedRemarks(transaction.purpose, debitAccount.accountName, transaction.paymentMethod);
   const commonFields = {
     partyCode: "",
     partyName: transaction.payee,
@@ -262,8 +247,8 @@ export function createAutoDisbursementLineEntries(
   if (taxDetails.vatAmount > 0) {
     entries.push({
       id: `auto-input-vat-${transaction.id}`,
-      accountCode: InputVatAccount.accountCode,
-      accountName: InputVatAccount.accountName,
+      accountCode: accountOptions.inputVatAccount?.accountCode ?? "",
+      accountName: accountOptions.inputVatAccount?.accountName ?? "",
       ewtCode: "",
       particulars: generatedRemarks.inputVat,
       remarks: generatedRemarks.inputVat,
@@ -280,8 +265,8 @@ export function createAutoDisbursementLineEntries(
   if (taxDetails.ewtAmount > 0) {
     entries.push({
       id: `auto-ewt-${transaction.id}`,
-      accountCode: ExpandedWithholdingTaxAccount.accountCode,
-      accountName: ExpandedWithholdingTaxAccount.accountName,
+      accountCode: accountOptions.withholdingTaxAccount?.accountCode ?? "",
+      accountName: accountOptions.withholdingTaxAccount?.accountName ?? "",
       ewtCode: taxDetails.ewtCode,
       particulars: generatedRemarks.ewt,
       remarks: generatedRemarks.ewt,
@@ -472,10 +457,7 @@ export function applyMissingPartyTaxDefaultsToEntries(
     }
 
     const selectedParty = partyOptions.find(
-      (option) =>
-        option.value === partyCode ||
-        option.label === partyCode ||
-        option.name.trim().toLowerCase() === partyName.toLowerCase(),
+      (option) => option.value === partyCode || option.label === partyCode || option.name.trim().toLowerCase() === partyName.toLowerCase(),
     );
 
     if (!selectedParty) {
@@ -577,38 +559,38 @@ export function formatDateLabel(value: string) {
 }
 
 export function getDisbursementVoucherDisplayStatus(status: string): DisbursementVoucherDisplayStatus {
-  if (status === DisbursementVoucherStatuses.draft || status === DisbursementVoucherStatuses.open) {
-    return DisbursementVoucherStatuses.draft;
+  if (status === DisbursementVoucherStatuses.Draft || status === DisbursementVoucherStatuses.Open) {
+    return DisbursementVoucherStatuses.Draft;
   }
 
   if (status === "Pending Review" || status === "Pending" || status === "Active") {
-    return DisbursementVoucherStatuses.forApproval;
+    return DisbursementVoucherStatuses.ForApproval;
   }
 
   if (status === "Rejected") {
-    return DisbursementVoucherStatuses.disapproved;
+    return DisbursementVoucherStatuses.Disapproved;
   }
 
   if (status === "Completed") {
-    return DisbursementVoucherStatuses.closed;
+    return DisbursementVoucherStatuses.Closed;
   }
 
   if (status === "Approved") {
-    return DisbursementVoucherStatuses.posted;
+    return DisbursementVoucherStatuses.Posted;
   }
 
   if (
-    status === DisbursementVoucherStatuses.draft ||
-    status === DisbursementVoucherStatuses.forApproval ||
-    status === DisbursementVoucherStatuses.posted ||
-    status === DisbursementVoucherStatuses.disapproved ||
-    status === DisbursementVoucherStatuses.cancelled ||
-    status === DisbursementVoucherStatuses.closed
+    status === DisbursementVoucherStatuses.Draft ||
+    status === DisbursementVoucherStatuses.ForApproval ||
+    status === DisbursementVoucherStatuses.Posted ||
+    status === DisbursementVoucherStatuses.Disapproved ||
+    status === DisbursementVoucherStatuses.Cancelled ||
+    status === DisbursementVoucherStatuses.Closed
   ) {
     return status;
   }
 
-  return DisbursementVoucherStatuses.draft;
+  return DisbursementVoucherStatuses.Draft;
 }
 
 function createEmptyPaymentDetails(): DisbursementVoucherPaymentDetails {
@@ -703,7 +685,7 @@ function createInitialDisbursementVoucherHistory(
   voucher: Pick<DisbursementVoucherRecord, "voucherNo" | "voucherDate" | "status">,
 ): DisbursementVoucherHistoryEntry[] {
   const createdStatus =
-    voucher.status === DisbursementVoucherStatuses.draft ? DisbursementVoucherStatuses.draft : DisbursementVoucherStatuses.forApproval;
+    voucher.status === DisbursementVoucherStatuses.Draft ? DisbursementVoucherStatuses.Draft : DisbursementVoucherStatuses.ForApproval;
   const createdAt = createDisbursementVoucherHistoryDate(voucher.voucherDate, 8);
   const history: DisbursementVoucherHistoryEntry[] = [
     {
@@ -764,21 +746,21 @@ function createDisbursementVoucherHistoryDate(voucherDate: string, hour: number)
 }
 
 function getDisbursementVoucherHistoryAction(status: DisbursementVoucherStatus) {
-  if (status === DisbursementVoucherStatuses.posted) return DisbursementVoucherStatuses.posted;
-  if (status === DisbursementVoucherStatuses.disapproved) return DisbursementVoucherStatuses.disapproved;
-  if (status === DisbursementVoucherStatuses.cancelled) return DisbursementVoucherStatuses.cancelled;
-  if (status === DisbursementVoucherStatuses.closed) return DisbursementVoucherStatuses.closed;
-  if (status === DisbursementVoucherStatuses.forApproval) return DisbursementVoucherStatuses.forApproval;
+  if (status === DisbursementVoucherStatuses.Posted) return DisbursementVoucherStatuses.Posted;
+  if (status === DisbursementVoucherStatuses.Disapproved) return DisbursementVoucherStatuses.Disapproved;
+  if (status === DisbursementVoucherStatuses.Cancelled) return DisbursementVoucherStatuses.Cancelled;
+  if (status === DisbursementVoucherStatuses.Closed) return DisbursementVoucherStatuses.Closed;
+  if (status === DisbursementVoucherStatuses.ForApproval) return DisbursementVoucherStatuses.ForApproval;
 
   return "Updated";
 }
 
 function getDisbursementVoucherHistoryDescription(status: DisbursementVoucherStatus, voucherNo: string) {
-  if (status === DisbursementVoucherStatuses.posted) return `${voucherNo} was posted for disbursement processing.`;
-  if (status === DisbursementVoucherStatuses.disapproved) return `${voucherNo} was disapproved and returned for review.`;
-  if (status === DisbursementVoucherStatuses.cancelled) return `${voucherNo} was cancelled.`;
-  if (status === DisbursementVoucherStatuses.closed) return `${voucherNo} was closed.`;
-  if (status === DisbursementVoucherStatuses.draft) return `${voucherNo} was restored to Draft.`;
+  if (status === DisbursementVoucherStatuses.Posted) return `${voucherNo} was posted for disbursement processing.`;
+  if (status === DisbursementVoucherStatuses.Disapproved) return `${voucherNo} was disapproved and returned for review.`;
+  if (status === DisbursementVoucherStatuses.Cancelled) return `${voucherNo} was cancelled.`;
+  if (status === DisbursementVoucherStatuses.Closed) return `${voucherNo} was closed.`;
+  if (status === DisbursementVoucherStatuses.Draft) return `${voucherNo} was restored to Draft.`;
 
   return `${voucherNo} was returned for approval.`;
 }
@@ -865,6 +847,7 @@ function getDebitAccountTemplate(transaction: DisbursementTransactionRecord) {
 function getCreditAccountTemplate(
   transaction: DisbursementTransactionRecord,
   bankAccount?: DisbursementVoucherBankAccount | null,
+  cashAccount?: DisbursementVoucherGeneratedAccount | null,
 ) {
   if (bankAccount) {
     return {
@@ -874,7 +857,10 @@ function getCreditAccountTemplate(
   }
 
   if (transaction.paymentMethod === "Cash") {
-    return { ...CashInHandAccount };
+    return {
+      accountCode: cashAccount?.accountCode ?? "",
+      accountName: cashAccount?.accountName ?? "",
+    };
   }
 
   return {
@@ -883,8 +869,8 @@ function getCreditAccountTemplate(
   };
 }
 
-function getDefaultTaxRate(transaction: DisbursementTransactionRecord) {
-  const taxProfile = getDefaultTaxProfile(transaction);
+function getDefaultTaxRate() {
+  const taxProfile = getDefaultTaxProfile();
 
   return taxProfile.vatPercent > 0 ? `${taxProfile.vatPercent}%` : "0%";
 }
@@ -892,29 +878,11 @@ function getDefaultTaxRate(transaction: DisbursementTransactionRecord) {
 function createDefaultTransactionTaxDetails(transaction: DisbursementTransactionRecord) {
   return createDisbursementTaxDetails({
     amount: transaction.amount,
-    ...getDefaultTaxProfile(transaction),
+    ...getDefaultTaxProfile(),
   });
 }
 
-function getDefaultTaxProfile(transaction: DisbursementTransactionRecord) {
-  if (transaction.disbursementType === "Operating Expense") {
-    return {
-      ewtCode: "W10",
-      ewtPercent: 10,
-      vatCode: "V12",
-      vatPercent: 12,
-    };
-  }
-
-  if (transaction.disbursementType === "Capital Expenditure") {
-    return {
-      ewtCode: "",
-      ewtPercent: 0,
-      vatCode: "V12",
-      vatPercent: 12,
-    };
-  }
-
+function getDefaultTaxProfile() {
   return {
     ewtCode: "",
     ewtPercent: 0,
@@ -958,12 +926,4 @@ function createDisbursementTaxDetails({
     ewtAmount,
     amount: roundCurrency(sign * Math.max(absoluteAmount - Math.abs(ewtAmount), 0)),
   };
-}
-
-function parseTaxPercent(taxRate: string) {
-  return Number(taxRate.replace("%", "")) || 0;
-}
-
-function roundCurrency(value: number) {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
 }

@@ -17,7 +17,6 @@ import type {
   UpdateCashVoucherDto,
   UpdateCashVoucherDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
-import { CashDisbursementApiAllStatusFilter } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
 import {
   fetchMaintenancePartyOptions,
@@ -47,9 +46,9 @@ export async function fetchCashVoucherList(params?: FetchCashVoucherListParams):
   const response = await cashVoucherControllerFindAllV1({
     ...params,
     status:
-      params?.status && params.status !== CashDisbursementApiAllStatusFilter
+      params?.status && params.status !== "all" && params.status !== "All"
         ? mapCashVoucherStatusToApi(params.status)
-        : params?.status,
+        : undefined,
   });
 
   return {

@@ -33,7 +33,7 @@ const CashAdvanceFormSchema = z.object({
 });
 
 export function validateCashAdvanceForm(values: CashAdvanceFormValues): CashAdvanceFormErrors {
-  const validation = (values.status === CashAdvanceStatuses.draft ? CashAdvanceDraftFormSchema : CashAdvanceFormSchema).safeParse(values);
+  const validation = (values.status === CashAdvanceStatuses.Draft ? CashAdvanceDraftFormSchema : CashAdvanceFormSchema).safeParse(values);
 
   if (validation.success) {
     return {};

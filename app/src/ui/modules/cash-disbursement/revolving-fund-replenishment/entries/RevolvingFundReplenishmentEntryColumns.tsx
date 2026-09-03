@@ -6,11 +6,6 @@ import type {
   RevolvingFundReplenishmentEntry,
   RevolvingFundReplenishmentEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
-import {
-  RevolvingFundReplenishmentEntryEwtCodeOptions,
-  RevolvingFundReplenishmentEntryVatTypeOptions,
-  RevolvingFundReplenishmentResponsibilityCenterOptions,
-} from "@/app/src/constants/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentConstants";
 import { calculateRevolvingFundReplenishmentEntryTaxFields } from "@/app/src/data/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentData";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { ModuleDataEntryDropdownCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryDropdownCell";
@@ -24,9 +19,12 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 export function createRevolvingFundReplenishmentLineColumns({
   columnLabels,
   columnWidths,
+  ewtOptions = [],
   onOpenSupplierDrawer,
   page,
+  responsibilityCenterOptions = [],
   supplierOptions = [],
+  vatOptions = [],
 }: RevolvingFundReplenishmentDetailEntryColumnsParams): Record<
   RevolvingFundReplenishmentEntryColumnId,
   ModuleDataEntryColumn<RevolvingFundReplenishmentEntry>
@@ -145,8 +143,8 @@ export function createRevolvingFundReplenishmentLineColumns({
             const selectedSupplier = supplierOptions.find(
               (option) => option.value === value || option.name === value || option.label === value,
             );
-            const vatType = getDefaultVatType(selectedSupplier, row.vatType, RevolvingFundReplenishmentEntryVatTypeOptions);
-            const ewtCode = getDefaultEwtCode(selectedSupplier, row.ewtCode, RevolvingFundReplenishmentEntryEwtCodeOptions);
+            const vatType = getDefaultVatType(selectedSupplier, row.vatType, vatOptions);
+            const ewtCode = getDefaultEwtCode(selectedSupplier, row.ewtCode, ewtOptions);
             page.updateEntry(row.id, {
               supplierCode: String(selectedSupplier?.label ?? selectedSupplier?.value ?? ""),
               supplierName: selectedSupplier?.name ?? String(value),
@@ -165,10 +163,10 @@ export function createRevolvingFundReplenishmentLineColumns({
       }),
     ),
     netAmount: calculatedMoney("netAmount"),
-    vatType: dropdown("vatType", RevolvingFundReplenishmentEntryVatTypeOptions),
+    vatType: dropdown("vatType", vatOptions),
     vatPercent: calculatedMoney("vatPercent"),
     vatAmount: calculatedMoney("vatAmount"),
-    ewtCode: dropdown("ewtCode", RevolvingFundReplenishmentEntryEwtCodeOptions),
+    ewtCode: dropdown("ewtCode", ewtOptions),
     ewtPercent: calculatedMoney("ewtPercent"),
     ewtAmount: calculatedMoney("ewtAmount"),
     disburseAmount: calculatedMoney("disburseAmount"),
@@ -190,11 +188,11 @@ export function createRevolvingFundReplenishmentLineColumns({
           name={context.fieldName}
           value={row.responsibilityCenterCode}
           readOnly={page.isReadonly}
-          options={RevolvingFundReplenishmentResponsibilityCenterOptions}
+          options={responsibilityCenterOptions}
           placeholder="Select Responsibility Center"
           searchPlaceholder="Search Responsibility Center"
           onChange={(value) => {
-            const selectedCenter = RevolvingFundReplenishmentResponsibilityCenterOptions.find(
+            const selectedCenter = responsibilityCenterOptions.find(
               (option) => option.value === value,
             );
             page.updateEntry(row.id, {

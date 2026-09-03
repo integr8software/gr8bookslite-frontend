@@ -44,9 +44,9 @@ function createPettyCashFundStatusActionItems({
   onRequestConfirmation: (action: PettyCashFundConfirmationAction) => void;
   record?: PettyCashFundRecord | null;
 }) {
-  const status = record?.status ?? PettyCashFundStatuses.draft;
-  const isCancelled = status === PettyCashFundStatuses.cancelled;
-  const isPosted = status === PettyCashFundStatuses.posted;
+  const status = record?.status ?? PettyCashFundStatuses.Draft;
+  const isCancelled = status === PettyCashFundStatuses.Cancelled;
+  const isPosted = status === PettyCashFundStatuses.Posted;
   const actions: ModuleActionMenuItem[] = [
     {
       disabled: isPosted || isCancelled,
@@ -56,7 +56,7 @@ function createPettyCashFundStatusActionItems({
       type: "button",
     },
     {
-      disabled: status === PettyCashFundStatuses.disapproved || isCancelled,
+      disabled: status === PettyCashFundStatuses.Disapproved || isCancelled,
       icon: ThumbsDown,
       label: "Disapprove",
       onSelect: () => onRequestConfirmation("disapprove"),

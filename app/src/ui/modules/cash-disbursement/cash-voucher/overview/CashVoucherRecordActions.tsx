@@ -34,29 +34,29 @@ export function CashVoucherRecordActions({
   const recordLabel = row.voucher?.voucherNo ?? row.transaction.transactionNo;
   const status = row.voucher?.status ?? row.transaction.status;
   const canEdit = row.voucher && canEditCashVoucherStatus(status);
-  const isPosted = status === CashVoucherStatuses.posted;
-  const isDisapproved = status === CashVoucherStatuses.disapproved;
-  const isCancelled = status === CashVoucherStatuses.cancelled;
-  const approvalUndoStatus: CashVoucherStatus = CashVoucherStatuses.forApproval;
+  const isPosted = status === CashVoucherStatuses.Posted;
+  const isDisapproved = status === CashVoucherStatuses.Disapproved;
+  const isCancelled = status === CashVoucherStatuses.Cancelled;
+  const approvalUndoStatus: CashVoucherStatus = CashVoucherStatuses.ForApproval;
   const cancelStatus: CashVoucherStatus = isCancelled
     ? row.voucher
-      ? CashVoucherStatuses.draft
-      : CashVoucherStatuses.forApproval
-    : CashVoucherStatuses.cancelled;
+      ? CashVoucherStatuses.Draft
+      : CashVoucherStatuses.ForApproval
+    : CashVoucherStatuses.Cancelled;
   const statusDialogCopy = statusToConfirm ? getCashVoucherStatusDialogCopy(statusToConfirm, recordLabel, status) : null;
   const items: ModuleActionMenuItem[] = [
     {
       disabled: !canApproveCashVoucherStatus(status),
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () => setStatusToConfirm(isPosted ? approvalUndoStatus : CashVoucherStatuses.posted),
+      onSelect: () => setStatusToConfirm(isPosted ? approvalUndoStatus : CashVoucherStatuses.Posted),
       type: "button",
     },
     {
       disabled: !canDisapproveCashVoucherStatus(status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () => setStatusToConfirm(isDisapproved ? approvalUndoStatus : CashVoucherStatuses.disapproved),
+      onSelect: () => setStatusToConfirm(isDisapproved ? approvalUndoStatus : CashVoucherStatuses.Disapproved),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },

@@ -180,4 +180,11 @@ export type CashVoucherAccountingExportTheme = {
   excelAccentContrastArgb: string;
 };
 
+export type GeneratedAccountingAccount = {
+  accountCode: string;
+  accountName: string;
+};
+
+export type GeneratedAccountingAccountMap = Record<string, GeneratedAccountingAccount | undefined>;
+
 

@@ -6,7 +6,6 @@ import {
   canDisapproveDisbursementVoucherStatus,
   getDisbursementVoucherViewLink,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
-import { readAccountingGridSession } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingGridSessionData";
 import { createDisbursementVoucherFormValues } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type {
   DisbursementTransactionRecord,
@@ -16,7 +15,6 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 
 export function createInitialDisbursementVoucherFormValues({
-  mode,
   transaction,
   voucher,
 }: {
@@ -24,56 +22,39 @@ export function createInitialDisbursementVoucherFormValues({
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
 }) {
-  const defaultValues = createDisbursementVoucherFormValues(transaction, voucher);
-
-  if (mode === "add") {
-    return defaultValues;
-  }
-
-  const session = readAccountingGridSession();
-
-  if (session?.mode !== mode) {
-    return defaultValues;
-  }
-
-  return {
-    ...defaultValues,
-    ...session.values,
-    referenceModule: session.values.referenceModule.trim() || defaultValues.referenceModule,
-    voucherReferenceNo: session.values.voucherReferenceNo.trim() || defaultValues.voucherReferenceNo,
-  };
+  return createDisbursementVoucherFormValues(transaction, voucher);
 }
 
 export function canUpdateDisbursementVoucherStatus(currentStatus: DisbursementVoucherStatus, nextStatus: DisbursementVoucherStatus) {
-  if (nextStatus === DisbursementVoucherStatuses.posted) {
+  if (nextStatus === DisbursementVoucherStatuses.Posted) {
     return canApproveDisbursementVoucherStatus(currentStatus);
   }
 
-  if (nextStatus === DisbursementVoucherStatuses.disapproved) {
+  if (nextStatus === DisbursementVoucherStatuses.Disapproved) {
     return canDisapproveDisbursementVoucherStatus(currentStatus);
   }
 
-  if (nextStatus === DisbursementVoucherStatuses.cancelled) {
+  if (nextStatus === DisbursementVoucherStatuses.Cancelled) {
     return canCancelDisbursementVoucherStatus(currentStatus);
   }
 
-  if (nextStatus === DisbursementVoucherStatuses.forApproval) {
+  if (nextStatus === DisbursementVoucherStatuses.ForApproval) {
     return (
-      currentStatus === DisbursementVoucherStatuses.posted ||
-      currentStatus === DisbursementVoucherStatuses.disapproved ||
-      currentStatus === DisbursementVoucherStatuses.cancelled
+      currentStatus === DisbursementVoucherStatuses.Posted ||
+      currentStatus === DisbursementVoucherStatuses.Disapproved ||
+      currentStatus === DisbursementVoucherStatuses.Cancelled
     );
   }
 
   if (
-    nextStatus === DisbursementVoucherStatuses.draft &&
-    (currentStatus === DisbursementVoucherStatuses.posted || currentStatus === DisbursementVoucherStatuses.disapproved)
+    nextStatus === DisbursementVoucherStatuses.Draft &&
+    (currentStatus === DisbursementVoucherStatuses.Posted || currentStatus === DisbursementVoucherStatuses.Disapproved)
   ) {
     return true;
   }
 
-  if (nextStatus === DisbursementVoucherStatuses.draft) {
-    return currentStatus === DisbursementVoucherStatuses.cancelled;
+  if (nextStatus === DisbursementVoucherStatuses.Draft) {
+    return currentStatus === DisbursementVoucherStatuses.Cancelled;
   }
 
   return false;
@@ -85,8 +66,4 @@ export function createVoucherActionReturnLink(from: string | null, transactionId
   }
 
   return DisbursementVoucherLink;
-}
-
-export function createManualDisbursementTransactionId() {
-  return `dv-tx-manual-${Date.now()}`;
 }

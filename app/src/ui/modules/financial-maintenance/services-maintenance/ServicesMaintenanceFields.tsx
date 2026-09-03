@@ -1,10 +1,8 @@
-import { isValidElement, useId } from "react";
 import { ServicesMaintenanceFieldClassName, ServicesMaintenanceServiceTypeOptions } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
-import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
-import type {
-  ServicesMaintenanceFieldsProps,
-  ServicesMaintenanceFormFieldProps,
-} from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
+import type { ServicesMaintenanceFieldsProps } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
+import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
+
+export { FormField };
 
 export function ServicesMaintenanceFields({ errors, isReadonly, values, onInputChange }: ServicesMaintenanceFieldsProps) {
   return (
@@ -20,7 +18,7 @@ export function ServicesMaintenanceFields({ errors, isReadonly, values, onInputC
           placeholder="Enter service name"
         />
       </FormField>
-      <FormField label="Service Type" error={errors.serviceType} required className="lg:col-span-2">
+      <FormField label="Type of Service" error={errors.serviceType} required className="lg:col-span-2">
         <select
           id="services-maintenance-service-type"
           name="serviceType"
@@ -48,26 +46,6 @@ export function ServicesMaintenanceFields({ errors, isReadonly, values, onInputC
           placeholder={isReadonly ? "No description" : "Enter description"}
         />
       </FormField>
-    </div>
-  );
-}
-
-export function FormField({ children, className, error, helper, label, required }: ServicesMaintenanceFormFieldProps) {
-  const generatedId = useId();
-  const fieldId = isValidElement<{ id?: string }>(children) ? (children.props.id ?? generatedId) : generatedId;
-
-  return (
-    <div className={className}>
-      <label htmlFor={fieldId} className="mb-2 block text-sm font-semibold text-darknavy">
-        {label}
-        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
-      </label>
-      {children}
-      {error ? (
-        <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span>
-      ) : helper ? (
-        <span className="mt-1 block text-xs font-medium text-darknavy/55">{helper}</span>
-      ) : null}
     </div>
   );
 }

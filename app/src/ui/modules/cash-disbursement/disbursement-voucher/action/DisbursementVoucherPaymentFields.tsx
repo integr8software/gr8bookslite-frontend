@@ -7,10 +7,9 @@ import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/
 import {
   DisbursementVoucherBankSearchPlaceholder,
   DisbursementVoucherBankSelectPlaceholder,
-  DisbursementVoucherFieldClassName,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
-import { TransactionField } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
+import { TransactionField, TransactionFieldClassName } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 export function DisbursementVoucherPaymentFields({
@@ -105,7 +104,7 @@ export function DisbursementVoucherPaymentFields({
             value={values.paymentDetails.transferAccountNo ?? ""}
             readOnly={isReadonly}
             onChange={(event) => onUpdatePaymentDetails({ transferAccountNo: event.target.value })}
-            className={DisbursementVoucherFieldClassName}
+            className={TransactionFieldClassName}
           />
         </TransactionField>
       </div>
@@ -147,7 +146,7 @@ export function DisbursementVoucherPaymentFields({
           value={values.paymentDetails.payee ?? values.partyName}
           readOnly={isReadonly}
           onChange={(event) => onUpdatePaymentDetails({ payee: event.target.value })}
-          className={DisbursementVoucherFieldClassName}
+          className={TransactionFieldClassName}
         />
       </TransactionField>
       {!isMultiCheckNumber ? (
@@ -162,7 +161,7 @@ export function DisbursementVoucherPaymentFields({
             value={values.paymentDetails.checkNo}
             readOnly={isReadonly}
             onChange={(event) => onUpdatePaymentDetails({ checkNo: event.target.value })}
-            className={DisbursementVoucherFieldClassName}
+            className={TransactionFieldClassName}
           />
         </TransactionField>
       ) : null}

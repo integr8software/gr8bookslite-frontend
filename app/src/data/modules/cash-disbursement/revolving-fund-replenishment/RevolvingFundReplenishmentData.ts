@@ -6,7 +6,9 @@ import type {
   RevolvingFundReplenishmentRecord,
   RevolvingFundReplenishmentStatus,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
+import { roundCurrency } from "@/app/src/utils/currency.util";
 import { todayDateValue } from "@/app/src/utils/date.util";
+import { parseTaxPercent } from "@/app/src/utils/percentage.util";
 
 export function createBlankRevolvingFundReplenishmentEntry(): RevolvingFundReplenishmentEntry {
   return {
@@ -81,7 +83,7 @@ export function createRevolvingFundReplenishmentFormValues(
   return {
     transactionNo,
     documentDate: todayDateValue(),
-    status: RevolvingFundReplenishmentStatuses.open,
+    status: RevolvingFundReplenishmentStatuses.Open,
     partyCode: "",
     partyName: "",
     responsibilityCenter: "",
@@ -159,15 +161,12 @@ export function calculateRevolvingFundReplenishmentEntryTaxFields(
   amountValue: string | number,
   vatType = "",
   ewtCode = "",
-): Pick<
-  RevolvingFundReplenishmentEntry,
-  "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "disburseAmount"
-> {
-  const amount = roundRevolvingFundReplenishmentTaxAmount(parseMoneyNumberInput(amountValue));
+): Pick<RevolvingFundReplenishmentEntry, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "disburseAmount"> {
+  const amount = roundCurrency(parseMoneyNumberInput(amountValue));
   const vatPercent = getRevolvingFundReplenishmentVatPercent(vatType);
-  const ewtPercent = getRevolvingFundReplenishmentEwtPercent(ewtCode);
-  const vatAmount = roundRevolvingFundReplenishmentTaxAmount((amount * vatPercent) / 100);
-  const ewtAmount = roundRevolvingFundReplenishmentTaxAmount((amount * ewtPercent) / 100);
+  const ewtPercent = parseTaxPercent(ewtCode);
+  const vatAmount = roundCurrency((amount * vatPercent) / 100);
+  const ewtAmount = roundCurrency((amount * ewtPercent) / 100);
 
   return {
     netAmount: formatRevolvingFundReplenishmentAmount(Math.max(amount - vatAmount, 0)),
@@ -194,11 +193,7 @@ function normalizeRevolvingFundReplenishmentEntry(
     supplierName: entry.supplierName ?? entry.accountTitle ?? "",
     vatType: entry.vatType ?? "",
     ewtCode: entry.ewtCode ?? "",
-    ...calculateRevolvingFundReplenishmentEntryTaxFields(
-      entry.amount ?? entry.totalAmount ?? "",
-      entry.vatType ?? "",
-      entry.ewtCode ?? "",
-    ),
+    ...calculateRevolvingFundReplenishmentEntryTaxFields(entry.amount ?? entry.totalAmount ?? "", entry.vatType ?? "", entry.ewtCode ?? ""),
   };
 }
 
@@ -206,18 +201,4 @@ function getRevolvingFundReplenishmentVatPercent(vatType: string) {
   const match = vatType.match(/(\d+(?:\.\d+)?)/);
   if (match) return Number.parseFloat(match[1]);
   return 0;
-}
-
-function getRevolvingFundReplenishmentEwtPercent(ewtCode: string) {
-  const rates: Record<string, number> = {
-    W05: 5,
-    W10: 10,
-    WV01: 1,
-    WV02: 2,
-  };
-  return rates[ewtCode] ?? 0;
-}
-
-function roundRevolvingFundReplenishmentTaxAmount(value: number) {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
 }

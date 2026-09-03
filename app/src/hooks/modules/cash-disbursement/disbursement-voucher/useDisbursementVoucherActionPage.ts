@@ -16,11 +16,9 @@ import {
   getHydratedDisbursementVoucherGrossAmount,
   syncTaxDetailsAmount,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import { clearAccountingGridSession } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingGridSessionData";
 import {
   canUpdateDisbursementVoucherStatus,
   createInitialDisbursementVoucherFormValues,
-  createManualDisbursementTransactionId,
   createVoucherActionReturnLink,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherActionData";
 import {
@@ -32,17 +30,12 @@ import {
   syncDisbursementLineEntryTaxDetails,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
 import {
+  DisbursementVoucherActionModes,
   DisbursementVoucherLink,
   DisbursementVoucherStatuses,
   canEditDisbursementVoucherStatus,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import { DisbursementVoucherLineEntriesField } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
-import {
-  CashDisbursementActionModeAdd,
-  CashDisbursementActiveStatus,
-  CashDisbursementTaxTypeEwt,
-  CashDisbursementTaxTypeVat,
-} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import {
   validateDisbursementVoucherDetails,
   validateDisbursementVoucherEntries,
@@ -53,6 +46,7 @@ import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenan
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
+import { useTaxDefaultAccountOptionGroups } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { getEwtPercentFromCode, getVatPercentFromRate, getVatRateFromCode } from "@/app/src/data/shared/tax/TaxData";
 import type {
@@ -68,6 +62,8 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
+import type { GeneratedAccountingAccount } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
+import type { TaxDefaultAccountOption } from "@/app/src/types/shared/tax/TaxTypes";
 import { useDisbursementVoucherStore } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { DisbursementVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherQueryKeys";
@@ -103,13 +99,14 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const vouchers = useDisbursementVoucherStore((state) => state.vouchers);
   const activeBranchId = useAppStore((state) => state.activeBranchId);
   const activeCompanyId = useAppStore((state) => state.activeCompanyId);
-  const routeTransactionId = mode === CashDisbursementActionModeAdd ? (searchParams.get("transactionId") ?? "") : (params.recordId ?? "");
+  const routeTransactionId =
+    mode === DisbursementVoucherActionModes.Add ? (searchParams.get("transactionId") ?? "") : (params.recordId ?? "");
   const routeTransaction = transactions.find((transaction) => transaction.id === routeTransactionId);
   const listVoucher = vouchers.find((voucher) => voucher.id === routeTransactionId || voucher.transactionId === routeTransactionId);
   const recordQuery = useQuery({
     queryKey: DisbursementVoucherQueryKeys.record(routeTransactionId, activeCompanyId, activeBranchId),
     queryFn: () => fetchDisbursementVoucherById(routeTransactionId),
-    enabled: Boolean(routeTransactionId && mode !== CashDisbursementActionModeAdd),
+    enabled: Boolean(routeTransactionId && mode !== DisbursementVoucherActionModes.Add),
   });
   const accountOptionsQuery = useQuery({
     queryKey: DisbursementVoucherQueryKeys.accounts(activeCompanyId),
@@ -122,11 +119,10 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     enabled: activeCompanyId !== null,
     staleTime: 60_000,
   });
-  const taxCodesQuery = useAlphanumericTaxCodes();
-  const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const routeVoucher = recordQuery.data ?? listVoucher;
   const returnLink = createVoucherActionReturnLink(searchParams.get("from"), routeTransactionId);
   const transactionCurrency = useTransactionCurrency();
+  const copyFromRecords = useMemo(() => [], []);
   const [values, setValues] = useState<DisbursementVoucherFormValues>(() =>
     createInitialDisbursementVoucherFormValues({
       mode,
@@ -158,6 +154,23 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const partyStore = usePartyManagementStore();
   const responsibilityCenterStore = useResponsibilityCenterStore();
   const defaultAccounts = defaultAccountStore.defaultAccounts;
+  const taxCodesQuery = useAlphanumericTaxCodes();
+  const taxDefaultAccountOptionsQuery = useTaxDefaultAccountOptionGroups();
+  const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
+  const inputVatAccountsByTaxCode = useMemo(
+    () =>
+      createGeneratedAccountingAccountMap(
+        taxDefaultAccountOptionsQuery.data?.find((group) => group.classification === "input-purchases")?.options ?? [],
+      ),
+    [taxDefaultAccountOptionsQuery.data],
+  );
+  const withholdingTaxAccountsByCode = useMemo(
+    () =>
+      createGeneratedAccountingAccountMap(
+        taxDefaultAccountOptionsQuery.data?.find((group) => group.classification === "purchase-ewt")?.options ?? [],
+      ),
+    [taxDefaultAccountOptionsQuery.data],
+  );
   const paymentTypeRecords = useMemo(
     () => createDisbursementVoucherPaymentTypeRecords(paymentTypeStore.paymentTypes),
     [paymentTypeStore.paymentTypes],
@@ -166,7 +179,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     const optionsByCode = new Map<string, DisbursementVoucherPartyDropdownOption>();
 
     partyStore.records.forEach((record) => {
-      if (record.status !== CashDisbursementActiveStatus) {
+      if (record.status !== "Active") {
         return;
       }
 
@@ -178,7 +191,10 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       }
 
       const partyTypes = Array.isArray(record.partyTypes)
-        ? record.partyTypes.map((item) => (typeof item === "string" ? item : (item as { partyType?: string })?.partyType || "")).filter(Boolean).join(", ")
+        ? record.partyTypes
+            .map((item) => (typeof item === "string" ? item : (item as { partyType?: string })?.partyType || ""))
+            .filter(Boolean)
+            .join(", ")
         : "";
 
       optionsByCode.set(partyCode, {
@@ -200,7 +216,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const projectOptions = useMemo(
     () =>
       responsibilityCenterStore.centers
-        .filter((center) => center.status === CashDisbursementActiveStatus && center.typeName?.toLowerCase().includes("project"))
+        .filter((center) => center.status === "Active" && center.typeName?.toLowerCase().includes("project"))
         .map((center) => ({
           label: center.code,
           name: center.name,
@@ -212,7 +228,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const responsibilityCenterOptions = useMemo(
     () =>
       responsibilityCenterStore.centers
-        .filter((center) => center.status === CashDisbursementActiveStatus && !center.typeName?.toLowerCase().includes("project"))
+        .filter((center) => center.status === "Active" && !center.typeName?.toLowerCase().includes("project"))
         .map((center) => ({
           description: center.code,
           label: center.code,
@@ -225,7 +241,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const bankAccounts = useMemo(
     () =>
       bankMasterfileStore.banks
-        .filter((bank) => bank.status === CashDisbursementActiveStatus)
+        .filter((bank) => bank.status === "Active")
         .map((bank) => ({
           id: bank.id,
           accountCode: bank.accountCode,
@@ -240,17 +256,19 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const selectedTransaction = transactions.find((transaction) => transaction.id === values.transactionId);
   const existingVoucher = routeVoucher ?? vouchers.find((voucher) => voucher.transactionId === values.transactionId);
   const currentStatus = existingVoucher?.status ?? selectedTransaction?.status ?? values.status;
-  const isReadonly = mode === "view" || (mode === "edit" && !canEditDisbursementVoucherStatus(currentStatus));
+  const isReadonly =
+    mode === DisbursementVoucherActionModes.View ||
+    (mode === DisbursementVoucherActionModes.Edit && !canEditDisbursementVoucherStatus(currentStatus));
   const totalDebit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.debit, 0), [values.lineEntries]);
   const totalCredit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.credit, 0), [values.lineEntries]);
   const selectedBankAccount = bankAccounts.find((account) => account.accountCode === values.paymentDetails.bankAccountCode) ?? null;
   const selectedPaymentTypeRecord = paymentTypeRecords.find((record) => record.paymentType === values.paymentMethod) ?? null;
   const routePaymentMethod = existingVoucher?.paymentMethod ?? selectedTransaction?.paymentMethod ?? "";
-  const isCashVoucherRoute = (mode !== CashDisbursementActionModeAdd || Boolean(routeTransactionId)) && routePaymentMethod === "Cash";
-  const isRecordMissing = (mode !== CashDisbursementActionModeAdd && !recordQuery.isLoading && !existingVoucher) || isCashVoucherRoute;
+  const isCashVoucherRoute = (mode !== DisbursementVoucherActionModes.Add || Boolean(routeTransactionId)) && routePaymentMethod === "Cash";
+  const isRecordMissing = (mode !== DisbursementVoucherActionModes.Add && !recordQuery.isLoading && !existingVoucher) || isCashVoucherRoute;
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["voucherNo"]) : rawIsDirty;
+  const isDirty = mode === DisbursementVoucherActionModes.Add ? hasModuleDraftChanges(values, initialValues, ["voucherNo"]) : rawIsDirty;
   const draft = useModuleDraft({
     enabled: !isReadonly,
     initialValues,
@@ -272,7 +290,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   }, [activeBranchId]);
 
   useEffect(() => {
-    if (!existingVoucher || mode === CashDisbursementActionModeAdd) return;
+    if (!existingVoucher || mode === DisbursementVoucherActionModes.Add) return;
 
     const rawRecord = existingVoucher as DisbursementVoucherRecord & {
       details?: Array<Record<string, unknown>>;
@@ -328,7 +346,9 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     const voucherGrossAmount =
       mappedEntries
         .filter((entry) => !isGeneratedAccountingEntry(entry))
-        .reduce((sum, entry) => sum + Number(entry.taxDetails.grossAmount || 0), 0) || existingVoucher.amount || 0;
+        .reduce((sum, entry) => sum + Number(entry.taxDetails.grossAmount || 0), 0) ||
+      existingVoucher.amount ||
+      0;
 
     queueMicrotask(() => {
       const nextValues: DisbursementVoucherFormValues = {
@@ -381,7 +401,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   }, [existingVoucher, mode, routeTransaction]);
 
   useEffect(() => {
-    if (!existingVoucher || mode === CashDisbursementActionModeAdd || partyOptions.length === 0 || taxCodes.length === 0) {
+    if (!existingVoucher || mode === DisbursementVoucherActionModes.Add || partyOptions.length === 0 || taxCodes.length === 0) {
       return;
     }
 
@@ -389,11 +409,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       return;
     }
 
-    const { changed, entries: nextEntries } = applyMissingPartyTaxDefaultsToEntries(
-      values.lineEntries,
-      partyOptions,
-      taxCodes,
-    );
+    const { changed, entries: nextEntries } = applyMissingPartyTaxDefaultsToEntries(values.lineEntries, partyOptions, taxCodes);
 
     if (!changed) {
       hydratedPartyTaxDefaultsRecordIdRef.current = existingVoucher.id;
@@ -409,14 +425,25 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
           bankAccount,
           blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
           generatedRemarksOverrides: generatedRemarksOverridesRef.current,
+          inputVatAccountsByTaxCode,
           paymentMethod: current.paymentMethod,
+          withholdingTaxAccountsByCode,
         }),
       };
     });
-  }, [bankAccounts, existingVoucher, mode, partyOptions, taxCodes, values.lineEntries]);
+  }, [
+    bankAccounts,
+    existingVoucher,
+    inputVatAccountsByTaxCode,
+    mode,
+    partyOptions,
+    taxCodes,
+    values.lineEntries,
+    withholdingTaxAccountsByCode,
+  ]);
 
   useEffect(() => {
-    if (mode !== CashDisbursementActionModeAdd) return;
+    if (mode !== DisbursementVoucherActionModes.Add) return;
 
     queueMicrotask(() => {
       void refreshNextTransactionNo();
@@ -428,7 +455,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   }, []);
 
   useEffect(() => {
-    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+    if (mode !== DisbursementVoucherActionModes.Add || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
       return;
     }
 
@@ -472,7 +499,9 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
           bankAccount,
           blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
           generatedRemarksOverrides: generatedRemarksOverridesRef.current,
+          inputVatAccountsByTaxCode,
           paymentMethod: current.paymentMethod,
+          withholdingTaxAccountsByCode,
         }),
       };
     });
@@ -532,7 +561,9 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       bankAccount,
       blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
       generatedRemarksOverrides: generatedRemarksOverridesRef.current,
+      inputVatAccountsByTaxCode,
       paymentMethod: nextPaymentMethod,
+      withholdingTaxAccountsByCode,
     });
   }
 
@@ -542,12 +573,10 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     }
 
     const selectedParty = partyStore.records.find(
-      (record) =>
-        record.partyCodeNo === partyCode ||
-        getPartyDisplayName(record).trim().toLowerCase() === partyName.trim().toLowerCase(),
+      (record) => record.partyCodeNo === partyCode || getPartyDisplayName(record).trim().toLowerCase() === partyName.trim().toLowerCase(),
     );
-    const defaultVatCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseInputVatTaxSourceKey, CashDisbursementTaxTypeVat);
-    const defaultEwtCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseEwtTaxSourceKey, CashDisbursementTaxTypeEwt);
+    const defaultVatCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseInputVatTaxSourceKey, "VAT");
+    const defaultEwtCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseEwtTaxSourceKey, "EWT");
     const nextTaxRate = defaultVatCode ? getVatRateFromCode(defaultVatCode, taxCodes) : "0%";
     const vatPercent = defaultVatCode ? getVatPercentFromRate(nextTaxRate) : 0;
     const ewtPercent = defaultEwtCode ? getEwtPercentFromCode(defaultEwtCode, taxCodes) : 0;
@@ -590,7 +619,9 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
           bankAccount,
           blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
           generatedRemarksOverrides: generatedRemarksOverridesRef.current,
+          inputVatAccountsByTaxCode,
           paymentMethod: current.paymentMethod,
+          withholdingTaxAccountsByCode,
         }),
       };
     });
@@ -649,8 +680,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
 
     const isSameAsToBank =
       Boolean(values.paymentDetails.transferToBank) &&
-      (values.paymentDetails.transferToBank === bankAccount.bankName ||
-        values.paymentDetails.transferAccountNo === bankAccount.accountNo);
+      (values.paymentDetails.transferToBank === bankAccount.bankName || values.paymentDetails.transferAccountNo === bankAccount.accountNo);
 
     updatePaymentDetails({
       bankAccountCode: bankAccount.accountCode,
@@ -806,7 +836,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
 
   function requestDisbursementVoucherSubmit(status: DisbursementVoucherStatus) {
     if (isReadonly || isSubmittingRef.current) return;
-    if (mode === "edit" && !isDirty && status === currentStatus) {
+    if (mode === DisbursementVoucherActionModes.Edit && !isDirty && status === currentStatus) {
       toast.error("No changes to save.");
       return;
     }
@@ -819,9 +849,9 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     const valuesForSubmit = {
       ...values,
       status,
-      transactionId: values.transactionId.trim() || createManualDisbursementTransactionId(),
+      transactionId: values.transactionId.trim(),
     };
-    const shouldValidate = status !== DisbursementVoucherStatuses.draft;
+    const shouldValidate = status !== DisbursementVoucherStatuses.Draft;
     const detailsErrors = shouldValidate
       ? validateDisbursementVoucherDetails(valuesForSubmit, selectedPaymentTypeRecord, bankAccounts)
       : {};
@@ -857,14 +887,9 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         paymentDueDate: pendingSubmitValues.paymentDueDate,
         partyCode: pendingSubmitValues.partyCode,
         partyName: pendingSubmitValues.partyName,
-        paymentMethod: pendingSubmitValues.paymentMethod || undefined,
-        disbursementType: pendingSubmitValues.disbursementType || undefined,
+        paymentMethod: pendingSubmitValues.paymentMethod,
         paymentDetails: pendingSubmitValues.paymentDetails,
-        attachments: pendingSubmitValues.attachments,
-        referenceModule: pendingSubmitValues.referenceModule,
-        voucherReferenceNo: pendingSubmitValues.voucherReferenceNo,
-        invoiceReferenceNo: pendingSubmitValues.invoiceReferenceNo,
-        costCenter: pendingSubmitValues.costCenter,
+        costCenter: pendingSubmitValues.projectCode || pendingSubmitValues.costCenter,
         projectCode: pendingSubmitValues.projectCode || pendingSubmitValues.costCenter,
         projectName: pendingSubmitValues.projectName,
         preparedBy: pendingSubmitValues.preparedBy,
@@ -876,7 +901,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         details: pendingSubmitValues.lineEntries,
       };
 
-      if (mode === "edit" && existingVoucher) {
+      if (mode === DisbursementVoucherActionModes.Edit && existingVoucher) {
         await updateDisbursementVoucherApi(existingVoucher.id, payload);
         toast.success("Disbursement Voucher updated successfully.");
       } else {
@@ -909,7 +934,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
 
   function handleSubmit(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
-    requestDisbursementVoucherSubmit(DisbursementVoucherStatuses.forApproval);
+    requestDisbursementVoucherSubmit(DisbursementVoucherStatuses.ForApproval);
   }
 
   async function handleUpdateStatus(status: DisbursementVoucherStatus) {
@@ -938,7 +963,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
 
   async function resetAddValuesWithNextTransactionNo() {
     const nextValues = createInitialDisbursementVoucherFormValues({
-      mode: CashDisbursementActionModeAdd,
+      mode: "add",
       transaction: routeTransaction,
       voucher: routeVoucher,
     });
@@ -960,7 +985,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === CashDisbursementActionModeAdd) {
+    if (mode === DisbursementVoucherActionModes.Add) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -1004,6 +1029,10 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     handleCloseResponsibilityCenterDrawer();
   }
 
+  function handleCopyFrom() {
+    toast.error("Copy From records are not available yet.");
+  }
+
   return {
     discardDraft,
     hasDiscardableChanges: isDirty,
@@ -1012,6 +1041,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     bankAccounts,
     chartAccounts: chartAccountsQuery.data ?? [],
     chartAccountOptions: accountOptionsQuery.data ?? [],
+    copyFromRecords,
     currentStatus,
     currencyOptions: transactionCurrency.currencyOptions,
     defaultAccounts,
@@ -1049,6 +1079,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     handleAddEntries,
     handleBankAccountChange,
     handleClearEntries,
+    handleCopyFrom,
     handleCreateParty,
     handleCreateProject,
     handleCreateResponsibilityCenter,
@@ -1082,6 +1113,30 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   };
 }
 
+function createGeneratedAccountingAccountMap(taxOptions: TaxDefaultAccountOption[]): Record<string, GeneratedAccountingAccount> {
+  const accountByKey: Record<string, GeneratedAccountingAccount> = {};
+
+  taxOptions.forEach((taxOption) => {
+    if (!taxOption.defaultAccountCode || !taxOption.defaultAccountTitle) {
+      return;
+    }
+
+    const account = {
+      accountCode: taxOption.defaultAccountCode,
+      accountName: taxOption.defaultAccountTitle,
+    };
+
+    [taxOption.taxCode, taxOption.displayCode, taxOption.sourceKey].forEach((key) => {
+      const normalizedKey = key?.trim();
+      if (normalizedKey) {
+        accountByKey[normalizedKey] = account;
+      }
+    });
+  });
+
+  return accountByKey;
+}
+
 function shouldEntryRemarksFollowHeader(entry: DisbursementLineEntry, previousHeaderRemarks: string) {
   const normalizedEntryRemarks = (entry.particulars || entry.remarks || "").trim();
   const normalizedHeaderRemarks = previousHeaderRemarks.trim();
@@ -1093,3 +1148,10 @@ function shouldEntryRemarksFollowHeader(entry: DisbursementLineEntry, previousHe
     (normalizedHeaderRemarks !== "" && normalizedEntryRemarks === normalizedHeaderRemarks)
   );
 }
+
+function clearAccountingGridSession() {
+  if (typeof window !== "undefined") {
+    sessionStorage.removeItem("cash-disbursement-accounting-grid");
+  }
+}
+

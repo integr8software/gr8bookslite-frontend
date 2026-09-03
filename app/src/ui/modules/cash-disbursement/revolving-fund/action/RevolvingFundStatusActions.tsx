@@ -44,9 +44,9 @@ function createRevolvingFundStatusActionItems({
   onRequestConfirmation: (action: RevolvingFundConfirmationAction) => void;
   record?: RevolvingFundRecord | null;
 }) {
-  const status = record?.status ?? RevolvingFundStatuses.draft;
-  const isCancelled = status === RevolvingFundStatuses.cancelled;
-  const isPosted = status === RevolvingFundStatuses.posted;
+  const status = record?.status ?? RevolvingFundStatuses.Draft;
+  const isCancelled = status === RevolvingFundStatuses.Cancelled;
+  const isPosted = status === RevolvingFundStatuses.Posted;
   const actions: ModuleActionMenuItem[] = [
     {
       disabled: isPosted || isCancelled,
@@ -56,7 +56,7 @@ function createRevolvingFundStatusActionItems({
       type: "button",
     },
     {
-      disabled: status === RevolvingFundStatuses.disapproved || isCancelled,
+      disabled: status === RevolvingFundStatuses.Disapproved || isCancelled,
       icon: ThumbsDown,
       label: "Disapprove",
       onSelect: () => onRequestConfirmation("disapprove"),

@@ -40,10 +40,10 @@ function createRevolvingFundHistory(record?: RevolvingFundRecord): ModuleHistory
       createdAt: record.createdAt,
       description: `${record.transactionNo} was created.`,
       id: `rf-history-${record.id}-created`,
-      status: RevolvingFundStatuses.draft,
+      status: RevolvingFundStatuses.Draft,
     },
   ];
-  if (record.updatedAt !== record.createdAt || record.status !== RevolvingFundStatuses.draft) {
+  if (record.updatedAt !== record.createdAt || record.status !== RevolvingFundStatuses.Draft) {
     history.push({
       action: "Updated",
       actor: record.updatedBy,

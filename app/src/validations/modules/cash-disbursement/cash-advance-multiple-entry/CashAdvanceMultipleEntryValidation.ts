@@ -26,7 +26,7 @@ const CashAdvanceMultipleEntrySchema = z.object({
 });
 
 export function validateCashAdvanceMultipleEntryForm(values: CashAdvanceMultipleEntryFormValues): CashAdvanceMultipleEntryFormErrors {
-  const isDraft = values.status === CashAdvanceMultipleEntryStatuses.draft;
+  const isDraft = values.status === CashAdvanceMultipleEntryStatuses.Draft;
   const result = (isDraft ? CashAdvanceMultipleEntryDraftSchema : CashAdvanceMultipleEntrySchema).safeParse(values);
   const errors: CashAdvanceMultipleEntryFormErrors = {};
 

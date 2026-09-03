@@ -55,7 +55,7 @@ export const PettyCashVoucherFormValidationSchema = z.object({
 });
 
 export function validatePettyCashVoucherForm(values: PettyCashVoucherFormValues): PettyCashVoucherFormErrors {
-  const result = (values.status === PettyCashVoucherStatuses.draft
+  const result = (values.status === PettyCashVoucherStatuses.Draft
     ? PettyCashVoucherDraftFormValidationSchema
     : PettyCashVoucherFormValidationSchema
   ).safeParse(values);

@@ -27,7 +27,7 @@ import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () => void; page: PettyCashFundActionPageState }) {
   const [confirmation, setConfirmation] = useState<PettyCashFundConfirmationAction | null>(null);
   const transactionNo = page.record?.transactionNo ?? page.values.transactionNo;
-  const isDraftEdit = page.mode === "edit" && page.record?.status === PettyCashFundStatuses.draft;
+  const isDraftEdit = page.mode === "edit" && page.record?.status === PettyCashFundStatuses.Draft;
   const isSaveAction = page.mode === "add" || isDraftEdit;
   const title =
     page.mode === "add" ? (
@@ -85,7 +85,7 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
                 disabled={page.isSubmitting}
                 label={isSaveAction ? "Save" : "Update"}
                 onAction={() => {
-                  if (page.validate(PettyCashFundStatuses.forApproval)) {
+                  if (page.validate(PettyCashFundStatuses.ForApproval)) {
                     setConfirmation("save");
                   }
                 }}
@@ -95,7 +95,7 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
                         {
                           label: "Save As Draft",
                           onSelect: () => {
-                            if (page.validate(PettyCashFundStatuses.draft)) {
+                            if (page.validate(PettyCashFundStatuses.Draft)) {
                               setConfirmation("draft");
                             }
                           },
@@ -152,15 +152,15 @@ export function PettyCashFundActionHeader({ onPreview, page }: { onPreview: () =
             let isSuccessful = false;
 
             if (confirmation === "save") {
-              isSuccessful = await page.save(PettyCashFundStatuses.forApproval);
+              isSuccessful = await page.save(PettyCashFundStatuses.ForApproval);
             } else if (confirmation === "draft") {
-              isSuccessful = await page.save(PettyCashFundStatuses.draft);
+              isSuccessful = await page.save(PettyCashFundStatuses.Draft);
             } else if (confirmation === "approve") {
-              isSuccessful = await page.updateStatus(PettyCashFundStatuses.posted);
+              isSuccessful = await page.updateStatus(PettyCashFundStatuses.Posted);
             } else if (confirmation === "disapprove") {
-              isSuccessful = await page.updateStatus(PettyCashFundStatuses.disapproved);
+              isSuccessful = await page.updateStatus(PettyCashFundStatuses.Disapproved);
             } else {
-              isSuccessful = await page.updateStatus(PettyCashFundStatuses.cancelled);
+              isSuccessful = await page.updateStatus(PettyCashFundStatuses.Cancelled);
             }
 
             if (isSuccessful) {

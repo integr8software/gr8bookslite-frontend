@@ -58,7 +58,7 @@ export function CashAdvanceActionHeader({
   const [isAvailabilityWarningOpen, setIsAvailabilityWarningOpen] = useState(false);
   const [statusToConfirm, setStatusToConfirm] = useState<CashAdvanceStatus | null>(null);
   const recordLabel = record?.transNo ?? "this cash advance";
-  const isDraftEdit = mode === "edit" && record?.status === CashAdvanceStatuses.draft;
+  const isDraftEdit = mode === "edit" && record?.status === CashAdvanceStatuses.Draft;
   const isSaveAction = mode === "add" || isDraftEdit;
   const statusDialogCopy = statusToConfirm ? getCashAdvanceStatusDialogCopy(statusToConfirm, recordLabel, record?.status) : null;
   const title =
@@ -111,7 +111,7 @@ export function CashAdvanceActionHeader({
                 disabled={isSubmitting}
                 label={isSaveAction ? "Save" : "Update"}
                 onAction={() => {
-                  if (onValidate ? onValidate(CashAdvanceStatuses.forApproval) : true) {
+                  if (onValidate ? onValidate(CashAdvanceStatuses.ForApproval) : true) {
                     if (availabilityWarning) {
                       setIsAvailabilityWarningOpen(true);
                     } else {
@@ -125,7 +125,7 @@ export function CashAdvanceActionHeader({
                         {
                           label: "Save As Draft",
                           onSelect: () => {
-                            if (onValidate ? onValidate(CashAdvanceStatuses.draft) : true) {
+                            if (onValidate ? onValidate(CashAdvanceStatuses.Draft) : true) {
                               setSubmitConfirmation("draft");
                             }
                           },

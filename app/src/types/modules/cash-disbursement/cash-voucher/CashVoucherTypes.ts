@@ -367,3 +367,14 @@ export type CashVoucherReportPreviewProps = {
 };
 
 export type CashVoucherPdfText = string | Array<string | { text: string; bold?: boolean }>;
+
+export type CashVoucherGeneratedAccount = {
+  accountCode: string;
+  accountName: string;
+};
+
+export type CashVoucherGeneratedAccountOptions = {
+  cashAccount?: CashVoucherGeneratedAccount | null;
+  inputVatAccount?: CashVoucherGeneratedAccount | null;
+  withholdingTaxAccount?: CashVoucherGeneratedAccount | null;
+};

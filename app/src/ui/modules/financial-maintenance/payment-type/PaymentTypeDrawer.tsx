@@ -2,22 +2,15 @@
 
 import {
   PaymentTypeDrawerFormId,
-  PaymentTypeFieldClassName,
   PaymentTypeParentLabel,
-  PaymentTypeTitle,
 } from "@/app/src/constants/modules/financial-maintenance/payment-type/PaymentTypeConstants";
-import { PaymentTypeOptions } from "@/app/src/data/modules/financial-maintenance/payment-type/PaymentTypeData";
 import { usePaymentTypeFormPage } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentTypeFormPage";
 import type {
   PaymentTypeActionMode,
-  PaymentTypeClassification,
   PaymentTypeDrawerProps,
 } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
-import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
-import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { PaymentTypeFields } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeFields";
 import { ModuleDrawer, getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
-import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
 
 const PaymentTypeActionCopy = {
   add: {
@@ -80,68 +73,13 @@ function PaymentTypeDrawerPanel({ isOpen, mode, onClose, paymentType }: PaymentT
       submitLabel={mode === "edit" ? "Update Payment Type" : "Save Payment Type"}
       title={copy.title}
     >
-      <form id={PaymentTypeDrawerFormId} onSubmit={page.handleSubmit} className="grid gap-5 px-6 py-5">
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold text-darknavy">
-            Payment Type Name
-            <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label="Payment Type Name" leadingSpace />
-          </span>
-          <input
-            value={page.values.paymentType}
-            readOnly={page.isReadonly}
-            onChange={(event) => page.handleInputChange("paymentType", event.target.value)}
-            className={PaymentTypeFieldClassName}
-          />
-          {page.errors.paymentType ? <span className="text-xs font-semibold text-coralpink">{page.errors.paymentType}</span> : null}
-        </label>
-
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold text-darknavy">
-            Category
-            <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label="Category" leadingSpace />
-          </span>
-          <select
-            value={page.values.type}
-            disabled={page.isReadonly}
-            onChange={(event) => page.handleInputChange("type", event.target.value as PaymentTypeClassification)}
-            className={PaymentTypeFieldClassName}
-          >
-            <option value="">--Select Category--</option>
-            {PaymentTypeOptions.map((typeOption) => (
-              <option key={typeOption} value={typeOption}>
-                {typeOption}
-              </option>
-            ))}
-          </select>
-          {page.errors.type ? <span className="text-xs font-semibold text-coralpink">{page.errors.type}</span> : null}
-        </label>
-
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold text-darknavy">Description</span>
-          <AppLimitedTextarea
-            value={page.values.description}
-            readOnly={page.isReadonly}
-            onChange={(event) => page.handleInputChange("description", event.target.value)}
-            className={`${PaymentTypeFieldClassName} min-h-24 py-3`}
-            counterMode="used"
-          />
-          {page.errors.description ? <span className="text-xs font-semibold text-coralpink">{page.errors.description}</span> : null}
-        </label>
-
-        <label className="grid max-w-xs gap-2">
-          <span className="text-sm font-semibold text-darknavy">
-            Status
-            <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired label="Status" leadingSpace />
-          </span>
-          <AppSwitch
-            falseOption={MaintenanceInactiveStatusSwitchOption}
-            value={page.values.status}
-            readOnly={page.isReadonly}
-            onChange={(status) => page.handleInputChange("status", status)}
-            trueOption={MaintenanceActiveStatusSwitchOption}
-          />
-          {page.errors.status ? <span className="text-xs font-semibold text-coralpink">{page.errors.status}</span> : null}
-        </label>
+      <form id={PaymentTypeDrawerFormId} onSubmit={page.handleSubmit} className="px-6 py-5">
+        <PaymentTypeFields
+          errors={page.errors}
+          isReadonly={page.isReadonly}
+          onInputChange={page.handleInputChange}
+          values={page.values}
+        />
       </form>
     </ModuleDrawer>
   );

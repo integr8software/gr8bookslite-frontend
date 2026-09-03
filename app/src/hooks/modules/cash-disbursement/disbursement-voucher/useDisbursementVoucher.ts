@@ -18,6 +18,7 @@ import {
   DisbursementVoucherDefaultColumnVisibility,
   DisbursementVoucherDefaultSorting,
   DisbursementVoucherAllStatusFilter,
+  DisbursementVoucherRecordStatuses,
   DisbursementVoucherStatusFilters,
   DisbursementVoucherStatuses,
   DisbursementVoucherTableColumns,
@@ -27,7 +28,10 @@ import {
 import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
-import { getDisbursementVoucherDisplayStatus, sanitizeDisbursementVoucherRecord } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
+import {
+  getDisbursementVoucherDisplayStatus,
+  sanitizeDisbursementVoucherRecord,
+} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
 import type {
   DisbursementVoucherPreviewRow,
@@ -71,8 +75,7 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
   }, [activeBranchId, activeCompanyId, queryClient]);
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: DisbursementVoucherStatus }) =>
-      updateDisbursementVoucherStatusApi(id, status),
+    mutationFn: async ({ id, status }: { id: string; status: DisbursementVoucherStatus }) => updateDisbursementVoucherStatusApi(id, status),
     onSuccess: (updated) => {
       queryClient.setQueryData<DisbursementVoucherRecord[]>(
         DisbursementVoucherQueryKeys.records(activeCompanyId, activeBranchId),
@@ -146,8 +149,7 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
       isLoading: vouchersQuery.isLoading,
       lastSyncedAt: vouchersQuery.dataUpdatedAt,
       refreshRecords,
-      isMutating:
-        updateStatusMutation.isPending || deleteVoucherMutation.isPending,
+      isMutating: updateStatusMutation.isPending || deleteVoucherMutation.isPending,
     }),
     [
       deleteVoucherMutation,
@@ -265,10 +267,13 @@ export function useDisbursementVoucherPreviewTable(previewRows: DisbursementVouc
     table.setPageIndex(0);
   }
 
-  const setStatusFilter = useCallback((value: (typeof DisbursementVoucherStatusFilters)[number]) => {
-    setStatusFilterState(value);
-    table.setPageIndex(0);
-  }, [table]);
+  const setStatusFilter = useCallback(
+    (value: (typeof DisbursementVoucherStatusFilters)[number]) => {
+      setStatusFilterState(value);
+      table.setPageIndex(0);
+    },
+    [table],
+  );
 
   function setDateRange(value: DateRangeValue) {
     setDateRangeState(value);
@@ -292,9 +297,7 @@ export function useDisbursementVoucherPreviewTable(previewRows: DisbursementVouc
     const statusCounts = Object.fromEntries(
       Object.values(DisbursementVoucherStatuses).map((status) => [
         status,
-        previewRows.filter(
-          (row) => getDisbursementVoucherDisplayStatus(row.voucher?.status ?? row.transaction.status) === status,
-        ).length,
+        previewRows.filter((row) => getDisbursementVoucherDisplayStatus(row.voucher?.status ?? row.transaction.status) === status).length,
       ]),
     ) as Record<DisbursementVoucherStatus, number>;
 
@@ -308,22 +311,29 @@ export function useDisbursementVoucherPreviewTable(previewRows: DisbursementVouc
         isActive: statusFilter === DisbursementVoucherAllStatusFilter,
         onClick: () => setStatusFilter(DisbursementVoucherAllStatusFilter),
       },
-      ...[
-        DisbursementVoucherStatuses.posted,
-        DisbursementVoucherStatuses.forApproval,
-        DisbursementVoucherStatuses.draft,
-        DisbursementVoucherStatuses.disapproved,
-        DisbursementVoucherStatuses.cancelled,
-      ].map((status, index) => ({
-        label: status,
-        value: statusCounts[status] ?? 0,
-        summary: formatPartOfTotalPercentage(statusCounts[status] ?? 0, previewRows.length),
-        icon: getModuleStatusMetricIcon(status),
-        iconClassName: getModuleStatusMetricIconClassName(status),
-        tone: (["emerald", "amber", "blue", "red", "slate"] as const)[index],
-        isActive: statusFilter === status,
-        onClick: () => setStatusFilter(status),
-      })),
+      ...DisbursementVoucherRecordStatuses.map((status) => {
+        const tone =
+          status === DisbursementVoucherStatuses.Posted
+            ? ("emerald" as const)
+            : status === DisbursementVoucherStatuses.ForApproval
+              ? ("amber" as const)
+              : status === DisbursementVoucherStatuses.Draft
+                ? ("blue" as const)
+                : status === DisbursementVoucherStatuses.Disapproved
+                  ? ("red" as const)
+                  : ("slate" as const);
+
+        return {
+          label: status,
+          value: statusCounts[status] ?? 0,
+          summary: formatPartOfTotalPercentage(statusCounts[status] ?? 0, previewRows.length),
+          icon: getModuleStatusMetricIcon(status),
+          iconClassName: getModuleStatusMetricIconClassName(status),
+          tone,
+          isActive: statusFilter === status,
+          onClick: () => setStatusFilter(status),
+        };
+      }),
     ];
   }, [previewRows, setStatusFilter, statusFilter]);
 

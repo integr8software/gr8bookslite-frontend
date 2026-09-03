@@ -29,31 +29,31 @@ export function RevolvingFundReplenishmentRecordActions({
   record: RevolvingFundReplenishmentRecord;
 }) {
   const [status, setStatus] = useState<RevolvingFundReplenishmentStatus | null>(null);
-  const isPosted = record.status === RevolvingFundReplenishmentStatuses.posted;
-  const isDisapproved = record.status === RevolvingFundReplenishmentStatuses.disapproved;
-  const isCancelled = record.status === RevolvingFundReplenishmentStatuses.cancelled;
+  const isPosted = record.status === RevolvingFundReplenishmentStatuses.Posted;
+  const isDisapproved = record.status === RevolvingFundReplenishmentStatuses.Disapproved;
+  const isCancelled = record.status === RevolvingFundReplenishmentStatuses.Cancelled;
   const canEdit = canEditRevolvingFundReplenishment(record.status);
   const items: ModuleActionMenuItem[] = [
     {
       type: "button",
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      disabled: record.status !== RevolvingFundReplenishmentStatuses.forApproval && !isPosted,
+      disabled: record.status !== RevolvingFundReplenishmentStatuses.ForApproval && !isPosted,
       onSelect: () =>
         isPosted
-          ? onUpdateStatus(record, RevolvingFundReplenishmentStatuses.forApproval)
-          : setStatus(RevolvingFundReplenishmentStatuses.posted),
+          ? onUpdateStatus(record, RevolvingFundReplenishmentStatuses.ForApproval)
+          : setStatus(RevolvingFundReplenishmentStatuses.Posted),
     },
     {
       type: "button",
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      disabled: record.status !== RevolvingFundReplenishmentStatuses.forApproval && !isDisapproved,
+      disabled: record.status !== RevolvingFundReplenishmentStatuses.ForApproval && !isDisapproved,
       tone: isDisapproved ? "default" : "danger",
       onSelect: () =>
         isDisapproved
-          ? onUpdateStatus(record, RevolvingFundReplenishmentStatuses.forApproval)
-          : setStatus(RevolvingFundReplenishmentStatuses.disapproved),
+          ? onUpdateStatus(record, RevolvingFundReplenishmentStatuses.ForApproval)
+          : setStatus(RevolvingFundReplenishmentStatuses.Disapproved),
     },
     {
       type: "button",
@@ -63,8 +63,8 @@ export function RevolvingFundReplenishmentRecordActions({
       tone: isCancelled ? "default" : "danger",
       onSelect: () =>
         isCancelled
-          ? onUpdateStatus(record, RevolvingFundReplenishmentStatuses.draft)
-          : setStatus(RevolvingFundReplenishmentStatuses.cancelled),
+          ? onUpdateStatus(record, RevolvingFundReplenishmentStatuses.Draft)
+          : setStatus(RevolvingFundReplenishmentStatuses.Cancelled),
     },
   ];
   return (
@@ -106,7 +106,7 @@ export function RevolvingFundReplenishmentRecordActions({
           title={`Mark as ${status}?`}
           description={`This will update ${record.transactionNo} to ${status}.`}
           confirmLabel={`Mark as ${status}`}
-          tone={status === RevolvingFundReplenishmentStatuses.posted ? "success" : "danger"}
+          tone={status === RevolvingFundReplenishmentStatuses.Posted ? "success" : "danger"}
           onCancel={() => setStatus(null)}
           onConfirm={() => {
             onUpdateStatus(record, status);

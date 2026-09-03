@@ -34,7 +34,7 @@ export function PettyCashReplenishmentActionHeader({
 }) {
   const [confirmation, setConfirmation] = useState<PettyCashReplenishmentConfirmationAction | null>(null);
   const transactionNo = page.record?.transactionNo ?? page.values.transactionNo;
-  const isDraftEdit = page.mode === "edit" && page.record?.status === PettyCashReplenishmentStatuses.draft;
+  const isDraftEdit = page.mode === "edit" && page.record?.status === PettyCashReplenishmentStatuses.Draft;
   const isSaveAction = page.mode === "add" || isDraftEdit;
   const title =
     page.mode === "add" ? (
@@ -100,7 +100,7 @@ export function PettyCashReplenishmentActionHeader({
                 disabled={page.isSubmitting}
                 label={isSaveAction ? "Save" : "Update"}
                 onAction={() => {
-                  if (page.validate(PettyCashReplenishmentStatuses.forApproval)) {
+                  if (page.validate(PettyCashReplenishmentStatuses.ForApproval)) {
                     setConfirmation("save");
                   }
                 }}
@@ -110,7 +110,7 @@ export function PettyCashReplenishmentActionHeader({
                         {
                           label: "Save As Draft",
                           onSelect: () => {
-                            if (page.validate(PettyCashReplenishmentStatuses.draft)) {
+                            if (page.validate(PettyCashReplenishmentStatuses.Draft)) {
                               setConfirmation("draft");
                             }
                           },
@@ -167,15 +167,15 @@ export function PettyCashReplenishmentActionHeader({
             let isSuccessful = false;
 
             if (confirmation === "save") {
-              isSuccessful = await page.save(PettyCashReplenishmentStatuses.forApproval);
+              isSuccessful = await page.save(PettyCashReplenishmentStatuses.ForApproval);
             } else if (confirmation === "draft") {
-              isSuccessful = await page.save(PettyCashReplenishmentStatuses.draft);
+              isSuccessful = await page.save(PettyCashReplenishmentStatuses.Draft);
             } else if (confirmation === "approve") {
-              isSuccessful = await page.updateStatus(PettyCashReplenishmentStatuses.posted);
+              isSuccessful = await page.updateStatus(PettyCashReplenishmentStatuses.Posted);
             } else if (confirmation === "disapprove") {
-              isSuccessful = await page.updateStatus(PettyCashReplenishmentStatuses.disapproved);
+              isSuccessful = await page.updateStatus(PettyCashReplenishmentStatuses.Disapproved);
             } else {
-              isSuccessful = await page.updateStatus(PettyCashReplenishmentStatuses.cancelled);
+              isSuccessful = await page.updateStatus(PettyCashReplenishmentStatuses.Cancelled);
             }
 
             if (isSuccessful) {

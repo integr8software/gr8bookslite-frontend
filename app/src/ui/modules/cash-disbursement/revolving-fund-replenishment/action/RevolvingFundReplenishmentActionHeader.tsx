@@ -33,7 +33,7 @@ export function RevolvingFundReplenishmentActionHeader({
 }) {
   const [confirmation, setConfirmation] = useState<RevolvingFundReplenishmentConfirmationAction | null>(null);
   const transactionNo = page.record?.transactionNo ?? page.values.transactionNo;
-  const isDraftEdit = page.mode === "edit" && page.record?.status === RevolvingFundReplenishmentStatuses.draft;
+  const isDraftEdit = page.mode === "edit" && page.record?.status === RevolvingFundReplenishmentStatuses.Draft;
   const isSaveAction = page.mode === "add" || isDraftEdit;
   const title =
     page.mode === "add" ? (
@@ -91,7 +91,7 @@ export function RevolvingFundReplenishmentActionHeader({
                 disabled={page.isSubmitting}
                 label={isSaveAction ? "Save" : "Update"}
                 onAction={() => {
-                  if (page.validate(RevolvingFundReplenishmentStatuses.forApproval)) {
+                  if (page.validate(RevolvingFundReplenishmentStatuses.ForApproval)) {
                     setConfirmation("save");
                   }
                 }}
@@ -101,7 +101,7 @@ export function RevolvingFundReplenishmentActionHeader({
                         {
                           label: "Save As Draft",
                           onSelect: () => {
-                            if (page.validate(RevolvingFundReplenishmentStatuses.draft)) {
+                            if (page.validate(RevolvingFundReplenishmentStatuses.Draft)) {
                               setConfirmation("draft");
                             }
                           },
@@ -158,15 +158,15 @@ export function RevolvingFundReplenishmentActionHeader({
             let isSuccessful = false;
 
             if (confirmation === "save") {
-              isSuccessful = await page.save(RevolvingFundReplenishmentStatuses.forApproval);
+              isSuccessful = await page.save(RevolvingFundReplenishmentStatuses.ForApproval);
             } else if (confirmation === "draft") {
-              isSuccessful = await page.save(RevolvingFundReplenishmentStatuses.draft);
+              isSuccessful = await page.save(RevolvingFundReplenishmentStatuses.Draft);
             } else if (confirmation === "approve") {
-              isSuccessful = await page.updateStatus(RevolvingFundReplenishmentStatuses.posted);
+              isSuccessful = await page.updateStatus(RevolvingFundReplenishmentStatuses.Posted);
             } else if (confirmation === "disapprove") {
-              isSuccessful = await page.updateStatus(RevolvingFundReplenishmentStatuses.disapproved);
+              isSuccessful = await page.updateStatus(RevolvingFundReplenishmentStatuses.Disapproved);
             } else {
-              isSuccessful = await page.updateStatus(RevolvingFundReplenishmentStatuses.cancelled);
+              isSuccessful = await page.updateStatus(RevolvingFundReplenishmentStatuses.Cancelled);
             }
 
             if (isSuccessful) {

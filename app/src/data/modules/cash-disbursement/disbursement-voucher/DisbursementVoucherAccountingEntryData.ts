@@ -2,14 +2,8 @@ import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleCh
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import {
   AccountingPartyFallbackValuePrefix,
-  CashOnHandAccountCode,
-  CashOnHandAccountName,
   DefaultDisbursementEntryColumnOrder,
   DefaultExpenseEntryColumnOrder,
-  ExpandedWithholdingTaxAccountCode,
-  ExpandedWithholdingTaxAccountName,
-  InputVatAccountCode,
-  InputVatAccountName,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
 import {
   createBlankDisbursementLineEntry,
@@ -19,6 +13,8 @@ import {
 import type {
   DisbursementEntryColumnId,
   ExpenseEntryColumnId,
+  GeneratedAccountingAccount,
+  GeneratedAccountingAccountMap,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
 import type {
   DisbursementLineEntry,
@@ -138,7 +134,7 @@ export function isExpenseEntryColumnId(columnId: string): columnId is ExpenseEnt
 }
 
 export function isCashOnHandEntry(entry: DisbursementLineEntry) {
-  return entry.accountCode === CashOnHandAccountCode || entry.accountName.trim().toLowerCase() === CashOnHandAccountName.toLowerCase();
+  return entry.id.startsWith("auto-credit-") || entry.id.startsWith("auto-payment-credit-") || entry.id.startsWith("payment-credit-") || entry.id.startsWith("cash-in-hand-");
 }
 
 export function isPaymentCreditEntry(entry: DisbursementLineEntry) {
@@ -200,7 +196,11 @@ export function createAutomaticAccountingEntries(
     generatedRemarksOverrides?: Record<string, string>;
     isCashPayment?: boolean;
     paymentMethod: string;
-    cashAccount?: { accountCode: string; accountName: string };
+    cashAccount?: GeneratedAccountingAccount;
+    inputVatAccount?: GeneratedAccountingAccount;
+    inputVatAccountsByTaxCode?: GeneratedAccountingAccountMap;
+    withholdingTaxAccount?: GeneratedAccountingAccount;
+    withholdingTaxAccountsByCode?: GeneratedAccountingAccountMap;
   },
 ) {
   const blankRemarksEntryIds = new Set(options.blankRemarksEntryIds ?? []);
@@ -241,7 +241,7 @@ export function createAutomaticAccountingEntries(
   const totalEwtAmount = expenseEntriesWithAmount.reduce((sum, entry) => sum + Number(entry.taxDetails.ewtAmount || 0), 0);
   const totalDisbursementAmount = expenseEntriesWithAmount.reduce((sum, entry) => sum + Number(entry.taxDetails.amount || 0), 0);
   const settlementAccountName = isCash
-    ? CashOnHandAccountName
+    ? options.cashAccount?.accountName || options.paymentMethod.trim() || "Cash"
     : options.bankAccount?.accountTitle || options.paymentMethod.trim() || "Payment";
   const generatedRemarks = createGeneratedAccountingRemarks(
     expenseEntriesWithAmount,
@@ -261,12 +261,13 @@ export function createAutomaticAccountingEntries(
     const vatText = options.generatedRemarksOverrides?.["auto-input-vat-current"] ?? generatedRemarks.inputVat;
     const vatReferenceEntry = expenseEntriesWithAmount.find((entry) => hasNonZeroAccountingAmount(entry.taxDetails.vatAmount));
     const vatCode = vatReferenceEntry?.taxDetails.vatCode || vatReferenceEntry?.vatType || "";
+    const inputVatAccount = findGeneratedAccountingAccount(options.inputVatAccountsByTaxCode, vatCode) ?? options.inputVatAccount;
 
     generatedEntries.push({
       ...createBlankDisbursementLineEntry(),
       ...commonFields,
-      accountCode: InputVatAccountCode,
-      accountName: InputVatAccountName,
+      accountCode: inputVatAccount?.accountCode ?? "",
+      accountName: inputVatAccount?.accountName ?? "",
       debit: vatEntryAmounts.debit,
       credit: vatEntryAmounts.credit,
       id: "auto-input-vat-current",
@@ -288,13 +289,16 @@ export function createAutomaticAccountingEntries(
   if (hasNonZeroAccountingAmount(totalEwtAmount)) {
     const ewtEntryAmounts = getSignedAccountingEntryAmounts(totalEwtAmount, "credit");
     const ewtText = options.generatedRemarksOverrides?.["auto-ewt-current"] ?? generatedRemarks.ewt;
+    const ewtCode = referenceEntry?.taxDetails.ewtCode ?? "";
+    const withholdingTaxAccount =
+      findGeneratedAccountingAccount(options.withholdingTaxAccountsByCode, ewtCode) ?? options.withholdingTaxAccount;
 
     generatedEntries.push({
       ...createBlankDisbursementLineEntry(),
       ...commonFields,
-      accountCode: ExpandedWithholdingTaxAccountCode,
-      accountName: ExpandedWithholdingTaxAccountName,
-      ewtCode: referenceEntry?.taxDetails.ewtCode ?? "",
+      accountCode: withholdingTaxAccount?.accountCode ?? "",
+      accountName: withholdingTaxAccount?.accountName ?? "",
+      ewtCode,
       debit: ewtEntryAmounts.debit,
       credit: ewtEntryAmounts.credit,
       id: "auto-ewt-current",
@@ -303,7 +307,7 @@ export function createAutomaticAccountingEntries(
       taxDetails: {
         ...createTaxDetails(totalEwtAmount, "0%"),
         ...commonFields,
-        ewtCode: referenceEntry?.taxDetails.ewtCode ?? "",
+        ewtCode,
       },
       taxRate: "0%",
       vatType: "EWT",
@@ -314,8 +318,8 @@ export function createAutomaticAccountingEntries(
   if (hasNonZeroAccountingAmount(totalDisbursementAmount) && (isCash || options.bankAccount)) {
     const creditAccount = isCash
       ? {
-          accountCode: options.cashAccount?.accountCode ?? CashOnHandAccountCode,
-          accountName: options.cashAccount?.accountName ?? CashOnHandAccountName,
+          accountCode: options.cashAccount?.accountCode ?? "",
+          accountName: options.cashAccount?.accountName ?? "",
         }
       : {
           accountCode: options.bankAccount?.accountCode ?? "",
@@ -347,6 +351,14 @@ export function createAutomaticAccountingEntries(
   }
 
   return [...editableExpenseEntries, ...generatedEntries];
+}
+
+function findGeneratedAccountingAccount(
+  accountByKey: GeneratedAccountingAccountMap | undefined,
+  key: string | undefined,
+): GeneratedAccountingAccount | undefined {
+  const normalizedKey = key?.trim();
+  return normalizedKey ? accountByKey?.[normalizedKey] : undefined;
 }
 
 function createGeneratedAccountingRemarks(

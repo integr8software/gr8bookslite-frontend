@@ -68,29 +68,29 @@ function createCashVoucherStatusActionItems({
   transaction?: CashVoucherTransactionRecord;
   voucher?: CashVoucherRecord;
 }) {
-  const status = voucher?.status ?? transaction?.status ?? CashVoucherStatuses.open;
-  const isPosted = status === CashVoucherStatuses.posted;
-  const isDisapproved = status === CashVoucherStatuses.disapproved;
-  const isCancelled = status === CashVoucherStatuses.cancelled;
-  const approvalUndoStatus: CashVoucherStatus = CashVoucherStatuses.forApproval;
+  const status = voucher?.status ?? transaction?.status ?? CashVoucherStatuses.Open;
+  const isPosted = status === CashVoucherStatuses.Posted;
+  const isDisapproved = status === CashVoucherStatuses.Disapproved;
+  const isCancelled = status === CashVoucherStatuses.Cancelled;
+  const approvalUndoStatus: CashVoucherStatus = CashVoucherStatuses.ForApproval;
   const cancelStatus: CashVoucherStatus = isCancelled
     ? voucher
-      ? CashVoucherStatuses.draft
-      : CashVoucherStatuses.forApproval
-    : CashVoucherStatuses.cancelled;
+      ? CashVoucherStatuses.Draft
+      : CashVoucherStatuses.ForApproval
+    : CashVoucherStatuses.Cancelled;
   const actions: ModuleActionMenuItem[] = [
     {
       disabled: !onUpdateStatus || !canApproveCashVoucherStatus(status),
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () => onRequestStatusConfirmation(isPosted ? approvalUndoStatus : CashVoucherStatuses.posted),
+      onSelect: () => onRequestStatusConfirmation(isPosted ? approvalUndoStatus : CashVoucherStatuses.Posted),
       type: "button",
     },
     {
       disabled: !onUpdateStatus || !canDisapproveCashVoucherStatus(status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () => onRequestStatusConfirmation(isDisapproved ? approvalUndoStatus : CashVoucherStatuses.disapproved),
+      onSelect: () => onRequestStatusConfirmation(isDisapproved ? approvalUndoStatus : CashVoucherStatuses.Disapproved),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },

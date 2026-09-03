@@ -5,9 +5,9 @@ import { flexRender } from "@tanstack/react-table";
 import { Plus, ReceiptText, Search } from "lucide-react";
 import {
   CashAdvanceMultipleEntryTablePaginationStorageKey,
-  getCashAdvanceMultipleEntryTableMinWidthClassName,
   CashAdvanceMultipleEntryAddLink,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
+import { getTransactionOverviewTableMinWidthClassName } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import {
   useCashAdvanceMultipleEntryStore,
   useCashAdvanceMultipleEntryTable,
@@ -57,7 +57,7 @@ export function CashAdvanceMultipleEntryOverviewPage() {
           emptyDescription="Try another Multiple Cash Advance No., remarks, date range, amount range, or status."
           emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
           emptyTitle="No Cash Advance Multiple Entry Transaction Found"
-          minWidthClassName={getCashAdvanceMultipleEntryTableMinWidthClassName(tableState.table.getVisibleLeafColumns().length)}
+          minWidthClassName={getTransactionOverviewTableMinWidthClassName(tableState.table.getVisibleLeafColumns().length)}
           paginationLabel="entries"
           paginationStorageKey={CashAdvanceMultipleEntryTablePaginationStorageKey}
           isLoading={isLoading}

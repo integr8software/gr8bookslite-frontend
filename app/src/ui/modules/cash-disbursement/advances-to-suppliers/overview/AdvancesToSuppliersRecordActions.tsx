@@ -29,29 +29,29 @@ export function AdvancesToSuppliersRecordActions({
   record: AdvancesToSuppliersRecord;
 }) {
   const [status, setStatus] = useState<AdvancesToSuppliersStatus | null>(null);
-  const isPosted = record.status === AdvancesToSuppliersStatuses.posted;
-  const isDisapproved = record.status === AdvancesToSuppliersStatuses.disapproved;
-  const isCancelled = record.status === AdvancesToSuppliersStatuses.cancelled;
+  const isPosted = record.status === AdvancesToSuppliersStatuses.Posted;
+  const isDisapproved = record.status === AdvancesToSuppliersStatuses.Disapproved;
+  const isCancelled = record.status === AdvancesToSuppliersStatuses.Cancelled;
   const canEdit = canEditAdvancesToSuppliers(record.status);
   const items: ModuleActionMenuItem[] = [
     {
       type: "button",
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      disabled: record.status !== AdvancesToSuppliersStatuses.forApproval && !isPosted,
+      disabled: record.status !== AdvancesToSuppliersStatuses.ForApproval && !isPosted,
       onSelect: () =>
-        isPosted ? onUpdateStatus(record, AdvancesToSuppliersStatuses.forApproval) : setStatus(AdvancesToSuppliersStatuses.posted),
+        isPosted ? onUpdateStatus(record, AdvancesToSuppliersStatuses.ForApproval) : setStatus(AdvancesToSuppliersStatuses.Posted),
     },
     {
       type: "button",
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      disabled: record.status !== AdvancesToSuppliersStatuses.forApproval && !isDisapproved,
+      disabled: record.status !== AdvancesToSuppliersStatuses.ForApproval && !isDisapproved,
       tone: isDisapproved ? "default" : "danger",
       onSelect: () =>
         isDisapproved
-          ? onUpdateStatus(record, AdvancesToSuppliersStatuses.forApproval)
-          : setStatus(AdvancesToSuppliersStatuses.disapproved),
+          ? onUpdateStatus(record, AdvancesToSuppliersStatuses.ForApproval)
+          : setStatus(AdvancesToSuppliersStatuses.Disapproved),
     },
     {
       type: "button",
@@ -60,7 +60,7 @@ export function AdvancesToSuppliersRecordActions({
       disabled: isPosted || isDisapproved,
       tone: isCancelled ? "default" : "danger",
       onSelect: () =>
-        isCancelled ? onUpdateStatus(record, AdvancesToSuppliersStatuses.draft) : setStatus(AdvancesToSuppliersStatuses.cancelled),
+        isCancelled ? onUpdateStatus(record, AdvancesToSuppliersStatuses.Draft) : setStatus(AdvancesToSuppliersStatuses.Cancelled),
     },
   ];
   return (
@@ -102,7 +102,7 @@ export function AdvancesToSuppliersRecordActions({
           title={`Mark as ${status}?`}
           description={`This will update ${record.transactionNo} to ${status}.`}
           confirmLabel={`Mark as ${status}`}
-          tone={status === AdvancesToSuppliersStatuses.posted ? "success" : "danger"}
+          tone={status === AdvancesToSuppliersStatuses.Posted ? "success" : "danger"}
           onCancel={() => setStatus(null)}
           onConfirm={() => {
             onUpdateStatus(record, status);

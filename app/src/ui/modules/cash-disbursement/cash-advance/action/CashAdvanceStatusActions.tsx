@@ -51,25 +51,25 @@ function createCashAdvanceStatusActionItems({
   onUpdateStatus?: (status: CashAdvanceStatus) => void;
   record?: CashAdvanceRecord | null;
 }) {
-  const status = record?.status ?? CashAdvanceStatuses.draft;
-  const isPosted = status === CashAdvanceStatuses.posted;
-  const isDisapproved = status === CashAdvanceStatuses.disapproved;
-  const isCancelled = status === CashAdvanceStatuses.cancelled;
-  const approvalUndoStatus: CashAdvanceStatus = CashAdvanceStatuses.forApproval;
-  const cancelStatus: CashAdvanceStatus = isCancelled ? CashAdvanceStatuses.draft : CashAdvanceStatuses.cancelled;
+  const status = record?.status ?? CashAdvanceStatuses.Draft;
+  const isPosted = status === CashAdvanceStatuses.Posted;
+  const isDisapproved = status === CashAdvanceStatuses.Disapproved;
+  const isCancelled = status === CashAdvanceStatuses.Cancelled;
+  const approvalUndoStatus: CashAdvanceStatus = CashAdvanceStatuses.ForApproval;
+  const cancelStatus: CashAdvanceStatus = isCancelled ? CashAdvanceStatuses.Draft : CashAdvanceStatuses.Cancelled;
   const actions: ModuleActionMenuItem[] = [
     {
       disabled: !onUpdateStatus || !canApproveCashAdvanceStatus(status),
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () => onRequestStatusConfirmation(isPosted ? approvalUndoStatus : CashAdvanceStatuses.posted),
+      onSelect: () => onRequestStatusConfirmation(isPosted ? approvalUndoStatus : CashAdvanceStatuses.Posted),
       type: "button",
     },
     {
       disabled: !onUpdateStatus || !canDisapproveCashAdvanceStatus(status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () => onRequestStatusConfirmation(isDisapproved ? approvalUndoStatus : CashAdvanceStatuses.disapproved),
+      onSelect: () => onRequestStatusConfirmation(isDisapproved ? approvalUndoStatus : CashAdvanceStatuses.Disapproved),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },

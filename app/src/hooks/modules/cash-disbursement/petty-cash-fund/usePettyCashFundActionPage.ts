@@ -1,5 +1,6 @@
 "use client";
 
+import { PettyCashFundActionModes } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -30,13 +31,7 @@ import {
   updatePettyCashFundApi,
   updatePettyCashFundStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/petty-cash-fund/PettyCashFundApi";
-import {
-  CashDisbursementActionModeAdd,
-  createCashDisbursementModuleQueryKey,
-  createCashDisbursementRecordQueryKey,
-} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
-
-const PettyCashFundQueryKey = "petty-cash-fund";
+import { PettyCashFundQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-fund/PettyCashFundQueryKeys";
 
 export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionMode; onSaved?: () => void }) {
   const router = useRouter();
@@ -44,12 +39,12 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   const transactionCurrency = useTransactionCurrency();
   const params = useParams<{ recordId?: string }>();
   const { mode } = options;
-  const isReadonly = mode === "view";
+  const isReadonly = mode === PettyCashFundActionModes.View;
 
   const recordQuery = useQuery({
-    queryKey: createCashDisbursementRecordQueryKey(PettyCashFundQueryKey, params.recordId),
+    queryKey: PettyCashFundQueryKeys.record(params.recordId),
     queryFn: () => fetchPettyCashFundById(params.recordId!),
-    enabled: Boolean(params.recordId) && mode !== CashDisbursementActionModeAdd,
+    enabled: Boolean(params.recordId) && mode !== PettyCashFundActionModes.Add,
   });
 
   const record = recordQuery.data;
@@ -63,7 +58,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   const hasEditedCurrencyRef = useRef(false);
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
+  const isDirty = mode === PettyCashFundActionModes.Add ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
 
   async function refreshNextTransactionNo() {
     try {
@@ -89,7 +84,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   }, [record]);
 
   useEffect(() => {
-    if (mode === CashDisbursementActionModeAdd) {
+    if (mode === PettyCashFundActionModes.Add) {
       queueMicrotask(() => void refreshNextTransactionNo());
     }
   }, [mode]);
@@ -106,7 +101,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   const totals = useMemo(() => calculatePettyCashFundTotals(values.items), [values.items]);
 
   useEffect(() => {
-    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+    if (mode !== PettyCashFundActionModes.Add || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
       return;
     }
 
@@ -178,24 +173,26 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
 
   function insertItem(rowId: string, position: "above" | "below" = "below") {
     const index = values.items.findIndex((i) => i.id === rowId);
-    const targetIndex = index === -1 ? values.items.length : position === "above" ? index : index + 1;
+    if (index === -1) return;
     const next = [...values.items];
-    next.splice(targetIndex, 0, createBlankPettyCashFundItem());
+    next.splice(position === "above" ? index : index + 1, 0, createBlankPettyCashFundItem());
     updateItems(next);
   }
+
   function moveItem(fromRowId: string, toRowId: string) {
-    const fromIndex = values.items.findIndex((i) => i.id === fromRowId);
-    const toIndex = values.items.findIndex((i) => i.id === toRowId);
-    if (fromIndex === -1 || toIndex === -1) return;
+    const fromIndex = values.items.findIndex((item) => item.id === fromRowId);
+    const toIndex = values.items.findIndex((item) => item.id === toRowId);
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
     const next = [...values.items];
     const [moved] = next.splice(fromIndex, 1);
     next.splice(toIndex, 0, moved);
     updateItems(next);
   }
+
   function removeItem(rowId: string) {
     if (isReadonly) return;
-    if (values.items.length === 1) {
-      toast.error("At least one line item is required.");
+    if (values.items.length <= 1) {
+      updateField("items", [createBlankPettyCashFundItem()]);
       return;
     }
     updateField(
@@ -206,15 +203,15 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
 
   const saveMutation = useMutation({
     mutationFn: async (submitValues: PettyCashFundFormValues) => {
-      if (mode === CashDisbursementActionModeAdd) {
+      if (mode === PettyCashFundActionModes.Add) {
         return await createPettyCashFundApi(submitValues);
       }
       return await updatePettyCashFundApi(params.recordId!, submitValues);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashFundQueryKey) });
+      queryClient.invalidateQueries({ queryKey: PettyCashFundQueryKeys.all() });
       draft.clearDraft();
-      toast.success(`Petty Cash Fund ${mode === CashDisbursementActionModeAdd ? "created" : "updated"} successfully.`);
+      toast.success(`Petty Cash Fund ${mode === PettyCashFundActionModes.Add ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
         options.onSaved();
       } else {
@@ -232,8 +229,8 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
       return await updatePettyCashFundStatusApi(params.recordId!, status);
     },
     onSuccess: (updatedRecord, status) => {
-      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashFundQueryKey) });
-      queryClient.setQueryData(createCashDisbursementRecordQueryKey(PettyCashFundQueryKey, params.recordId), updatedRecord);
+      queryClient.invalidateQueries({ queryKey: PettyCashFundQueryKeys.all() });
+      queryClient.setQueryData(PettyCashFundQueryKeys.record(params.recordId), updatedRecord);
       setValues((cur) => ({ ...cur, status }));
       toast.success(`Petty Cash Fund marked as ${status}.`);
     },
@@ -243,17 +240,18 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   });
 
   async function submit(status?: PettyCashFundStatus) {
-    const nextValues = status ? { ...values, status } : values;
-    const nextErrors = validatePettyCashFundForm(nextValues);
-    setErrors(nextErrors);
+    if (isReadonly) return false;
+    const valuesToValidate = status ? { ...values, status } : values;
+    const validationErrors = validatePettyCashFundForm(valuesToValidate);
+    setErrors(validationErrors);
 
-    if (Object.keys(nextErrors).length > 0) {
-      toast.error("Please Fill Up the Required Fields!");
+    if (Object.keys(validationErrors).length > 0) {
+      toast.error("Please fill in all required fields correctly.");
       return false;
     }
 
     try {
-      await saveMutation.mutateAsync(nextValues);
+      await saveMutation.mutateAsync(valuesToValidate);
       return true;
     } catch {
       return false;
@@ -289,7 +287,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === CashDisbursementActionModeAdd) {
+    if (mode === PettyCashFundActionModes.Add) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -315,7 +313,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
     isLoading: recordQuery.isLoading,
     isPreviewOpen,
     isReadonly,
-    isRecordMissing: mode !== CashDisbursementActionModeAdd && !recordQuery.isLoading && !record,
+    isRecordMissing: mode !== PettyCashFundActionModes.Add && !recordQuery.isLoading && !record,
     isSubmitting: saveMutation.isPending || updateStatusMutation.isPending,
     mode,
     moveItem,

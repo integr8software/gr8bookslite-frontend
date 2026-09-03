@@ -1,22 +1,28 @@
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
+  PettyCashReplenishmentActionMode,
   PettyCashReplenishmentActionTab,
-  PettyCashReplenishmentConfirmationAction,
   PettyCashReplenishmentAccountingColumnId,
+  PettyCashReplenishmentConfirmationAction,
   PettyCashReplenishmentEntryColumnId,
   PettyCashReplenishmentEntryTab,
+  PettyCashReplenishmentFormStatus,
   PettyCashReplenishmentStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 
 export const PettyCashReplenishmentLink = getModuleRoute("PCR");
 export const PettyCashReplenishmentAddLink = `${PettyCashReplenishmentLink}/add`;
 export const getPettyCashReplenishmentEditLink = (recordId: string) => `${PettyCashReplenishmentLink}/edit/${recordId}`;
 export const getPettyCashReplenishmentViewLink = (recordId: string) => `${PettyCashReplenishmentLink}/view/${recordId}`;
+
+export const PettyCashReplenishmentActionModes = {
+  Add: "add",
+  Edit: "edit",
+  View: "view",
+} as const satisfies Record<string, PettyCashReplenishmentActionMode>;
 export const PettyCashReplenishmentStorageKey = "cash-disbursement-petty-cash-replenishment-records";
 export const PettyCashReplenishmentPaginationStorageKey = "cash-disbursement-petty-cash-replenishment-table";
-export const PettyCashReplenishmentTransactionPrefix = "PCR";
 export const PettyCashReplenishmentConfirmationDialogTitles: Record<PettyCashReplenishmentConfirmationAction, string> = {
   save: "Save Petty Cash Replenishment?",
   draft: "Save Petty Cash Replenishment as Draft?",
@@ -41,7 +47,7 @@ export const PettyCashReplenishmentColumnLabels = {
   currency: "Currency",
   exchangeRate: "Exchange Rate",
   amount: "Total Amount",
-  disburseAmount: "Disburse Amount",
+  disburseAmount: "Total Disbursed",
   remarks: "Remarks",
   createdBy: "Created By",
   createdAt: "Date Created",
@@ -81,27 +87,41 @@ export const PettyCashReplenishmentDefaultVisibleColumnIds = [
 export const PettyCashReplenishmentDefaultColumnVisibility = Object.fromEntries(
   Object.keys(PettyCashReplenishmentColumnLabels).map((columnId) => [
     columnId,
-    PettyCashReplenishmentDefaultVisibleColumnIds.includes(
-      columnId as (typeof PettyCashReplenishmentDefaultVisibleColumnIds)[number],
-    ),
+    PettyCashReplenishmentDefaultVisibleColumnIds.includes(columnId as (typeof PettyCashReplenishmentDefaultVisibleColumnIds)[number]),
   ]),
 );
 export const PettyCashReplenishmentStatuses = {
-  cancelled: "Cancelled",
-  disapproved: "Disapproved",
-  draft: "Draft",
-  forApproval: "For Approval",
-  open: "Open",
-  posted: "Posted",
-} as const;
+  Cancelled: "Cancelled",
+  Disapproved: "Disapproved",
+  Draft: "Draft",
+  ForApproval: "For Approval",
+  Open: "Open",
+  Posted: "Posted",
+} as const satisfies Record<string, PettyCashReplenishmentFormStatus>;
 export const PettyCashReplenishmentRecordStatuses = [
-  "Posted",
-  "For Approval",
-  "Draft",
-  "Disapproved",
-  "Cancelled",
+  PettyCashReplenishmentStatuses.Draft,
+  PettyCashReplenishmentStatuses.ForApproval,
+  PettyCashReplenishmentStatuses.Posted,
+  PettyCashReplenishmentStatuses.Disapproved,
+  PettyCashReplenishmentStatuses.Cancelled,
 ] as const satisfies readonly PettyCashReplenishmentStatus[];
-export const PettyCashReplenishmentStatusOptions = ["All", ...PettyCashReplenishmentRecordStatuses] as const;
+export const EditablePettyCashReplenishmentStatuses: readonly PettyCashReplenishmentStatus[] = [
+  PettyCashReplenishmentStatuses.Draft,
+  PettyCashReplenishmentStatuses.Disapproved,
+];
+export const PettyCashReplenishmentAllStatusFilter = "all";
+export const PettyCashReplenishmentStatusFilterOptions = [
+  { label: "All statuses", value: PettyCashReplenishmentAllStatusFilter },
+  { label: "Draft", value: PettyCashReplenishmentStatuses.Draft },
+  { label: "For Approval", value: PettyCashReplenishmentStatuses.ForApproval },
+  { label: "Posted", value: PettyCashReplenishmentStatuses.Posted },
+  { label: "Disapproved", value: PettyCashReplenishmentStatuses.Disapproved },
+  { label: "Cancelled", value: PettyCashReplenishmentStatuses.Cancelled },
+] as const;
+export const PettyCashReplenishmentStatusFilters = [
+  PettyCashReplenishmentAllStatusFilter,
+  ...PettyCashReplenishmentRecordStatuses,
+] as const;
 export const PettyCashReplenishmentActionTabs: {
   id: PettyCashReplenishmentActionTab;
   label: string;
@@ -113,8 +133,6 @@ export const PettyCashReplenishmentEntryTabs: { id: PettyCashReplenishmentEntryT
   { id: "vouchers", label: "Petty Cash Voucher Entries" },
   { id: "accounting", label: "Accounting Entries" },
 ];
-export const PettyCashReplenishmentEntryInputClassName =
-  "h-10 w-full min-w-0 border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 read-only:bg-darknavy/[0.03] read-only:text-darknavy";
 export const PettyCashReplenishmentEntryColumnOrder: PettyCashReplenishmentEntryColumnId[] = [
   "pettyCashDate",
   "pettyCashNo",
@@ -148,12 +166,12 @@ export const PettyCashReplenishmentEntryColumnLabels: Record<PettyCashReplenishm
   amount: "Gross Amount",
   netAmount: "NET Amount",
   vatType: "VAT Type",
-  vatPercent: "VAT Rate",
+  vatPercent: "VAT %",
   vatAmount: "VAT Amount",
   ewtCode: "EWT Code",
-  ewtPercent: "EWT Rate",
+  ewtPercent: "EWT %",
   ewtAmount: "EWT Amount",
-  disburseAmount: "Disburse Amount",
+  disburseAmount: "Total Disbursed",
   responsibilityCenterCode: "Responsibility Center Code",
   responsibilityCenterName: "Responsibility Center",
   particulars: "Particulars",
@@ -176,10 +194,7 @@ export const PettyCashReplenishmentEntryColumnWidths: Record<PettyCashReplenishm
   responsibilityCenterName: 240,
   particulars: 240,
 };
-export const PettyCashReplenishmentProtectedEntryColumnIds = new Set<PettyCashReplenishmentEntryColumnId>([
-  "supplierName",
-  "amount",
-]);
+export const PettyCashReplenishmentProtectedEntryColumnIds = new Set<PettyCashReplenishmentEntryColumnId>(["supplierName", "amount"]);
 export const PettyCashReplenishmentAccountingColumnOrder: PettyCashReplenishmentAccountingColumnId[] = [
   "accountCode",
   "accountTitle",
@@ -212,45 +227,7 @@ export const PettyCashReplenishmentProtectedAccountingColumnIds = new Set<PettyC
   "debit",
   "credit",
 ]);
-export const PettyCashReplenishmentPartyOptions: AppAdvancedDropdownOption[] = [
-  { label: "E000102", name: "Raymark B. Arsicolo", value: "E000102" },
-  { label: "E000117", name: "Maria L. Dela Cruz", value: "E000117" },
-  { label: "E000145", name: "Jose P. Santos", value: "E000145" },
-];
-export const PettyCashReplenishmentSupplierOptions: AppAdvancedDropdownOption[] = [
-  { label: "V100006", name: "All4U Restaurant", value: "V100006" },
-  { label: "S000041", name: "Pacific Office Solutions, Inc.", value: "S000041" },
-  { label: "S000058", name: "Metro Industrial Trading", value: "S000058" },
-  { label: "S000073", name: "Northstar Equipment Supply", value: "S000073" },
-];
-export const PettyCashReplenishmentAccountOptions: AppAdvancedDropdownOption[] = [
-  { label: "101-200", name: "Petty Cash Fund", value: "101-200" },
-  { label: "101-210", name: "Cash on Hand", value: "101-210" },
-];
-export const PettyCashReplenishmentProjectOptions: AppAdvancedDropdownOption[] = [
-  { label: "PRJ-001", name: "Main Office Operations", value: "PRJ-001" },
-  { label: "PRJ-002", name: "Branch Expansion", value: "PRJ-002" },
-];
-export const PettyCashReplenishmentResponsibilityCenterOptions: AppAdvancedDropdownOption[] = [
-  { label: "RC-ADM", name: "Administration", value: "RC-ADM" },
-  { label: "RC-OPS", name: "Operations", value: "RC-OPS" },
-  { label: "RC-SAL", name: "Sales", value: "RC-SAL" },
-];
-export const PettyCashReplenishmentEntryVatTypeOptions: AppAdvancedDropdownOption[] = [
-  { label: "", name: "VAT (12%)", selectedDetails: "VAT (12%)", value: "VAT 12%" },
-  { label: "", name: "Zero Rated (0%)", selectedDetails: "Zero Rated (0%)", value: "Zero Rated" },
-  { label: "", name: "Exempt (0%)", selectedDetails: "Exempt (0%)", value: "Exempt" },
-];
-export const PettyCashReplenishmentEntryEwtCodeOptions: AppAdvancedDropdownOption[] = [
-  { description: "Professional Fees - 10%", label: "", name: "W10 (10%)", selectedDetails: "W10 (10%)", value: "W10" },
-  { description: "Professional Fees - 5%", label: "", name: "W05 (5%)", selectedDetails: "W05 (5%)", value: "W05" },
-  { description: "Goods - 1%", label: "", name: "WV01 (1%)", selectedDetails: "WV01 (1%)", value: "WV01" },
-  { description: "Services - 2%", label: "", name: "WV02 (2%)", selectedDetails: "WV02 (2%)", value: "WV02" },
-];
 
 export function canEditPettyCashReplenishment(status: PettyCashReplenishmentStatus) {
-  return (
-    status === PettyCashReplenishmentStatuses.draft ||
-    status === PettyCashReplenishmentStatuses.disapproved
-  );
+  return EditablePettyCashReplenishmentStatuses.includes(status);
 }

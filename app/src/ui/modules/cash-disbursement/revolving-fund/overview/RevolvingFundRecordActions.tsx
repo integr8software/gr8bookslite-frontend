@@ -29,34 +29,34 @@ export function RevolvingFundRecordActions({
   record: RevolvingFundRecord;
 }) {
   const [status, setStatus] = useState<RevolvingFundStatus | null>(null);
-  const isPosted = record.status === RevolvingFundStatuses.posted;
-  const isDisapproved = record.status === RevolvingFundStatuses.disapproved;
-  const isCancelled = record.status === RevolvingFundStatuses.cancelled;
+  const isPosted = record.status === RevolvingFundStatuses.Posted;
+  const isDisapproved = record.status === RevolvingFundStatuses.Disapproved;
+  const isCancelled = record.status === RevolvingFundStatuses.Cancelled;
   const canEdit = canEditRevolvingFund(record.status);
   const items: ModuleActionMenuItem[] = [
     {
       type: "button",
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      disabled: record.status !== RevolvingFundStatuses.forApproval && !isPosted,
-      onSelect: () => (isPosted ? onUpdateStatus(record, RevolvingFundStatuses.forApproval) : setStatus(RevolvingFundStatuses.posted)),
+      disabled: record.status !== RevolvingFundStatuses.ForApproval && !isPosted,
+      onSelect: () => (isPosted ? onUpdateStatus(record, RevolvingFundStatuses.ForApproval) : setStatus(RevolvingFundStatuses.Posted)),
     },
     {
       type: "button",
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      disabled: record.status !== RevolvingFundStatuses.forApproval && !isDisapproved,
+      disabled: record.status !== RevolvingFundStatuses.ForApproval && !isDisapproved,
       tone: isDisapproved ? "default" : "danger",
       onSelect: () =>
-        isDisapproved ? onUpdateStatus(record, RevolvingFundStatuses.forApproval) : setStatus(RevolvingFundStatuses.disapproved),
+        isDisapproved ? onUpdateStatus(record, RevolvingFundStatuses.ForApproval) : setStatus(RevolvingFundStatuses.Disapproved),
     },
     {
       type: "button",
       icon: isCancelled ? Undo2 : Ban,
       label: isCancelled ? "Undo Cancelled" : "Cancel",
-      disabled: record.status === RevolvingFundStatuses.posted || record.status === RevolvingFundStatuses.disapproved,
+      disabled: record.status === RevolvingFundStatuses.Posted || record.status === RevolvingFundStatuses.Disapproved,
       tone: isCancelled ? "default" : "danger",
-      onSelect: () => (isCancelled ? onUpdateStatus(record, RevolvingFundStatuses.draft) : setStatus(RevolvingFundStatuses.cancelled)),
+      onSelect: () => (isCancelled ? onUpdateStatus(record, RevolvingFundStatuses.Draft) : setStatus(RevolvingFundStatuses.Cancelled)),
     },
   ];
 
@@ -99,7 +99,7 @@ export function RevolvingFundRecordActions({
           title={`Mark as ${status}?`}
           description={`This will update ${record.transactionNo} to ${status}.`}
           confirmLabel={`Mark as ${status}`}
-          tone={status === RevolvingFundStatuses.posted ? "success" : "danger"}
+          tone={status === RevolvingFundStatuses.Posted ? "success" : "danger"}
           onCancel={() => setStatus(null)}
           onConfirm={() => {
             onUpdateStatus(record, status);

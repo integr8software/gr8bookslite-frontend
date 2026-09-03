@@ -125,35 +125,35 @@ export function CashVoucherOverviewPage() {
 }
 
 function canUpdatePreviewRowStatus(currentStatus: CashVoucherStatus, nextStatus: CashVoucherStatus) {
-  if (nextStatus === CashVoucherStatuses.posted) {
+  if (nextStatus === CashVoucherStatuses.Posted) {
     return canApproveCashVoucherStatus(currentStatus);
   }
 
-  if (nextStatus === CashVoucherStatuses.disapproved) {
+  if (nextStatus === CashVoucherStatuses.Disapproved) {
     return canDisapproveCashVoucherStatus(currentStatus);
   }
 
-  if (nextStatus === CashVoucherStatuses.cancelled) {
+  if (nextStatus === CashVoucherStatuses.Cancelled) {
     return canCancelCashVoucherStatus(currentStatus);
   }
 
-  if (nextStatus === CashVoucherStatuses.forApproval) {
+  if (nextStatus === CashVoucherStatuses.ForApproval) {
     return (
-      currentStatus === CashVoucherStatuses.posted ||
-      currentStatus === CashVoucherStatuses.disapproved ||
-      currentStatus === CashVoucherStatuses.cancelled
+      currentStatus === CashVoucherStatuses.Posted ||
+      currentStatus === CashVoucherStatuses.Disapproved ||
+      currentStatus === CashVoucherStatuses.Cancelled
     );
   }
 
   if (
-    nextStatus === CashVoucherStatuses.draft &&
-    (currentStatus === CashVoucherStatuses.posted || currentStatus === CashVoucherStatuses.disapproved)
+    nextStatus === CashVoucherStatuses.Draft &&
+    (currentStatus === CashVoucherStatuses.Posted || currentStatus === CashVoucherStatuses.Disapproved)
   ) {
     return true;
   }
 
-  if (nextStatus === CashVoucherStatuses.draft) {
-    return currentStatus === CashVoucherStatuses.cancelled;
+  if (nextStatus === CashVoucherStatuses.Draft) {
+    return currentStatus === CashVoucherStatuses.Cancelled;
   }
 
   return false;

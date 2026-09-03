@@ -1,14 +1,15 @@
 import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
+import type { TaxDefaultAccountOption } from "@/app/src/types/shared/tax/TaxTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+
+export const PurchaseTaxTypeInputVat = "INPUT VAT";
+export const PurchaseTaxTypeVat = "VAT";
+export const PurchaseTaxTypeEwt = "EWT";
+export const PurchaseTaxTypeCwt = "CWT";
 
 export function FormatTinNumber(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 12);
-  const formattedGroups = [
-    digits.slice(0, 3),
-    digits.slice(3, 6),
-    digits.slice(6, 9),
-    digits.slice(9, 12),
-  ].filter(Boolean);
+  const formattedGroups = [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 9), digits.slice(9, 12)].filter(Boolean);
 
   return formattedGroups.join("-");
 }
@@ -43,11 +44,7 @@ export function calculateTaxAmounts({
   const ewtPercent = typeof ewtRate === "number" ? ewtRate : parsePercentage(ewtRate);
 
   const vatAmount =
-    vatPercent > 0
-      ? isVatInclusive
-        ? grossAmount - grossAmount / (1 + vatPercent / 100)
-        : grossAmount * (vatPercent / 100)
-      : 0;
+    vatPercent > 0 ? (isVatInclusive ? grossAmount - grossAmount / (1 + vatPercent / 100) : grossAmount * (vatPercent / 100)) : 0;
 
   const netAmount = grossAmount - vatAmount;
   const ewtAmount = ewtPercent > 0 ? netAmount * (ewtPercent / 100) : 0;
@@ -79,8 +76,8 @@ export function getEwtPercentFromCode(value: string, taxCodes: AlphanumericTaxCo
       const matchesCode = itemCode === normalized || itemAtc === normalized;
       const isWithholding =
         !item.taxType ||
-        item.taxType === "EWT" ||
-        item.taxType === "CWT" ||
+        item.taxType === PurchaseTaxTypeEwt ||
+        item.taxType === PurchaseTaxTypeCwt ||
         item.taxType.includes("WITHHOLDING") ||
         item.taxType.includes("WT");
       return matchesCode && isWithholding;
@@ -137,7 +134,7 @@ export function getVatRateFromCode(vatCode: string, taxCodes: AlphanumericTaxCod
   if (!vatCode) return "0%";
 
   const row = taxCodes.find(
-    (item) => item.transactionType === "Purchases" && item.taxType === "INPUT VAT" && item.taxCode === vatCode,
+    (item) => item.transactionType === "Purchases" && item.taxType === PurchaseTaxTypeInputVat && item.taxCode === vatCode,
   );
   if (row) return `${row.taxRate}%`;
   if (vatCode === "VAT-5") return "5%";
@@ -145,32 +142,24 @@ export function getVatRateFromCode(vatCode: string, taxCodes: AlphanumericTaxCod
   return "0%";
 }
 
-export function normalizeVatDropdownValue(
-  taxDetails: { vatCode?: string; vatPercent?: number },
-  taxCodes: AlphanumericTaxCode[],
-): string {
+export function normalizeVatDropdownValue(taxDetails: { vatCode?: string; vatPercent?: number }, taxCodes: AlphanumericTaxCode[]): string {
   if (!taxDetails.vatCode) return "";
   if (taxCodes.some((row) => row.taxCode === taxDetails.vatCode)) return taxDetails.vatCode;
 
   return (
     taxCodes.find(
       (row) =>
-        row.transactionType === "Purchases" &&
-        row.taxType === "INPUT VAT" &&
-        Number(row.taxRate) === taxDetails.vatPercent,
+        row.transactionType === "Purchases" && row.taxType === PurchaseTaxTypeInputVat && Number(row.taxRate) === taxDetails.vatPercent,
     )?.taxCode ?? ""
   );
 }
 
-export function createVatOptions(
-  taxCodes: AlphanumericTaxCode[],
-  transactionType = "Purchases",
-): AppAdvancedDropdownOption[] {
+export function createVatOptions(taxCodes: AlphanumericTaxCode[], transactionType = "Purchases"): AppAdvancedDropdownOption[] {
   const options = new Map<string, AppAdvancedDropdownOption>();
   taxCodes
     .filter((row) => {
       const taxType = (row.taxType || "").toUpperCase();
-      const isVat = taxType === "INPUT VAT" || taxType === "VAT" || taxType.includes("VAT");
+      const isVat = taxType === PurchaseTaxTypeInputVat || taxType === PurchaseTaxTypeVat || taxType.includes("VAT");
       if (!isVat) return false;
       if (!transactionType) return true;
       const transType = (row.transactionType || "").toLowerCase();
@@ -180,10 +169,7 @@ export function createVatOptions(
     .forEach((row) => {
       if (!options.has(row.taxCode)) {
         const rawName = row.taxDescription || row.taxCode;
-        const rate =
-          row.taxRate != null && row.taxRate !== ""
-            ? `${row.taxRate}%`.replace(/%%+/, "%")
-            : "";
+        const rate = row.taxRate != null && row.taxRate !== "" ? `${row.taxRate}%`.replace(/%%+/, "%") : "";
         const cleanName = rawName.replace(/\s*\(?\d+(?:\.\d+)?%\)?\s*$/u, "").trim();
         const name = rate ? `${cleanName} (${rate})` : cleanName;
 
@@ -197,46 +183,18 @@ export function createVatOptions(
       }
     });
 
-  if (options.size === 0) {
-    const defaultVatRows = [
-      { code: "VAT-12", rate: "12%", desc: "Value Added Tax (12%)" },
-      { code: "VAT-0", rate: "0%", desc: "Zero Rated (0%)" },
-      { code: "VAT-EXEMPT", rate: "0%", desc: "VAT Exempt (0%)" },
-      { code: "NON-VAT", rate: "0%", desc: "Non-VAT (0%)" },
-      { code: "VAT-5", rate: "5%", desc: "Withholding VAT (5%)" },
-    ];
-    defaultVatRows.forEach((row) => {
-      options.set(row.code, {
-        description: "",
-        label: "",
-        name: row.desc,
-        selectedDetails: "",
-        value: row.code,
-      });
-    });
-  }
-
   return Array.from(options.values());
 }
 
-export function createEwtOptions(
-  taxCodes: AlphanumericTaxCode[],
-  transactionType = "Purchases",
-): AppAdvancedDropdownOption[] {
+export function createEwtOptions(taxCodes: AlphanumericTaxCode[], transactionType = "Purchases"): AppAdvancedDropdownOption[] {
   const filtered = taxCodes.filter((row) => {
     const transType = (row.transactionType || "").toLowerCase();
     const targetTrans = transactionType.toLowerCase();
     const matchesTrans =
-      !row.transactionType ||
-      transType === targetTrans ||
-      transType.includes("purchase") ||
-      transType.includes("disbursement");
+      !row.transactionType || transType === targetTrans || transType.includes("purchase") || transType.includes("disbursement");
     const taxType = (row.taxType || "").toUpperCase();
     const isEwt =
-      taxType === "EWT" ||
-      taxType === "CWT" ||
-      taxType.includes("WITHHOLDING") ||
-      taxType.includes("WT");
+      taxType === PurchaseTaxTypeEwt || taxType === PurchaseTaxTypeCwt || taxType.includes("WITHHOLDING") || taxType.includes("WT");
     return matchesTrans && isEwt;
   });
 
@@ -246,15 +204,10 @@ export function createEwtOptions(
     const displayCode = row.officialAtcCode || row.taxCode;
     if (options.has(displayCode)) return;
 
-    const rate =
-      row.taxRate != null && row.taxRate !== ""
-        ? `${row.taxRate}%`.replace(/%%+/, "%")
-        : "";
+    const rate = row.taxRate != null && row.taxRate !== "" ? `${row.taxRate}%`.replace(/%%+/, "%") : "";
     const codeRateName = [displayCode, rate ? `(${rate})` : ""].filter(Boolean).join(" ");
     const rawDescription =
-      row.natureOfIncome?.trim() ||
-      row.taxDescription.replace(/^[A-Z]{1,3}\s?\d{0,3}(?:\.\d+)?\s*\|\s*/, "").trim() ||
-      row.taxDescription;
+      row.natureOfIncome?.trim() || row.taxDescription.replace(/^[A-Z]{1,3}\s?\d{0,3}(?:\.\d+)?\s*\|\s*/, "").trim() || row.taxDescription;
     const description = rawDescription.replace(/\s*\(?\d+(?:\.\d+)?%\)?\s*$/u, "").trim();
 
     options.set(displayCode, {
@@ -266,42 +219,67 @@ export function createEwtOptions(
     });
   });
 
-  if (options.size === 0) {
-    const defaultEwtRows = [
-      { code: "MC021", rate: "0%", desc: "VAT Exempt Zero Rated" },
-      { code: "WB 030", rate: "3%", desc: "Tax on carriers and keepers of garages" },
-      { code: "WB 040", rate: "2%", desc: "Franchise Tax on Gas and Water Utilities" },
-      {
-        code: "WB 050",
-        rate: "3%",
-        desc: "Franchise Tax on radio & TV broadcasting companies whose annual gross receipts does not exceed P10M and who are not Value-Added Tax registered taxpayers",
-      },
-      { code: "WB 070", rate: "5%", desc: "Tax on life insurance premiums" },
-      {
-        code: "WI158",
-        rate: "2%",
-        desc: "Income payments made by top withholding agents to suppliers of services",
-      },
-      {
-        code: "WC158",
-        rate: "2%",
-        desc: "Income payments made by top withholding agents to corporate suppliers of services",
-      },
-      { code: "WI160", rate: "2%", desc: "Income distribution to beneficiaries" },
-      { code: "WI010", rate: "5%", desc: "Professional fees paid to medical practitioners" },
-      { code: "WC010", rate: "5%", desc: "Professional fees paid to corporate medical practitioners" },
-    ];
-    return defaultEwtRows.map((row) => ({
-      description: row.desc,
+  return Array.from(options.values());
+}
+
+export function createVatOptionsFromDefaultAccounts(taxOptions: TaxDefaultAccountOption[]): AppAdvancedDropdownOption[] {
+  const options = new Map<string, AppAdvancedDropdownOption>();
+
+  taxOptions.forEach((taxOption) => {
+    if (options.has(taxOption.taxCode)) return;
+
+    const rate = taxOption.taxRate != null && taxOption.taxRate !== "" ? `${taxOption.taxRate}%`.replace(/%%+/, "%") : "";
+    const cleanName = taxOption.taxDescription.replace(/\s*\(?\d+(?:\.\d+)?%\)?\s*$/u, "").trim();
+    const name = rate && !taxOption.taxExempt ? `${cleanName} (${rate})` : cleanName;
+
+    options.set(taxOption.taxCode, {
+      accountCode: taxOption.defaultAccountCode ?? undefined,
+      accountTitle: taxOption.defaultAccountTitle ?? undefined,
+      defaultAccountCode: taxOption.defaultAccountCode ?? undefined,
+      defaultAccountRole: taxOption.defaultAccountRole ?? undefined,
+      defaultAccountTitle: taxOption.defaultAccountTitle ?? undefined,
+      description: taxOption.defaultAccountTitle ?? "",
       label: "",
-      name: `${row.code} (${row.rate})`,
-      selectedDetails: "",
-      value: row.code,
-    }));
-  }
+      name,
+      selectedDetails: taxOption.defaultAccountTitle ?? "",
+      sourceKey: taxOption.sourceKey,
+      taxCode: taxOption.taxCode,
+      value: taxOption.taxCode,
+    });
+  });
 
   return Array.from(options.values());
 }
 
-export const DefaultAccountingEntryVatOptions: AppAdvancedDropdownOption[] = createVatOptions([]);
-export const DefaultAccountingEntryEwtOptions: AppAdvancedDropdownOption[] = createEwtOptions([]);
+export function createEwtOptionsFromDefaultAccounts(taxOptions: TaxDefaultAccountOption[]): AppAdvancedDropdownOption[] {
+  const options = new Map<string, AppAdvancedDropdownOption>();
+
+  taxOptions.forEach((taxOption) => {
+    const displayCode = taxOption.displayCode || taxOption.taxCode;
+    if (options.has(displayCode)) return;
+
+    const rate = taxOption.taxRate != null && taxOption.taxRate !== "" ? `${taxOption.taxRate}%`.replace(/%%+/, "%") : "";
+    const name = [displayCode, rate ? `(${rate})` : ""].filter(Boolean).join(" ");
+    const description =
+      taxOption.natureOfIncome?.trim() ||
+      taxOption.taxDescription.replace(/^[A-Z]{1,3}\s?\d{0,3}(?:\.\d+)?\s*\|\s*/, "").trim() ||
+      taxOption.taxDescription;
+
+    options.set(displayCode, {
+      accountCode: taxOption.defaultAccountCode ?? undefined,
+      accountTitle: taxOption.defaultAccountTitle ?? undefined,
+      defaultAccountCode: taxOption.defaultAccountCode ?? undefined,
+      defaultAccountRole: taxOption.defaultAccountRole ?? undefined,
+      defaultAccountTitle: taxOption.defaultAccountTitle ?? undefined,
+      description,
+      label: taxOption.defaultAccountTitle ?? "",
+      name,
+      selectedDetails: taxOption.defaultAccountTitle ?? "",
+      sourceKey: taxOption.sourceKey,
+      taxCode: taxOption.taxCode,
+      value: displayCode,
+    });
+  });
+
+  return Array.from(options.values());
+}

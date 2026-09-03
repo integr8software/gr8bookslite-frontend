@@ -1,22 +1,22 @@
 import type {
+  PettyCashVoucherActionMode,
   PettyCashVoucherActionTab,
-  PettyCashVoucherFormMode,
   PettyCashVoucherFormStatus,
   PettyCashVoucherStatus,
   PettyCashVoucherVATable,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
-
 export const PettyCashVoucherLink = getModuleRoute("PCV");
 export const PettyCashVoucherAddLink = `${PettyCashVoucherLink}/add`;
 export const getPettyCashVoucherEditLink = (recordId: string) => `${PettyCashVoucherLink}/edit/${recordId}`;
 export const getPettyCashVoucherViewLink = (recordId: string) => `${PettyCashVoucherLink}/view/${recordId}`;
 
-export const PettyCashVoucherQueryKeys = {
-  vouchers: () => ["cash-disbursement", "petty-cash-voucher", "vouchers"] as const,
-};
+export const PettyCashVoucherActionModes = {
+  Add: "add",
+  Edit: "edit",
+  View: "view",
+} as const satisfies Record<string, PettyCashVoucherActionMode>;
 
 export const PettyCashVoucherPaginationStorageKey = "petty-cash-voucher-table";
 
@@ -31,81 +31,50 @@ export const PettyCashVoucherDefaultVatType = "";
 
 export const PettyCashVoucherVatRate = 0.12;
 
-export const PettyCashVoucherDefaultVatTypeOptions: AppAdvancedDropdownOption[] = [
-  { description: "Value Added Tax", label: "12%", name: "VAT", value: "VAT-12" },
-  { description: "Zero Rated", label: "0%", name: "Zero Rated", value: "VAT-0" },
-  { description: "VAT Exempt", label: "0%", name: "VAT Exempt", value: "VAT-EXEMPT" },
-  { description: "Non-VAT", label: "0%", name: "Non-VAT", value: "NON-VAT" },
-];
-
-export const PettyCashVoucherVATableDropdownOptions: AppAdvancedDropdownOption[] = [
-  { name: "False", value: "False" },
-  { name: "True", value: "True" },
-];
-
-export const PettyCashVoucherEwtCodeOptions: AppAdvancedDropdownOption[] = [
-  { description: "Expanded Withholding Tax 10%", label: "10%", name: "W10", value: "W10" },
-  { description: "Expanded Withholding Tax 5%", label: "5%", name: "W05", value: "W05" },
-  { description: "Expanded Withholding Tax 2%", label: "2%", name: "WV02", value: "WV02" },
-  { description: "Expanded Withholding Tax 1%", label: "1%", name: "WV01", value: "WV01" },
-];
-
-export const PettyCashVoucherEwtRateMap: Record<string, number> = {
-  W05: 5,
-  W10: 10,
-  WV01: 1,
-  WV02: 2,
-};
-
-export function getPettyCashVoucherEwtPercent(code: string): number {
-  if (!code) return 0;
-  const trimmed = code.trim();
-  if (PettyCashVoucherEwtRateMap[trimmed] !== undefined) {
-    return PettyCashVoucherEwtRateMap[trimmed];
-  }
-  // Only parse numeric rate if the code is explicitly a percentage string like "1%", "2%", etc.
-  if (/^\d+(\.\d+)?%?$/.test(trimmed)) {
-    const match = trimmed.match(/^(\d+(?:\.\d+)?)/);
-    const parsed = match ? Number.parseFloat(match[1]) : 0;
-    return parsed <= 100 ? parsed : 0;
-  }
-  return 0;
-}
-
-export function getPettyCashVoucherEwtRate(code: string): string {
-  const percent = getPettyCashVoucherEwtPercent(code);
-  return percent > 0 ? `${percent.toFixed(2)}%` : "0.00%";
-}
-
 export const PettyCashVoucherStatuses = {
-  cancelled: "Cancelled",
-  disapproved: "Disapproved",
-  draft: "Draft",
-  forApproval: "For Approval",
-  open: "Open",
-  posted: "Posted",
-} as const;
+  Cancelled: "Cancelled",
+  Disapproved: "Disapproved",
+  Draft: "Draft",
+  ForApproval: "For Approval",
+  Open: "Open",
+  Posted: "Posted",
+} as const satisfies Record<string, PettyCashVoucherFormStatus>;
 
 export const PettyCashVoucherRecordStatuses = [
-  PettyCashVoucherStatuses.posted,
-  PettyCashVoucherStatuses.forApproval,
-  PettyCashVoucherStatuses.draft,
-  PettyCashVoucherStatuses.disapproved,
-  PettyCashVoucherStatuses.cancelled,
+  PettyCashVoucherStatuses.Draft,
+  PettyCashVoucherStatuses.ForApproval,
+  PettyCashVoucherStatuses.Posted,
+  PettyCashVoucherStatuses.Disapproved,
+  PettyCashVoucherStatuses.Cancelled,
 ] as const satisfies readonly PettyCashVoucherStatus[];
 
-export const PettyCashVoucherStatusOptions = ["All", ...PettyCashVoucherRecordStatuses] as const satisfies readonly (
-  "All" | PettyCashVoucherStatus
-)[];
+export const EditablePettyCashVoucherStatuses: readonly PettyCashVoucherStatus[] = [
+  PettyCashVoucherStatuses.Draft,
+  PettyCashVoucherStatuses.Disapproved,
+];
 
-export const PettyCashVoucherAllStatusFilter = "All";
+export const PettyCashVoucherAllStatusFilter = "all";
+
+export const PettyCashVoucherStatusFilterOptions = [
+  { label: "All statuses", value: PettyCashVoucherAllStatusFilter },
+  { label: "Draft", value: PettyCashVoucherStatuses.Draft },
+  { label: "For Approval", value: PettyCashVoucherStatuses.ForApproval },
+  { label: "Posted", value: PettyCashVoucherStatuses.Posted },
+  { label: "Disapproved", value: PettyCashVoucherStatuses.Disapproved },
+  { label: "Cancelled", value: PettyCashVoucherStatuses.Cancelled },
+] as const;
+
+export const PettyCashVoucherStatusFilters = [
+  PettyCashVoucherAllStatusFilter,
+  ...PettyCashVoucherRecordStatuses,
+] as const;
 
 export const PettyCashVoucherStatusMetricTones = {
-  [PettyCashVoucherStatuses.draft]: "blue",
-  [PettyCashVoucherStatuses.forApproval]: "amber",
-  [PettyCashVoucherStatuses.posted]: "emerald",
-  [PettyCashVoucherStatuses.disapproved]: "red",
-  [PettyCashVoucherStatuses.cancelled]: "slate",
+  [PettyCashVoucherStatuses.Draft]: "blue",
+  [PettyCashVoucherStatuses.ForApproval]: "amber",
+  [PettyCashVoucherStatuses.Posted]: "emerald",
+  [PettyCashVoucherStatuses.Disapproved]: "red",
+  [PettyCashVoucherStatuses.Cancelled]: "slate",
 } as const;
 
 export const PettyCashVoucherFormStatusOptions = [
@@ -133,7 +102,7 @@ export const PettyCashVoucherColumnLabels = {
   currency: "Currency",
   exchangeRate: "Exchange Rate",
   amount: "Total Amount",
-  disburseAmount: "Disburse Amount",
+  disburseAmount: "Total Disbursed",
   remarks: "Remarks",
   createdBy: "Created By",
   dateCreated: "Date Created",
@@ -143,7 +112,15 @@ export const PettyCashVoucherColumnLabels = {
   actions: "Actions",
 } as const;
 
-export const PettyCashVoucherDefaultVisibleColumnIds = ["voucherNo", "documentDate", "partyName", "amount", "disburseAmount", "status", "actions"] as const;
+export const PettyCashVoucherDefaultVisibleColumnIds = [
+  "voucherNo",
+  "documentDate",
+  "partyName",
+  "amount",
+  "disburseAmount",
+  "status",
+  "actions",
+] as const;
 
 export const PettyCashVoucherDefaultColumnVisibility = Object.fromEntries(
   Object.keys(PettyCashVoucherColumnLabels).map((columnId) => [
@@ -155,31 +132,28 @@ export const PettyCashVoucherDefaultColumnVisibility = Object.fromEntries(
 export const PettyCashVoucherTableCellClassName = "px-4 py-4 align-middle text-sm text-darknavy";
 
 export function canEditPettyCashVoucherStatus(status: PettyCashVoucherStatus) {
-  return (
-    status === PettyCashVoucherStatuses.draft ||
-    status === PettyCashVoucherStatuses.disapproved
-  );
+  return EditablePettyCashVoucherStatuses.includes(status);
 }
 
 export function canApprovePettyCashVoucherStatus(status: PettyCashVoucherFormStatus) {
-  return status === PettyCashVoucherStatuses.forApproval || status === PettyCashVoucherStatuses.posted;
+  return status === PettyCashVoucherStatuses.ForApproval || status === PettyCashVoucherStatuses.Posted;
 }
 
 export function canDisapprovePettyCashVoucherStatus(status: PettyCashVoucherFormStatus) {
-  return status === PettyCashVoucherStatuses.forApproval || status === PettyCashVoucherStatuses.disapproved;
+  return status === PettyCashVoucherStatuses.ForApproval || status === PettyCashVoucherStatuses.Disapproved;
 }
 
 export function canCancelPettyCashVoucherStatus(status: PettyCashVoucherFormStatus) {
   return (
-    status === PettyCashVoucherStatuses.draft ||
-    status === PettyCashVoucherStatuses.forApproval ||
-    status === PettyCashVoucherStatuses.disapproved ||
-    status === PettyCashVoucherStatuses.cancelled
+    status === PettyCashVoucherStatuses.Draft ||
+    status === PettyCashVoucherStatuses.ForApproval ||
+    status === PettyCashVoucherStatuses.Disapproved ||
+    status === PettyCashVoucherStatuses.Cancelled
   );
 }
 
 export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStatus, recordLabel: string) {
-  if (status === PettyCashVoucherStatuses.posted) {
+  if (status === PettyCashVoucherStatuses.Posted) {
     return {
       confirmLabel: "Approve Voucher",
       description: `This will approve ${recordLabel} and update its status to Posted.`,
@@ -190,7 +164,7 @@ export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStat
     };
   }
 
-  if (status === PettyCashVoucherStatuses.disapproved) {
+  if (status === PettyCashVoucherStatuses.Disapproved) {
     return {
       confirmLabel: "Disapprove Voucher",
       description: `This will mark ${recordLabel} as Disapproved.`,
@@ -201,7 +175,7 @@ export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStat
     };
   }
 
-  if (status === PettyCashVoucherStatuses.cancelled) {
+  if (status === PettyCashVoucherStatuses.Cancelled) {
     return {
       confirmLabel: "Cancel Voucher",
       description: `This will mark ${recordLabel} as Cancelled.`,
@@ -222,11 +196,7 @@ export function getPettyCashVoucherStatusDialogCopy(status: PettyCashVoucherStat
   };
 }
 
-export function getPettyCashVoucherSaveDialogCopy(
-  action: "submit" | "draft",
-  mode: PettyCashVoucherFormMode,
-  recordLabel: string,
-) {
+export function getPettyCashVoucherSaveDialogCopy(action: "submit" | "draft", mode: PettyCashVoucherActionMode, recordLabel: string) {
   if (action === "draft") {
     return {
       confirmLabel: "Save as Draft",
@@ -238,7 +208,7 @@ export function getPettyCashVoucherSaveDialogCopy(
     };
   }
 
-  const isEdit = mode === "edit";
+  const isEdit = mode === PettyCashVoucherActionModes.Edit;
   return {
     confirmLabel: isEdit ? "Update" : "Save and Submit",
     description: isEdit ? `This will update ${recordLabel}.` : `This will save and submit ${recordLabel}.`,
@@ -249,13 +219,13 @@ export function getPettyCashVoucherSaveDialogCopy(
   };
 }
 
-export function getPettyCashVoucherActionTitle(mode: PettyCashVoucherFormMode, voucherNo?: string) {
-  if (mode === "view") return voucherNo ? `View Petty Cash Voucher | ${voucherNo}` : "View Petty Cash Voucher";
-  if (mode === "edit") return voucherNo ? `Edit Petty Cash Voucher | ${voucherNo}` : "Edit Petty Cash Voucher";
+export function getPettyCashVoucherActionTitle(mode: PettyCashVoucherActionMode, voucherNo?: string) {
+  if (mode === PettyCashVoucherActionModes.View) return voucherNo ? `View Petty Cash Voucher | ${voucherNo}` : "View Petty Cash Voucher";
+  if (mode === PettyCashVoucherActionModes.Edit) return voucherNo ? `Edit Petty Cash Voucher | ${voucherNo}` : "Edit Petty Cash Voucher";
   return "Add Petty Cash Voucher";
 }
 
-export const PettyCashVoucherActionDescriptions: Record<PettyCashVoucherFormMode, string> = {
+export const PettyCashVoucherActionDescriptions: Record<PettyCashVoucherActionMode, string> = {
   add: "Complete the voucher header on one page before saving.",
   edit: "Complete the voucher header on one page before saving.",
   view: "Review the voucher details and supporting attachments.",

@@ -1,10 +1,8 @@
 import type {
   CashVoucherAttachment,
-  CashVoucherPaymentMethod,
   CashVoucherBankAccount,
   CashVoucherPaymentAccount,
   CashVoucherCopyFromRecord,
-  CashVoucherCopySource,
   CashVoucherLineEntry,
   CashVoucherPaymentDetails,
   CashVoucherStatus,
@@ -15,25 +13,13 @@ import type {
   CashVoucherFormValues,
   CashVoucherHistoryEntry,
   CashVoucherRecord,
+  CashVoucherGeneratedAccount,
+  CashVoucherGeneratedAccountOptions,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { CashVoucherStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
-import { formatCurrency as formatCurrencyValue } from "@/app/src/utils/currency.util";
-
-const CashOnHandAccount = {
-  accountCode: "1001111",
-  accountName: "Cash on Hand",
-} as const;
-
-const InputVatAccount = {
-  accountCode: "2010002011",
-  accountName: "Input VAT",
-} as const;
-
-const ExpandedWithholdingTaxAccount = {
-  accountCode: "2010002002",
-  accountName: "Expanded Withholding Tax",
-} as const;
+import { formatCurrency as formatCurrencyValue, roundCurrency } from "@/app/src/utils/currency.util";
+import { parseTaxPercent } from "@/app/src/utils/percentage.util";
 
 export const CashVoucherInitialEntryDraft: CashVoucherEntryDraft = {
   accountCode: "",
@@ -87,36 +73,6 @@ export function createBlankCashVoucherLineEntry(overrides: Partial<CashVoucherLi
 export function ensureCashVoucherLineEntries(entries: CashVoucherLineEntry[]) {
   return entries.length > 0 ? entries : [createBlankCashVoucherLineEntry()];
 }
-
-export const CashVoucherBankAccounts: CashVoucherBankAccount[] = [
-  {
-    id: "bank-bdo-operating",
-    accountCode: "1010102001",
-    accountTitle: "Cash in Bank - BDO Operating",
-    bankName: "BDO Unibank",
-    branch: "Makati Corporate Branch",
-    accountName: "Gr8Books Operating Account",
-    accountNo: "1000-2201-44",
-  },
-  {
-    id: "bank-metrobank-checking",
-    accountCode: "1010102002",
-    accountTitle: "Cash in Bank - Metrobank Checking",
-    bankName: "Metrobank",
-    branch: "BGC Finance Center",
-    accountName: "Gr8Books Checking Account",
-    accountNo: "0028-4511-90",
-  },
-  {
-    id: "bank-bpi-payroll",
-    accountCode: "1010102003",
-    accountTitle: "Cash in Bank - BPI Payroll",
-    bankName: "BPI",
-    branch: "Ortigas Business Center",
-    accountName: "Gr8Books Payroll Account",
-    accountNo: "7781-0042-16",
-  },
-];
 
 export const CashVoucherTransactions: CashVoucherTransactionRecord[] = [];
 export const CashVouchers: CashVoucherRecord[] = [];
@@ -219,23 +175,6 @@ function getGeneratedCashVoucherRemarkPrefixPatterns() {
   ];
 }
 
-export const CashVoucherCopySources: CashVoucherCopySource[] = [
-  "Accounts Payable Voucher",
-  "Advances to Suppliers",
-  "Cash Advance",
-  "Cash Advance Liquidation",
-  "Cash Advance Multiple Entry",
-  "Cash Advance Multiple Entry Liquidation",
-  "Petty Cash Fund",
-  "Petty Cash Replenishment",
-  "Revolving Fund",
-  "Revolving Fund Replenishment",
-  "Revolving Fund Return",
-  "Purchase Order",
-  "Purchase Journal",
-  "Receiving Report",
-];
-
 export function buildCashVoucherPreviewRows(transactions: CashVoucherTransactionRecord[], vouchers: CashVoucherRecord[]) {
   const voucherByTransactionId = new Map(vouchers.map((voucher) => [voucher.transactionId, voucher]));
 
@@ -282,7 +221,7 @@ export function createCashVoucherFormValues(
   }
 
   return {
-    taxRate: transaction ? getDefaultTaxRate(transaction) : "0%",
+    taxRate: transaction ? getDefaultTaxRate() : "0%",
     taxDetails: transaction ? createDefaultTransactionTaxDetails(transaction) : createTaxDetails(0, "0%"),
     transactionId: transaction?.id ?? "",
     voucherNo: "",
@@ -304,7 +243,7 @@ export function createCashVoucherFormValues(
     paymentDueDate: transaction?.paymentDueDate ?? todayDateValue(),
     paymentDetails: createEmptyPaymentDetails(),
     preparedBy: "Finance Shared Services",
-    status: CashVoucherStatuses.open,
+    status: CashVoucherStatuses.Open,
     lineEntries: transaction
       ? ensureCashVoucherLineEntries(createAutoCashVoucherLineEntries(transaction))
       : [createBlankCashVoucherLineEntry()],
@@ -313,11 +252,13 @@ export function createCashVoucherFormValues(
 }
 
 function getCashVoucherSourceGrossTotal(entries: CashVoucherLineEntry[]) {
-  return entries.filter((entry) => !isGeneratedCashVoucherLineEntry(entry)).reduce((sum, entry) => {
-    const grossAmount = Number(entry.taxDetails?.grossAmount || entry.debit || 0);
+  return entries
+    .filter((entry) => !isGeneratedCashVoucherLineEntry(entry))
+    .reduce((sum, entry) => {
+      const grossAmount = Number(entry.taxDetails?.grossAmount || entry.debit || 0);
 
-    return sum + grossAmount;
-  }, 0);
+      return sum + grossAmount;
+    }, 0);
 }
 
 export function createCashVoucherFromForm(values: CashVoucherFormValues): CashVoucherRecord {
@@ -556,12 +497,13 @@ export function createAutoCashVoucherLineEntries(
   transaction: CashVoucherTransactionRecord,
   bankAccount?: CashVoucherBankAccount | null,
   paymentAccount?: CashVoucherPaymentAccount | null,
+  accountOptions: CashVoucherGeneratedAccountOptions = {},
 ): CashVoucherLineEntry[] {
-  const bankPaymentAccount = bankAccount ?? getDefaultBankAccountForPayment(transaction.paymentMethod);
+  const bankPaymentAccount = bankAccount ?? null;
   const amount = transaction.amount;
   const debitAccount = getDebitAccountTemplate(transaction);
-  const creditAccount = getCreditAccountTemplate(transaction, bankPaymentAccount, paymentAccount);
-  const taxProfile = getDefaultTaxProfile(transaction);
+  const creditAccount = getCreditAccountTemplate(transaction, bankPaymentAccount, paymentAccount, accountOptions.cashAccount);
+  const taxProfile = getDefaultTaxProfile();
   const taxDetails = createCashVoucherTaxDetails({
     amount,
     ...taxProfile,
@@ -598,8 +540,8 @@ export function createAutoCashVoucherLineEntries(
   if (taxDetails.vatAmount > 0) {
     entries.push({
       id: `auto-input-vat-${transaction.id}`,
-      accountCode: InputVatAccount.accountCode,
-      accountName: InputVatAccount.accountName,
+      accountCode: accountOptions.inputVatAccount?.accountCode ?? "",
+      accountName: accountOptions.inputVatAccount?.accountName ?? "",
       ewtCode: "",
       particulars: generatedRemarks.inputVat,
       remarks: generatedRemarks.inputVat,
@@ -619,8 +561,8 @@ export function createAutoCashVoucherLineEntries(
   if (taxDetails.ewtAmount > 0) {
     entries.push({
       id: `auto-ewt-${transaction.id}`,
-      accountCode: ExpandedWithholdingTaxAccount.accountCode,
-      accountName: ExpandedWithholdingTaxAccount.accountName,
+      accountCode: accountOptions.withholdingTaxAccount?.accountCode ?? "",
+      accountName: accountOptions.withholdingTaxAccount?.accountName ?? "",
       ewtCode: taxDetails.ewtCode,
       particulars: generatedRemarks.ewt,
       remarks: generatedRemarks.ewt,
@@ -852,67 +794,67 @@ export function getCashVoucherDisplayStatus(status: string): CashVoucherDisplayS
     .replace(/[\s-]+/g, "_");
 
   if (normalizedStatus === "DRAFT") {
-    return CashVoucherStatuses.draft;
+    return CashVoucherStatuses.Draft;
   }
 
   if (normalizedStatus === "FOR_APPROVAL") {
-    return CashVoucherStatuses.forApproval;
+    return CashVoucherStatuses.ForApproval;
   }
 
   if (normalizedStatus === "APPROVED" || normalizedStatus === "POSTED") {
-    return CashVoucherStatuses.posted;
+    return CashVoucherStatuses.Posted;
   }
 
   if (normalizedStatus === "DISAPPROVED" || normalizedStatus === "REJECTED") {
-    return CashVoucherStatuses.disapproved;
+    return CashVoucherStatuses.Disapproved;
   }
 
   if (normalizedStatus === "CANCELLED" || normalizedStatus === "CANCELED") {
-    return CashVoucherStatuses.cancelled;
+    return CashVoucherStatuses.Cancelled;
   }
 
   if (normalizedStatus === "CLOSED" || normalizedStatus === "COMPLETED") {
-    return CashVoucherStatuses.closed;
+    return CashVoucherStatuses.Closed;
   }
 
-  if (status === CashVoucherStatuses.draft || status === CashVoucherStatuses.open) {
-    return CashVoucherStatuses.draft;
+  if (status === CashVoucherStatuses.Draft || status === CashVoucherStatuses.Open) {
+    return CashVoucherStatuses.Draft;
   }
 
   if (status === "Pending Review" || status === "Pending" || status === "Active") {
-    return CashVoucherStatuses.forApproval;
+    return CashVoucherStatuses.ForApproval;
   }
 
   if (status === "Rejected") {
-    return CashVoucherStatuses.disapproved;
+    return CashVoucherStatuses.Disapproved;
   }
 
   if (status === "Completed") {
-    return CashVoucherStatuses.closed;
+    return CashVoucherStatuses.Closed;
   }
 
   if (status === "Approved") {
-    return CashVoucherStatuses.posted;
+    return CashVoucherStatuses.Posted;
   }
 
   if (
-    status === CashVoucherStatuses.draft ||
-    status === CashVoucherStatuses.forApproval ||
-    status === CashVoucherStatuses.posted ||
-    status === CashVoucherStatuses.disapproved ||
-    status === CashVoucherStatuses.cancelled ||
-    status === CashVoucherStatuses.closed
+    status === CashVoucherStatuses.Draft ||
+    status === CashVoucherStatuses.ForApproval ||
+    status === CashVoucherStatuses.Posted ||
+    status === CashVoucherStatuses.Disapproved ||
+    status === CashVoucherStatuses.Cancelled ||
+    status === CashVoucherStatuses.Closed
   ) {
     return status;
   }
 
-  return CashVoucherStatuses.draft;
+  return CashVoucherStatuses.Draft;
 }
 
 function createInitialCashVoucherHistory(
   voucher: Pick<CashVoucherRecord, "voucherNo" | "voucherDate" | "status">,
 ): CashVoucherHistoryEntry[] {
-  const createdStatus = voucher.status === CashVoucherStatuses.draft ? CashVoucherStatuses.draft : CashVoucherStatuses.forApproval;
+  const createdStatus = voucher.status === CashVoucherStatuses.Draft ? CashVoucherStatuses.Draft : CashVoucherStatuses.ForApproval;
   const createdAt = createCashVoucherHistoryDate(voucher.voucherDate, 8);
   const history: CashVoucherHistoryEntry[] = [
     {
@@ -954,47 +896,47 @@ function createCashVoucherHistoryDate(voucherDate: string, hour: number) {
 }
 
 function getCashVoucherHistoryAction(status: CashVoucherStatus) {
-  if (status === CashVoucherStatuses.posted) {
-    return CashVoucherStatuses.posted;
+  if (status === CashVoucherStatuses.Posted) {
+    return CashVoucherStatuses.Posted;
   }
 
-  if (status === CashVoucherStatuses.disapproved) {
-    return CashVoucherStatuses.disapproved;
+  if (status === CashVoucherStatuses.Disapproved) {
+    return CashVoucherStatuses.Disapproved;
   }
 
-  if (status === CashVoucherStatuses.cancelled) {
-    return CashVoucherStatuses.cancelled;
+  if (status === CashVoucherStatuses.Cancelled) {
+    return CashVoucherStatuses.Cancelled;
   }
 
-  if (status === CashVoucherStatuses.closed) {
-    return CashVoucherStatuses.closed;
+  if (status === CashVoucherStatuses.Closed) {
+    return CashVoucherStatuses.Closed;
   }
 
-  if (status === CashVoucherStatuses.forApproval) {
-    return CashVoucherStatuses.forApproval;
+  if (status === CashVoucherStatuses.ForApproval) {
+    return CashVoucherStatuses.ForApproval;
   }
 
   return "Updated";
 }
 
 function getCashVoucherHistoryDescription(status: CashVoucherStatus, voucherNo: string) {
-  if (status === CashVoucherStatuses.posted) {
+  if (status === CashVoucherStatuses.Posted) {
     return `${voucherNo} was posted for disbursement processing.`;
   }
 
-  if (status === CashVoucherStatuses.disapproved) {
+  if (status === CashVoucherStatuses.Disapproved) {
     return `${voucherNo} was disapproved and returned for review.`;
   }
 
-  if (status === CashVoucherStatuses.cancelled) {
+  if (status === CashVoucherStatuses.Cancelled) {
     return `${voucherNo} was cancelled.`;
   }
 
-  if (status === CashVoucherStatuses.closed) {
+  if (status === CashVoucherStatuses.Closed) {
     return `${voucherNo} was closed.`;
   }
 
-  if (status === CashVoucherStatuses.draft) {
+  if (status === CashVoucherStatuses.Draft) {
     return `${voucherNo} was restored to Draft.`;
   }
 
@@ -1004,7 +946,7 @@ function getCashVoucherHistoryDescription(status: CashVoucherStatus, voucherNo: 
 export function isCashVoucherForApprovalStatus(status: string) {
   const displayStatus = getCashVoucherDisplayStatus(status);
 
-  return displayStatus === CashVoucherStatuses.forApproval;
+  return displayStatus === CashVoucherStatuses.ForApproval;
 }
 
 function todayDateValue() {
@@ -1050,6 +992,7 @@ function getCreditAccountTemplate(
   transaction: CashVoucherTransactionRecord,
   bankAccount?: CashVoucherBankAccount | null,
   paymentAccount?: CashVoucherPaymentAccount | null,
+  cashAccount?: CashVoucherGeneratedAccount | null,
 ) {
   if (bankAccount) {
     return {
@@ -1060,37 +1003,21 @@ function getCreditAccountTemplate(
 
   if (paymentAccount?.type === "Cash") {
     return {
-      ...CashOnHandAccount,
+      accountCode: cashAccount?.accountCode ?? "",
+      accountName: cashAccount?.accountName ?? "",
     };
   }
 
   if (transaction.paymentMethod === "Cash") {
     return {
-      ...CashOnHandAccount,
+      accountCode: cashAccount?.accountCode ?? "",
+      accountName: cashAccount?.accountName ?? "",
     };
   }
 
-  return createDefaultCashInBankCreditAccount();
-}
-
-function getDefaultBankAccountForPayment(paymentMethod: CashVoucherPaymentMethod) {
-  if (paymentMethod === "Cash") {
-    return null;
-  }
-
-  if (paymentMethod === "Check" || paymentMethod === "Manager's Check") {
-    return CashVoucherBankAccounts[1] ?? CashVoucherBankAccounts[0] ?? null;
-  }
-
-  return CashVoucherBankAccounts[0] ?? null;
-}
-
-function createDefaultCashInBankCreditAccount() {
-  const bankAccount = CashVoucherBankAccounts[0];
-
   return {
-    accountCode: bankAccount?.accountCode ?? "1010-001",
-    accountName: bankAccount?.accountTitle ?? "Cash in Bank",
+    accountCode: "",
+    accountName: "Cash in Bank",
   };
 }
 
@@ -1110,8 +1037,8 @@ function createCreditRemarks(
   return `Settlement${payee}${paymentLabel}`;
 }
 
-function getDefaultTaxRate(transaction: CashVoucherTransactionRecord) {
-  const taxProfile = getDefaultTaxProfile(transaction);
+function getDefaultTaxRate() {
+  const taxProfile = getDefaultTaxProfile();
 
   return taxProfile.vatPercent > 0 ? `${taxProfile.vatPercent}%` : "0%";
 }
@@ -1119,45 +1046,17 @@ function getDefaultTaxRate(transaction: CashVoucherTransactionRecord) {
 function createDefaultTransactionTaxDetails(transaction: CashVoucherTransactionRecord) {
   return createCashVoucherTaxDetails({
     amount: transaction.amount,
-    ...getDefaultTaxProfile(transaction),
+    ...getDefaultTaxProfile(),
   });
 }
 
-function getDefaultTaxProfile(transaction: CashVoucherTransactionRecord) {
-  if (transaction.disbursementType === "Operating Expense") {
-    return {
-      ewtCode: "W10",
-      ewtPercent: 10,
-      vatCode: "V12",
-      vatPercent: 12,
-    };
-  }
-
-  if (transaction.disbursementType === "Capital Expenditure") {
-    return {
-      ewtCode: "",
-      ewtPercent: 0,
-      vatCode: "V12",
-      vatPercent: 12,
-    };
-  }
-
+function getDefaultTaxProfile() {
   return {
     ewtCode: "",
     ewtPercent: 0,
     vatCode: "",
     vatPercent: 0,
   };
-}
-
-function parseTaxPercent(taxRate: string) {
-  const numericPortion = Number.parseFloat(taxRate.replace(/[^0-9.]/g, ""));
-
-  return Number.isFinite(numericPortion) ? numericPortion : 0;
-}
-
-function roundCurrency(value: number) {
-  return Number(value.toFixed(2));
 }
 
 export function createEmptyPaymentDetails(): CashVoucherPaymentDetails {

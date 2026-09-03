@@ -1,11 +1,13 @@
 "use client";
 
+import { PettyCashReplenishmentActionModes } from "@/app/src/constants/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentConstants";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   applyPettyCashFundToReplenishmentForm,
+  calculatePettyCashReplenishmentItemTaxFields,
   calculatePettyCashReplenishmentTotals,
   createBlankPettyCashReplenishmentEntry,
   createPettyCashReplenishmentFormValues,
@@ -30,13 +32,7 @@ import {
   updatePettyCashReplenishmentApi,
   updatePettyCashReplenishmentStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentApi";
-import {
-  CashDisbursementActionModeAdd,
-  createCashDisbursementModuleQueryKey,
-  createCashDisbursementRecordQueryKey,
-} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
-
-const PettyCashReplenishmentQueryKey = "petty-cash-replenishment";
+import { PettyCashReplenishmentQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentQueryKeys";
 
 export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashReplenishmentActionMode; onSaved?: () => void }) {
   const router = useRouter();
@@ -44,12 +40,12 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   const transactionCurrency = useTransactionCurrency();
   const params = useParams<{ recordId?: string }>();
   const { mode } = options;
-  const isReadonly = mode === "view";
+  const isReadonly = mode === PettyCashReplenishmentActionModes.View;
 
   const recordQuery = useQuery({
-    queryKey: createCashDisbursementRecordQueryKey(PettyCashReplenishmentQueryKey, params.recordId),
+    queryKey: PettyCashReplenishmentQueryKeys.record(params.recordId),
     queryFn: () => fetchPettyCashReplenishmentById(params.recordId!),
-    enabled: Boolean(params.recordId) && mode !== CashDisbursementActionModeAdd,
+    enabled: Boolean(params.recordId) && mode !== PettyCashReplenishmentActionModes.Add,
   });
 
   const record = recordQuery.data;
@@ -63,7 +59,8 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   const hasEditedCurrencyRef = useRef(false);
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
+  const isDirty =
+    mode === PettyCashReplenishmentActionModes.Add ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
 
   async function refreshNextTransactionNo() {
     try {
@@ -89,7 +86,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   }, [record]);
 
   useEffect(() => {
-    if (mode === CashDisbursementActionModeAdd) {
+    if (mode === PettyCashReplenishmentActionModes.Add) {
       queueMicrotask(() => void refreshNextTransactionNo());
     }
   }, [mode]);
@@ -106,7 +103,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   const totals = useMemo(() => calculatePettyCashReplenishmentTotals(values.entries), [values.entries]);
 
   useEffect(() => {
-    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
+    if (mode !== PettyCashReplenishmentActionModes.Add || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
     setValues((current) => ({
       ...current,
       currency: transactionCurrency.baseCurrencyCode,
@@ -125,20 +122,21 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
+  function calculateEntry(entry: PettyCashReplenishmentEntry): PettyCashReplenishmentEntry {
+    const taxFields = calculatePettyCashReplenishmentItemTaxFields(entry.amount, entry.vatType, entry.ewtCode);
+    return { ...entry, ...taxFields };
+  }
+
   function updateEntry(rowId: string, updates: Partial<PettyCashReplenishmentEntry>) {
     if (isReadonly) return;
     updateField(
       "entries",
-      values.entries.map((entry) => (entry.id === rowId ? { ...entry, ...updates } : entry)),
+      values.entries.map((entry) => (entry.id === rowId ? calculateEntry({ ...entry, ...updates }) : entry)),
     );
   }
 
   function updateEntries(entries: PettyCashReplenishmentEntry[]) {
     updateField("entries", entries);
-  }
-
-  function addEntries(count: number) {
-    updateEntries([...values.entries, ...Array.from({ length: count }, createBlankPettyCashReplenishmentEntry)]);
   }
 
   async function updateCurrency(currencyCode: string) {
@@ -156,37 +154,44 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     }
   }
 
-  function duplicateEntry(rowId: string) {
-    const target = values.entries.find((i) => i.id === rowId);
-    if (target) {
-      updateEntries([...values.entries, { ...target, id: `entry-${Date.now()}` }]);
-    }
-  }
-  function insertEntry(rowId: string, position: "above" | "below" = "below") {
-    const index = values.entries.findIndex((i) => i.id === rowId);
-    const targetIndex = index === -1 ? values.entries.length : position === "above" ? index : index + 1;
-    const next = [...values.entries];
-    next.splice(targetIndex, 0, createBlankPettyCashReplenishmentEntry());
-    updateEntries(next);
-  }
-  function moveEntry(fromRowId: string, toRowId: string) {
-    const fromIndex = values.entries.findIndex((i) => i.id === fromRowId);
-    const toIndex = values.entries.findIndex((i) => i.id === toRowId);
-    if (fromIndex === -1 || toIndex === -1) return;
-    const next = [...values.entries];
-    const [moved] = next.splice(fromIndex, 1);
-    next.splice(toIndex, 0, moved);
-    updateEntries(next);
-  }
   function addEntry() {
     if (isReadonly) return;
     updateField("entries", [...values.entries, createBlankPettyCashReplenishmentEntry()]);
   }
 
+  function addEntries(count: number) {
+    updateEntries([...values.entries, ...Array.from({ length: count }, createBlankPettyCashReplenishmentEntry)]);
+  }
+
+  function duplicateEntry(rowId: string) {
+    const target = values.entries.find((e) => e.id === rowId);
+    if (target) {
+      updateEntries([...values.entries, { ...target, id: `entry-${Date.now()}` }]);
+    }
+  }
+
+  function insertEntry(rowId: string, position: "above" | "below" = "below") {
+    const index = values.entries.findIndex((e) => e.id === rowId);
+    if (index === -1) return;
+    const next = [...values.entries];
+    next.splice(position === "above" ? index : index + 1, 0, createBlankPettyCashReplenishmentEntry());
+    updateEntries(next);
+  }
+
+  function moveEntry(fromRowId: string, toRowId: string) {
+    const fromIndex = values.entries.findIndex((e) => e.id === fromRowId);
+    const toIndex = values.entries.findIndex((e) => e.id === toRowId);
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
+    const next = [...values.entries];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
+    updateEntries(next);
+  }
+
   function removeEntry(rowId: string) {
     if (isReadonly) return;
-    if (values.entries.length === 1) {
-      toast.error("At least one voucher entry is required.");
+    if (values.entries.length <= 1) {
+      updateField("entries", [createBlankPettyCashReplenishmentEntry()]);
       return;
     }
     updateField(
@@ -197,15 +202,15 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
 
   const saveMutation = useMutation({
     mutationFn: async (submitValues: PettyCashReplenishmentFormValues) => {
-      if (mode === CashDisbursementActionModeAdd) {
+      if (mode === PettyCashReplenishmentActionModes.Add) {
         return await createPettyCashReplenishmentApi(submitValues);
       }
       return await updatePettyCashReplenishmentApi(params.recordId!, submitValues);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashReplenishmentQueryKey) });
+      queryClient.invalidateQueries({ queryKey: PettyCashReplenishmentQueryKeys.all() });
       draft.clearDraft();
-      toast.success(`Petty Cash Replenishment ${mode === CashDisbursementActionModeAdd ? "created" : "updated"} successfully.`);
+      toast.success(`Petty Cash Replenishment ${mode === PettyCashReplenishmentActionModes.Add ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
         options.onSaved();
       } else {
@@ -215,21 +220,6 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     onError: (err: unknown) => {
       const msg = err instanceof Error ? err.message : "Failed to save Petty Cash Replenishment.";
       toast.error(msg);
-    },
-  });
-
-  const updateStatusMutation = useMutation({
-    mutationFn: async (status: PettyCashReplenishmentStatus) => {
-      return await updatePettyCashReplenishmentStatusApi(params.recordId!, status);
-    },
-    onSuccess: (updatedRecord, status) => {
-      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashReplenishmentQueryKey) });
-      queryClient.setQueryData(createCashDisbursementRecordQueryKey(PettyCashReplenishmentQueryKey, params.recordId), updatedRecord);
-      setValues((cur) => ({ ...cur, status }));
-      toast.success(`Petty Cash Replenishment marked as ${status}.`);
-    },
-    onError: () => {
-      toast.error("Could not update status.");
     },
   });
 
@@ -251,7 +241,24 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     }
   }
 
-  async function handleUpdateStatus(status: PettyCashReplenishmentStatus) {
+  const updateStatusMutation = useMutation({
+    mutationFn: async (status: PettyCashReplenishmentStatus) => {
+      return await updatePettyCashReplenishmentStatusApi(params.recordId!, status);
+    },
+    onSuccess: (updatedRecord, status) => {
+      queryClient.invalidateQueries({ queryKey: PettyCashReplenishmentQueryKeys.all() });
+      queryClient.setQueryData(PettyCashReplenishmentQueryKeys.record(params.recordId), updatedRecord);
+      setValues((current) => ({ ...current, status }));
+      setInitialValues((current) => ({ ...current, status }));
+      toast.success(`Petty Cash Replenishment status updated to ${status}.`);
+    },
+    onError: () => {
+      toast.error("Failed to update Petty Cash Replenishment status.");
+    },
+  });
+
+  async function handleUpdateStatus(status: PettyCashReplenishmentStatus): Promise<boolean> {
+    if (!params.recordId) return false;
     try {
       await updateStatusMutation.mutateAsync(status);
       return true;
@@ -280,7 +287,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === CashDisbursementActionModeAdd) {
+    if (mode === PettyCashReplenishmentActionModes.Add) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -314,7 +321,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     isLoading: recordQuery.isLoading,
     isPreviewOpen,
     isReadonly,
-    isRecordMissing: mode !== CashDisbursementActionModeAdd && !recordQuery.isLoading && !record,
+    isRecordMissing: mode !== PettyCashReplenishmentActionModes.Add && !recordQuery.isLoading && !record,
     isSubmitting: saveMutation.isPending || updateStatusMutation.isPending,
     mode,
     openPreview: () => setIsPreviewOpen(true),

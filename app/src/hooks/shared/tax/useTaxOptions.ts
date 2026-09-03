@@ -4,12 +4,15 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
 	TaxQueryKeys,
-	fetchPartyTaxDefaultClassifications,
+	fetchTaxDefaultAccountOptionGroups,
 	fetchTaxes,
 } from "@/app/src/services/shared/tax/TaxApi";
 import type {
 	PartyTaxDefaultOptions,
 	Tax,
+	TaxDefaultAccountOption,
+	TaxDefaultAccountOptionClassification,
+	TaxDefaultAccountOptionGroup,
 	TaxDefaultClassification,
 	TaxDefaultOption,
 	TaxListQuery,
@@ -26,6 +29,15 @@ import { formatPercentage } from "@/app/src/utils/percentage.util";
 
 const AtcDropdownLimit = 1000;
 const PartyTaxDefaultDropdownLimit = 1000;
+const PartyTaxDefaultGroupKeyByClassification: Partial<Record<TaxDefaultAccountOptionClassification, keyof PartyTaxDefaultOptions>> = {
+	"input-purchases": "defaultPurchaseInputVatTaxSourceKey",
+	"output-sales": "defaultSalesOutputVatTaxSourceKey",
+	"purchase-ewt": "defaultPurchaseEwtTaxSourceKey",
+	"purchase-fwt": "defaultPurchaseFwtTaxSourceKey",
+	"purchase-wvat": "defaultPurchaseWvatTaxSourceKey",
+	"sales-cwt": "defaultSalesCwtTaxSourceKey",
+	"sales-wvat": "defaultSalesWvatTaxSourceKey",
+};
 
 export type TaxDefaultOptionFormatting = {
 	includeRateInName?: boolean;
@@ -33,6 +45,13 @@ export type TaxDefaultOptionFormatting = {
 	showDescription?: boolean;
 	sortBy?: "name" | "rate";
 	sortByName?: boolean;
+};
+
+type TaxOptionFormattingSource = Pick<Tax, "taxExempt" | "taxRate" | "taxType">;
+type TaxOptionDisplaySource = Pick<Tax, "taxCode" | "taxDescription" | "taxExempt" | "taxRate" | "taxType"> & {
+	displayCode?: string;
+	natureOfIncome?: string | null;
+	officialAtcCode?: string | null;
 };
 
 export function useTaxes(
@@ -73,32 +92,29 @@ export function useTaxDefaultOptions<TKey extends string>(
 	};
 }
 
-export function usePartyTaxDefaultOptions() {
-	const taxesQuery = useTaxes({ limit: PartyTaxDefaultDropdownLimit });
-	const classificationsQuery = useQuery({
-		queryKey: TaxQueryKeys.partyDefaultClassifications(),
-		queryFn: fetchPartyTaxDefaultClassifications,
+export function useTaxDefaultAccountOptionGroups(
+	classification?: TaxDefaultAccountOptionClassification,
+) {
+	return useQuery({
+		queryKey: TaxQueryKeys.defaultAccountOptions(classification),
+		queryFn: () => fetchTaxDefaultAccountOptionGroups(classification),
 		staleTime: 5 * 60 * 1000,
 	});
+}
+
+export function usePartyTaxDefaultOptions() {
+	const defaultAccountOptionsQuery = useTaxDefaultAccountOptionGroups();
 
 	const options = useMemo(() => {
-		const classifications = classificationsQuery.data ?? [];
-		const taxes = taxesQuery.data ?? [];
-
-		return createTaxDefaultOptions(
-			taxes,
-			classifications,
-			getPartyTaxDefaultFormatting,
-		) as PartyTaxDefaultOptions;
-	}, [classificationsQuery.data, taxesQuery.data]);
+		return createPartyTaxDefaultOptionsFromAccountGroups(defaultAccountOptionsQuery.data ?? []);
+	}, [defaultAccountOptionsQuery.data]);
 
 	return {
-		isError: taxesQuery.isError || classificationsQuery.isError,
-		isLoading: taxesQuery.isLoading || classificationsQuery.isLoading,
+		isError: defaultAccountOptionsQuery.isError,
+		isLoading: defaultAccountOptionsQuery.isLoading,
 		options,
 		refetch: () => {
-			void taxesQuery.refetch();
-			void classificationsQuery.refetch();
+			void defaultAccountOptionsQuery.refetch();
 		},
 	};
 }
@@ -202,7 +218,7 @@ function getPartyAtcClassifications(code: string): PartyClassification[] {
 	return ["Individual", "Non-Individual"];
 }
 
-function getPartyAtcDescription(taxCode: Tax) {
+function getPartyAtcDescription(taxCode: TaxOptionDisplaySource) {
 	return (
 		taxCode.natureOfIncome?.trim() ||
 		taxCode.taxDescription.replace(/^[A-Z]{2}\s?\d{3}\s*\|\s*/, "").trim()
@@ -288,6 +304,62 @@ export function createTaxDefaultOption(
 	};
 }
 
+export function createTaxDefaultAccountDropdownOption(
+	tax: TaxDefaultAccountOption,
+	formatting: TaxDefaultOptionFormatting = getDefaultTaxDefaultFormatting(tax),
+): TaxDefaultOption {
+	const rate = formatPercentage(tax.taxRate);
+	const description = getPartyAtcDescription(tax);
+	const displayCode = tax.displayCode || tax.taxCode;
+	const codeRateName = formatTaxDefaultCodeRateName(displayCode, rate);
+	const displayName = getPartyTaxDefaultDisplayName(tax, description);
+	const showDescription = formatting.showDescription ?? true;
+
+	return {
+		code: tax.sourceKey,
+		defaultAccountCode: tax.defaultAccountCode,
+		defaultAccountRole: tax.defaultAccountRole,
+		defaultAccountTitle: tax.defaultAccountTitle,
+		description: showDescription ? displayName : "",
+		disabled: tax.status === "INACTIVE",
+		label: tax.defaultAccountTitle ?? "",
+		name: getTaxDefaultOptionName(tax, displayName, codeRateName, rate, formatting),
+		selectedDetails: tax.defaultAccountTitle ?? codeRateName,
+		value: tax.sourceKey,
+	};
+}
+
+function createPartyTaxDefaultOptionsFromAccountGroups(
+	groups: TaxDefaultAccountOptionGroup[],
+): PartyTaxDefaultOptions {
+	const entries = Object.values(PartyTaxDefaultGroupKeyByClassification).map((key) => [key, []]);
+	const options = Object.fromEntries(entries) as PartyTaxDefaultOptions;
+
+	groups.forEach((group) => {
+		const key = PartyTaxDefaultGroupKeyByClassification[group.classification];
+
+		if (!key) {
+			return;
+		}
+
+		options[key] = group.options
+			.map((tax) =>
+				createTaxDefaultAccountDropdownOption(
+					tax,
+					getPartyTaxDefaultFormatting(tax, {
+						key,
+						label: group.label,
+						taxTypes: [tax.taxType],
+						transactionType: tax.transactionType,
+					}),
+				),
+			)
+			.sort((first, second) => first.name.localeCompare(second.name));
+	});
+
+	return options;
+}
+
 function isTaxInDefaultClassification<TKey extends string>(
 	tax: Tax,
 	classification: TaxDefaultClassification<TKey>,
@@ -300,7 +372,7 @@ function isTaxInDefaultClassification<TKey extends string>(
 	);
 }
 
-function getDefaultTaxDefaultFormatting(tax: Tax): TaxDefaultOptionFormatting {
+function getDefaultTaxDefaultFormatting(tax: TaxOptionFormattingSource): TaxDefaultOptionFormatting {
 	const isVatDefault = isVatDefaultTaxType(tax.taxType);
 
 	return {
@@ -311,7 +383,7 @@ function getDefaultTaxDefaultFormatting(tax: Tax): TaxDefaultOptionFormatting {
 }
 
 function getPartyTaxDefaultFormatting(
-	tax: Tax,
+	tax: TaxOptionFormattingSource,
 	classification: TaxDefaultClassification,
 ): TaxDefaultOptionFormatting {
 	const isVatDefault = isVatDefaultTaxType(tax.taxType);
@@ -349,7 +421,7 @@ function compareTaxDefaultRates(first: Tax, second: Tax) {
 }
 
 function getTaxDefaultOptionName(
-	tax: Tax,
+	tax: TaxOptionFormattingSource,
 	displayName: string,
 	codeRateName: string,
 	rate: string,
@@ -411,7 +483,7 @@ function isVatDefaultTaxType(taxType?: string) {
 }
 
 function getPartyTaxDefaultDisplayName(
-	tax: Tax,
+	tax: TaxOptionDisplaySource,
 	description: string,
 ) {
 	const rawName =

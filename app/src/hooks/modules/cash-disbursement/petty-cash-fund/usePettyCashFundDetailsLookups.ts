@@ -1,6 +1,6 @@
 "use client";
 
-import { useCashDisbursementDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/useCashDisbursementDetailsLookups";
+import { useMaintenanceDetailsLookups } from "@/app/src/hooks/shared/maintenance/useMaintenanceDetailsLookups";
 import {
   fetchPettyCashFundAccountOptions,
   fetchPettyCashFundPartyOptions,
@@ -11,11 +11,12 @@ import type { PettyCashFundActionPageState } from "@/app/src/types/modules/cash-
 const PettyCashFundLookupModuleKey = "petty-cash-fund";
 
 export function usePettyCashFundDetailsLookups(values: PettyCashFundActionPageState["values"]) {
-  return useCashDisbursementDetailsLookups({
+  return useMaintenanceDetailsLookups({
     fetchAccountOptions: fetchPettyCashFundAccountOptions,
     fetchPartyOptions: fetchPettyCashFundPartyOptions,
     fetchResponsibilityCenterOptions: fetchPettyCashFundResponsibilityCenters,
     moduleKey: PettyCashFundLookupModuleKey,
+    querySegment: "cash-disbursement",
     values,
   });
 }

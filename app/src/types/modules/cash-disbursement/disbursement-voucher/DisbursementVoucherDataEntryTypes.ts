@@ -187,3 +187,11 @@ export type DisbursementAccountingExportTheme = {
   excelAccentArgb: string;
   excelAccentContrastArgb: string;
 };
+
+export type GeneratedAccountingAccount = {
+  accountCode: string;
+  accountName: string;
+};
+
+export type GeneratedAccountingAccountMap = Record<string, GeneratedAccountingAccount | undefined>;
+

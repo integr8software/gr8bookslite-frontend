@@ -9,7 +9,9 @@ import type {
   PettyCashReplenishmentStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTypes";
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+import { roundCurrency } from "@/app/src/utils/currency.util";
 import { todayDateValue } from "@/app/src/utils/date.util";
+import { parseTaxPercent } from "@/app/src/utils/percentage.util";
 
 export function createBlankPettyCashReplenishmentEntry(): PettyCashReplenishmentEntry {
   return {
@@ -69,7 +71,7 @@ export function createPettyCashReplenishmentFormValues(
             {
               ...createBlankPettyCashReplenishmentEntry(),
               pettyCashDate: record.documentDate,
-              pettyCashNo: "PCV-000084",
+              pettyCashNo: "",
               supplierCode: record.partyCode,
               supplierName: record.partyName,
               amount,
@@ -84,7 +86,7 @@ export function createPettyCashReplenishmentFormValues(
   return {
     transactionNo,
     documentDate: todayDateValue(),
-    status: PettyCashReplenishmentStatuses.open,
+    status: PettyCashReplenishmentStatuses.Open,
     partyCode: "",
     partyName: "",
     responsibilityCenter: "",
@@ -137,11 +139,7 @@ export function applyPettyCashFundToReplenishmentForm(
     ? sourceValues.items.map((item) => ({
         ...createBlankPettyCashReplenishmentEntry(),
         amount: item.grossAmount || item.amount,
-        ...calculatePettyCashReplenishmentEntryTaxFields(
-          item.grossAmount || item.amount,
-          item.vatType,
-          item.ewtCode,
-        ),
+        ...calculatePettyCashReplenishmentEntryTaxFields(item.grossAmount || item.amount, item.vatType, item.ewtCode),
         ewtCode: item.ewtCode,
         pettyCashDate: item.date || source.documentDate,
         pettyCashNo: source.transactionNo,
@@ -228,15 +226,12 @@ export function calculatePettyCashReplenishmentEntryTaxFields(
   amountValue: string | number,
   vatType = "",
   ewtCode = "",
-): Pick<
-  PettyCashReplenishmentEntry,
-  "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "disburseAmount"
-> {
-  const amount = roundPettyCashReplenishmentTaxAmount(parseMoneyNumberInput(amountValue));
+): Pick<PettyCashReplenishmentEntry, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "disburseAmount"> {
+  const amount = roundCurrency(parseMoneyNumberInput(amountValue));
   const vatPercent = getPettyCashReplenishmentVatPercent(vatType);
-  const ewtPercent = getPettyCashReplenishmentEwtPercent(ewtCode);
-  const vatAmount = roundPettyCashReplenishmentTaxAmount((amount * vatPercent) / 100);
-  const ewtAmount = roundPettyCashReplenishmentTaxAmount((amount * ewtPercent) / 100);
+  const ewtPercent = parseTaxPercent(ewtCode);
+  const vatAmount = roundCurrency((amount * vatPercent) / 100);
+  const ewtAmount = roundCurrency((amount * ewtPercent) / 100);
 
   return {
     netAmount: formatPettyCashReplenishmentAmount(Math.max(amount - vatAmount, 0)),
@@ -247,6 +242,9 @@ export function calculatePettyCashReplenishmentEntryTaxFields(
     disburseAmount: formatPettyCashReplenishmentAmount(Math.max(amount - ewtAmount, 0)),
   };
 }
+
+export const calculatePettyCashReplenishmentItemTaxFields = calculatePettyCashReplenishmentEntryTaxFields;
+
 
 function getPettyCashReplenishmentSourceTotals(record: PettyCashFundRecord) {
   if (!record.formValues) {
@@ -281,11 +279,7 @@ function normalizePettyCashReplenishmentEntry(
     supplierName: entry.supplierName ?? entry.accountTitle ?? "",
     vatType: entry.vatType ?? "",
     ewtCode: entry.ewtCode ?? "",
-    ...calculatePettyCashReplenishmentEntryTaxFields(
-      entry.amount ?? entry.totalAmount ?? "",
-      entry.vatType ?? "",
-      entry.ewtCode ?? "",
-    ),
+    ...calculatePettyCashReplenishmentEntryTaxFields(entry.amount ?? entry.totalAmount ?? "", entry.vatType ?? "", entry.ewtCode ?? ""),
   };
 }
 
@@ -293,18 +287,4 @@ function getPettyCashReplenishmentVatPercent(vatType: string) {
   const match = vatType.match(/(\d+(?:\.\d+)?)/);
   if (match) return Number.parseFloat(match[1]);
   return 0;
-}
-
-function getPettyCashReplenishmentEwtPercent(ewtCode: string) {
-  const rates: Record<string, number> = {
-    W05: 5,
-    W10: 10,
-    WV01: 1,
-    WV02: 2,
-  };
-  return rates[ewtCode] ?? 0;
-}
-
-function roundPettyCashReplenishmentTaxAmount(value: number) {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
 }

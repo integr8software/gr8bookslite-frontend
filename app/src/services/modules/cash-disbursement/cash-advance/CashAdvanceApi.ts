@@ -17,7 +17,6 @@ import type {
   UpdateCashAdvanceDto,
   UpdateCashAdvanceStatusDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
-import { CashDisbursementApiAllStatusFilter } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
 import {
   fetchMaintenancePartyOptions,
@@ -40,9 +39,9 @@ export async function fetchCashAdvanceList(params?: FetchCashAdvanceListParams):
   const response = await cashAdvanceControllerFindAllV1({
     ...params,
     status:
-      params?.status && params.status !== CashDisbursementApiAllStatusFilter
+      params?.status && params.status !== "all" && params.status !== "All"
         ? mapCashAdvanceStatusToApi(params.status)
-        : params?.status,
+        : undefined,
   });
 
   return {

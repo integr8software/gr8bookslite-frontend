@@ -1,4 +1,5 @@
 export type AppAdvancedDropdownOption = {
+	[key: string]: unknown;
 	children?: AppAdvancedDropdownOption[];
 	description?: string;
 	disabled?: boolean;

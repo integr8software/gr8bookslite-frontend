@@ -1,6 +1,6 @@
 "use client";
 
-import { useCashDisbursementDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/useCashDisbursementDetailsLookups";
+import { useMaintenanceDetailsLookups } from "@/app/src/hooks/shared/maintenance/useMaintenanceDetailsLookups";
 import {
   fetchRevolvingFundReplenishmentAccountOptions,
   fetchRevolvingFundReplenishmentPartyOptions,
@@ -11,11 +11,12 @@ import type { RevolvingFundReplenishmentActionPageState } from "@/app/src/types/
 const RevolvingFundReplenishmentLookupModuleKey = "revolving-fund-replenishment";
 
 export function useRevolvingFundReplenishmentDetailsLookups(values: RevolvingFundReplenishmentActionPageState["values"]) {
-  return useCashDisbursementDetailsLookups({
+  return useMaintenanceDetailsLookups({
     fetchAccountOptions: fetchRevolvingFundReplenishmentAccountOptions,
     fetchPartyOptions: fetchRevolvingFundReplenishmentPartyOptions,
     fetchResponsibilityCenterOptions: fetchRevolvingFundReplenishmentResponsibilityCenters,
     moduleKey: RevolvingFundReplenishmentLookupModuleKey,
+    querySegment: "cash-disbursement",
     values,
   });
 }

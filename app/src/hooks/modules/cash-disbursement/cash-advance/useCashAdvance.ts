@@ -22,6 +22,7 @@ import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@
 import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import {
+  CashAdvanceActionModes,
   CashAdvanceDefaultColumnVisibility,
   CashAdvanceDefaultColumnOrder,
   CashAdvanceDefaultSorting,
@@ -32,13 +33,7 @@ import {
   CashAdvanceTablePreferencesStorageKey,
   CashAdvanceOverviewColumnWidths,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
-import {
-  CashDisbursementActionModeAdd,
-  CashDisbursementAllTimeSummary,
-  CashDisbursementQuerySegment,
-  CashDisbursementTotalEntriesLabel,
-  createCashDisbursementModuleQueryKey,
-} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+
 import type {
   CashAdvanceActionMode,
   CashAdvanceFormErrors,
@@ -78,7 +73,7 @@ const CashAdvanceQueryKey = "cash-advance";
 export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?: (state: CashAdvanceStoreState) => TSelected) {
   const queryClient = useQueryClient();
   const activeCompanyId = useAppStore((state) => state.activeCompanyId);
-  const queryKey = [CashDisbursementQuerySegment, CashAdvanceQueryKey, "records", activeCompanyId] as const;
+  const queryKey = ["cash-disbursement", CashAdvanceQueryKey, "records", activeCompanyId] as const;
   const advancesQuery = useQuery({
     queryKey,
     queryFn: async () => {
@@ -95,12 +90,12 @@ export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?
   const advances = advancesQuery.data ?? EmptyCashAdvances;
 
   const refreshRecords = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(CashAdvanceQueryKey) });
+    void queryClient.invalidateQueries({ queryKey: ["cash-disbursement", CashAdvanceQueryKey] });
   }, [queryClient]);
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ record, status }: { record: CashAdvanceRecord; status: CashAdvanceStatus }) =>
-      status === CashAdvanceStatuses.forApproval ? submitCashAdvanceApprovalApi(record.id) : updateCashAdvanceStatusApi(record.id, status),
+      status === CashAdvanceStatuses.ForApproval ? submitCashAdvanceApprovalApi(record.id) : updateCashAdvanceStatusApi(record.id, status),
     onSuccess: (updatedRecord, { status }) => {
       queryClient.setQueryData<CashAdvanceRecord[]>(queryKey, (current = []) =>
         current.map((record) => (record.id === updatedRecord.id ? updatedRecord : record)),
@@ -137,14 +132,14 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
   const hasEditedCurrencyRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(mode !== CashDisbursementActionModeAdd && Boolean(recordId));
+  const [isLoading, setIsLoading] = useState(mode !== CashAdvanceActionModes.Add && Boolean(recordId));
   const [errors, setErrors] = useState<CashAdvanceFormErrors>({});
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transNo"]) : rawIsDirty;
+  const isDirty = mode === CashAdvanceActionModes.Add ? hasModuleDraftChanges(values, initialValues, ["transNo"]) : rawIsDirty;
   const availabilityWarning = useMemo(() => getCashAdvanceAvailabilityWarning(values), [values]);
   const draft = useModuleDraft({
-    enabled: mode !== "view",
+    enabled: mode !== CashAdvanceActionModes.View,
     initialValues,
     isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:cash-advance", recordId }),
@@ -167,13 +162,13 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
   }
 
   useEffect(() => {
-    if (mode === CashDisbursementActionModeAdd) {
+    if (mode === CashAdvanceActionModes.Add) {
       queueMicrotask(() => void refreshNextTransactionNo());
     }
   }, [mode]);
 
   useEffect(() => {
-    if (mode === CashDisbursementActionModeAdd || !recordId) {
+    if (mode === CashAdvanceActionModes.Add || !recordId) {
       return;
     }
 
@@ -205,7 +200,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
   }, [mode, recordId]);
 
   useEffect(() => {
-    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+    if (mode !== CashAdvanceActionModes.Add || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
       return;
     }
 
@@ -276,9 +271,9 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
     }));
   }
 
-  async function submitAdvance(status: CashAdvanceStatus = CashAdvanceStatuses.forApproval) {
-    if (mode === "view" || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty && status === loadedRecord?.status) {
+  async function submitAdvance(status: CashAdvanceStatus = CashAdvanceStatuses.ForApproval) {
+    if (mode === CashAdvanceActionModes.View || isSubmittingRef.current) return false;
+    if (mode === CashAdvanceActionModes.Edit && !isDirty && status === loadedRecord?.status) {
       toast.error("No changes to save.");
       return false;
     }
@@ -287,7 +282,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
     isSubmittingRef.current = true;
     setIsSubmitting(true);
     const nextValues = { ...values, status };
-    const shouldValidate = status !== CashAdvanceStatuses.draft;
+    const shouldValidate = status !== CashAdvanceStatuses.Draft;
     const nextErrors = shouldValidate ? validateCashAdvanceForm(nextValues) : {};
 
     if (Object.keys(nextErrors).length > 0) {
@@ -323,15 +318,18 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
         remarks: nextValues.remarks,
       };
 
-      const savedRecord = mode === "edit" && recordId ? await updateCashAdvanceApi(recordId, payload) : await createCashAdvanceApi(payload);
+      const savedRecord =
+        mode === CashAdvanceActionModes.Edit && recordId
+          ? await updateCashAdvanceApi(recordId, payload)
+          : await createCashAdvanceApi(payload);
       const nextRecord =
-        status === CashAdvanceStatuses.forApproval && savedRecord?.id ? await submitCashAdvanceApprovalApi(savedRecord.id) : savedRecord;
+        status === CashAdvanceStatuses.ForApproval && savedRecord?.id ? await submitCashAdvanceApprovalApi(savedRecord.id) : savedRecord;
       const refreshedValues = createCashAdvanceFormValuesFromRecord(nextRecord);
       setLoadedRecord(nextRecord);
       setValues(refreshedValues);
       setInitialValues(refreshedValues);
       draft.clearDraft();
-      toast.success(mode === "edit" ? "Cash Advance Updated." : "Cash Advance Saved.");
+      toast.success(mode === CashAdvanceActionModes.Edit ? "Cash Advance Updated." : "Cash Advance Saved.");
       onSaved?.(nextRecord);
       return true;
     } catch {
@@ -353,7 +351,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
 
     try {
       const nextRecord =
-        status === CashAdvanceStatuses.forApproval
+        status === CashAdvanceStatuses.ForApproval
           ? await submitCashAdvanceApprovalApi(loadedRecord.id)
           : await updateCashAdvanceStatusApi(loadedRecord.id, status);
       const nextValues = createCashAdvanceFormValuesFromRecord(nextRecord);
@@ -369,14 +367,14 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
     }
   }
 
-  function validateAdvance(status: CashAdvanceStatus = CashAdvanceStatuses.forApproval): boolean {
-    if (mode === "view" || isSubmittingRef.current) return false;
-    if (mode === "edit" && !isDirty && status === loadedRecord?.status) {
+  function validateAdvance(status: CashAdvanceStatus = CashAdvanceStatuses.ForApproval): boolean {
+    if (mode === CashAdvanceActionModes.View || isSubmittingRef.current) return false;
+    if (mode === CashAdvanceActionModes.Edit && !isDirty && status === loadedRecord?.status) {
       toast.error("No changes to save.");
       return false;
     }
     const nextValues = { ...values, status };
-    const shouldValidate = status !== CashAdvanceStatuses.draft;
+    const shouldValidate = status !== CashAdvanceStatuses.Draft;
     const nextErrors = shouldValidate ? validateCashAdvanceForm(nextValues) : {};
 
     if (Object.keys(nextErrors).length > 0) {
@@ -409,7 +407,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === CashDisbursementActionModeAdd) {
+    if (mode === CashAdvanceActionModes.Add) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -427,7 +425,7 @@ export function useCashAdvanceActionForm(mode: CashAdvanceActionMode, recordId?:
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isLoading,
     isSubmitting,
-    isRecordMissing: mode !== CashDisbursementActionModeAdd && !isLoading && !loadedRecord,
+    isRecordMissing: mode !== CashAdvanceActionModes.Add && !isLoading && !loadedRecord,
     record: loadedRecord,
     submitAdvance,
     updateAdvanceStatus,
@@ -688,71 +686,71 @@ export function useCashAdvanceTable(advances: CashAdvanceRecord[]) {
   }
 
   const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => {
-    const postedCount = advances.filter((record) => record.status === CashAdvanceStatuses.posted).length;
-    const forApprovalCount = advances.filter((record) => record.status === CashAdvanceStatuses.forApproval).length;
-    const draftCount = advances.filter((record) => record.status === CashAdvanceStatuses.draft).length;
-    const disapprovedCount = advances.filter((record) => record.status === CashAdvanceStatuses.disapproved).length;
-    const cancelledCount = advances.filter((record) => record.status === CashAdvanceStatuses.cancelled).length;
+    const postedCount = advances.filter((record) => record.status === CashAdvanceStatuses.Posted).length;
+    const forApprovalCount = advances.filter((record) => record.status === CashAdvanceStatuses.ForApproval).length;
+    const draftCount = advances.filter((record) => record.status === CashAdvanceStatuses.Draft).length;
+    const disapprovedCount = advances.filter((record) => record.status === CashAdvanceStatuses.Disapproved).length;
+    const cancelledCount = advances.filter((record) => record.status === CashAdvanceStatuses.Cancelled).length;
 
     return [
       {
         icon: ReceiptText,
         tone: "violet",
-        label: CashDisbursementTotalEntriesLabel,
-        summary: CashDisbursementAllTimeSummary,
+        label: "Total Entries",
+        summary: "All time",
         value: advances.length,
         isActive: statusFilter === CashAdvanceAllStatusFilter,
         onClick: () => setStatusFilter(CashAdvanceAllStatusFilter),
       },
       {
-        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.posted),
-        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.posted),
+        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.Posted),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.Posted),
         tone: "emerald",
-        label: CashAdvanceStatuses.posted,
+        label: CashAdvanceStatuses.Posted,
         summary: formatPartOfTotalPercentage(postedCount, advances.length),
         value: postedCount,
-        isActive: statusFilter === CashAdvanceStatuses.posted,
-        onClick: () => setStatusFilter(CashAdvanceStatuses.posted),
+        isActive: statusFilter === CashAdvanceStatuses.Posted,
+        onClick: () => setStatusFilter(CashAdvanceStatuses.Posted),
       },
       {
-        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.forApproval),
-        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.forApproval),
+        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.ForApproval),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.ForApproval),
         tone: "amber",
-        label: CashAdvanceStatuses.forApproval,
+        label: CashAdvanceStatuses.ForApproval,
         summary: formatPartOfTotalPercentage(forApprovalCount, advances.length),
         value: forApprovalCount,
-        isActive: statusFilter === CashAdvanceStatuses.forApproval,
-        onClick: () => setStatusFilter(CashAdvanceStatuses.forApproval),
+        isActive: statusFilter === CashAdvanceStatuses.ForApproval,
+        onClick: () => setStatusFilter(CashAdvanceStatuses.ForApproval),
       },
       {
-        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.draft),
-        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.draft),
+        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.Draft),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.Draft),
         tone: "blue",
-        label: CashAdvanceStatuses.draft,
+        label: CashAdvanceStatuses.Draft,
         summary: formatPartOfTotalPercentage(draftCount, advances.length),
         value: draftCount,
-        isActive: statusFilter === CashAdvanceStatuses.draft,
-        onClick: () => setStatusFilter(CashAdvanceStatuses.draft),
+        isActive: statusFilter === CashAdvanceStatuses.Draft,
+        onClick: () => setStatusFilter(CashAdvanceStatuses.Draft),
       },
       {
-        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.disapproved),
-        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.disapproved),
+        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.Disapproved),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.Disapproved),
         tone: "red",
-        label: CashAdvanceStatuses.disapproved,
+        label: CashAdvanceStatuses.Disapproved,
         summary: formatPartOfTotalPercentage(disapprovedCount, advances.length),
         value: disapprovedCount,
-        isActive: statusFilter === CashAdvanceStatuses.disapproved,
-        onClick: () => setStatusFilter(CashAdvanceStatuses.disapproved),
+        isActive: statusFilter === CashAdvanceStatuses.Disapproved,
+        onClick: () => setStatusFilter(CashAdvanceStatuses.Disapproved),
       },
       {
-        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.cancelled),
-        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.cancelled),
+        icon: getModuleStatusMetricIcon(CashAdvanceStatuses.Cancelled),
+        iconClassName: getModuleStatusMetricIconClassName(CashAdvanceStatuses.Cancelled),
         tone: "slate",
-        label: CashAdvanceStatuses.cancelled,
+        label: CashAdvanceStatuses.Cancelled,
         summary: formatPartOfTotalPercentage(cancelledCount, advances.length),
         value: cancelledCount,
-        isActive: statusFilter === CashAdvanceStatuses.cancelled,
-        onClick: () => setStatusFilter(CashAdvanceStatuses.cancelled),
+        isActive: statusFilter === CashAdvanceStatuses.Cancelled,
+        onClick: () => setStatusFilter(CashAdvanceStatuses.Cancelled),
       },
     ];
   }, [advances, setStatusFilter, statusFilter]);

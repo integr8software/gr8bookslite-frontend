@@ -1,22 +1,28 @@
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
+  RevolvingFundReplenishmentActionMode,
   RevolvingFundReplenishmentActionTab,
-  RevolvingFundReplenishmentConfirmationAction,
   RevolvingFundReplenishmentAccountingColumnId,
+  RevolvingFundReplenishmentConfirmationAction,
   RevolvingFundReplenishmentEntryColumnId,
   RevolvingFundReplenishmentEntryTab,
+  RevolvingFundReplenishmentFormStatus,
   RevolvingFundReplenishmentStatus,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 
 export const RevolvingFundReplenishmentLink = getModuleRoute("RFR");
 export const RevolvingFundReplenishmentAddLink = `${RevolvingFundReplenishmentLink}/add`;
 export const getRevolvingFundReplenishmentEditLink = (recordId: string) => `${RevolvingFundReplenishmentLink}/edit/${recordId}`;
 export const getRevolvingFundReplenishmentViewLink = (recordId: string) => `${RevolvingFundReplenishmentLink}/view/${recordId}`;
+
+export const RevolvingFundReplenishmentActionModes = {
+  Add: "add",
+  Edit: "edit",
+  View: "view",
+} as const satisfies Record<string, RevolvingFundReplenishmentActionMode>;
 export const RevolvingFundReplenishmentStorageKey = "cash-disbursement-revolving-fund-replenishment-records";
 export const RevolvingFundReplenishmentPaginationStorageKey = "cash-disbursement-revolving-fund-replenishment-table";
-export const RevolvingFundReplenishmentTransactionPrefix = "RFR";
 export const RevolvingFundReplenishmentConfirmationDialogTitles: Record<RevolvingFundReplenishmentConfirmationAction, string> = {
   save: "Save Revolving Fund Replenishment?",
   draft: "Save Revolving Fund Replenishment as Draft?",
@@ -41,7 +47,7 @@ export const RevolvingFundReplenishmentColumnLabels = {
   currency: "Currency",
   exchangeRate: "Exchange Rate",
   amount: "Total Amount",
-  disburseAmount: "Disburse Amount",
+  disburseAmount: "Total Disbursed",
   remarks: "Remarks",
   createdBy: "Created By",
   createdAt: "Date Created",
@@ -87,21 +93,37 @@ export const RevolvingFundReplenishmentDefaultColumnVisibility = Object.fromEntr
   ]),
 );
 export const RevolvingFundReplenishmentStatuses = {
-  cancelled: "Cancelled",
-  disapproved: "Disapproved",
-  draft: "Draft",
-  forApproval: "For Approval",
-  open: "Open",
-  posted: "Posted",
-} as const;
+  Cancelled: "Cancelled",
+  Disapproved: "Disapproved",
+  Draft: "Draft",
+  ForApproval: "For Approval",
+  Open: "Open",
+  Posted: "Posted",
+} as const satisfies Record<string, RevolvingFundReplenishmentFormStatus>;
 export const RevolvingFundReplenishmentRecordStatuses = [
-  "Posted",
-  "For Approval",
-  "Draft",
-  "Disapproved",
-  "Cancelled",
+  RevolvingFundReplenishmentStatuses.Draft,
+  RevolvingFundReplenishmentStatuses.ForApproval,
+  RevolvingFundReplenishmentStatuses.Posted,
+  RevolvingFundReplenishmentStatuses.Disapproved,
+  RevolvingFundReplenishmentStatuses.Cancelled,
 ] as const satisfies readonly RevolvingFundReplenishmentStatus[];
-export const RevolvingFundReplenishmentStatusOptions = ["All", ...RevolvingFundReplenishmentRecordStatuses] as const;
+export const EditableRevolvingFundReplenishmentStatuses: readonly RevolvingFundReplenishmentStatus[] = [
+  RevolvingFundReplenishmentStatuses.Draft,
+  RevolvingFundReplenishmentStatuses.Disapproved,
+];
+export const RevolvingFundReplenishmentAllStatusFilter = "all";
+export const RevolvingFundReplenishmentStatusFilterOptions = [
+  { label: "All statuses", value: RevolvingFundReplenishmentAllStatusFilter },
+  { label: "Draft", value: RevolvingFundReplenishmentStatuses.Draft },
+  { label: "For Approval", value: RevolvingFundReplenishmentStatuses.ForApproval },
+  { label: "Posted", value: RevolvingFundReplenishmentStatuses.Posted },
+  { label: "Disapproved", value: RevolvingFundReplenishmentStatuses.Disapproved },
+  { label: "Cancelled", value: RevolvingFundReplenishmentStatuses.Cancelled },
+] as const;
+export const RevolvingFundReplenishmentStatusFilters = [
+  RevolvingFundReplenishmentAllStatusFilter,
+  ...RevolvingFundReplenishmentRecordStatuses,
+] as const;
 export const RevolvingFundReplenishmentActionTabs: {
   id: RevolvingFundReplenishmentActionTab;
   label: string;
@@ -113,8 +135,6 @@ export const RevolvingFundReplenishmentEntryTabs: { id: RevolvingFundReplenishme
   { id: "vouchers", label: "Revolving Fund Entries" },
   { id: "accounting", label: "Accounting Entries" },
 ];
-export const RevolvingFundReplenishmentEntryInputClassName =
-  "h-10 w-full min-w-0 border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 read-only:bg-darknavy/[0.03] read-only:text-darknavy";
 export const RevolvingFundReplenishmentEntryColumnOrder: RevolvingFundReplenishmentEntryColumnId[] = [
   "revolvingFundDate",
   "revolvingFundNo",
@@ -148,19 +168,19 @@ export const RevolvingFundReplenishmentEntryColumnLabels: Record<RevolvingFundRe
   amount: "Gross Amount",
   netAmount: "NET Amount",
   vatType: "VAT Type",
-  vatPercent: "VAT Rate",
+  vatPercent: "VAT %",
   vatAmount: "VAT Amount",
   ewtCode: "EWT Code",
-  ewtPercent: "EWT Rate",
+  ewtPercent: "EWT %",
   ewtAmount: "EWT Amount",
-  disburseAmount: "Disburse Amount",
+  disburseAmount: "Total Disbursed",
   responsibilityCenterCode: "Responsibility Center Code",
   responsibilityCenterName: "Responsibility Center",
   particulars: "Particulars",
 };
 export const RevolvingFundReplenishmentEntryColumnWidths: Record<RevolvingFundReplenishmentEntryColumnId, number> = {
-  revolvingFundDate: 230,
-  revolvingFundNo: 230,
+  revolvingFundDate: 200,
+  revolvingFundNo: 200,
   supplierCode: 190,
   supplierName: 230,
   amount: 185,
@@ -212,45 +232,7 @@ export const RevolvingFundReplenishmentProtectedAccountingColumnIds = new Set<Re
   "debit",
   "credit",
 ]);
-export const RevolvingFundReplenishmentPartyOptions: AppAdvancedDropdownOption[] = [
-  { label: "E000102", name: "Raymark B. Arsicolo", value: "E000102" },
-  { label: "E000117", name: "Maria L. Dela Cruz", value: "E000117" },
-  { label: "E000145", name: "Jose P. Santos", value: "E000145" },
-];
-export const RevolvingFundReplenishmentSupplierOptions: AppAdvancedDropdownOption[] = [
-  { label: "V100006", name: "All4U Restaurant", value: "V100006" },
-  { label: "S000041", name: "Pacific Office Solutions, Inc.", value: "S000041" },
-  { label: "S000058", name: "Metro Industrial Trading", value: "S000058" },
-  { label: "S000073", name: "Northstar Equipment Supply", value: "S000073" },
-];
-export const RevolvingFundReplenishmentAccountOptions: AppAdvancedDropdownOption[] = [
-  { label: "101-200", name: "Revolving Fund", value: "101-200" },
-  { label: "101-210", name: "Cash on Hand", value: "101-210" },
-];
-export const RevolvingFundReplenishmentProjectOptions: AppAdvancedDropdownOption[] = [
-  { label: "PRJ-001", name: "Main Office Operations", value: "PRJ-001" },
-  { label: "PRJ-002", name: "Branch Expansion", value: "PRJ-002" },
-];
-export const RevolvingFundReplenishmentResponsibilityCenterOptions: AppAdvancedDropdownOption[] = [
-  { label: "RC-ADM", name: "Administration", value: "RC-ADM" },
-  { label: "RC-OPS", name: "Operations", value: "RC-OPS" },
-  { label: "RC-SAL", name: "Sales", value: "RC-SAL" },
-];
-export const RevolvingFundReplenishmentEntryVatTypeOptions: AppAdvancedDropdownOption[] = [
-  { label: "", name: "VAT (12%)", selectedDetails: "VAT (12%)", value: "VAT 12%" },
-  { label: "", name: "Zero Rated (0%)", selectedDetails: "Zero Rated (0%)", value: "Zero Rated" },
-  { label: "", name: "Exempt (0%)", selectedDetails: "Exempt (0%)", value: "Exempt" },
-];
-export const RevolvingFundReplenishmentEntryEwtCodeOptions: AppAdvancedDropdownOption[] = [
-  { description: "Professional Fees - 10%", label: "", name: "W10 (10%)", selectedDetails: "W10 (10%)", value: "W10" },
-  { description: "Professional Fees - 5%", label: "", name: "W05 (5%)", selectedDetails: "W05 (5%)", value: "W05" },
-  { description: "Goods - 1%", label: "", name: "WV01 (1%)", selectedDetails: "WV01 (1%)", value: "WV01" },
-  { description: "Services - 2%", label: "", name: "WV02 (2%)", selectedDetails: "WV02 (2%)", value: "WV02" },
-];
 
 export function canEditRevolvingFundReplenishment(status: RevolvingFundReplenishmentStatus) {
-  return (
-    status === RevolvingFundReplenishmentStatuses.draft ||
-    status === RevolvingFundReplenishmentStatuses.disapproved
-  );
+  return EditableRevolvingFundReplenishmentStatuses.includes(status);
 }

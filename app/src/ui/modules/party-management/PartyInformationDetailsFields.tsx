@@ -33,7 +33,7 @@ import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { PartyAddressContainer } from "@/app/src/ui/modules/party-management/PartyAddressContainer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
-import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
 
 const PartyInformationTabOrder: readonly PartyInformationTabId[] = [
@@ -909,13 +909,13 @@ function Field({ children, error, label, required }: { children: ReactNode; erro
   }
 
   return (
-    <div onMouseDown={handleFieldMouseDown}>
-      <span className="mb-2 block text-sm font-semibold text-darknavy">
-        {label}
-        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
-      </span>
+    <FormField
+      error={error}
+      label={label}
+      onMouseDown={handleFieldMouseDown}
+      required={required}
+    >
       {children}
-      {error ? <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span> : null}
-    </div>
+    </FormField>
   );
 }

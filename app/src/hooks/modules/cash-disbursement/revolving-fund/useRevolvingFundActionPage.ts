@@ -1,5 +1,6 @@
 "use client";
 
+import { RevolvingFundActionModes } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -30,13 +31,7 @@ import {
   updateRevolvingFundApi,
   updateRevolvingFundStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/revolving-fund/RevolvingFundApi";
-import {
-  CashDisbursementActionModeAdd,
-  createCashDisbursementModuleQueryKey,
-  createCashDisbursementRecordQueryKey,
-} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
-
-const RevolvingFundQueryKey = "revolving-fund";
+import { RevolvingFundQueryKeys } from "@/app/src/services/modules/cash-disbursement/revolving-fund/RevolvingFundQueryKeys";
 
 export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionMode; onSaved?: () => void }) {
   const router = useRouter();
@@ -44,12 +39,12 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   const transactionCurrency = useTransactionCurrency();
   const params = useParams<{ recordId?: string }>();
   const { mode } = options;
-  const isReadonly = mode === "view";
+  const isReadonly = mode === RevolvingFundActionModes.View;
 
   const recordQuery = useQuery({
-    queryKey: createCashDisbursementRecordQueryKey(RevolvingFundQueryKey, params.recordId),
+    queryKey: RevolvingFundQueryKeys.record(params.recordId),
     queryFn: () => fetchRevolvingFundById(params.recordId!),
-    enabled: Boolean(params.recordId) && mode !== CashDisbursementActionModeAdd,
+    enabled: Boolean(params.recordId) && mode !== RevolvingFundActionModes.Add,
   });
 
   const record = recordQuery.data;
@@ -63,7 +58,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   const hasEditedCurrencyRef = useRef(false);
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
+  const isDirty = mode === RevolvingFundActionModes.Add ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
 
   async function refreshNextTransactionNo() {
     try {
@@ -89,7 +84,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   }, [record]);
 
   useEffect(() => {
-    if (mode === CashDisbursementActionModeAdd) {
+    if (mode === RevolvingFundActionModes.Add) {
       queueMicrotask(() => void refreshNextTransactionNo());
     }
   }, [mode]);
@@ -106,7 +101,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   const totals = useMemo(() => calculateRevolvingFundTotals(values.items), [values.items]);
 
   useEffect(() => {
-    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+    if (mode !== RevolvingFundActionModes.Add || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
       return;
     }
 
@@ -178,24 +173,26 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
 
   function insertItem(rowId: string, position: "above" | "below" = "below") {
     const index = values.items.findIndex((i) => i.id === rowId);
-    const targetIndex = index === -1 ? values.items.length : position === "above" ? index : index + 1;
+    if (index === -1) return;
     const next = [...values.items];
-    next.splice(targetIndex, 0, createBlankRevolvingFundItem());
+    next.splice(position === "above" ? index : index + 1, 0, createBlankRevolvingFundItem());
     updateItems(next);
   }
+
   function moveItem(fromRowId: string, toRowId: string) {
-    const fromIndex = values.items.findIndex((i) => i.id === fromRowId);
-    const toIndex = values.items.findIndex((i) => i.id === toRowId);
-    if (fromIndex === -1 || toIndex === -1) return;
+    const fromIndex = values.items.findIndex((item) => item.id === fromRowId);
+    const toIndex = values.items.findIndex((item) => item.id === toRowId);
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
     const next = [...values.items];
     const [moved] = next.splice(fromIndex, 1);
     next.splice(toIndex, 0, moved);
     updateItems(next);
   }
+
   function removeItem(rowId: string) {
     if (isReadonly) return;
-    if (values.items.length === 1) {
-      toast.error("At least one line item is required.");
+    if (values.items.length <= 1) {
+      updateField("items", [createBlankRevolvingFundItem()]);
       return;
     }
     updateField(
@@ -206,15 +203,15 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
 
   const saveMutation = useMutation({
     mutationFn: async (submitValues: RevolvingFundFormValues) => {
-      if (mode === CashDisbursementActionModeAdd) {
+      if (mode === RevolvingFundActionModes.Add) {
         return await createRevolvingFundApi(submitValues);
       }
       return await updateRevolvingFundApi(params.recordId!, submitValues);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(RevolvingFundQueryKey) });
+      queryClient.invalidateQueries({ queryKey: RevolvingFundQueryKeys.all() });
       draft.clearDraft();
-      toast.success(`Revolving Fund ${mode === CashDisbursementActionModeAdd ? "created" : "updated"} successfully.`);
+      toast.success(`Revolving Fund ${mode === RevolvingFundActionModes.Add ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
         options.onSaved();
       } else {
@@ -232,8 +229,8 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
       return await updateRevolvingFundStatusApi(params.recordId!, status);
     },
     onSuccess: (updatedRecord, status) => {
-      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(RevolvingFundQueryKey) });
-      queryClient.setQueryData(createCashDisbursementRecordQueryKey(RevolvingFundQueryKey, params.recordId), updatedRecord);
+      queryClient.invalidateQueries({ queryKey: RevolvingFundQueryKeys.all() });
+      queryClient.setQueryData(RevolvingFundQueryKeys.record(params.recordId), updatedRecord);
       setValues((cur) => ({ ...cur, status }));
       toast.success(`Revolving Fund marked as ${status}.`);
     },
@@ -289,7 +286,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === CashDisbursementActionModeAdd) {
+    if (mode === RevolvingFundActionModes.Add) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -315,7 +312,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     isLoading: recordQuery.isLoading,
     isPreviewOpen,
     isReadonly,
-    isRecordMissing: mode !== CashDisbursementActionModeAdd && !recordQuery.isLoading && !record,
+    isRecordMissing: mode !== RevolvingFundActionModes.Add && !recordQuery.isLoading && !record,
     isSubmitting: saveMutation.isPending || updateStatusMutation.isPending,
     mode,
     moveItem,

@@ -1,4 +1,4 @@
-import type { ClipboardEventHandler, KeyboardEventHandler, ReactNode } from "react";
+import type { ClipboardEventHandler, KeyboardEventHandler } from "react";
 import {
   TermsMaintenanceDatemodeOptions,
   TermsMaintenanceFieldClassName,
@@ -7,7 +7,7 @@ import {
 import type { TermsMaintenanceFieldsProps } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
-import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
 
 export function TermsMaintenanceFields({ errors, isReadonly, values, onInputChange, onStatusChange }: TermsMaintenanceFieldsProps) {
   return (
@@ -86,36 +86,7 @@ export function TermsMaintenanceFields({ errors, isReadonly, values, onInputChan
   );
 }
 
-function FormField({
-  children,
-  className,
-  error,
-  label,
-  required,
-  warning,
-}: {
-  children: ReactNode;
-  className?: string;
-  error?: string;
-  label: string;
-  required?: boolean;
-  warning?: string;
-}) {
-  return (
-    <label className={className}>
-      <span className="mb-2 block text-sm font-semibold text-darknavy">
-        {label}
-        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
-      </span>
-      {children}
-      {error ? (
-        <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span>
-      ) : warning ? (
-        <span className="mt-1 block text-xs font-medium text-amber-600">{warning}</span>
-      ) : null}
-    </label>
-  );
-}
+
 
 const blockedPeriodKeys = new Set(["e", "E", "+", "-", "."]);
 

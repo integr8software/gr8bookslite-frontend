@@ -1,4 +1,6 @@
+import type { ChangeEventHandler } from "react";
 import type { Row, Table } from "@tanstack/react-table";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type {
   DefaultAccountResponseDtoStatus,
   DefaultAccountResponseDtoType,
@@ -46,6 +48,23 @@ export type DefaultAccountFormValues = {
 export type DefaultAccountFormErrors = Partial<Record<keyof DefaultAccountFormValues, string>>;
 
 export type DefaultAccountActionMode = "add" | "edit" | "view";
+
+export type DefaultAccountFieldsProps = {
+  canAddExpenseTypeSubAccount?: boolean;
+  canCancelStatus?: boolean;
+  errors: DefaultAccountFormErrors;
+  expenseParentOptions?: AppAdvancedDropdownOption[];
+  generatedAccounts?: GeneratedDefaultAccount[];
+  isLoadingExpenseParentOptions?: boolean;
+  isReadonly: boolean;
+  mode: DefaultAccountActionMode;
+  nextExpenseSubAccountLevel?: string | null;
+  onExpenseParentChange?: (value: string | string[]) => void;
+  onInputChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
+  onOpenExpenseSubAccountDialog?: () => void;
+  onStatusChange: (value: DefaultAccountStatus) => void;
+  values: DefaultAccountFormValues;
+};
 
 export type DefaultAccountFormPageOptions = {
   existingDefaultAccount?: DefaultAccount;

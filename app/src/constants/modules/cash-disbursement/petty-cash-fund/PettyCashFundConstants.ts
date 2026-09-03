@@ -1,21 +1,27 @@
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
+  PettyCashFundActionMode,
   PettyCashFundActionTab,
-  PettyCashFundConfirmationAction,
   PettyCashFundAccountingColumnId,
+  PettyCashFundConfirmationAction,
   PettyCashFundEntryTab,
+  PettyCashFundFormStatus,
   PettyCashFundItemColumnId,
   PettyCashFundStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 export const PettyCashFundLink = getModuleRoute("PCF");
 export const PettyCashFundAddLink = `${PettyCashFundLink}/add`;
 export const getPettyCashFundEditLink = (recordId: string) => `${PettyCashFundLink}/edit/${recordId}`;
 export const getPettyCashFundViewLink = (recordId: string) => `${PettyCashFundLink}/view/${recordId}`;
+
+export const PettyCashFundActionModes = {
+  Add: "add",
+  Edit: "edit",
+  View: "view",
+} as const satisfies Record<string, PettyCashFundActionMode>;
 export const PettyCashFundStorageKey = "cash-disbursement-petty-cash-fund-records";
 export const PettyCashFundPaginationStorageKey = "cash-disbursement-petty-cash-fund-table";
-export const PettyCashFundTransactionPrefix = "PCF";
 export const PettyCashFundCopyFromSources = ["Petty Cash Voucher"] as const;
 export const PettyCashFundColumnLabels = {
   transactionNo: "Fund No.",
@@ -27,7 +33,7 @@ export const PettyCashFundColumnLabels = {
   currency: "Currency",
   exchangeRate: "Exchange Rate",
   amount: "Total Amount",
-  disburseAmount: "Disburse Amount",
+  disburseAmount: "Total Disbursed",
   remarks: "Remarks",
   createdBy: "Created By",
   createdAt: "Date Created",
@@ -52,13 +58,13 @@ export const PettyCashFundDefaultColumnVisibility = Object.fromEntries(
   ]),
 );
 export const PettyCashFundStatuses = {
-  cancelled: "Cancelled",
-  disapproved: "Disapproved",
-  draft: "Draft",
-  forApproval: "For Approval",
-  open: "Open",
-  posted: "Posted",
-} as const;
+  Cancelled: "Cancelled",
+  Disapproved: "Disapproved",
+  Draft: "Draft",
+  ForApproval: "For Approval",
+  Open: "Open",
+  Posted: "Posted",
+} as const satisfies Record<string, PettyCashFundFormStatus>;
 export const PettyCashFundConfirmationDialogTitles: Record<PettyCashFundConfirmationAction, string> = {
   save: "Save Petty Cash Fund?",
   draft: "Save Petty Cash Fund as Draft?",
@@ -74,13 +80,26 @@ export const PettyCashFundConfirmationDialogConfirmLabels: Record<PettyCashFundC
   cancel: "Cancel",
 };
 export const PettyCashFundRecordStatuses = [
-  "Posted",
-  "For Approval",
-  "Draft",
-  "Disapproved",
-  "Cancelled",
+  PettyCashFundStatuses.Draft,
+  PettyCashFundStatuses.ForApproval,
+  PettyCashFundStatuses.Posted,
+  PettyCashFundStatuses.Disapproved,
+  PettyCashFundStatuses.Cancelled,
 ] as const satisfies readonly PettyCashFundStatus[];
-export const PettyCashFundStatusOptions = ["All", ...PettyCashFundRecordStatuses] as const;
+export const EditablePettyCashFundStatuses: readonly PettyCashFundStatus[] = [
+  PettyCashFundStatuses.Draft,
+  PettyCashFundStatuses.Disapproved,
+];
+export const PettyCashFundAllStatusFilter = "all";
+export const PettyCashFundStatusFilterOptions = [
+  { label: "All statuses", value: PettyCashFundAllStatusFilter },
+  { label: "Draft", value: PettyCashFundStatuses.Draft },
+  { label: "For Approval", value: PettyCashFundStatuses.ForApproval },
+  { label: "Posted", value: PettyCashFundStatuses.Posted },
+  { label: "Disapproved", value: PettyCashFundStatuses.Disapproved },
+  { label: "Cancelled", value: PettyCashFundStatuses.Cancelled },
+] as const;
+export const PettyCashFundStatusFilters = [PettyCashFundAllStatusFilter, ...PettyCashFundRecordStatuses] as const;
 export const PettyCashFundActionTabs: { id: PettyCashFundActionTab; label: string }[] = [
   { id: "details", label: "Fund Details" },
   { id: "attachments", label: "File Attachments" },
@@ -108,12 +127,7 @@ export const PettyCashFundDefaultItemColumnIds: PettyCashFundItemColumnId[] = [
   "particulars",
   "orNo",
 ];
-export const PettyCashFundDefaultVisibleItemColumnIds: PettyCashFundItemColumnId[] = [
-  "date",
-  "supplierName",
-  "amount",
-  "disburseAmount",
-];
+export const PettyCashFundDefaultVisibleItemColumnIds: PettyCashFundItemColumnId[] = ["date", "supplierName", "amount", "disburseAmount"];
 export const PettyCashFundItemColumnLabels: Record<PettyCashFundItemColumnId, string> = {
   date: "Date",
   supplierCode: "Supplier Code",
@@ -124,13 +138,13 @@ export const PettyCashFundItemColumnLabels: Record<PettyCashFundItemColumnId, st
   amount: "Gross Amount",
   type: "Type",
   vatType: "VAT Type",
-  vatPercent: "VAT Rate",
+  vatPercent: "VAT %",
   vatAmount: "VAT Amount",
   netAmount: "NET Amount",
   ewtCode: "EWT Code",
-  ewtPercent: "EWT Rate",
+  ewtPercent: "EWT %",
   ewtAmount: "EWT Amount",
-  disburseAmount: "Disburse Amount",
+  disburseAmount: "Total Disbursed",
   grossAmount: "Gross Amount",
   responsibilityCenterCode: "Responsibility Center Code",
   responsibilityCenterName: "Responsibility Center",
@@ -185,56 +199,7 @@ export const PettyCashFundAccountingColumnWidths: Record<PettyCashFundAccounting
   particulars: 260,
 };
 export const PettyCashFundProtectedAccountingColumnIds = new Set<PettyCashFundAccountingColumnId>(["accountCode", "debit", "credit"]);
-export const PettyCashFundEntryInputClassName =
-  "h-10 w-full min-w-0 border-0 bg-transparent px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:ring-2 focus:ring-inset focus:ring-skyblue/35 read-only:bg-darknavy/[0.03] read-only:text-darknavy";
-export const PettyCashFundPartyOptions: AppAdvancedDropdownOption[] = [
-  { label: "E000102", name: "Raymark B. Arsicolo", value: "E000102" },
-  { label: "E000117", name: "Maria L. Dela Cruz", value: "E000117" },
-  { label: "E000145", name: "Jose P. Santos", value: "E000145" },
-];
-export const PettyCashFundSupplierOptions: AppAdvancedDropdownOption[] = [
-  { label: "V100006", name: "All4U Restaurant", value: "V100006" },
-  { label: "S000041", name: "Pacific Office Solutions, Inc.", value: "S000041" },
-  { label: "S000058", name: "Metro Industrial Trading", value: "S000058" },
-  { label: "S000073", name: "Northstar Equipment Supply", value: "S000073" },
-];
-export const PettyCashFundAccountOptions: AppAdvancedDropdownOption[] = [
-  { label: "101-200", name: "Petty Cash Fund", value: "101-200" },
-  { label: "101-210", name: "Cash on Hand", value: "101-210" },
-];
-export const PettyCashFundProjectOptions: AppAdvancedDropdownOption[] = [
-  { label: "PRJ-001", name: "Main Office Operations", value: "PRJ-001" },
-  { label: "PRJ-002", name: "Branch Expansion", value: "PRJ-002" },
-];
-export const PettyCashFundResponsibilityCenterLookupOptions: AppAdvancedDropdownOption[] = [
-  { label: "RC-ADM", name: "Administration", value: "RC-ADM" },
-  { label: "RC-OPS", name: "Operations", value: "RC-OPS" },
-  { label: "RC-SAL", name: "Sales", value: "RC-SAL" },
-];
-export const PettyCashFundEntryTypeOptions: AppAdvancedDropdownOption[] = [
-  { name: "Expense", value: "Expense" },
-  { name: "Asset", value: "Asset" },
-  { name: "Other", value: "Other" },
-];
-export const PettyCashFundEntryVatTypeOptions: AppAdvancedDropdownOption[] = [
-  { label: "", name: "VAT (12%)", selectedDetails: "VAT (12%)", value: "VAT 12%" },
-  { label: "", name: "Zero Rated (0%)", selectedDetails: "Zero Rated (0%)", value: "Zero Rated" },
-  { label: "", name: "Exempt (0%)", selectedDetails: "Exempt (0%)", value: "Exempt" },
-];
-export const PettyCashFundEntryEwtCodeOptions: AppAdvancedDropdownOption[] = [
-  { description: "Professional Fees - 10%", label: "", name: "W10 (10%)", selectedDetails: "W10 (10%)", value: "W10" },
-  { description: "Professional Fees - 5%", label: "", name: "W05 (5%)", selectedDetails: "W05 (5%)", value: "W05" },
-  { description: "Goods - 1%", label: "", name: "WV01 (1%)", selectedDetails: "WV01 (1%)", value: "WV01" },
-  { description: "Services - 2%", label: "", name: "WV02 (2%)", selectedDetails: "WV02 (2%)", value: "WV02" },
-];
-export const PettyCashFundResponsibilityCenterOptions: AppAdvancedDropdownOption[] = [
-  { label: "RC-ADM", name: "Administration", value: "RC-ADM" },
-  { label: "RC-OPS", name: "Operations", value: "RC-OPS" },
-  { label: "RC-SAL", name: "Sales", value: "RC-SAL" },
-];
 
 export function canEditPettyCashFund(status: PettyCashFundStatus) {
-  return status === PettyCashFundStatuses.draft || status === PettyCashFundStatuses.disapproved;
+  return EditablePettyCashFundStatuses.includes(status);
 }
-export const PettyCashFundEntryDropdownClassName =
-  "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";

@@ -1,2 +1,1 @@
-export const RecurringTransactionsHref =
-  "/cash-disbursement/recurring-transactions";
+export const RecurringTransactionsHref = "/cash-disbursement/recurring-transactions";

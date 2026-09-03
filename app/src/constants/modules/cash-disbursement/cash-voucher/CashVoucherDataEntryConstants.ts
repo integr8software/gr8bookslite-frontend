@@ -4,13 +4,8 @@ import type {
   CashVoucherEntryView,
   ExpenseEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryTypes";
-import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
-
 export const CashVoucherLineEntriesField = "lineEntries";
 export const CashVoucherExpenseEntryView: CashVoucherEntryView = "expense";
-
-export const CashVoucherAccountingDropdownClassName =
-  "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
 
 export const CashVoucherAccountingDebitColumnId: CashVoucherAccountingGridColumnId = "debit";
 export const CashVoucherAccountingCreditColumnId: CashVoucherAccountingGridColumnId = "credit";
@@ -18,19 +13,6 @@ export const CashVoucherAccountingAmountColumnIds = new Set<CashVoucherAccountin
   CashVoucherAccountingDebitColumnId,
   CashVoucherAccountingCreditColumnId,
 ]);
-
-export const CashVoucherAccountingWorksheetBorderColorArgb = "FFE5E7EB";
-
-export const CashVoucherAccountingPdfGridLayout = {
-  hLineColor: () => "#E5E7EB",
-  hLineWidth: () => 0.6,
-  paddingBottom: () => 0,
-  paddingLeft: () => 0,
-  paddingRight: () => 0,
-  paddingTop: () => 0,
-  vLineColor: () => "#E5E7EB",
-  vLineWidth: () => 0.6,
-};
 
 export const DefaultExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
   "partyCode",
@@ -52,12 +34,7 @@ export const DefaultExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
   "refId",
 ];
 
-export const DefaultVisibleExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
-  "partyName",
-  "expenseType",
-  "amount",
-  "disburseAmount",
-];
+export const DefaultVisibleExpenseEntryColumnOrder: ExpenseEntryColumnId[] = ["partyName", "expenseType", "amount", "disburseAmount"];
 
 export const ProtectedExpenseEntryColumnIds = new Set<ExpenseEntryColumnId>(["expenseType", "amount"]);
 
@@ -97,34 +74,6 @@ export const DefaultCashVoucherAccountingGridColumnWidths: Record<CashVoucherAcc
   taxRate: 125,
 };
 
-export const CashVoucherAccountingImportTemplateHeaders = ["Account Code", "Account Name", "Particulars", "Tax Rate", "Debit", "Credit"];
-
-export const CashVoucherAccountingImportTemplateRows = [
-  ["2010-003", "Accounts Payable", "Settlement of approved office depot payable", "0%", "", "18450.00"],
-  ["5010-001", "Office Supplies Expense", "Replenishment of paper, toner, and pantry labels", "0%", "18450.00", ""],
-];
-
-export const CashVoucherAccountingImportTemplateColumnWidths = [18, 30, 44, 14, 18, 18];
-
-export const CashVoucherAccountingExportColumnWidths: Record<CashVoucherAccountingGridColumnId, number> = {
-  accountCode: 18,
-  accountName: 30,
-  credit: 18,
-  debit: 18,
-  particulars: 44,
-  taxRate: 14,
-};
-
-export const CashVoucherAccountingImportClearActions: {
-  label: string;
-  value: ModuleDataEntryClearAction;
-}[] = [
-  { label: "Clear All", value: "all" },
-  { label: "Clear With Data", value: "with-data" },
-  { label: "Clear Incomplete", value: "incomplete" },
-  { label: "Clear No Data", value: "no-data" },
-];
-
 export const ExpenseEntryColumnLabels: Record<ExpenseEntryColumnId, string> = {
   disbursementCode: "Disbursement Code",
   expenseType: "Disbursement Type",
@@ -134,12 +83,12 @@ export const ExpenseEntryColumnLabels: Record<ExpenseEntryColumnId, string> = {
   checkStatus: "Check Status",
   netAmount: "Net Amount",
   vatCode: "VAT Type",
-  vatPercent: "VAT Rate",
+  vatPercent: "VAT %",
   vatAmount: "VAT Amount",
   ewtCode: "EWT Code",
-  ewtPercent: "EWT Rate",
+  ewtPercent: "EWT %",
   ewtAmount: "EWT Amount",
-  disburseAmount: "Disburse Amount",
+  disburseAmount: "Total Disbursed",
   partyCode: "Party Code",
   partyName: "Party Name",
   particulars: "Particulars",
@@ -234,12 +183,6 @@ export const DefaultCashVoucherEntryColumnWidths: Record<CashVoucherEntryColumnI
 };
 
 export const AccountingPartyFallbackValuePrefix = "entry-party:";
-export const CashOnHandAccountCode = "1001111";
-export const CashOnHandAccountName = "Cash on Hand";
-export const InputVatAccountCode = "2010002011";
-export const InputVatAccountName = "Input VAT";
-export const ExpandedWithholdingTaxAccountCode = "2010002002";
-export const ExpandedWithholdingTaxAccountName = "Expanded Withholding Tax";
 export const MultiCheckColumnIds = new Set<string>(["checkNo", "checkStatus", "checkDate"]);
 
 export const CashVoucherDetailTablePreferencesStorageKey = "gr8books:cash-voucher:detail-table-preferences";

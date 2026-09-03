@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import {
   DiscountMaintenanceFieldClassName,
   DiscountMaintenanceSelectClassName,
@@ -9,7 +8,7 @@ import type { DiscountMaintenanceFieldsProps } from "@/app/src/types/modules/fin
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
-import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { FormField, ReadonlyField } from "@/app/src/ui/shared/field-management/ModuleFormField";
 
 export function DiscountMaintenanceFields({
   errors,
@@ -112,42 +111,6 @@ export function DiscountMaintenanceFields({
           trueOption={MaintenanceActiveStatusSwitchOption}
         />
       </FormField>
-    </div>
-  );
-}
-
-function FormField({
-  children,
-  error,
-  className,
-  label,
-  required,
-}: {
-  children: ReactNode;
-  className?: string;
-  error?: string;
-  label: string;
-  required?: boolean;
-}) {
-  return (
-    <label className={className}>
-      <span className="mb-2 block text-sm font-semibold text-darknavy">
-        {label}
-        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
-      </span>
-      {children}
-      {error ? <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span> : null}
-    </label>
-  );
-}
-
-function ReadonlyField({ children, className, label }: { children: ReactNode; className?: string; label: string }) {
-  return (
-    <div className={className}>
-      <span className="mb-2 block text-sm font-semibold text-darknavy">{label}</span>
-      <div className="min-h-11 rounded-md border border-darknavy/10 bg-darknavy/[0.03] px-3 py-2.5 text-sm font-medium text-darknavy">
-        {children}
-      </div>
     </div>
   );
 }

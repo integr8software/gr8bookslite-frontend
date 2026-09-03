@@ -44,9 +44,9 @@ function createAdvancesToSuppliersStatusActionItems({
   onRequestConfirmation: (action: AdvancesToSuppliersConfirmationAction) => void;
   record?: AdvancesToSuppliersRecord | null;
 }) {
-  const status = record?.status ?? AdvancesToSuppliersStatuses.draft;
-  const isCancelled = status === AdvancesToSuppliersStatuses.cancelled;
-  const isPosted = status === AdvancesToSuppliersStatuses.posted;
+  const status = record?.status ?? AdvancesToSuppliersStatuses.Draft;
+  const isCancelled = status === AdvancesToSuppliersStatuses.Cancelled;
+  const isPosted = status === AdvancesToSuppliersStatuses.Posted;
   const actions: ModuleActionMenuItem[] = [
     {
       disabled: isPosted || isCancelled,
@@ -56,7 +56,7 @@ function createAdvancesToSuppliersStatusActionItems({
       type: "button",
     },
     {
-      disabled: status === AdvancesToSuppliersStatuses.disapproved || isCancelled,
+      disabled: status === AdvancesToSuppliersStatuses.Disapproved || isCancelled,
       icon: ThumbsDown,
       label: "Disapprove",
       onSelect: () => onRequestConfirmation("disapprove"),

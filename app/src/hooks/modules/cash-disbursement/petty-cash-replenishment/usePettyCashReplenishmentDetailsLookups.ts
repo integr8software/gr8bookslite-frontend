@@ -1,6 +1,6 @@
 "use client";
 
-import { useCashDisbursementDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/useCashDisbursementDetailsLookups";
+import { useMaintenanceDetailsLookups } from "@/app/src/hooks/shared/maintenance/useMaintenanceDetailsLookups";
 import {
   fetchPettyCashReplenishmentAccountOptions,
   fetchPettyCashReplenishmentPartyOptions,
@@ -11,11 +11,12 @@ import type { PettyCashReplenishmentActionPageState } from "@/app/src/types/modu
 const PettyCashReplenishmentLookupModuleKey = "petty-cash-replenishment";
 
 export function usePettyCashReplenishmentDetailsLookups(values: PettyCashReplenishmentActionPageState["values"]) {
-  return useCashDisbursementDetailsLookups({
+  return useMaintenanceDetailsLookups({
     fetchAccountOptions: fetchPettyCashReplenishmentAccountOptions,
     fetchPartyOptions: fetchPettyCashReplenishmentPartyOptions,
     fetchResponsibilityCenterOptions: fetchPettyCashReplenishmentResponsibilityCenters,
     moduleKey: PettyCashReplenishmentLookupModuleKey,
+    querySegment: "cash-disbursement",
     values,
   });
 }

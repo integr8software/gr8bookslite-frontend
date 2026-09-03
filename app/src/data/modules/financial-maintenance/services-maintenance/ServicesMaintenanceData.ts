@@ -21,7 +21,7 @@ import { getModuleImportOptionValue, isModuleImportOptionValue } from "@/app/src
 
 export const ServicesMaintenanceInitialFormValues: ServicesMaintenanceFormValues = {
   serviceName: "",
-  serviceType: "Sales",
+  serviceType: "Sale of Service",
   description: "",
   status: "Active",
   accountSetupMode: "Auto",
@@ -77,7 +77,7 @@ export function createBlankServicesMaintenanceImportRow(rowNumber: number): Serv
       description: "",
       revenueCoaId: "",
       serviceName: "",
-      serviceType: "Sales",
+      serviceType: "Sale of Service",
       status: "Active",
     },
   };
@@ -228,7 +228,7 @@ export function validateServicesMaintenanceImportRows(
     }
 
     if (!isModuleImportOptionValue(row.service.serviceType, ServicesMaintenanceServiceTypeOptions)) {
-      cellErrors.serviceType = ["Choose Purchases or Sales."];
+      cellErrors.serviceType = ["Choose Purchase of Service or Sale of Service."];
     }
 
     if (row.service.description.trim().length > 500) {
@@ -295,12 +295,12 @@ function normalizeImportedServicesMaintenanceSetupMode(value: string): ServicesM
 function normalizeImportedServicesMaintenanceServiceType(value: string): ServicesMaintenanceServiceType {
   const normalized = value.trim().toLowerCase();
 
-  if (!normalized || normalized === "sales" || normalized === "sale") {
-    return "Sales";
+  if (!normalized || normalized === "sales" || normalized === "sale" || normalized === "saleofservice") {
+    return "Sale of Service";
   }
-  if (normalized === "purchases" || normalized === "purchase") return "Purchases";
+  if (normalized === "purchases" || normalized === "purchase" || normalized === "purchaseofservice") return "Purchase of Service";
 
-  return (getModuleImportOptionValue(value, ServicesMaintenanceServiceTypeOptions) ?? "Sales") as ServicesMaintenanceServiceType;
+  return (getModuleImportOptionValue(value, ServicesMaintenanceServiceTypeOptions) ?? "Sale of Service") as ServicesMaintenanceServiceType;
 }
 
 function getServicesMaintenanceImportHeaderIndexes(row: string[]) {
@@ -319,7 +319,7 @@ function normalizeServicesMaintenanceImportHeader(value: string): ServicesMainte
   const normalized = value.toLowerCase().replace(/[^a-z0-9]/g, "");
 
   if (["servicename", "service", "name"].includes(normalized)) return "serviceName";
-  if (["servicetype", "type"].includes(normalized)) return "serviceType";
+  if (["servicetype", "typeofservice", "type"].includes(normalized)) return "serviceType";
   if (["description", "remarks", "details"].includes(normalized)) return "description";
   if (["accountsetup", "accountsetupmode", "setup"].includes(normalized)) return "accountSetupMode";
   if (["revenueaccountid", "revenuecoaid", "accountid"].includes(normalized)) return "revenueCoaId";

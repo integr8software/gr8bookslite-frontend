@@ -15,19 +15,14 @@ import {
 import { ReceiptText } from "lucide-react";
 import toast from "react-hot-toast";
 import {
+  RevolvingFundReplenishmentAllStatusFilter,
   RevolvingFundReplenishmentColumnLabels,
   RevolvingFundReplenishmentDefaultColumnVisibility,
   RevolvingFundReplenishmentOverviewColumnWidths,
   RevolvingFundReplenishmentRecordStatuses,
   RevolvingFundReplenishmentStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentConstants";
-import {
-  CashDisbursementAllStatusFilter,
-  CashDisbursementAllTimeSummary,
-  CashDisbursementTotalEntriesLabel,
-  createCashDisbursementListQueryKey,
-  createCashDisbursementModuleQueryKey,
-} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { RevolvingFundReplenishmentQueryKeys } from "@/app/src/services/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentQueryKeys";
 import type {
   RevolvingFundReplenishmentRecord,
   RevolvingFundReplenishmentStatus,
@@ -45,12 +40,11 @@ import {
 } from "@/app/src/services/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentApi";
 
 const columnHelper = createColumnHelper<RevolvingFundReplenishmentRecord>();
-const RevolvingFundReplenishmentQueryKey = "revolving-fund-replenishment";
 
 export function useRevolvingFundReplenishmentOverviewPage() {
   const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>(CashDisbursementAllStatusFilter);
+  const [statusFilter, setStatusFilter] = useState<string>(RevolvingFundReplenishmentAllStatusFilter);
   const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
   const [amountRange, setAmountRange] = useState<AmountRangeValue>({ from: "", to: "" });
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
@@ -62,7 +56,7 @@ export function useRevolvingFundReplenishmentOverviewPage() {
   const amountTo = parseAmount(amountRange.to);
 
   const listQuery = useQuery({
-    queryKey: createCashDisbursementListQueryKey(RevolvingFundReplenishmentQueryKey, {
+    queryKey: RevolvingFundReplenishmentQueryKeys.list({
       query,
       statusFilter,
       startDate: dateRange.from || undefined,
@@ -73,7 +67,7 @@ export function useRevolvingFundReplenishmentOverviewPage() {
     queryFn: async () => {
       const res = await fetchRevolvingFundReplenishmentList({
         search: query || undefined,
-        status: statusFilter !== CashDisbursementAllStatusFilter ? statusFilter : undefined,
+        status: statusFilter !== RevolvingFundReplenishmentAllStatusFilter ? statusFilter : undefined,
         startDate: dateRange.from || undefined,
         endDate: dateRange.to || undefined,
         amountFrom: amountFrom !== null ? amountFrom : undefined,
@@ -91,7 +85,7 @@ export function useRevolvingFundReplenishmentOverviewPage() {
       return await updateRevolvingFundReplenishmentStatusApi(id, status);
     },
     onSuccess: (_, { status }) => {
-      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(RevolvingFundReplenishmentQueryKey) });
+      queryClient.invalidateQueries({ queryKey: RevolvingFundReplenishmentQueryKeys.all() });
       toast.success(`Revolving Fund Replenishment marked as ${status}.`);
     },
     onError: () => {
@@ -104,7 +98,7 @@ export function useRevolvingFundReplenishmentOverviewPage() {
       return await deleteRevolvingFundReplenishmentApi(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(RevolvingFundReplenishmentQueryKey) });
+      queryClient.invalidateQueries({ queryKey: RevolvingFundReplenishmentQueryKeys.all() });
       toast.success("Revolving Fund Replenishment deleted successfully.");
     },
     onError: () => {
@@ -212,24 +206,24 @@ export function useRevolvingFundReplenishmentOverviewPage() {
     const total = records.length;
     return [
       {
-        label: CashDisbursementTotalEntriesLabel,
+        label: "Total Entries",
         value: total,
         icon: ReceiptText,
         tone: "violet",
-        summary: CashDisbursementAllTimeSummary,
-        isActive: statusFilter === CashDisbursementAllStatusFilter,
-        onClick: () => setStatusFilter(CashDisbursementAllStatusFilter),
+        summary: "All time",
+        isActive: statusFilter === RevolvingFundReplenishmentAllStatusFilter,
+        onClick: () => setStatusFilter(RevolvingFundReplenishmentAllStatusFilter),
       },
       ...RevolvingFundReplenishmentRecordStatuses.map((status) => {
         const count = records.filter((item) => item.status === status).length;
         const tone =
-          status === RevolvingFundReplenishmentStatuses.posted
+          status === RevolvingFundReplenishmentStatuses.Posted
             ? ("emerald" as const)
-            : status === RevolvingFundReplenishmentStatuses.forApproval
+            : status === RevolvingFundReplenishmentStatuses.ForApproval
               ? ("amber" as const)
-              : status === RevolvingFundReplenishmentStatuses.draft
+              : status === RevolvingFundReplenishmentStatuses.Draft
                 ? ("blue" as const)
-                : status === RevolvingFundReplenishmentStatuses.disapproved
+                : status === RevolvingFundReplenishmentStatuses.Disapproved
                   ? ("red" as const)
                   : ("slate" as const);
 

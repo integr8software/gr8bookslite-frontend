@@ -1,4 +1,3 @@
-import { isValidElement, useId } from "react";
 import {
   BankMasterfileAccountTypeOptions,
   BankMasterfileDefaultBankSwitchOption,
@@ -8,14 +7,11 @@ import {
   BankMasterfileSelectClassName,
 } from "@/app/src/constants/modules/financial-maintenance/bank-masterfile/BankMasterfileConstants";
 import { buildBankMasterfileAccountName } from "@/app/src/data/modules/financial-maintenance/bank-masterfile/BankMasterfileData";
-import type {
-  BankMasterfileFieldsProps,
-  BankMasterfileFormFieldProps,
-} from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
+import type { BankMasterfileFieldsProps } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
-import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
 
 export function BankMasterfileFields({
   accountCode,
@@ -175,26 +171,6 @@ export function BankMasterfileFields({
           />
         </FormField>
       </div>
-    </div>
-  );
-}
-
-function FormField({ children, className, error, helper, label, required }: BankMasterfileFormFieldProps) {
-  const generatedId = useId();
-  const fieldId = isValidElement<{ id?: string }>(children) ? (children.props.id ?? generatedId) : generatedId;
-
-  return (
-    <div className={className}>
-      <label htmlFor={fieldId} className="mb-2 block text-sm font-semibold text-darknavy">
-        {label}
-        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
-      </label>
-      {children}
-      {error ? (
-        <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span>
-      ) : helper ? (
-        <span className="mt-1 block text-xs font-medium text-darknavy/55">{helper}</span>
-      ) : null}
     </div>
   );
 }

@@ -20,19 +20,13 @@ import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data
 import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
 import { ModuleDataEntryReadonlyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryReadonlyCell";
 import { ModuleDataEntryRemarksCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryRemarksCell";
+import { moduleDataEntryDropdownClassName } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryDropdownCell";
 import {
-  DefaultAccountingEntryEwtOptions,
-  DefaultAccountingEntryVatOptions,
   getEwtPercentFromCode,
   getVatPercentFromRate,
   getVatRateFromCode,
   normalizeVatDropdownValue,
 } from "@/app/src/data/shared/tax/TaxData";
-import { DisbursementVoucherAccountingDropdownClassName } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
-import {
-  CashDisbursementTaxTypeEwt,
-  CashDisbursementTaxTypeVat,
-} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { formatAmount } from "@/app/src/utils/currency.util";
 
 export function createDisbursementAccountingEntryColumns({
@@ -71,7 +65,7 @@ export function createDisbursementAccountingEntryColumns({
           valueField="accountName"
           readOnly={isReadonly}
           isClearable
-          className={DisbursementVoucherAccountingDropdownClassName}
+          className={moduleDataEntryDropdownClassName}
           placeholder="Select Account Title"
           searchPlaceholder="Search Account Title"
           onChange={() => undefined}
@@ -211,7 +205,7 @@ export function createDisbursementAccountingEntryColumns({
                   }
                 : undefined
             }
-            className={DisbursementVoucherAccountingDropdownClassName}
+            className={moduleDataEntryDropdownClassName}
             isClearable
             options={partyOptions}
             placeholder="Select Party Name"
@@ -222,10 +216,10 @@ export function createDisbursementAccountingEntryColumns({
               const selectedParty = partyOptions.find((option) => option.value === value);
               const vatCode =
                 selectedParty?.vatCode ||
-                findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseInputVatTaxSourceKey, CashDisbursementTaxTypeVat);
+                findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseInputVatTaxSourceKey, "VAT");
               const ewtCode =
                 selectedParty?.ewtCode ||
-                findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseEwtTaxSourceKey, CashDisbursementTaxTypeEwt);
+                findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseEwtTaxSourceKey, "EWT");
               const nextTaxRate = vatCode ? getVatRateFromCode(vatCode, taxCodes) : "0%";
               const vatPercent = vatCode ? getVatPercentFromRate(getVatRateFromCode(vatCode, taxCodes)) : 0;
               const ewtPercent = ewtCode ? getEwtPercentFromCode(ewtCode, taxCodes) : 0;
@@ -292,47 +286,41 @@ export function createDisbursementAccountingEntryColumns({
       id: "vatType",
       width: columnWidths.vatType,
       widthClassName: "w-[12rem]",
-      renderCell: (entry) => {
-        const availableOptions = vatOptions && vatOptions.length > 0 ? vatOptions : DefaultAccountingEntryVatOptions;
-        return (
-          <AppAdvancedDropdown
-            className={DisbursementVoucherAccountingDropdownClassName}
-            isClearable
-            options={availableOptions}
-            placeholder="Select VAT Type"
-            searchPlaceholder="Search VAT Type"
-            readOnly={isReadonly}
-            value={isGeneratedVatEntry(entry) ? (entry.vatType ?? entry.taxDetails?.vatCode ?? "") : ""}
-            onChange={(value) => onUpdateEntry(entry.id, "vatType", String(value ?? ""))}
-          />
-        );
-      },
+      renderCell: (entry) => (
+        <AppAdvancedDropdown
+          className={moduleDataEntryDropdownClassName}
+          isClearable
+          options={vatOptions ?? []}
+          placeholder="Select VAT Type"
+          searchPlaceholder="Search VAT Type"
+          readOnly={isReadonly}
+          value={isGeneratedVatEntry(entry) ? (entry.vatType ?? entry.taxDetails?.vatCode ?? "") : ""}
+          onChange={(value) => onUpdateEntry(entry.id, "vatType", String(value ?? ""))}
+        />
+      ),
     },
     ewtCode: {
       header: columnLabels.ewtCode,
       id: "ewtCode",
       width: columnWidths.ewtCode,
       widthClassName: "w-[10rem]",
-      renderCell: (entry) => {
-        const availableOptions = ewtOptions && ewtOptions.length > 0 ? ewtOptions : DefaultAccountingEntryEwtOptions;
-        return (
-          <AppAdvancedDropdown
-            className={DisbursementVoucherAccountingDropdownClassName}
-            isClearable
-            options={availableOptions}
-            placeholder="Select EWT Code"
-            searchPlaceholder="Search EWT Code"
-            readOnly={isReadonly}
-            value={isGeneratedEwtEntry(entry) ? (entry.ewtCode ?? entry.taxDetails?.ewtCode ?? "") : ""}
-            onChange={(value) => onUpdateEntry(entry.id, "ewtCode", String(value ?? ""))}
-          />
-        );
-      },
+      renderCell: (entry) => (
+        <AppAdvancedDropdown
+          className={moduleDataEntryDropdownClassName}
+          isClearable
+          options={ewtOptions ?? []}
+          placeholder="Select EWT Code"
+          searchPlaceholder="Search EWT Code"
+          readOnly={isReadonly}
+          value={isGeneratedEwtEntry(entry) ? (entry.ewtCode ?? entry.taxDetails?.ewtCode ?? "") : ""}
+          onChange={(value) => onUpdateEntry(entry.id, "ewtCode", String(value ?? ""))}
+        />
+      ),
     },
   };
 }
 
-type DisbursementVoucherPartyTaxType = typeof CashDisbursementTaxTypeEwt | typeof CashDisbursementTaxTypeVat;
+type DisbursementVoucherPartyTaxType = "EWT" | "VAT";
 
 function findPartyTaxCode(taxCodes: AlphanumericTaxCode[], sourceKey: string | undefined, taxType: DisbursementVoucherPartyTaxType) {
   if (!sourceKey) {
@@ -342,12 +330,12 @@ function findPartyTaxCode(taxCodes: AlphanumericTaxCode[], sourceKey: string | u
   const taxCode = taxCodes.find(
     (tax) =>
       tax.sourceKey === sourceKey &&
-      (taxType === CashDisbursementTaxTypeVat
-        ? tax.taxType === "INPUT VAT" || tax.taxType === CashDisbursementTaxTypeVat
-        : tax.taxType === CashDisbursementTaxTypeEwt || tax.taxType === "CWT"),
+      (taxType === "VAT"
+        ? tax.taxType === "INPUT VAT" || tax.taxType === "VAT"
+        : tax.taxType === "EWT" || tax.taxType === "CWT"),
   );
 
-  return taxCode ? (taxType === CashDisbursementTaxTypeEwt ? taxCode.officialAtcCode || taxCode.taxCode : taxCode.taxCode) : "";
+  return taxCode ? (taxType === "EWT" ? taxCode.officialAtcCode || taxCode.taxCode : taxCode.taxCode) : "";
 }
 
 export function createDisbursementExpenseEntryColumns({
@@ -414,7 +402,7 @@ export function createDisbursementExpenseEntryColumns({
                   }
                 : undefined
             }
-            className={DisbursementVoucherAccountingDropdownClassName}
+            className={moduleDataEntryDropdownClassName}
             placeholder="Select Disbursement Type"
             searchPlaceholder="Search Disbursement Type"
             onChange={() => undefined}
@@ -503,7 +491,7 @@ export function createDisbursementExpenseEntryColumns({
             menuMinWidth={320}
             placeholder="Select VAT Code"
             searchPlaceholder="Search VAT Code"
-            className={DisbursementVoucherAccountingDropdownClassName}
+            className={moduleDataEntryDropdownClassName}
             onChange={(value) => {
               const nextVatCode = String(value ?? "");
               const nextTaxRate = getVatRateFromCode(nextVatCode, taxCodes);
@@ -562,7 +550,7 @@ export function createDisbursementExpenseEntryColumns({
             optionViewToggle
             placeholder="Select EWT Code"
             searchPlaceholder="Search tax name, code, rate, or description"
-            className={DisbursementVoucherAccountingDropdownClassName}
+            className={moduleDataEntryDropdownClassName}
             onChange={(value) => {
               const nextEwtCode = String(value ?? "");
               const nextEwtPercent = getEwtPercentFromCode(nextEwtCode, taxCodes);
@@ -639,7 +627,7 @@ export function createDisbursementExpenseEntryColumns({
                 : undefined
             }
             ariaInvalid={isInvalid}
-            className={DisbursementVoucherAccountingDropdownClassName}
+            className={moduleDataEntryDropdownClassName}
             isClearable
             options={responsibilityCenterOptions}
             placeholder="Select Responsibility Center"

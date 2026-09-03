@@ -1,10 +1,9 @@
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { taxControllerListTaxesV1 } from "@/app/src/generated/api/tax/tax";
 import type {
   AlphanumericTaxCode,
   AlphanumericTaxCodeListQuery,
 } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
-
-const AlphanumericTaxCodesPath = "/tax";
+import type { TaxResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
 export const AlphanumericTaxCodeQueryKeys = {
   all: () => ["alphanumericTaxCodes"] as const,
@@ -12,11 +11,14 @@ export const AlphanumericTaxCodeQueryKeys = {
 };
 
 export async function fetchAlphanumericTaxCodes(query: AlphanumericTaxCodeListQuery = {}) {
-  const response = await ApiClient.get<
-    Partial<Record<"taxCodes" | "taxes", AlphanumericTaxCode[]>>
-  >(AlphanumericTaxCodesPath, {
-    params: query,
-  });
+  const response = await taxControllerListTaxesV1(query);
 
-  return response.data.taxCodes ?? response.data.taxes ?? [];
+  return (response.taxCodes ?? response.taxes ?? []).map(mapGeneratedAlphanumericTaxCode);
+}
+
+function mapGeneratedAlphanumericTaxCode(tax: TaxResponseDto): AlphanumericTaxCode {
+  return {
+    ...tax,
+    id: String(tax.id),
+  };
 }

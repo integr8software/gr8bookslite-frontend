@@ -31,11 +31,11 @@ export function CashAdvanceRecordActions({
   const [statusToConfirm, setStatusToConfirm] = useState<CashAdvanceStatus | null>(null);
   const recordLabel = record.transNo;
   const status = record.status;
-  const isPosted = status === CashAdvanceStatuses.posted;
-  const isDisapproved = status === CashAdvanceStatuses.disapproved;
-  const isCancelled = status === CashAdvanceStatuses.cancelled;
-  const approvalUndoStatus: CashAdvanceStatus = CashAdvanceStatuses.forApproval;
-  const cancelStatus: CashAdvanceStatus = isCancelled ? CashAdvanceStatuses.draft : CashAdvanceStatuses.cancelled;
+  const isPosted = status === CashAdvanceStatuses.Posted;
+  const isDisapproved = status === CashAdvanceStatuses.Disapproved;
+  const isCancelled = status === CashAdvanceStatuses.Cancelled;
+  const approvalUndoStatus: CashAdvanceStatus = CashAdvanceStatuses.ForApproval;
+  const cancelStatus: CashAdvanceStatus = isCancelled ? CashAdvanceStatuses.Draft : CashAdvanceStatuses.Cancelled;
   const statusDialogCopy = statusToConfirm ? getCashAdvanceStatusDialogCopy(statusToConfirm, recordLabel) : null;
   const canEdit = canEditCashAdvanceStatus(status);
   const items: ModuleActionMenuItem[] = [
@@ -49,7 +49,7 @@ export function CashAdvanceRecordActions({
           return;
         }
 
-        setStatusToConfirm(CashAdvanceStatuses.posted);
+        setStatusToConfirm(CashAdvanceStatuses.Posted);
       },
       type: "button",
     },
@@ -63,7 +63,7 @@ export function CashAdvanceRecordActions({
           return;
         }
 
-        setStatusToConfirm(CashAdvanceStatuses.disapproved);
+        setStatusToConfirm(CashAdvanceStatuses.Disapproved);
       },
       tone: isDisapproved ? "default" : "danger",
       type: "button",
@@ -78,7 +78,7 @@ export function CashAdvanceRecordActions({
           return;
         }
 
-        setStatusToConfirm(CashAdvanceStatuses.cancelled);
+        setStatusToConfirm(CashAdvanceStatuses.Cancelled);
       },
       tone: isCancelled ? "default" : "danger",
       type: "button",

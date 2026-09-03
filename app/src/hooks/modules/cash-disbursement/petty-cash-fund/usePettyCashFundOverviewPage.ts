@@ -15,18 +15,13 @@ import {
 import { ReceiptText } from "lucide-react";
 import toast from "react-hot-toast";
 import {
+  PettyCashFundAllStatusFilter,
   PettyCashFundColumnLabels,
   PettyCashFundDefaultColumnVisibility,
   PettyCashFundRecordStatuses,
   PettyCashFundStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
-import {
-  CashDisbursementAllStatusFilter,
-  CashDisbursementAllTimeSummary,
-  CashDisbursementTotalEntriesLabel,
-  createCashDisbursementListQueryKey,
-  createCashDisbursementModuleQueryKey,
-} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { PettyCashFundQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-fund/PettyCashFundQueryKeys";
 import type {
   PettyCashFundRecord,
   PettyCashFundStatus,
@@ -45,12 +40,11 @@ import {
 } from "@/app/src/services/modules/cash-disbursement/petty-cash-fund/PettyCashFundApi";
 
 const columnHelper = createColumnHelper<PettyCashFundRecord>();
-const PettyCashFundQueryKey = "petty-cash-fund";
 
 export function usePettyCashFundOverviewPage() {
   const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>(CashDisbursementAllStatusFilter);
+  const [statusFilter, setStatusFilter] = useState<string>(PettyCashFundAllStatusFilter);
   const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
   const [amountRange, setAmountRange] = useState<AmountRangeValue>({ from: "", to: "" });
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
@@ -62,7 +56,7 @@ export function usePettyCashFundOverviewPage() {
   const amountTo = parseAmount(amountRange.to);
 
   const fundQuery = useQuery({
-    queryKey: createCashDisbursementListQueryKey(PettyCashFundQueryKey, {
+    queryKey: PettyCashFundQueryKeys.list({
       query,
       statusFilter,
       startDate: dateRange.from || undefined,
@@ -73,7 +67,7 @@ export function usePettyCashFundOverviewPage() {
     queryFn: async () => {
       const res = await fetchPettyCashFundList({
         search: query || undefined,
-        status: statusFilter !== CashDisbursementAllStatusFilter ? statusFilter : undefined,
+        status: statusFilter !== PettyCashFundAllStatusFilter ? statusFilter : undefined,
         startDate: dateRange.from || undefined,
         endDate: dateRange.to || undefined,
         amountFrom: amountFrom !== null ? amountFrom : undefined,
@@ -91,7 +85,7 @@ export function usePettyCashFundOverviewPage() {
       return await updatePettyCashFundStatusApi(id, status);
     },
     onSuccess: (_, { status }) => {
-      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashFundQueryKey) });
+      queryClient.invalidateQueries({ queryKey: PettyCashFundQueryKeys.all() });
       toast.success(`Petty Cash Fund marked as ${status}.`);
     },
     onError: () => {
@@ -104,7 +98,7 @@ export function usePettyCashFundOverviewPage() {
       return await deletePettyCashFundApi(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: createCashDisbursementModuleQueryKey(PettyCashFundQueryKey) });
+      queryClient.invalidateQueries({ queryKey: PettyCashFundQueryKeys.all() });
       toast.success("Petty Cash Fund deleted successfully.");
     },
     onError: () => {
@@ -212,24 +206,24 @@ export function usePettyCashFundOverviewPage() {
     const total = records.length;
     return [
       {
-        label: CashDisbursementTotalEntriesLabel,
+        label: "Total Entries",
         value: total,
         icon: ReceiptText,
         tone: "violet",
-        summary: CashDisbursementAllTimeSummary,
-        isActive: statusFilter === CashDisbursementAllStatusFilter,
-        onClick: () => setStatusFilter(CashDisbursementAllStatusFilter),
+        summary: "All time",
+        isActive: statusFilter === PettyCashFundAllStatusFilter,
+        onClick: () => setStatusFilter(PettyCashFundAllStatusFilter),
       },
       ...PettyCashFundRecordStatuses.map((status) => {
         const count = records.filter((item) => item.status === status).length;
         const tone =
-          status === PettyCashFundStatuses.posted
+          status === PettyCashFundStatuses.Posted
             ? ("emerald" as const)
-            : status === PettyCashFundStatuses.forApproval
+            : status === PettyCashFundStatuses.ForApproval
               ? ("amber" as const)
-              : status === PettyCashFundStatuses.draft
+              : status === PettyCashFundStatuses.Draft
                 ? ("blue" as const)
-                : status === PettyCashFundStatuses.disapproved
+                : status === PettyCashFundStatuses.Disapproved
                   ? ("red" as const)
                   : ("slate" as const);
 

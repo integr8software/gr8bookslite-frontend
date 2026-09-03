@@ -15,6 +15,7 @@ import { ReceiptText } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
+  AdvancesToSuppliersAllStatusFilter,
   AdvancesToSuppliersColumnLabels,
   AdvancesToSuppliersDefaultColumnVisibility,
   AdvancesToSuppliersOverviewColumnWidths,
@@ -45,7 +46,7 @@ export function useAdvancesToSuppliersOverviewPage() {
   const queryClient = useQueryClient();
   const activeCompanyId = useAppStore((state) => state.activeCompanyId);
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [statusFilter, setStatusFilter] = useState<string>(AdvancesToSuppliersAllStatusFilter);
   const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
   const [amountRange, setAmountRange] = useState<AmountRangeValue>({ from: "", to: "" });
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
@@ -72,7 +73,7 @@ export function useAdvancesToSuppliersOverviewPage() {
   }, [allQueryKey, queryClient]);
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: AdvancesToSuppliersStatus }) => {
-      return status === AdvancesToSuppliersStatuses.forApproval
+      return status === AdvancesToSuppliersStatuses.ForApproval
         ? await submitAdvancesToSuppliersApprovalApi(id)
         : await updateAdvancesToSuppliersStatusApi(id, status);
     },
@@ -105,7 +106,7 @@ export function useAdvancesToSuppliersOverviewPage() {
       );
       return (
         (!needle || searchableText.includes(needle)) &&
-        (statusFilter === "All" || record.status === statusFilter) &&
+        (statusFilter === AdvancesToSuppliersAllStatusFilter || record.status === statusFilter) &&
         (!dateRange.from || record.documentDate >= dateRange.from) &&
         (!dateRange.to || record.documentDate <= dateRange.to) &&
         (!amountRange.from || record.amount >= Number(amountRange.from)) &&
@@ -222,8 +223,8 @@ export function useAdvancesToSuppliersOverviewPage() {
         value: records.length,
         summary: "All time",
         tone: "violet",
-        onClick: () => setStatusFilter("All"),
-        isActive: statusFilter === "All",
+        onClick: () => setStatusFilter(AdvancesToSuppliersAllStatusFilter),
+        isActive: statusFilter === AdvancesToSuppliersAllStatusFilter,
       },
       ...AdvancesToSuppliersRecordStatuses.map((status) => {
         const count = records.filter((record) => record.status === status).length;
@@ -265,9 +266,9 @@ export function useAdvancesToSuppliersOverviewPage() {
 }
 
 function getMetricTone(status: AdvancesToSuppliersStatus) {
-  if (status === AdvancesToSuppliersStatuses.posted) return "emerald" as const;
-  if (status === AdvancesToSuppliersStatuses.forApproval) return "amber" as const;
-  if (status === AdvancesToSuppliersStatuses.disapproved) return "red" as const;
-  if (status === AdvancesToSuppliersStatuses.cancelled) return "slate" as const;
+  if (status === AdvancesToSuppliersStatuses.Posted) return "emerald" as const;
+  if (status === AdvancesToSuppliersStatuses.ForApproval) return "amber" as const;
+  if (status === AdvancesToSuppliersStatuses.Disapproved) return "red" as const;
+  if (status === AdvancesToSuppliersStatuses.Cancelled) return "slate" as const;
   return "blue" as const;
 }

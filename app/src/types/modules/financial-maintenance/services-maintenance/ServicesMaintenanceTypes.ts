@@ -1,11 +1,11 @@
-import type { ChangeEventHandler, ReactNode } from "react";
+import type { ChangeEventHandler } from "react";
 import type { Row, Table } from "@tanstack/react-table";
 import type { ServiceMaintenanceNextAccountCodeResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 
 export type ServicesMaintenanceStatus = "Active" | "Inactive";
 export type ServicesMaintenanceAccountSetupMode = "Auto" | "Existing";
-export type ServicesMaintenanceServiceType = "Purchases" | "Sales";
+export type ServicesMaintenanceServiceType = "Purchase of Service" | "Sale of Service";
 
 export type ServicesMaintenance = {
   id: string;
@@ -121,14 +121,9 @@ export type ServicesMaintenanceAccountingSetupTabProps = {
   onRevenueAccountChange: (value: string) => void;
 };
 
-export type ServicesMaintenanceFormFieldProps = {
-  children: ReactNode;
-  className?: string;
-  error?: string;
-  helper?: string;
-  label: string;
-  required?: boolean;
-};
+import type { ModuleFormFieldProps } from "@/app/src/ui/shared/field-management/ModuleFormField";
+
+export type ServicesMaintenanceFormFieldProps = ModuleFormFieldProps;
 
 export type ServicesMaintenanceTableProps = {
   filteredServices: ServicesMaintenance[];

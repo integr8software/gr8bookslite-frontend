@@ -22,9 +22,9 @@ const schema = z.object({
 
 export function validateRevolvingFundForm(values: RevolvingFundFormValues): RevolvingFundFormErrors {
   const errors: RevolvingFundFormErrors = {};
-  const result = (values.status === RevolvingFundStatuses.draft ? draftSchema : schema).safeParse(values);
+  const result = (values.status === RevolvingFundStatuses.Draft ? draftSchema : schema).safeParse(values);
   if (!result.success) for (const issue of result.error.issues) errors[issue.path[0] as keyof RevolvingFundFormValues] ??= issue.message;
-  if (values.status === RevolvingFundStatuses.draft) return errors;
+  if (values.status === RevolvingFundStatuses.Draft) return errors;
   if (values.items.length === 0 || values.items.every((item) => !item.supplierName.trim() && (parseAmount(item.amount) ?? 0) <= 0))
     errors.items = "Add at least one revolving fund item.";
   else if (values.items.some((item) => !item.supplierName.trim() || (parseAmount(item.amount) ?? 0) <= 0))

@@ -5,14 +5,21 @@ import {
   PettyCashFundItemColumnLabels,
   PettyCashFundItemColumnWidths,
   PettyCashFundProtectedItemColumnIds,
-  PettyCashFundSupplierOptions,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import {
   createBlankPettyCashFundItem,
   formatPettyCashFundAmount,
 } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund/PettyCashFundData";
+import {
+  getPartyDefaultEwtCode,
+  getPartyDefaultVatCode,
+} from "@/app/src/data/shared/tax/PartyTaxDefaultsData";
+import { createEwtOptions, createVatOptions } from "@/app/src/data/shared/tax/TaxData";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
+import { fetchMaintenanceResponsibilityCenterOptions } from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
+import { useQuery } from "@tanstack/react-query";
 import type {
   PettyCashFundDetailEntryTableProps,
   PettyCashFundItemColumnId,
@@ -38,17 +45,33 @@ export function PettyCashFundDetailEntryTable({
   const [columnWidths, setColumnWidths] = useState({ ...PettyCashFundItemColumnWidths });
   const [columnLabels, setColumnLabels] = useState({ ...PettyCashFundItemColumnLabels });
   const partyRecords = usePartyManagementStore((state) => state.records);
+  const taxCodesQuery = useAlphanumericTaxCodes();
+  const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
+
+  const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
+  const ewtOptions = useMemo(() => createEwtOptions(taxCodes), [taxCodes]);
+
+  const responsibilityCentersQuery = useQuery({
+    queryKey: ["cash-disbursement", "petty-cash-fund", "responsibility-centers"],
+    queryFn: fetchMaintenanceResponsibilityCenterOptions,
+    staleTime: 60_000,
+  });
+  const responsibilityCenterOptions = useMemo(
+    () => responsibilityCentersQuery.data ?? [],
+    [responsibilityCentersQuery.data],
+  );
 
   const supplierOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
     const vendorRecords = partyRecords.filter((r) => r.partyTypes.includes("Vendor"));
-    const options: AppAdvancedDropdownOption[] =
-      vendorRecords.length > 0
-        ? vendorRecords.map((r) => ({
-            label: r.partyCodeNo,
-            name: getPartyDisplayName(r),
-            value: r.partyCodeNo,
-          }))
-        : PettyCashFundSupplierOptions;
+    const options: AppAdvancedDropdownOption[] = vendorRecords.map((r) => ({
+      defaultPurchaseEwtTaxSourceKey: r.defaultPurchaseEwtTaxSourceKey,
+      defaultPurchaseInputVatTaxSourceKey: r.defaultPurchaseInputVatTaxSourceKey,
+      ewtCode: getPartyDefaultEwtCode(r, taxCodes),
+      label: r.partyCodeNo,
+      name: getPartyDisplayName(r),
+      vatCode: getPartyDefaultVatCode(r, taxCodes),
+      value: r.partyCodeNo,
+    }));
 
     const existingCodes = new Set(options.map((opt) => opt.value));
     const existingNames = new Set(options.map((opt) => opt.name.toLowerCase()));
@@ -70,7 +93,7 @@ export function PettyCashFundDetailEntryTable({
     });
 
     return [...options, ...extraOptions];
-  }, [partyRecords, page.values.items]);
+  }, [partyRecords, page.values.items, taxCodes]);
 
   const allColumns = useMemo(
     () =>
@@ -79,10 +102,23 @@ export function PettyCashFundDetailEntryTable({
         columnLabels,
         columnWidths,
         supplierOptions,
+        vatOptions,
+        ewtOptions,
+        responsibilityCenterOptions,
         onOpenResponsibilityCenterDrawer,
         onOpenSupplierDrawer,
       ),
-    [columnLabels, columnWidths, onOpenResponsibilityCenterDrawer, onOpenSupplierDrawer, page, supplierOptions],
+    [
+      columnLabels,
+      columnWidths,
+      ewtOptions,
+      onOpenResponsibilityCenterDrawer,
+      onOpenSupplierDrawer,
+      page,
+      responsibilityCenterOptions,
+      supplierOptions,
+      vatOptions,
+    ],
   );
 
   const columns = useMemo(

@@ -15,7 +15,6 @@ import {
   fetchMaintenancePostingAccountOptions,
   fetchMaintenanceResponsibilityCenterOptions,
 } from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
-import { CashDisbursementApiAllStatusFilter } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { PettyCashFundStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import type {
   CreatePettyCashFundDto,
@@ -72,7 +71,7 @@ type MappedPettyCashFundListResponse = Omit<PettyCashFundListResponseDto, "items
 };
 
 export const StatusFromApi: Record<string, PettyCashFundStatus> = {
-  DRAFT: PettyCashFundStatuses.draft,
+  DRAFT: PettyCashFundStatuses.Draft,
   FOR_APPROVAL: "For Approval",
   APPROVED: "For Approval",
   POSTED: "Posted",
@@ -117,7 +116,7 @@ export function mapPettyCashFundRecordFromDto(dto: PettyCashFundResponseDto): Pe
   const formValues: PettyCashFundFormValues = {
     transactionNo: dto.transactionNo,
     documentDate: dto.documentDate,
-    status: StatusFromApi[dto.status] ?? PettyCashFundStatuses.draft,
+    status: StatusFromApi[dto.status] ?? PettyCashFundStatuses.Draft,
     partyCode: dto.partyCodeSnapshot ?? "",
     partyName: dto.partyNameSnapshot ?? "",
     responsibilityCenter: dto.responsibilityCenterSnapshot ?? "",
@@ -150,7 +149,7 @@ export function mapPettyCashFundRecordFromDto(dto: PettyCashFundResponseDto): Pe
     amount: totals.grossAmount || (typeof dto.amount === "number" ? dto.amount : Number(dto.amount ?? 0)),
     disburseAmount: totals.disburseAmount || Number(dtoExtras.disburseAmount ?? dto.amount ?? 0),
     remarks: dto.remarks ?? "",
-    status: StatusFromApi[dto.status] ?? PettyCashFundStatuses.draft,
+    status: StatusFromApi[dto.status] ?? PettyCashFundStatuses.Draft,
     createdBy: createdUser ? `${createdUser.firstName ?? ""} ${createdUser.lastName ?? ""}`.trim() : "",
     createdAt: dto.createdAt,
     updatedBy: updatedUser ? `${updatedUser.firstName ?? ""} ${updatedUser.lastName ?? ""}`.trim() : "",
@@ -161,7 +160,7 @@ export function mapPettyCashFundRecordFromDto(dto: PettyCashFundResponseDto): Pe
 
 export function mapPettyCashFundFormValuesToCreateDto(values: PettyCashFundFormValues): CreatePettyCashFundDto {
   const items =
-    values.status === PettyCashFundStatuses.draft ? (values.items ?? []).filter(isPettyCashFundItemPopulated) : (values.items ?? []);
+    values.status === PettyCashFundStatuses.Draft ? (values.items ?? []).filter(isPettyCashFundItemPopulated) : (values.items ?? []);
   const details = items.map((item, index) => ({
     lineNumber: index + 1,
     itemDate: item.date || undefined,
@@ -233,7 +232,7 @@ export async function fetchPettyCashFundList(params?: FetchPettyCashFundListPara
     sortOrder: params?.sortOrder,
   };
 
-  if (params?.status && params.status !== CashDisbursementApiAllStatusFilter) {
+  if (params?.status && params.status !== "all" && params.status !== "All") {
     queryParams.status = (StatusToApi[params.status as PettyCashFundStatus] ?? params.status) as PettyCashFundQueryParams["status"];
   }
 

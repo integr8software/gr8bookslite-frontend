@@ -40,10 +40,10 @@ function createHistory(record?: AdvancesToSuppliersRecord): ModuleHistoryEntry<A
       createdAt: record.createdAt,
       description: `${record.transactionNo} was created.`,
       id: `ats-history-${record.id}-created`,
-      status: AdvancesToSuppliersStatuses.draft,
+      status: AdvancesToSuppliersStatuses.Draft,
     },
   ];
-  if (record.updatedAt !== record.createdAt || record.status !== AdvancesToSuppliersStatuses.draft)
+  if (record.updatedAt !== record.createdAt || record.status !== AdvancesToSuppliersStatuses.Draft)
     history.push({
       action: "Updated",
       actor: record.updatedBy,

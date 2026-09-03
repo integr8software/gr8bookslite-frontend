@@ -22,13 +22,13 @@ const schema = z.object({
 
 export function validateRevolvingFundReplenishmentForm(values: RevolvingFundReplenishmentFormValues): RevolvingFundReplenishmentFormErrors {
   const errors: RevolvingFundReplenishmentFormErrors = {};
-  const result = (values.status === RevolvingFundReplenishmentStatuses.draft ? draftSchema : schema).safeParse(values);
+  const result = (values.status === RevolvingFundReplenishmentStatuses.Draft ? draftSchema : schema).safeParse(values);
   if (!result.success) {
     for (const issue of result.error.issues) {
       errors[issue.path[0] as keyof RevolvingFundReplenishmentFormValues] ??= issue.message;
     }
   }
-  if (values.status === RevolvingFundReplenishmentStatuses.draft) return errors;
+  if (values.status === RevolvingFundReplenishmentStatuses.Draft) return errors;
   if (
     values.entries.length === 0 ||
     values.entries.every((entry) => !entry.revolvingFundNo.trim() && (parseAmount(entry.amount) ?? 0) <= 0)

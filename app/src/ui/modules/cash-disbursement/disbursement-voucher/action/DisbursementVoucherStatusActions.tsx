@@ -68,29 +68,29 @@ function createDisbursementVoucherStatusActionItems({
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
 }) {
-  const status = voucher?.status ?? transaction?.status ?? DisbursementVoucherStatuses.draft;
-  const isPosted = status === DisbursementVoucherStatuses.posted;
-  const isDisapproved = status === DisbursementVoucherStatuses.disapproved;
-  const isCancelled = status === DisbursementVoucherStatuses.cancelled;
-  const approvalUndoStatus: DisbursementVoucherStatus = DisbursementVoucherStatuses.forApproval;
+  const status = voucher?.status ?? transaction?.status ?? DisbursementVoucherStatuses.Draft;
+  const isPosted = status === DisbursementVoucherStatuses.Posted;
+  const isDisapproved = status === DisbursementVoucherStatuses.Disapproved;
+  const isCancelled = status === DisbursementVoucherStatuses.Cancelled;
+  const approvalUndoStatus: DisbursementVoucherStatus = DisbursementVoucherStatuses.ForApproval;
   const cancelStatus: DisbursementVoucherStatus = isCancelled
     ? voucher
-      ? DisbursementVoucherStatuses.draft
-      : DisbursementVoucherStatuses.forApproval
-    : DisbursementVoucherStatuses.cancelled;
+      ? DisbursementVoucherStatuses.Draft
+      : DisbursementVoucherStatuses.ForApproval
+    : DisbursementVoucherStatuses.Cancelled;
   const actions: ModuleActionMenuItem[] = [
     {
       disabled: !onUpdateStatus || !canApproveDisbursementVoucherStatus(status),
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () => onRequestStatusConfirmation(isPosted ? approvalUndoStatus : DisbursementVoucherStatuses.posted),
+      onSelect: () => onRequestStatusConfirmation(isPosted ? approvalUndoStatus : DisbursementVoucherStatuses.Posted),
       type: "button",
     },
     {
       disabled: !onUpdateStatus || !canDisapproveDisbursementVoucherStatus(status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () => onRequestStatusConfirmation(isDisapproved ? approvalUndoStatus : DisbursementVoucherStatuses.disapproved),
+      onSelect: () => onRequestStatusConfirmation(isDisapproved ? approvalUndoStatus : DisbursementVoucherStatuses.Disapproved),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },

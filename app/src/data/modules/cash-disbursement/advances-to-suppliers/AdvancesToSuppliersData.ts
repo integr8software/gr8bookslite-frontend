@@ -58,7 +58,7 @@ export function createAdvancesToSuppliersFormValues(
   return {
     transactionNo,
     documentDate: todayDateValue(),
-    status: AdvancesToSuppliersStatuses.open,
+    status: AdvancesToSuppliersStatuses.Open,
     partyId: "",
     partyCode: "",
     partyName: "",

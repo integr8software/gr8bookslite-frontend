@@ -2,10 +2,10 @@ import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import type { TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 import {
-  CashVoucherPdfNoBordersLayout,
-  CashVoucherPdfOuterLayout,
-  CashVoucherPdfThinGridLayout,
-} from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
+  ReportPdfNoBordersLayout,
+  ReportPdfOuterBorderLayout,
+  ReportPdfThinGridLayout,
+} from "@/app/src/constants/shared/reports/ReportPdfLayoutConstants";
 import { formatCurrency } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import type {
   CashVoucherLineEntry,
@@ -45,7 +45,7 @@ function createCashVoucherPdfDefinition(values: CashVoucherFormValues): TDocumen
             [createPaymentReceivedRow()],
           ],
         },
-        layout: CashVoucherPdfOuterLayout,
+        layout: ReportPdfOuterBorderLayout,
       },
     ],
   };
@@ -97,7 +97,7 @@ function createHeaderTable(): TableCell {
         ],
       ],
     },
-    layout: CashVoucherPdfNoBordersLayout,
+    layout: ReportPdfNoBordersLayout,
   };
 }
 
@@ -120,7 +120,7 @@ function createTitleAndDateRow(values: CashVoucherFormValues): TableCell {
         ],
       ],
     },
-    layout: CashVoucherPdfThinGridLayout,
+    layout: ReportPdfThinGridLayout,
   };
 }
 
@@ -161,7 +161,7 @@ function createTwoColumnInfoRow(leftText: CashVoucherPdfText, rightText: CashVou
         ],
       ],
     },
-    layout: CashVoucherPdfThinGridLayout,
+    layout: ReportPdfThinGridLayout,
   };
 }
 
@@ -222,7 +222,7 @@ function createEntriesTable(values: CashVoucherFormValues): TableCell {
       widths: [145, 110, "*", 80, 70, 70],
       body,
     },
-    layout: CashVoucherPdfThinGridLayout,
+    layout: ReportPdfThinGridLayout,
   };
 }
 
@@ -263,7 +263,7 @@ function createApprovalTable(values: CashVoucherFormValues): TableCell {
         ],
       ],
     },
-    layout: CashVoucherPdfThinGridLayout,
+    layout: ReportPdfThinGridLayout,
   };
 }
 

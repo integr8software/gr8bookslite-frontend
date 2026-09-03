@@ -63,6 +63,9 @@ export type PettyCashReplenishmentDetailEntryColumnsParams = {
   columnWidths: Record<PettyCashReplenishmentEntryColumnId, number>;
   page: PettyCashReplenishmentActionPageState;
   supplierOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
+  vatOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
+  ewtOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
+  responsibilityCenterOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
   onOpenSupplierDrawer?: PettyCashReplenishmentOpenSupplierDrawerHandler;
 };
 

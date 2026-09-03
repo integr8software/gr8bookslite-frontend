@@ -398,3 +398,14 @@ export type DisbursementVoucherReportPreviewProps = {
 };
 
 export type DisbursementVoucherPdfText = string | Array<string | { text: string; bold?: boolean }>;
+
+export type DisbursementVoucherGeneratedAccount = {
+  accountCode: string;
+  accountName: string;
+};
+
+export type DisbursementVoucherGeneratedAccountOptions = {
+  cashAccount?: DisbursementVoucherGeneratedAccount | null;
+  inputVatAccount?: DisbursementVoucherGeneratedAccount | null;
+  withholdingTaxAccount?: DisbursementVoucherGeneratedAccount | null;
+};

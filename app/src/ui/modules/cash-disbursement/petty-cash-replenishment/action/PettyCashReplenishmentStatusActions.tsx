@@ -44,9 +44,9 @@ function createPettyCashReplenishmentStatusActionItems({
   onRequestConfirmation: (action: PettyCashReplenishmentConfirmationAction) => void;
   record?: PettyCashReplenishmentRecord | null;
 }) {
-  const status = record?.status ?? PettyCashReplenishmentStatuses.draft;
-  const isCancelled = status === PettyCashReplenishmentStatuses.cancelled;
-  const isPosted = status === PettyCashReplenishmentStatuses.posted;
+  const status = record?.status ?? PettyCashReplenishmentStatuses.Draft;
+  const isCancelled = status === PettyCashReplenishmentStatuses.Cancelled;
+  const isPosted = status === PettyCashReplenishmentStatuses.Posted;
   const actions: ModuleActionMenuItem[] = [
     {
       disabled: isPosted || isCancelled,
@@ -56,7 +56,7 @@ function createPettyCashReplenishmentStatusActionItems({
       type: "button",
     },
     {
-      disabled: status === PettyCashReplenishmentStatuses.disapproved || isCancelled,
+      disabled: status === PettyCashReplenishmentStatuses.Disapproved || isCancelled,
       icon: ThumbsDown,
       label: "Disapprove",
       onSelect: () => onRequestConfirmation("disapprove"),

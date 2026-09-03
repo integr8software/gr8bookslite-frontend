@@ -15,3 +15,9 @@ export const TransactionOverviewColumnWidths = {
   status: 120,
   actions: 160,
 } as const;
+
+export function getTransactionOverviewTableMinWidthClassName(visibleColumnCount: number) {
+  if (visibleColumnCount >= 13) return "min-w-[158rem]";
+  if (visibleColumnCount >= 10) return "min-w-[126rem]";
+  return "min-w-[76rem]";
+}

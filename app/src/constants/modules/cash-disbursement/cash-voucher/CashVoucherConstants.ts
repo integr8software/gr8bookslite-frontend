@@ -4,21 +4,14 @@ import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/modu
 import type {
   CashVoucherActionMode,
   CashVoucherActionTab,
+  CashVoucherCopySource,
   CashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 
-export function getCashVoucherSubmitDialogCopy(
-  mode: CashVoucherActionMode,
-  status: CashVoucherStatus,
-  recordLabel = "this cash voucher",
-) {
-  const isDraft = status === CashVoucherStatuses.draft;
-  const isEdit = mode === "edit";
-  const title = isEdit
-    ? "Update Cash Voucher?"
-    : isDraft
-      ? "Save Cash Voucher as Draft?"
-      : "Save Cash Voucher?";
+export function getCashVoucherSubmitDialogCopy(mode: CashVoucherActionMode, status: CashVoucherStatus, recordLabel = "this cash voucher") {
+  const isDraft = status === CashVoucherStatuses.Draft;
+  const isEdit = mode === CashVoucherActionModes.Edit;
+  const title = isEdit ? "Update Cash Voucher?" : isDraft ? "Save Cash Voucher as Draft?" : "Save Cash Voucher?";
   const description = isEdit
     ? `This will update ${recordLabel}.`
     : isDraft
@@ -38,43 +31,37 @@ export function getCashVoucherSubmitDialogCopy(
 export const CashVoucherLink = getModuleRoute("CV");
 export const CashVoucherAddLink = `${CashVoucherLink}/add`;
 export const getCashVoucherEditLink = (recordId: string) => `${CashVoucherLink}/edit/${recordId}`;
-
 export const getCashVoucherViewLink = (recordId: string) => `${CashVoucherLink}/view/${recordId}`;
 
-export { CashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherQueryKeys";
+export const CashVoucherActionModes = {
+  Add: "add",
+  Edit: "edit",
+  View: "view",
+} as const satisfies Record<string, CashVoucherActionMode>;
 
 export const CashVoucherTablePaginationStorageKey = "cash-disbursement-cash-voucher";
-
 export const CashVoucherTablePreferencesStorageKey = "gr8booksneo:cash-voucher:table-preferences";
 export const CashVoucherTablePreferencesModuleKey = "cash-disbursement:cash-voucher";
-export const CashVoucherAccountingGridSessionStorageKey = "gr8books.cashVoucher.accountingGrid";
 
 export const CashVoucherBankSelectPlaceholder = "--Select Bank--";
 export const CashVoucherBankSearchPlaceholder = "Search Bank";
 
-export const CashVoucherFieldClassName =
-  "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
-
-export const CashVoucherPdfNoBordersLayout = {
-  hLineWidth: () => 0,
-  vLineWidth: () => 0,
-  paddingLeft: () => 0,
-  paddingRight: () => 0,
-  paddingTop: () => 0,
-  paddingBottom: () => 0,
-};
-
-export const CashVoucherPdfOuterLayout = {
-  ...CashVoucherPdfNoBordersLayout,
-  hLineWidth: () => 1,
-  vLineWidth: () => 1,
-};
-
-export const CashVoucherPdfThinGridLayout = {
-  ...CashVoucherPdfNoBordersLayout,
-  hLineWidth: () => 0.35,
-  vLineWidth: () => 0.35,
-};
+export const CashVoucherCopySources: CashVoucherCopySource[] = [
+  "Accounts Payable Voucher",
+  "Advances to Suppliers",
+  "Cash Advance",
+  "Cash Advance Liquidation",
+  "Cash Advance Multiple Entry",
+  "Cash Advance Multiple Entry Liquidation",
+  "Petty Cash Fund",
+  "Petty Cash Replenishment",
+  "Revolving Fund",
+  "Revolving Fund Replenishment",
+  "Revolving Fund Return",
+  "Purchase Order",
+  "Purchase Journal",
+  "Receiving Report",
+];
 
 export const CashVoucherNotFoundCopy = {
   actionLabel: "Return to Cash Vouchers",
@@ -91,16 +78,18 @@ export const CashVoucherActionTabs: {
 ];
 
 export const CashVoucherStatuses = {
-  cancelled: "Cancelled",
-  closed: "Closed",
-  disapproved: "Disapproved",
-  draft: "Draft",
-  forApproval: "For Approval",
-  open: "Open",
-  posted: "Posted",
-} as const;
+  Cancelled: "Cancelled",
+  Closed: "Closed",
+  Disapproved: "Disapproved",
+  Draft: "Draft",
+  ForApproval: "For Approval",
+  Open: "Open",
+  Posted: "Posted",
+} as const satisfies Record<string, CashVoucherStatus>;
 
 export const CashVoucherAllStatusFilter = "all";
+
+export const EditableCashVoucherStatuses: readonly CashVoucherStatus[] = [CashVoucherStatuses.Draft];
 
 export const CashVoucherWorkflowSteps = [
   {
@@ -120,41 +109,42 @@ export const CashVoucherWorkflowSteps = [
   },
 ] as const;
 
-export const CashVoucherStatusFilters = [
-  CashVoucherAllStatusFilter,
-  CashVoucherStatuses.posted,
-  CashVoucherStatuses.forApproval,
-  CashVoucherStatuses.draft,
-  CashVoucherStatuses.disapproved,
-  CashVoucherStatuses.cancelled,
-  CashVoucherStatuses.closed,
-] as const;
+export const CashVoucherRecordStatuses = [
+  CashVoucherStatuses.Draft,
+  CashVoucherStatuses.ForApproval,
+  CashVoucherStatuses.Posted,
+  CashVoucherStatuses.Disapproved,
+  CashVoucherStatuses.Cancelled,
+  CashVoucherStatuses.Closed,
+] as const satisfies readonly CashVoucherStatus[];
+
+export const CashVoucherStatusFilters = [CashVoucherAllStatusFilter, ...CashVoucherRecordStatuses] as const;
 
 export const CashVoucherStatusFilterOptions = [
   { label: "All statuses", value: CashVoucherAllStatusFilter },
   {
-    label: CashVoucherStatuses.posted,
-    value: CashVoucherStatuses.posted,
+    label: "Draft",
+    value: CashVoucherStatuses.Draft,
   },
   {
-    label: CashVoucherStatuses.forApproval,
-    value: CashVoucherStatuses.forApproval,
+    label: "For Approval",
+    value: CashVoucherStatuses.ForApproval,
   },
   {
-    label: CashVoucherStatuses.draft,
-    value: CashVoucherStatuses.draft,
+    label: "Posted",
+    value: CashVoucherStatuses.Posted,
   },
   {
-    label: CashVoucherStatuses.disapproved,
-    value: CashVoucherStatuses.disapproved,
+    label: "Disapproved",
+    value: CashVoucherStatuses.Disapproved,
   },
   {
-    label: CashVoucherStatuses.cancelled,
-    value: CashVoucherStatuses.cancelled,
+    label: "Cancelled",
+    value: CashVoucherStatuses.Cancelled,
   },
   {
-    label: CashVoucherStatuses.closed,
-    value: CashVoucherStatuses.closed,
+    label: "Closed",
+    value: CashVoucherStatuses.Closed,
   },
 ] as const;
 
@@ -203,7 +193,7 @@ export const CashVoucherTableColumns = [
   },
   {
     key: "disburseAmount",
-    label: "Disburse Amount",
+    label: "Total Disbursed",
     className: "",
     size: TransactionOverviewColumnWidths.amount,
   },
@@ -250,9 +240,7 @@ export const CashVoucherTableColumns = [
   },
 ] as const;
 
-export const CashVoucherDefaultColumnOrder = CashVoucherTableColumns.map((column) =>
-  "key" in column ? column.key : "actions",
-);
+export const CashVoucherDefaultColumnOrder = CashVoucherTableColumns.map((column) => ("key" in column ? column.key : "actions"));
 
 export const CashVoucherDefaultColumnVisibility: VisibilityState = {
   currency: false,
@@ -269,31 +257,23 @@ export const CashVoucherDefaultColumnVisibility: VisibilityState = {
 export const CashVoucherDefaultSorting: SortingState = [{ id: "documentDate", desc: true }];
 
 export function canEditCashVoucherStatus(status: CashVoucherStatus) {
-  return status === CashVoucherStatuses.draft;
+  return EditableCashVoucherStatuses.includes(status);
 }
 
 export function canApproveCashVoucherStatus(status: CashVoucherStatus) {
-  return status === CashVoucherStatuses.forApproval || status === CashVoucherStatuses.posted;
+  return status === CashVoucherStatuses.ForApproval || status === CashVoucherStatuses.Posted;
 }
 
 export function canDisapproveCashVoucherStatus(status: CashVoucherStatus) {
-  return status === CashVoucherStatuses.forApproval || status === CashVoucherStatuses.disapproved;
+  return status === CashVoucherStatuses.ForApproval || status === CashVoucherStatuses.Disapproved;
 }
 
 export function canCancelCashVoucherStatus(status: CashVoucherStatus) {
-  return (
-    status === CashVoucherStatuses.draft ||
-    status === CashVoucherStatuses.forApproval ||
-    status === CashVoucherStatuses.cancelled
-  );
+  return status === CashVoucherStatuses.Draft || status === CashVoucherStatuses.ForApproval || status === CashVoucherStatuses.Cancelled;
 }
 
-export function getCashVoucherStatusDialogCopy(
-  status: CashVoucherStatus,
-  recordLabel: string,
-  currentStatus?: CashVoucherStatus,
-) {
-  if (status === CashVoucherStatuses.forApproval && currentStatus === CashVoucherStatuses.posted) {
+export function getCashVoucherStatusDialogCopy(status: CashVoucherStatus, recordLabel: string, currentStatus?: CashVoucherStatus) {
+  if (status === CashVoucherStatuses.ForApproval && currentStatus === CashVoucherStatuses.Posted) {
     return {
       confirmLabel: "Undo Approved",
       description: `This will undo the approval of ${recordLabel} and return it to For Approval.`,
@@ -304,7 +284,7 @@ export function getCashVoucherStatusDialogCopy(
     };
   }
 
-  if (status === CashVoucherStatuses.forApproval && currentStatus === CashVoucherStatuses.disapproved) {
+  if (status === CashVoucherStatuses.ForApproval && currentStatus === CashVoucherStatuses.Disapproved) {
     return {
       confirmLabel: "Undo Disapproved",
       description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,
@@ -315,7 +295,7 @@ export function getCashVoucherStatusDialogCopy(
     };
   }
 
-  if (currentStatus === CashVoucherStatuses.cancelled) {
+  if (currentStatus === CashVoucherStatuses.Cancelled) {
     return {
       confirmLabel: "Undo Cancelled",
       description: `This will undo the cancellation of ${recordLabel}.`,
@@ -326,7 +306,7 @@ export function getCashVoucherStatusDialogCopy(
     };
   }
 
-  if (status === CashVoucherStatuses.posted) {
+  if (status === CashVoucherStatuses.Posted) {
     return {
       confirmLabel: "Approve Voucher",
       description: `This will approve ${recordLabel} and update its status to Posted.`,
@@ -337,7 +317,7 @@ export function getCashVoucherStatusDialogCopy(
     };
   }
 
-  if (status === CashVoucherStatuses.disapproved) {
+  if (status === CashVoucherStatuses.Disapproved) {
     return {
       confirmLabel: "Disapprove Voucher",
       description: `This will mark ${recordLabel} as Disapproved.`,
@@ -357,5 +337,3 @@ export function getCashVoucherStatusDialogCopy(
     tone: "warning" as const,
   };
 }
-
-

@@ -49,22 +49,22 @@ function createPettyCashVoucherStatusActionItems({
   status: PettyCashVoucherFormStatus;
   onRequestStatus: (status: PettyCashVoucherStatus) => void;
 }) {
-  const isPosted = status === PettyCashVoucherStatuses.posted;
-  const isDisapproved = status === PettyCashVoucherStatuses.disapproved;
-  const isCancelled = status === PettyCashVoucherStatuses.cancelled;
+  const isPosted = status === PettyCashVoucherStatuses.Posted;
+  const isDisapproved = status === PettyCashVoucherStatuses.Disapproved;
+  const isCancelled = status === PettyCashVoucherStatuses.Cancelled;
   const actions: ModuleActionMenuItem[] = [
     {
       disabled: !canApprovePettyCashVoucherStatus(status),
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () => onRequestStatus(isPosted ? PettyCashVoucherStatuses.forApproval : PettyCashVoucherStatuses.posted),
+      onSelect: () => onRequestStatus(isPosted ? PettyCashVoucherStatuses.ForApproval : PettyCashVoucherStatuses.Posted),
       type: "button",
     },
     {
       disabled: !canDisapprovePettyCashVoucherStatus(status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () => onRequestStatus(isDisapproved ? PettyCashVoucherStatuses.forApproval : PettyCashVoucherStatuses.disapproved),
+      onSelect: () => onRequestStatus(isDisapproved ? PettyCashVoucherStatuses.ForApproval : PettyCashVoucherStatuses.Disapproved),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
@@ -72,7 +72,7 @@ function createPettyCashVoucherStatusActionItems({
       disabled: !canCancelPettyCashVoucherStatus(status),
       icon: isCancelled ? Undo2 : Ban,
       label: isCancelled ? "Undo Cancelled" : "Cancel",
-      onSelect: () => onRequestStatus(isCancelled ? PettyCashVoucherStatuses.forApproval : PettyCashVoucherStatuses.cancelled),
+      onSelect: () => onRequestStatus(isCancelled ? PettyCashVoucherStatuses.ForApproval : PettyCashVoucherStatuses.Cancelled),
       tone: isCancelled ? "default" : "danger",
       type: "button",
     },

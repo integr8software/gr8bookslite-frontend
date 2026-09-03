@@ -47,11 +47,11 @@ function createCashAdvanceHistory(record?: CashAdvanceRecord | null): ModuleHist
       createdAt,
       description: `${record.transNo} was created.`,
       id: `ca-history-${record.id}-created`,
-      status: CashAdvanceStatuses.draft,
+      status: CashAdvanceStatuses.Draft,
     },
   ];
 
-  if (updatedAt !== createdAt || record.status !== CashAdvanceStatuses.draft) {
+  if (updatedAt !== createdAt || record.status !== CashAdvanceStatuses.Draft) {
     history.push({
       action: "Updated",
       actor: record.updatedBy ?? record.createdBy ?? "System",

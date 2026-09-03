@@ -2,10 +2,10 @@ import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import type { TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 import {
-  DisbursementVoucherPdfNoBordersLayout,
-  DisbursementVoucherPdfOuterLayout,
-  DisbursementVoucherPdfThinGridLayout,
-} from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
+  ReportPdfNoBordersLayout,
+  ReportPdfOuterBorderLayout,
+  ReportPdfThinGridLayout,
+} from "@/app/src/constants/shared/reports/ReportPdfLayoutConstants";
 import { formatCurrency } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import type {
   DisbursementLineEntry,
@@ -45,7 +45,7 @@ function createDisbursementVoucherPdfDefinition(values: DisbursementVoucherFormV
             [createPaymentReceivedRow()],
           ],
         },
-        layout: DisbursementVoucherPdfOuterLayout,
+        layout: ReportPdfOuterBorderLayout,
       },
     ],
   };
@@ -97,7 +97,7 @@ function createHeaderTable(): TableCell {
         ],
       ],
     },
-    layout: DisbursementVoucherPdfNoBordersLayout,
+    layout: ReportPdfNoBordersLayout,
   };
 }
 
@@ -120,7 +120,7 @@ function createTitleAndDateRow(values: DisbursementVoucherFormValues): TableCell
         ],
       ],
     },
-    layout: DisbursementVoucherPdfThinGridLayout,
+    layout: ReportPdfThinGridLayout,
   };
 }
 
@@ -161,7 +161,7 @@ function createTwoColumnInfoRow(leftText: DisbursementVoucherPdfText, rightText:
         ],
       ],
     },
-    layout: DisbursementVoucherPdfThinGridLayout,
+    layout: ReportPdfThinGridLayout,
   };
 }
 
@@ -222,7 +222,7 @@ function createEntriesTable(values: DisbursementVoucherFormValues): TableCell {
       widths: [145, 110, "*", 80, 70, 70],
       body,
     },
-    layout: DisbursementVoucherPdfThinGridLayout,
+    layout: ReportPdfThinGridLayout,
   };
 }
 
@@ -263,7 +263,7 @@ function createApprovalTable(values: DisbursementVoucherFormValues): TableCell {
         ],
       ],
     },
-    layout: DisbursementVoucherPdfThinGridLayout,
+    layout: ReportPdfThinGridLayout,
   };
 }
 

@@ -150,10 +150,12 @@ function mapSetupModeToApi(value: ServicesMaintenanceAccountSetupMode): CreateSe
   return value === "Auto" ? "AUTO" : "EXISTING";
 }
 
-function mapServiceTypeFromApi(value: ServiceMaintenanceResponseDtoServiceType): ServicesMaintenanceServiceType {
-  return value === "PURCHASES" ? "Purchases" : "Sales";
+function mapServiceTypeFromApi(
+  value: ServiceMaintenanceResponseDtoServiceType | ServiceMaintenanceOptionResponseDtoServiceType,
+): ServicesMaintenanceServiceType {
+  return value === "PURCHASES" ? "Purchase of Service" : "Sale of Service";
 }
 
 function mapServiceTypeToApi(value: ServicesMaintenanceServiceType): CreateServiceMaintenanceDtoServiceType {
-  return value === "Purchases" ? "PURCHASES" : "SALES";
+  return value === "Purchase of Service" ? "PURCHASES" : "SALES";
 }

@@ -4,12 +4,16 @@ import { Suspense, useMemo } from "react";
 import type { ReactNode } from "react";
 import {
   DisbursementVoucherActionTabs,
+  DisbursementVoucherCopySources,
   DisbursementVoucherPaymentInformationErrorFields,
   DisbursementVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import { createProjectResponsibilityCenterInitialValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { useDisbursementVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucherActionPage";
-import type { DisbursementVoucherActionMode, DisbursementVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type {
+  DisbursementVoucherActionMode,
+  DisbursementVoucherActionPageState,
+} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { BankMasterfileDrawer } from "@/app/src/ui/modules/financial-maintenance/bank-masterfile/BankMasterfileDrawer";
 import { DefaultAccountDrawer } from "@/app/src/ui/modules/financial-maintenance/default-account/DefaultAccountDrawer";
 import { PaymentTypeDrawer } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeDrawer";
@@ -73,9 +77,7 @@ function DisbursementVoucherActionShell({
 function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: DisbursementVoucherActionPageState }) {
   const paymentTypeDetailKind = getPaymentTypeDetailKind(voucherAction.values.paymentMethod, voucherAction.selectedPaymentTypeRecord);
   const shouldShowPaymentInformation = paymentTypeDetailKind !== "" && paymentTypeDetailKind !== "cash";
-  const hasPaymentInformationError = DisbursementVoucherPaymentInformationErrorFields.some(
-    (field) => Boolean(voucherAction.errors[field]),
-  );
+  const hasPaymentInformationError = DisbursementVoucherPaymentInformationErrorFields.some((field) => Boolean(voucherAction.errors[field]));
   const hasDetailsError = Object.entries(voucherAction.errors).some(
     ([field, error]) =>
       Boolean(error) &&
@@ -85,23 +87,25 @@ function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: Di
       ),
   );
   const hasAttachmentsError = Boolean(voucherAction.errors.attachments);
-  const actionTabs = DisbursementVoucherActionTabs.filter(
-    (tab) => tab.id !== "payment-information" || shouldShowPaymentInformation,
-  ).map((tab) => ({
-    ...tab,
-    hasError:
-      tab.id === "details"
-        ? hasDetailsError
-        : tab.id === "payment-information"
-          ? hasPaymentInformationError
-          : tab.id === "attachments"
-            ? hasAttachmentsError
-            : false,
-  }));
+  const actionTabs = DisbursementVoucherActionTabs.filter((tab) => tab.id !== "payment-information" || shouldShowPaymentInformation).map(
+    (tab) => ({
+      ...tab,
+      hasError:
+        tab.id === "details"
+          ? hasDetailsError
+          : tab.id === "payment-information"
+            ? hasPaymentInformationError
+            : tab.id === "attachments"
+              ? hasAttachmentsError
+              : false,
+    }),
+  );
 
   return (
     <>
       <DisbursementVoucherActionHeader
+        copyFromRecords={voucherAction.copyFromRecords}
+        copyFromSources={DisbursementVoucherCopySources}
         hasDiscardableChanges={voucherAction.hasDiscardableChanges}
         mode={voucherAction.isReadonly ? "view" : voucherAction.mode}
         isSubmitting={voucherAction.isSubmitting}
@@ -113,9 +117,10 @@ function DisbursementVoucherActionContent({ voucherAction }: { voucherAction: Di
         onDiscard={voucherAction.discardDraft}
         onCancelSubmit={voucherAction.cancelDisbursementVoucherSubmit}
         onConfirmSubmit={voucherAction.confirmDisbursementVoucherSubmit}
+        onCopyFrom={voucherAction.handleCopyFrom}
         onPreview={() => voucherAction.setIsReportPreviewOpen(true)}
-        onSaveDraft={() => voucherAction.requestDisbursementVoucherSubmit(DisbursementVoucherStatuses.draft)}
-        onSubmit={() => voucherAction.requestDisbursementVoucherSubmit(DisbursementVoucherStatuses.forApproval)}
+        onSaveDraft={() => voucherAction.requestDisbursementVoucherSubmit(DisbursementVoucherStatuses.Draft)}
+        onSubmit={() => voucherAction.requestDisbursementVoucherSubmit(DisbursementVoucherStatuses.ForApproval)}
         onUpdateStatus={voucherAction.handleUpdateStatus}
       />
       <ModuleTabs

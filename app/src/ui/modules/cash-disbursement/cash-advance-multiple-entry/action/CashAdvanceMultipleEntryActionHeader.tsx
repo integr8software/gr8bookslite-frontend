@@ -64,7 +64,7 @@ export function CashAdvanceMultipleEntryActionHeader({
   const statusDialogCopy = statusToConfirm
     ? getCashAdvanceMultipleEntryStatusDialogCopy(statusToConfirm, recordLabel, approvalRecord?.status)
     : null;
-  const isDraftEdit = mode === "edit" && record?.status === CashAdvanceMultipleEntryStatuses.draft;
+  const isDraftEdit = mode === "edit" && record?.status === CashAdvanceMultipleEntryStatuses.Draft;
   const isSaveAction = mode === "add" || isDraftEdit;
   const title =
     mode === "add" ? (
@@ -120,7 +120,7 @@ export function CashAdvanceMultipleEntryActionHeader({
                 disabled={isSubmitting}
                 label={isSaveAction ? "Save" : "Update"}
                 onAction={() => {
-                  if (onValidate ? onValidate(CashAdvanceMultipleEntryStatuses.forApproval) : true) {
+                  if (onValidate ? onValidate(CashAdvanceMultipleEntryStatuses.ForApproval) : true) {
                     if (availabilityWarning) {
                       setIsAvailabilityWarningOpen(true);
                     } else {
@@ -134,7 +134,7 @@ export function CashAdvanceMultipleEntryActionHeader({
                         {
                           label: "Save As Draft",
                           onSelect: () => {
-                            if (onValidate ? onValidate(CashAdvanceMultipleEntryStatuses.draft) : true) {
+                            if (onValidate ? onValidate(CashAdvanceMultipleEntryStatuses.Draft) : true) {
                               setSubmitConfirmation("draft");
                             }
                           },

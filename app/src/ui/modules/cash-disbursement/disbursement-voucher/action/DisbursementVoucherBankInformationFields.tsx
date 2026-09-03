@@ -1,7 +1,6 @@
-import { DisbursementVoucherFieldClassName } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
 import type { DisbursementVoucherBankInformationFieldsProps } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
-import { TransactionField } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
+import { TransactionField, TransactionFieldClassName } from "@/app/src/ui/shared/transaction-setup/TransactionFormFields";
 import {
   DisbursementVoucherPaymentFields,
   getPaymentTypeDetailKind,
@@ -56,7 +55,7 @@ export function DisbursementVoucherBankInformationFields({
                   id="disbursement-voucher-payment-check-status"
                   value={values.paymentDetails.checkStatus ?? ""}
                   readOnly
-                  className={`${DisbursementVoucherFieldClassName} !bg-darknavy/5 text-darknavy/60`}
+                  className={`${TransactionFieldClassName} !bg-darknavy/5 text-darknavy/60`}
                 />
               </TransactionField>
               <TransactionField
@@ -71,7 +70,7 @@ export function DisbursementVoucherBankInformationFields({
                   value={values.paymentDetails.checkDate || values.voucherDate}
                   readOnly={isReadonly}
                   onChange={(event) => onUpdatePaymentDetails({ checkDate: event.target.value })}
-                  className={DisbursementVoucherFieldClassName}
+                  className={TransactionFieldClassName}
                 />
               </TransactionField>
               <TransactionField label={isDebitMemo ? "Multi Debit Memo No." : "Multi Check No."}>

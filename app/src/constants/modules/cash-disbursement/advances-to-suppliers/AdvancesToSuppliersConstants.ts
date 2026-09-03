@@ -1,8 +1,10 @@
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
+  AdvancesToSuppliersActionMode,
   AdvancesToSuppliersActionTab,
   AdvancesToSuppliersConfirmationAction,
+  AdvancesToSuppliersFormStatus,
   AdvancesToSuppliersPaymentType,
   AdvancesToSuppliersStatus,
 } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
@@ -12,9 +14,15 @@ export const AdvancesToSuppliersLink = getModuleRoute("ATS");
 export const AdvancesToSuppliersAddLink = `${AdvancesToSuppliersLink}/add`;
 export const getAdvancesToSuppliersEditLink = (recordId: string) => `${AdvancesToSuppliersLink}/edit/${recordId}`;
 export const getAdvancesToSuppliersViewLink = (recordId: string) => `${AdvancesToSuppliersLink}/view/${recordId}`;
+
+export const AdvancesToSuppliersActionModes = {
+  Add: "add",
+  Edit: "edit",
+  View: "view",
+} as const satisfies Record<string, AdvancesToSuppliersActionMode>;
 export const AdvancesToSuppliersStorageKey = "cash-disbursement-advances-to-suppliers-records";
 export const AdvancesToSuppliersPaginationStorageKey = "cash-disbursement-advances-to-suppliers-table";
-export const AdvancesToSuppliersTransactionPrefix = "ATS";
+
 export const AdvancesToSuppliersColumnLabels = {
   transactionNo: "Advances To Suppliers No.",
   documentDate: "Document Date",
@@ -33,6 +41,7 @@ export const AdvancesToSuppliersColumnLabels = {
   status: "Status",
   actions: "Actions",
 } as const;
+
 export const AdvancesToSuppliersOverviewColumnWidths: Record<keyof typeof AdvancesToSuppliersColumnLabels, number> = {
   transactionNo: TransactionOverviewColumnWidths.transactionNumber,
   documentDate: TransactionOverviewColumnWidths.documentDate,
@@ -59,36 +68,59 @@ export const AdvancesToSuppliersDefaultVisibleColumnIds = [
   "status",
   "actions",
 ] as const;
+
 export const AdvancesToSuppliersDefaultColumnVisibility = Object.fromEntries(
   Object.keys(AdvancesToSuppliersColumnLabels).map((columnId) => [
     columnId,
     AdvancesToSuppliersDefaultVisibleColumnIds.includes(columnId as (typeof AdvancesToSuppliersDefaultVisibleColumnIds)[number]),
   ]),
 );
+
 export const AdvancesToSuppliersStatuses = {
-  cancelled: "Cancelled",
-  disapproved: "Disapproved",
-  draft: "Draft",
-  forApproval: "For Approval",
-  open: "Open",
-  posted: "Posted",
-} as const;
+  Cancelled: "Cancelled",
+  Disapproved: "Disapproved",
+  Draft: "Draft",
+  ForApproval: "For Approval",
+  Open: "Open",
+  Posted: "Posted",
+} as const satisfies Record<string, AdvancesToSuppliersFormStatus>;
+
 export const AdvancesToSuppliersRecordStatuses = [
-  "Posted",
-  "For Approval",
-  "Draft",
-  "Disapproved",
-  "Cancelled",
+  AdvancesToSuppliersStatuses.Draft,
+  AdvancesToSuppliersStatuses.ForApproval,
+  AdvancesToSuppliersStatuses.Posted,
+  AdvancesToSuppliersStatuses.Disapproved,
+  AdvancesToSuppliersStatuses.Cancelled,
 ] as const satisfies readonly AdvancesToSuppliersStatus[];
-export const AdvancesToSuppliersStatusOptions = ["All", ...AdvancesToSuppliersRecordStatuses] as const;
+
+export const EditableAdvancesToSuppliersStatuses: readonly AdvancesToSuppliersStatus[] = [
+  AdvancesToSuppliersStatuses.Draft,
+  AdvancesToSuppliersStatuses.Disapproved,
+];
+
+export const AdvancesToSuppliersAllStatusFilter = "all";
+
+export const AdvancesToSuppliersStatusFilterOptions = [
+  { label: "All statuses", value: AdvancesToSuppliersAllStatusFilter },
+  { label: "Draft", value: AdvancesToSuppliersStatuses.Draft },
+  { label: "For Approval", value: AdvancesToSuppliersStatuses.ForApproval },
+  { label: "Posted", value: AdvancesToSuppliersStatuses.Posted },
+  { label: "Disapproved", value: AdvancesToSuppliersStatuses.Disapproved },
+  { label: "Cancelled", value: AdvancesToSuppliersStatuses.Cancelled },
+] as const;
+
+export const AdvancesToSuppliersStatusFilters = [AdvancesToSuppliersAllStatusFilter, ...AdvancesToSuppliersRecordStatuses] as const;
+
 export const AdvancesToSuppliersPaymentTypeOptions = [
   "Percentage",
   "Fixed Amount",
 ] as const satisfies readonly AdvancesToSuppliersPaymentType[];
+
 export const AdvancesToSuppliersPaymentTypeDropdownOptions: AppAdvancedDropdownOption[] = [
   { label: "Percentage", name: "Percentage", value: "Percentage" },
   { label: "Fixed Amount", name: "Fixed Amount", value: "Fixed Amount" },
 ];
+
 export const AdvancesToSuppliersConfirmationDialogTitles: Record<AdvancesToSuppliersConfirmationAction, string> = {
   save: "Save Advances to Suppliers?",
   draft: "Save Advances to Suppliers as Draft?",
@@ -96,6 +128,7 @@ export const AdvancesToSuppliersConfirmationDialogTitles: Record<AdvancesToSuppl
   disapprove: "Disapprove Advances to Suppliers?",
   cancel: "Cancel Advances to Suppliers?",
 };
+
 export const AdvancesToSuppliersConfirmationDialogConfirmLabels: Record<AdvancesToSuppliersConfirmationAction, string> = {
   save: "Save and Submit",
   draft: "Save as Draft",
@@ -103,6 +136,7 @@ export const AdvancesToSuppliersConfirmationDialogConfirmLabels: Record<Advances
   disapprove: "Disapprove",
   cancel: "Cancel",
 };
+
 export const AdvancesToSuppliersActionTabs: {
   id: AdvancesToSuppliersActionTab;
   label: string;
@@ -111,8 +145,5 @@ export const AdvancesToSuppliersActionTabs: {
   { id: "attachments", label: "File Attachments" },
 ];
 export function canEditAdvancesToSuppliers(status: AdvancesToSuppliersStatus) {
-  return (
-    status === AdvancesToSuppliersStatuses.draft ||
-    status === AdvancesToSuppliersStatuses.disapproved
-  );
+  return EditableAdvancesToSuppliersStatuses.includes(status);
 }

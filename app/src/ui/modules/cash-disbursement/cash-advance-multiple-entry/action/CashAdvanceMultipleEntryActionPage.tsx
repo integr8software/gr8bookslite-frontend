@@ -115,10 +115,10 @@ function CashAdvanceMultipleEntryActionInner({ mode }: { mode: CashAdvanceMultip
           record={form.record}
           onPreview={() => setIsReportPreviewOpen(true)}
           onSaveDraft={() => {
-            void form.submitEntry(CashAdvanceMultipleEntryStatuses.draft);
+            void form.submitEntry(CashAdvanceMultipleEntryStatuses.Draft);
           }}
           onSubmit={() => {
-            void form.submitEntry(CashAdvanceMultipleEntryStatuses.forApproval);
+            void form.submitEntry(CashAdvanceMultipleEntryStatuses.ForApproval);
           }}
           onUpdateStatus={form.updateEntryStatus}
           onValidate={form.validateEntry}

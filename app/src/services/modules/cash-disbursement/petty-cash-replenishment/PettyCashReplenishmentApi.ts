@@ -15,7 +15,6 @@ import {
   fetchMaintenancePostingAccountOptions,
   fetchMaintenanceResponsibilityCenterOptions,
 } from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
-import { CashDisbursementApiAllStatusFilter } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { PettyCashReplenishmentStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentConstants";
 import type {
   CreatePettyCashReplenishmentDto,
@@ -67,7 +66,7 @@ type MappedPettyCashReplenishmentListResponse = Omit<PettyCashReplenishmentListR
 };
 
 export const StatusFromApi: Record<string, PettyCashReplenishmentStatus> = {
-  DRAFT: PettyCashReplenishmentStatuses.draft,
+  DRAFT: PettyCashReplenishmentStatuses.Draft,
   FOR_APPROVAL: "For Approval",
   APPROVED: "For Approval",
   POSTED: "Posted",
@@ -109,7 +108,7 @@ export function mapPettyCashReplenishmentRecordFromDto(dto: PettyCashReplenishme
   const formValues: PettyCashReplenishmentFormValues = {
     transactionNo: dto.transactionNo,
     documentDate: dto.documentDate,
-    status: StatusFromApi[dto.status] ?? PettyCashReplenishmentStatuses.draft,
+    status: StatusFromApi[dto.status] ?? PettyCashReplenishmentStatuses.Draft,
     partyCode: dto.partyCodeSnapshot ?? "",
     partyName: dto.partyNameSnapshot ?? "",
     responsibilityCenter: dto.responsibilityCenterSnapshot ?? "",
@@ -142,7 +141,7 @@ export function mapPettyCashReplenishmentRecordFromDto(dto: PettyCashReplenishme
     amount: totals.totalAmount || (typeof dto.amount === "number" ? dto.amount : Number(dto.amount ?? 0)),
     disburseAmount: totals.disburseAmount || Number(dtoExtras.disburseAmount ?? dto.amount ?? 0),
     remarks: dto.remarks ?? "",
-    status: StatusFromApi[dto.status] ?? PettyCashReplenishmentStatuses.draft,
+    status: StatusFromApi[dto.status] ?? PettyCashReplenishmentStatuses.Draft,
     createdBy: createdUser ? `${createdUser.firstName ?? ""} ${createdUser.lastName ?? ""}`.trim() : "",
     createdAt: dto.createdAt,
     updatedBy: updatedUser ? `${updatedUser.firstName ?? ""} ${updatedUser.lastName ?? ""}`.trim() : "",
@@ -153,7 +152,7 @@ export function mapPettyCashReplenishmentRecordFromDto(dto: PettyCashReplenishme
 
 export function mapPettyCashReplenishmentFormValuesToCreateDto(values: PettyCashReplenishmentFormValues): CreatePettyCashReplenishmentDto {
   const entries =
-    values.status === PettyCashReplenishmentStatuses.draft
+    values.status === PettyCashReplenishmentStatuses.Draft
       ? (values.entries ?? []).filter(isPettyCashReplenishmentEntryPopulated)
       : (values.entries ?? []);
   const details = entries.map((item, index) => ({
@@ -231,7 +230,7 @@ export async function fetchPettyCashReplenishmentList(
     sortOrder: params?.sortOrder,
   };
 
-  if (params?.status && params.status !== CashDisbursementApiAllStatusFilter) {
+  if (params?.status && params.status !== "all" && params.status !== "All") {
     queryParams.status = (StatusToApi[params.status as PettyCashReplenishmentStatus] ??
       params.status) as PettyCashReplenishmentQueryParams["status"];
   }

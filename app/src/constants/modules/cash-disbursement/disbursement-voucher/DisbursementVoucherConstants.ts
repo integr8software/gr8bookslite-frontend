@@ -4,6 +4,7 @@ import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/modu
 import type {
   DisbursementVoucherActionMode,
   DisbursementVoucherActionTab,
+  DisbursementVoucherCopySource,
   DisbursementVoucherPaymentErrorField,
   DisbursementVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
@@ -13,13 +14,9 @@ export function getDisbursementVoucherSubmitDialogCopy(
   status: DisbursementVoucherStatus,
   recordLabel = "this disbursement voucher",
 ) {
-  const isDraft = status === DisbursementVoucherStatuses.draft;
-  const isEdit = mode === "edit";
-  const title = isEdit
-    ? "Update Disbursement Voucher?"
-    : isDraft
-      ? "Save Disbursement Voucher as Draft?"
-      : "Save Disbursement Voucher?";
+  const isDraft = status === DisbursementVoucherStatuses.Draft;
+  const isEdit = mode === DisbursementVoucherActionModes.Edit;
+  const title = isEdit ? "Update Disbursement Voucher?" : isDraft ? "Save Disbursement Voucher as Draft?" : "Save Disbursement Voucher?";
   const description = isEdit
     ? `This will update ${recordLabel}.`
     : isDraft
@@ -41,40 +38,38 @@ export const DisbursementVoucherAddLink = `${DisbursementVoucherLink}/add`;
 export const getDisbursementVoucherEditLink = (recordId: string) => `${DisbursementVoucherLink}/edit/${recordId}`;
 export const getDisbursementVoucherViewLink = (recordId: string) => `${DisbursementVoucherLink}/view/${recordId}`;
 
+export const DisbursementVoucherActionModes = {
+  Add: "add",
+  Edit: "edit",
+  View: "view",
+} as const satisfies Record<string, DisbursementVoucherActionMode>;
+
 export const DisbursementVoucherTablePaginationStorageKey = "cash-disbursement-disbursement-voucher";
 
 export const DisbursementVoucherTablePreferencesStorageKey = "gr8booksneo:disbursement-voucher:table-preferences";
 export const DisbursementVoucherTablePreferencesModuleKey = "cash-disbursement:disbursement-voucher";
 export const DisbursementVoucherTransactionStorageKey = "gr8books.disbursement-voucher.transactions";
 export const DisbursementVoucherRecordStorageKey = "gr8books.disbursement-voucher.vouchers";
-export const DisbursementVoucherAccountingGridSessionStorageKey = "gr8books.disbursementVoucher.accountingGrid";
 
 export const DisbursementVoucherBankSelectPlaceholder = "--Select Bank--";
 export const DisbursementVoucherBankSearchPlaceholder = "Search bank";
 
-export const DisbursementVoucherFieldClassName =
-  "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
-
-export const DisbursementVoucherPdfNoBordersLayout = {
-  hLineWidth: () => 0,
-  vLineWidth: () => 0,
-  paddingLeft: () => 0,
-  paddingRight: () => 0,
-  paddingTop: () => 0,
-  paddingBottom: () => 0,
-};
-
-export const DisbursementVoucherPdfOuterLayout = {
-  ...DisbursementVoucherPdfNoBordersLayout,
-  hLineWidth: () => 1,
-  vLineWidth: () => 1,
-};
-
-export const DisbursementVoucherPdfThinGridLayout = {
-  ...DisbursementVoucherPdfNoBordersLayout,
-  hLineWidth: () => 0.35,
-  vLineWidth: () => 0.35,
-};
+export const DisbursementVoucherCopySources: DisbursementVoucherCopySource[] = [
+  "Accounts Payable Voucher",
+  "Advances to Suppliers",
+  "Cash Advance",
+  "Cash Advance Liquidation",
+  "Cash Advance Multiple Entry",
+  "Cash Advance Multiple Entry Liquidation",
+  "Petty Cash Fund",
+  "Petty Cash Replenishment",
+  "Revolving Fund",
+  "Revolving Fund Replenishment",
+  "Revolving Fund Return",
+  "Purchase Order",
+  "Purchase Journal",
+  "Receiving Report",
+];
 
 export const DisbursementVoucherNotFoundCopy = {
   actionLabel: "Return to Disbursement Vouchers",
@@ -101,16 +96,18 @@ export const DisbursementVoucherPaymentInformationErrorFields = [
 ] as const satisfies readonly DisbursementVoucherPaymentErrorField[];
 
 export const DisbursementVoucherStatuses = {
-  cancelled: "Cancelled",
-  closed: "Closed",
-  disapproved: "Disapproved",
-  draft: "Draft",
-  forApproval: "For Approval",
-  open: "Open",
-  posted: "Posted",
-} as const;
+  Cancelled: "Cancelled",
+  Closed: "Closed",
+  Disapproved: "Disapproved",
+  Draft: "Draft",
+  ForApproval: "For Approval",
+  Open: "Open",
+  Posted: "Posted",
+} as const satisfies Record<string, DisbursementVoucherStatus>;
 
 export const DisbursementVoucherAllStatusFilter = "all";
+
+export const EditableDisbursementVoucherStatuses: readonly DisbursementVoucherStatus[] = [DisbursementVoucherStatuses.Draft];
 
 export const DisbursementVoucherWorkflowSteps = [
   {
@@ -130,41 +127,45 @@ export const DisbursementVoucherWorkflowSteps = [
   },
 ] as const;
 
+export const DisbursementVoucherRecordStatuses = [
+  DisbursementVoucherStatuses.Draft,
+  DisbursementVoucherStatuses.ForApproval,
+  DisbursementVoucherStatuses.Posted,
+  DisbursementVoucherStatuses.Disapproved,
+  DisbursementVoucherStatuses.Cancelled,
+  DisbursementVoucherStatuses.Closed,
+] as const satisfies readonly DisbursementVoucherStatus[];
+
 export const DisbursementVoucherStatusFilters = [
   DisbursementVoucherAllStatusFilter,
-  DisbursementVoucherStatuses.posted,
-  DisbursementVoucherStatuses.forApproval,
-  DisbursementVoucherStatuses.draft,
-  DisbursementVoucherStatuses.disapproved,
-  DisbursementVoucherStatuses.cancelled,
-  DisbursementVoucherStatuses.closed,
+  ...DisbursementVoucherRecordStatuses,
 ] as const;
 
 export const DisbursementVoucherStatusFilterOptions = [
   { label: "All statuses", value: DisbursementVoucherAllStatusFilter },
   {
-    label: DisbursementVoucherStatuses.posted,
-    value: DisbursementVoucherStatuses.posted,
+    label: "Draft",
+    value: DisbursementVoucherStatuses.Draft,
   },
   {
-    label: DisbursementVoucherStatuses.forApproval,
-    value: DisbursementVoucherStatuses.forApproval,
+    label: "For Approval",
+    value: DisbursementVoucherStatuses.ForApproval,
   },
   {
-    label: DisbursementVoucherStatuses.draft,
-    value: DisbursementVoucherStatuses.draft,
+    label: "Posted",
+    value: DisbursementVoucherStatuses.Posted,
   },
   {
-    label: DisbursementVoucherStatuses.disapproved,
-    value: DisbursementVoucherStatuses.disapproved,
+    label: "Disapproved",
+    value: DisbursementVoucherStatuses.Disapproved,
   },
   {
-    label: DisbursementVoucherStatuses.cancelled,
-    value: DisbursementVoucherStatuses.cancelled,
+    label: "Cancelled",
+    value: DisbursementVoucherStatuses.Cancelled,
   },
   {
-    label: DisbursementVoucherStatuses.closed,
-    value: DisbursementVoucherStatuses.closed,
+    label: "Closed",
+    value: DisbursementVoucherStatuses.Closed,
   },
 ] as const;
 
@@ -213,7 +214,7 @@ export const DisbursementVoucherTableColumns = [
   },
   {
     key: "disburseAmount",
-    label: "Disburse Amount",
+    label: "Total Disbursed",
     className: "",
     size: TransactionOverviewColumnWidths.amount,
   },
@@ -278,22 +279,22 @@ export const DisbursementVoucherDefaultColumnVisibility: VisibilityState = {
 export const DisbursementVoucherDefaultSorting: SortingState = [{ id: "documentDate", desc: true }];
 
 export function canEditDisbursementVoucherStatus(status: DisbursementVoucherStatus) {
-  return status === DisbursementVoucherStatuses.draft;
+  return EditableDisbursementVoucherStatuses.includes(status);
 }
 
 export function canApproveDisbursementVoucherStatus(status: DisbursementVoucherStatus) {
-  return status === DisbursementVoucherStatuses.forApproval || status === DisbursementVoucherStatuses.posted;
+  return status === DisbursementVoucherStatuses.ForApproval || status === DisbursementVoucherStatuses.Posted;
 }
 
 export function canDisapproveDisbursementVoucherStatus(status: DisbursementVoucherStatus) {
-  return status === DisbursementVoucherStatuses.forApproval || status === DisbursementVoucherStatuses.disapproved;
+  return status === DisbursementVoucherStatuses.ForApproval || status === DisbursementVoucherStatuses.Disapproved;
 }
 
 export function canCancelDisbursementVoucherStatus(status: DisbursementVoucherStatus) {
   return (
-    status === DisbursementVoucherStatuses.draft ||
-    status === DisbursementVoucherStatuses.forApproval ||
-    status === DisbursementVoucherStatuses.cancelled
+    status === DisbursementVoucherStatuses.Draft ||
+    status === DisbursementVoucherStatuses.ForApproval ||
+    status === DisbursementVoucherStatuses.Cancelled
   );
 }
 
@@ -302,7 +303,7 @@ export function getDisbursementVoucherStatusDialogCopy(
   recordLabel: string,
   currentStatus?: DisbursementVoucherStatus,
 ) {
-  if (status === DisbursementVoucherStatuses.forApproval && currentStatus === DisbursementVoucherStatuses.posted) {
+  if (status === DisbursementVoucherStatuses.ForApproval && currentStatus === DisbursementVoucherStatuses.Posted) {
     return {
       confirmLabel: "Undo Approved",
       description: `This will undo the approval of ${recordLabel} and return it to For Approval.`,
@@ -313,7 +314,7 @@ export function getDisbursementVoucherStatusDialogCopy(
     };
   }
 
-  if (status === DisbursementVoucherStatuses.forApproval && currentStatus === DisbursementVoucherStatuses.disapproved) {
+  if (status === DisbursementVoucherStatuses.ForApproval && currentStatus === DisbursementVoucherStatuses.Disapproved) {
     return {
       confirmLabel: "Undo Disapproved",
       description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,
@@ -324,7 +325,7 @@ export function getDisbursementVoucherStatusDialogCopy(
     };
   }
 
-  if (currentStatus === DisbursementVoucherStatuses.cancelled) {
+  if (currentStatus === DisbursementVoucherStatuses.Cancelled) {
     return {
       confirmLabel: "Undo Cancelled",
       description: `This will undo the cancellation of ${recordLabel}.`,
@@ -335,7 +336,7 @@ export function getDisbursementVoucherStatusDialogCopy(
     };
   }
 
-  if (status === DisbursementVoucherStatuses.posted) {
+  if (status === DisbursementVoucherStatuses.Posted) {
     return {
       confirmLabel: "Approve Voucher",
       description: `This will approve ${recordLabel} and update its status to Posted.`,
@@ -346,7 +347,7 @@ export function getDisbursementVoucherStatusDialogCopy(
     };
   }
 
-  if (status === DisbursementVoucherStatuses.disapproved) {
+  if (status === DisbursementVoucherStatuses.Disapproved) {
     return {
       confirmLabel: "Disapprove Voucher",
       description: `This will mark ${recordLabel} as Disapproved.`,

@@ -6,11 +6,6 @@ import type {
   PettyCashReplenishmentEntry,
   PettyCashReplenishmentEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTypes";
-import {
-  PettyCashReplenishmentEntryEwtCodeOptions,
-  PettyCashReplenishmentEntryVatTypeOptions,
-  PettyCashReplenishmentResponsibilityCenterOptions,
-} from "@/app/src/constants/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentConstants";
 import { calculatePettyCashReplenishmentEntryTaxFields } from "@/app/src/data/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentData";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { ModuleDataEntryDropdownCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryDropdownCell";
@@ -23,9 +18,12 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 export function createPettyCashReplenishmentLineColumns({
   columnLabels,
   columnWidths,
+  ewtOptions = [],
   onOpenSupplierDrawer,
   page,
+  responsibilityCenterOptions = [],
   supplierOptions = [],
+  vatOptions = [],
 }: PettyCashReplenishmentDetailEntryColumnsParams): Record<
   PettyCashReplenishmentEntryColumnId,
   ModuleDataEntryColumn<PettyCashReplenishmentEntry>
@@ -144,8 +142,8 @@ export function createPettyCashReplenishmentLineColumns({
             const selectedSupplier = supplierOptions.find(
               (option) => option.value === value || option.name === value || option.label === value,
             );
-            const vatType = getDefaultVatType(selectedSupplier, row.vatType, PettyCashReplenishmentEntryVatTypeOptions);
-            const ewtCode = getDefaultEwtCode(selectedSupplier, row.ewtCode, PettyCashReplenishmentEntryEwtCodeOptions);
+            const vatType = getDefaultVatType(selectedSupplier, row.vatType, vatOptions);
+            const ewtCode = getDefaultEwtCode(selectedSupplier, row.ewtCode, ewtOptions);
             page.updateEntry(row.id, {
               supplierCode: String(selectedSupplier?.label ?? selectedSupplier?.value ?? ""),
               supplierName: selectedSupplier?.name ?? String(value),
@@ -164,10 +162,10 @@ export function createPettyCashReplenishmentLineColumns({
       }),
     ),
     netAmount: calculatedMoney("netAmount"),
-    vatType: dropdown("vatType", PettyCashReplenishmentEntryVatTypeOptions),
+    vatType: dropdown("vatType", vatOptions),
     vatPercent: calculatedMoney("vatPercent"),
     vatAmount: calculatedMoney("vatAmount"),
-    ewtCode: dropdown("ewtCode", PettyCashReplenishmentEntryEwtCodeOptions),
+    ewtCode: dropdown("ewtCode", ewtOptions),
     ewtPercent: calculatedMoney("ewtPercent"),
     ewtAmount: calculatedMoney("ewtAmount"),
     disburseAmount: calculatedMoney("disburseAmount"),
@@ -189,11 +187,11 @@ export function createPettyCashReplenishmentLineColumns({
           name={context.fieldName}
           value={row.responsibilityCenterCode}
           readOnly={page.isReadonly}
-          options={PettyCashReplenishmentResponsibilityCenterOptions}
+          options={responsibilityCenterOptions}
           placeholder="Select Responsibility Center"
           searchPlaceholder="Search Responsibility Center"
           onChange={(value) => {
-            const selectedCenter = PettyCashReplenishmentResponsibilityCenterOptions.find(
+            const selectedCenter = responsibilityCenterOptions.find(
               (option) => option.value === value,
             );
             page.updateEntry(row.id, {

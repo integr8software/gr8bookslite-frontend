@@ -21,9 +21,19 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  PartyDefaultClassificationsResponseDto,
+  TaxAutocompleteResponseDto,
+  TaxContainerResponseDto,
   TaxControllerListAutocompleteV1Params,
+  TaxControllerListTaxDefaultAccountOptionsV1Params,
   TaxControllerListTaxesV1Params,
-  TaxControllerListTaxesWithDefaultAccountsV1Params
+  TaxControllerListTaxesWithDefaultAccountsV1Params,
+  TaxDefaultAccountOptionsResponseDto,
+  TaxDefaultAccountsContainerResponseDto,
+  TaxDefaultAccountsListResponseDto,
+  TaxListResponseDto,
+  TaxTransactionTypesResponseDto,
+  TaxTypesResponseDto
 } from '../gR8BooksNeoAPI.schemas';
 
 import { OrvalApiClient } from '../../../services/shared/api/OrvalApiClient';
@@ -48,13 +58,16 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get list of tax records
+ */
 export const taxControllerListTaxesV1 = (
     params?: TaxControllerListTaxesV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
 
 
-      return OrvalApiClient<void>(
+      return OrvalApiClient<TaxListResponseDto>(
       {url: `/api/v1/tax`, method: 'GET',
         params, signal
     },
@@ -117,6 +130,9 @@ export function useTaxControllerListTaxesV1<TData = Awaited<ReturnType<typeof ta
  params?: TaxControllerListTaxesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListTaxesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get list of tax records
+ */
 
 export function useTaxControllerListTaxesV1<TData = Awaited<ReturnType<typeof taxControllerListTaxesV1>>, TError = unknown>(
  params?: TaxControllerListTaxesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListTaxesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -135,13 +151,16 @@ export function useTaxControllerListTaxesV1<TData = Awaited<ReturnType<typeof ta
 
 
 
+/**
+ * @summary Get tax autocomplete options
+ */
 export const taxControllerListAutocompleteV1 = (
     params?: TaxControllerListAutocompleteV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
 
 
-      return OrvalApiClient<void>(
+      return OrvalApiClient<TaxAutocompleteResponseDto>(
       {url: `/api/v1/tax/autocomplete`, method: 'GET',
         params, signal
     },
@@ -204,6 +223,9 @@ export function useTaxControllerListAutocompleteV1<TData = Awaited<ReturnType<ty
  params?: TaxControllerListAutocompleteV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListAutocompleteV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get tax autocomplete options
+ */
 
 export function useTaxControllerListAutocompleteV1<TData = Awaited<ReturnType<typeof taxControllerListAutocompleteV1>>, TError = unknown>(
  params?: TaxControllerListAutocompleteV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListAutocompleteV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -222,13 +244,16 @@ export function useTaxControllerListAutocompleteV1<TData = Awaited<ReturnType<ty
 
 
 
+/**
+ * @summary Get tax transaction types
+ */
 export const taxControllerListTransactionTypesV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
 
 
-      return OrvalApiClient<void>(
+      return OrvalApiClient<TaxTransactionTypesResponseDto>(
       {url: `/api/v1/tax/transaction-types`, method: 'GET', signal
     },
       options);
@@ -290,6 +315,9 @@ export function useTaxControllerListTransactionTypesV1<TData = Awaited<ReturnTyp
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListTransactionTypesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get tax transaction types
+ */
 
 export function useTaxControllerListTransactionTypesV1<TData = Awaited<ReturnType<typeof taxControllerListTransactionTypesV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListTransactionTypesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -308,13 +336,16 @@ export function useTaxControllerListTransactionTypesV1<TData = Awaited<ReturnTyp
 
 
 
+/**
+ * @summary Get tax types
+ */
 export const taxControllerListTaxTypesV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
 
 
-      return OrvalApiClient<void>(
+      return OrvalApiClient<TaxTypesResponseDto>(
       {url: `/api/v1/tax/tax-types`, method: 'GET', signal
     },
       options);
@@ -376,6 +407,9 @@ export function useTaxControllerListTaxTypesV1<TData = Awaited<ReturnType<typeof
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListTaxTypesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get tax types
+ */
 
 export function useTaxControllerListTaxTypesV1<TData = Awaited<ReturnType<typeof taxControllerListTaxTypesV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListTaxTypesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -394,13 +428,16 @@ export function useTaxControllerListTaxTypesV1<TData = Awaited<ReturnType<typeof
 
 
 
+/**
+ * @summary Get party tax default classifications
+ */
 export const taxControllerListPartyDefaultClassificationsV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
 
 
-      return OrvalApiClient<void>(
+      return OrvalApiClient<PartyDefaultClassificationsResponseDto>(
       {url: `/api/v1/tax/party-default-classifications`, method: 'GET', signal
     },
       options);
@@ -462,6 +499,9 @@ export function useTaxControllerListPartyDefaultClassificationsV1<TData = Awaite
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListPartyDefaultClassificationsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get party tax default classifications
+ */
 
 export function useTaxControllerListPartyDefaultClassificationsV1<TData = Awaited<ReturnType<typeof taxControllerListPartyDefaultClassificationsV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListPartyDefaultClassificationsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -480,13 +520,109 @@ export function useTaxControllerListPartyDefaultClassificationsV1<TData = Awaite
 
 
 
+/**
+ * @summary Get tax options with default account titles by classification
+ */
+export const taxControllerListTaxDefaultAccountOptionsV1 = (
+    params?: TaxControllerListTaxDefaultAccountOptionsV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<TaxDefaultAccountOptionsResponseDto>(
+      {url: `/api/v1/tax/default-account-options`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getTaxControllerListTaxDefaultAccountOptionsV1QueryKey = (params?: TaxControllerListTaxDefaultAccountOptionsV1Params,) => {
+    return [
+    `/api/v1/tax/default-account-options`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getTaxControllerListTaxDefaultAccountOptionsV1QueryOptions = <TData = Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>, TError = unknown>(params?: TaxControllerListTaxDefaultAccountOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getTaxControllerListTaxDefaultAccountOptionsV1QueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>> = ({ signal }) => taxControllerListTaxDefaultAccountOptionsV1(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type TaxControllerListTaxDefaultAccountOptionsV1QueryResult = NonNullable<Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>>
+export type TaxControllerListTaxDefaultAccountOptionsV1QueryError = unknown
+
+
+export function useTaxControllerListTaxDefaultAccountOptionsV1<TData = Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>, TError = unknown>(
+ params: undefined |  TaxControllerListTaxDefaultAccountOptionsV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>,
+          TError,
+          Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTaxControllerListTaxDefaultAccountOptionsV1<TData = Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>, TError = unknown>(
+ params?: TaxControllerListTaxDefaultAccountOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>,
+          TError,
+          Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTaxControllerListTaxDefaultAccountOptionsV1<TData = Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>, TError = unknown>(
+ params?: TaxControllerListTaxDefaultAccountOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get tax options with default account titles by classification
+ */
+
+export function useTaxControllerListTaxDefaultAccountOptionsV1<TData = Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>, TError = unknown>(
+ params?: TaxControllerListTaxDefaultAccountOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListTaxDefaultAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getTaxControllerListTaxDefaultAccountOptionsV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Get tax records with default account mappings
+ */
 export const taxControllerListTaxesWithDefaultAccountsV1 = (
     params?: TaxControllerListTaxesWithDefaultAccountsV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
 
 
-      return OrvalApiClient<void>(
+      return OrvalApiClient<TaxDefaultAccountsListResponseDto>(
       {url: `/api/v1/tax-default-accounts`, method: 'GET',
         params, signal
     },
@@ -549,6 +685,9 @@ export function useTaxControllerListTaxesWithDefaultAccountsV1<TData = Awaited<R
  params?: TaxControllerListTaxesWithDefaultAccountsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListTaxesWithDefaultAccountsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get tax records with default account mappings
+ */
 
 export function useTaxControllerListTaxesWithDefaultAccountsV1<TData = Awaited<ReturnType<typeof taxControllerListTaxesWithDefaultAccountsV1>>, TError = unknown>(
  params?: TaxControllerListTaxesWithDefaultAccountsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerListTaxesWithDefaultAccountsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -567,13 +706,16 @@ export function useTaxControllerListTaxesWithDefaultAccountsV1<TData = Awaited<R
 
 
 
+/**
+ * @summary Get tax record with default account mappings by source key
+ */
 export const taxControllerGetTaxWithDefaultAccountsV1 = (
     sourceKey: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
 
 
-      return OrvalApiClient<void>(
+      return OrvalApiClient<TaxDefaultAccountsContainerResponseDto>(
       {url: `/api/v1/tax-default-accounts/${sourceKey}`, method: 'GET', signal
     },
       options);
@@ -635,6 +777,9 @@ export function useTaxControllerGetTaxWithDefaultAccountsV1<TData = Awaited<Retu
  sourceKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerGetTaxWithDefaultAccountsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get tax record with default account mappings by source key
+ */
 
 export function useTaxControllerGetTaxWithDefaultAccountsV1<TData = Awaited<ReturnType<typeof taxControllerGetTaxWithDefaultAccountsV1>>, TError = unknown>(
  sourceKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerGetTaxWithDefaultAccountsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -653,13 +798,16 @@ export function useTaxControllerGetTaxWithDefaultAccountsV1<TData = Awaited<Retu
 
 
 
+/**
+ * @summary Get tax record by source key
+ */
 export const taxControllerGetTaxV1 = (
     sourceKey: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
 
 
-      return OrvalApiClient<void>(
+      return OrvalApiClient<TaxContainerResponseDto>(
       {url: `/api/v1/tax/${sourceKey}`, method: 'GET', signal
     },
       options);
@@ -721,6 +869,9 @@ export function useTaxControllerGetTaxV1<TData = Awaited<ReturnType<typeof taxCo
  sourceKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerGetTaxV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get tax record by source key
+ */
 
 export function useTaxControllerGetTaxV1<TData = Awaited<ReturnType<typeof taxControllerGetTaxV1>>, TError = unknown>(
  sourceKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof taxControllerGetTaxV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}

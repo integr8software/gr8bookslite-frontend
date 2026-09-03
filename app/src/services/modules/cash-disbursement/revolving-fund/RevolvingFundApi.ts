@@ -15,7 +15,6 @@ import {
   fetchMaintenancePostingAccountOptions,
   fetchMaintenanceResponsibilityCenterOptions,
 } from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
-import { CashDisbursementApiAllStatusFilter } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import { RevolvingFundStatuses } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import type {
   CreateRevolvingFundDto,
@@ -72,7 +71,7 @@ type MappedRevolvingFundListResponse = Omit<RevolvingFundListResponseDto, "items
 };
 
 export const StatusFromApi: Record<string, RevolvingFundStatus> = {
-  DRAFT: RevolvingFundStatuses.draft,
+  DRAFT: RevolvingFundStatuses.Draft,
   FOR_APPROVAL: "For Approval",
   APPROVED: "For Approval",
   POSTED: "Posted",
@@ -117,7 +116,7 @@ export function mapRevolvingFundRecordFromDto(dto: RevolvingFundResponseDto): Re
   const formValues: RevolvingFundFormValues = {
     transactionNo: dto.transactionNo,
     documentDate: dto.documentDate,
-    status: StatusFromApi[dto.status] ?? RevolvingFundStatuses.draft,
+    status: StatusFromApi[dto.status] ?? RevolvingFundStatuses.Draft,
     partyCode: dto.partyCodeSnapshot ?? "",
     partyName: dto.partyNameSnapshot ?? "",
     responsibilityCenter: dto.responsibilityCenterSnapshot ?? "",
@@ -150,7 +149,7 @@ export function mapRevolvingFundRecordFromDto(dto: RevolvingFundResponseDto): Re
     amount: totals.grossAmount || (typeof dto.amount === "number" ? dto.amount : Number(dto.amount ?? 0)),
     disburseAmount: totals.disburseAmount || Number(dtoExtras.disburseAmount ?? dto.amount ?? 0),
     remarks: dto.remarks ?? "",
-    status: StatusFromApi[dto.status] ?? RevolvingFundStatuses.draft,
+    status: StatusFromApi[dto.status] ?? RevolvingFundStatuses.Draft,
     createdBy: createdUser ? `${createdUser.firstName ?? ""} ${createdUser.lastName ?? ""}`.trim() : "",
     createdAt: dto.createdAt,
     updatedBy: updatedUser ? `${updatedUser.firstName ?? ""} ${updatedUser.lastName ?? ""}`.trim() : "",
@@ -161,7 +160,7 @@ export function mapRevolvingFundRecordFromDto(dto: RevolvingFundResponseDto): Re
 
 export function mapRevolvingFundFormValuesToCreateDto(values: RevolvingFundFormValues): CreateRevolvingFundDto {
   const items =
-    values.status === RevolvingFundStatuses.draft ? (values.items ?? []).filter(isRevolvingFundItemPopulated) : (values.items ?? []);
+    values.status === RevolvingFundStatuses.Draft ? (values.items ?? []).filter(isRevolvingFundItemPopulated) : (values.items ?? []);
   const details = items.map((item, index) => ({
     lineNumber: index + 1,
     itemDate: item.date || undefined,
@@ -233,7 +232,7 @@ export async function fetchRevolvingFundList(params?: FetchRevolvingFundListPara
     sortOrder: params?.sortOrder,
   };
 
-  if (params?.status && params.status !== CashDisbursementApiAllStatusFilter) {
+  if (params?.status && params.status !== "all" && params.status !== "All") {
     queryParams.status = (StatusToApi[params.status as RevolvingFundStatus] ?? params.status) as RevolvingFundQueryParams["status"];
   }
 

@@ -34,7 +34,7 @@ export const ServicesMaintenanceTablePreferencesModuleKey = "maintenance:service
 
 export const ServicesMaintenanceTableColumns = [
   { key: "serviceName", label: "Service Name", className: "w-[18%]" },
-  { key: "serviceType", label: "Service Type", className: "w-[14%]" },
+  { key: "serviceType", label: "Type of Service", className: "w-[14%]" },
   { key: "description", label: "Description", className: "w-[20%]" },
   { key: "revenueAccountCode", label: "Account Code", className: "w-[12%]" },
   { key: "revenueAccountTitle", label: "Account Title", className: "w-[20%]" },
@@ -78,7 +78,13 @@ export const ServicesMaintenanceActionCopy = {
   },
 } as const;
 
-export const ServicesMaintenanceImportTemplateHeaders = ["Service Name", "Service Type", "Description", "Account Setup", "Revenue Account ID"];
+export const ServicesMaintenanceImportTemplateHeaders = [
+  "Service Name",
+  "Type of Service",
+  "Description",
+  "Account Setup",
+  "Revenue Account ID",
+];
 
 export const ServicesMaintenanceImportAcceptedFileExtensions = ".xlsx,.csv,.tsv,.txt";
 export const ServicesMaintenanceImportAcceptedFileLabel = ".xlsx, .csv, .tsv, .txt";
@@ -116,13 +122,13 @@ export const ServicesMaintenanceImportColumnHeaders: ServicesMaintenanceImportCo
     label: "Service Name",
     stickyLeft: ServicesMaintenanceImportSelectionColumnWidth,
   },
-  { className: "px-3", id: "serviceType", label: "Service Type" },
+  { className: "px-3", id: "serviceType", label: "Type of Service" },
   { className: "px-3", id: "description", label: "Description" },
   { className: "px-3", id: "accountSetupMode", label: "Account Setup" },
   { className: "px-3", id: "revenueCoaId", label: "Revenue Account ID" },
 ];
 
-export const ServicesMaintenanceServiceTypeOptions = ["Purchases", "Sales"] as const;
+export const ServicesMaintenanceServiceTypeOptions = ["Purchase of Service", "Sale of Service"] as const;
 export const ServicesMaintenanceImportPreviewColumnCount = ServicesMaintenanceImportFieldOrder.length + 1;
 export const ServicesMaintenanceImportPreviewGridLabel = "Services maintenance import preview grid. Paste copied Excel rows here.";
 export const ServicesMaintenanceImportPreviewPageSize = 20;

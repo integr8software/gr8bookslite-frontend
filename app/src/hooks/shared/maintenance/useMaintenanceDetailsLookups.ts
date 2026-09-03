@@ -2,10 +2,9 @@
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CashDisbursementQuerySegment } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
-type CashDisbursementDetailsLookupValues = {
+export type MaintenanceDetailsLookupValues = {
   accountCode: string;
   accountTitle: string;
   partyCode: string;
@@ -16,33 +15,35 @@ type CashDisbursementDetailsLookupValues = {
   responsibilityCenterCode?: string;
 };
 
-type CashDisbursementDetailsLookupsOptions = {
+export type MaintenanceDetailsLookupsOptions = {
   fetchAccountOptions: () => Promise<AppAdvancedDropdownOption[]>;
   fetchPartyOptions: () => Promise<AppAdvancedDropdownOption[]>;
   fetchResponsibilityCenterOptions: () => Promise<AppAdvancedDropdownOption[]>;
   moduleKey: string;
-  values: CashDisbursementDetailsLookupValues;
+  querySegment: string;
+  values: MaintenanceDetailsLookupValues;
 };
 
-export function useCashDisbursementDetailsLookups({
+export function useMaintenanceDetailsLookups({
   fetchAccountOptions,
   fetchPartyOptions,
   fetchResponsibilityCenterOptions,
   moduleKey,
+  querySegment,
   values,
-}: CashDisbursementDetailsLookupsOptions) {
+}: MaintenanceDetailsLookupsOptions) {
   const partyQuery = useQuery({
-    queryKey: [CashDisbursementQuerySegment, moduleKey, "parties"],
+    queryKey: [querySegment, moduleKey, "parties"],
     queryFn: fetchPartyOptions,
   });
 
   const accountQuery = useQuery({
-    queryKey: [CashDisbursementQuerySegment, moduleKey, "accounts"],
+    queryKey: [querySegment, moduleKey, "accounts"],
     queryFn: fetchAccountOptions,
   });
 
   const responsibilityCenterQuery = useQuery({
-    queryKey: [CashDisbursementQuerySegment, moduleKey, "rcs"],
+    queryKey: [querySegment, moduleKey, "responsibility-centers"],
     queryFn: fetchResponsibilityCenterOptions,
   });
 

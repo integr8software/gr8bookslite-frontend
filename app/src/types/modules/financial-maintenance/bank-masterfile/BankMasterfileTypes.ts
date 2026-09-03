@@ -138,14 +138,9 @@ export type BankMasterfileFieldsProps = {
   onStatusChange: (value: BankMasterfileFormValues["status"]) => void;
 };
 
-export type BankMasterfileFormFieldProps = {
-  children: ReactNode;
-  className?: string;
-  error?: string;
-  helper?: string;
-  label: string;
-  required?: boolean;
-};
+import type { ModuleFormFieldProps } from "@/app/src/ui/shared/field-management/ModuleFormField";
+
+export type BankMasterfileFormFieldProps = ModuleFormFieldProps;
 
 export type BankMasterfileTableProps = {
   banks: BankMasterfile[];

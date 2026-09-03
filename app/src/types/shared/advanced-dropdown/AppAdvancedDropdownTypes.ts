@@ -50,6 +50,7 @@ export type AppAdvancedDropdownProps = {
 	title?: string;
 	value: string | string[];
 	onChange: (value: string | string[]) => void;
+	onOpen?: () => void;
 	onSelectOption?: (option: AppAdvancedDropdownOption) => void;
 };
 

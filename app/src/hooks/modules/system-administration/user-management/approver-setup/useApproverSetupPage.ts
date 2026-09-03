@@ -25,6 +25,7 @@ import {
 } from "@/app/src/services/modules/system-administration/user-management/approver-setup/ApproverSetupApi";
 import { ApprovalManagementQueryKeys } from "@/app/src/services/modules/approval-management/ApprovalManagementQueryKeys";
 import { ApproverSetupQueryKeys } from "@/app/src/services/modules/system-administration/user-management/approver-setup/ApproverSetupQueryKeys";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import type {
 	ApproverAssignmentType,
 	ApproverCondition,
@@ -42,6 +43,7 @@ import {
 
 export function useApproverSetupPage() {
 	const queryClient = useQueryClient();
+	const activeCompanyId = useAppStore((state) => state.activeCompanyId);
 	const [records, setRecords] = useState<ApproverSetupRecord[]>([]);
 	const approverUsersQuery = useQuery({
 		queryKey: ApproverSetupQueryKeys.users(),
@@ -357,7 +359,7 @@ export function useApproverSetupPage() {
 			queryKey: ApproverSetupQueryKeys.records(),
 		});
 		void queryClient.invalidateQueries({
-			queryKey: ApprovalManagementQueryKeys.workflows(),
+			queryKey: ApprovalManagementQueryKeys.workflows(activeCompanyId),
 		});
 	}
 

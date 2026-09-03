@@ -10,6 +10,7 @@ import {
 } from "@/app/src/services/modules/approval-management/ApprovalManagementApi";
 import { ApprovalManagementQueryKeys } from "@/app/src/services/modules/approval-management/ApprovalManagementQueryKeys";
 import { ApproverSetupQueryKeys } from "@/app/src/services/modules/system-administration/user-management/approver-setup/ApproverSetupQueryKeys";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import type { ApprovalManagementRecord } from "@/app/src/types/modules/approval-management/ApprovalManagementTypes";
 import type { ApproverSetupRecord } from "@/app/src/types/modules/system-administration/user-management/approver-setup/ApproverSetupTypes";
 
@@ -29,15 +30,17 @@ export function useApprovalManagementStore<TSelected = ApprovalManagementState>(
 	selector?: (state: ApprovalManagementState) => TSelected,
 ) {
 	const queryClient = useQueryClient();
+	const activeCompanyId = useAppStore((state) => state.activeCompanyId);
 	const workflowsQuery = useQuery({
-		queryKey: ApprovalManagementQueryKeys.workflows(),
+		queryKey: ApprovalManagementQueryKeys.workflows(activeCompanyId),
 		queryFn: GetApprovalManagementWorkflows,
+		enabled: activeCompanyId !== null,
 		initialData: EmptyApprovalManagementWorkflows,
 	});
 
 	function setSavedWorkflow(workflow: ApprovalManagementRecord) {
 		queryClient.setQueryData<ApprovalManagementRecord[]>(
-			ApprovalManagementQueryKeys.workflows(),
+			ApprovalManagementQueryKeys.workflows(activeCompanyId),
 			(workflows = EmptyApprovalManagementWorkflows) => [
 				...workflows.filter(
 					(current) => current.moduleCode !== workflow.moduleCode,

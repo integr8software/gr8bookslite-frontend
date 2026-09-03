@@ -138,6 +138,9 @@ export function AccountsPayableVoucherExpenseTable({
         ewtOptions,
         taxCodes,
         canAddPartyName,
+        () => {
+          void partyOptionsQuery.refetch();
+        },
         (lineId) => onAddPartyName({ kind: "expense", id: lineId }),
         () => setParticularsEditorLineId(line.id),
       ),
@@ -288,6 +291,7 @@ function renderExpenseCell(
   ewtOptions: AppAdvancedDropdownOption[],
   taxCodes: Parameters<typeof createVatOptions>[0],
   canAddPartyName: boolean,
+  onOpenPartyName: () => void,
   onAddPartyName: (lineId: string) => void,
   onOpenParticulars: () => void,
 ) {
@@ -379,6 +383,7 @@ function renderExpenseCell(
           partyCode={line.partyCode}
           partyName={line.partyName}
           onAddPartyName={() => onAddPartyName(line.id)}
+          onOpen={onOpenPartyName}
           onSelect={(partyCode, partyName) => {
             page.updateExpenseLine(line.id, "partyCode", partyCode);
             page.updateExpenseLine(line.id, "partyName", partyName);

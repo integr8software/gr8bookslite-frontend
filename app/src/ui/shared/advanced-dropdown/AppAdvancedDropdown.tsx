@@ -93,6 +93,7 @@ export function AppAdvancedDropdown({
 	showSelectionRemoveButton = true,
 	value,
 	onChange,
+	onOpen,
 	onSelectOption,
 }: AppAdvancedDropdownProps) {
 	const generatedId = useId();
@@ -326,6 +327,10 @@ export function AppAdvancedDropdown({
 	function showOptions(nextActiveValue?: string) {
 		if (isInteractionLocked) {
 			return;
+		}
+
+		if (!isOpen) {
+			onOpen?.();
 		}
 
 		if (menuPortal) {

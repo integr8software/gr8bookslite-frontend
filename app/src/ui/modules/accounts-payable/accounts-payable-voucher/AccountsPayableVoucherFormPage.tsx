@@ -158,6 +158,8 @@ export function AccountsPayableVoucherFormPage() {
   function handleCreateParty(record: PartyInformationRecord) {
     const lookupParty = mapPartyRecordToLookupParty(record);
 
+    void partyOptionsQuery.refetch();
+
     if (partyAddTarget === "header" || partyAddTarget === null) {
       selectParty(lookupParty);
     } else if (partyAddTarget.kind === "expense") {
@@ -288,6 +290,9 @@ export function AccountsPayableVoucherFormPage() {
                     searchPlaceholder="Search Party Name"
                     emptyMessage={getPartyDropdownEmptyMessage(partyOptionsQuery)}
                     showSelectedDetails
+                    onOpen={() => {
+                      void partyOptionsQuery.refetch();
+                    }}
                     onChange={(value) => {
                       const code = String(value);
                       const party = partyRecords.find((record) => record.partyCodeNo === code);

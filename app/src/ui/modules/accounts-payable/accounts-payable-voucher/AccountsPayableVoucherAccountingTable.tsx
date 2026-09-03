@@ -138,6 +138,9 @@ export function AccountsPayableVoucherAccountingTable({
         ewtOptions,
         taxCodes,
         canAddPartyName,
+        () => {
+          void partyOptionsQuery.refetch();
+        },
         (entryId) => onAddPartyName({ kind: "accounting", id: entryId }),
         () => setParticularsEditorEntryId(entry.id),
       ),
@@ -291,6 +294,7 @@ function renderAccountingCell(
   ewtOptions: AppAdvancedDropdownOption[],
   taxCodes: Parameters<typeof createVatOptions>[0],
   canAddPartyName: boolean,
+  onOpenPartyName: () => void,
   onAddPartyName: (entryId: string) => void,
   onOpenParticulars: () => void,
 ) {
@@ -344,6 +348,7 @@ function renderAccountingCell(
           partyCode={entry.partyCode}
           partyName={entry.partyName}
           onAddPartyName={() => onAddPartyName(entry.id)}
+          onOpen={onOpenPartyName}
           onSelect={(partyCode, partyName) => {
             page.updateAccountingEntry(entry.id, "partyCode", partyCode);
             page.updateAccountingEntry(entry.id, "partyName", partyName);

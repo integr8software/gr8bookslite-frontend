@@ -1,23 +1,29 @@
-import {
-  BillingCurrencyOptions,
-  BillingPartyOptions,
-  BillingResponsibilityCenterOptions,
-  BillingTermOptions,
-} from "@/app/src/data/modules/sales/billing/BillingData";
+import { BillingCurrencyOptions } from "@/app/src/data/modules/sales/billing/BillingData";
 import type { BillingFormValues } from "@/app/src/types/modules/sales/billing/BillingTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { FieldClassName, FieldShell, type BillingFieldUpdater } from "@/app/src/ui/modules/sales/billing/form/BillingFieldControls";
+import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 type BillingCustomerFieldsProps = {
+  customerPartyOptions: AppAdvancedDropdownOption[];
   isReadonly: boolean;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
+  termOptions: AppAdvancedDropdownOption[];
   onUpdateField: BillingFieldUpdater<BillingFormValues>;
   values: BillingFormValues;
 };
 
-export function BillingCustomerFields({ isReadonly, onUpdateField, values }: BillingCustomerFieldsProps) {
+export function BillingCustomerFields({
+  customerPartyOptions,
+  isReadonly,
+  onUpdateField,
+  responsibilityCenterOptions,
+  termOptions,
+  values,
+}: BillingCustomerFieldsProps) {
   return (
     <div className="grid min-w-0 content-start gap-x-8 gap-y-3 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-3">
@@ -26,12 +32,12 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
             id="billing-name"
             value={values.name}
             readOnly={isReadonly}
-            options={BillingPartyOptions}
+            options={customerPartyOptions}
             placeholder=""
             searchPlaceholder="Search customer"
             onChange={(value) => {
               const partyName = String(value);
-              const selectedParty = BillingPartyOptions.find((option) => option.value === partyName);
+              const selectedParty = customerPartyOptions.find((option) => option.value === partyName);
 
               onUpdateField("name", partyName);
               onUpdateField("code", selectedParty?.label ?? "");
@@ -91,7 +97,7 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
           <input
             id="billing-code"
             value={values.code}
-            readOnly={isReadonly}
+            readOnly
             onChange={(event) => onUpdateField("code", event.target.value)}
             className={FieldClassName}
           />
@@ -101,7 +107,7 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
             id="billing-terms"
             value={values.terms}
             readOnly={isReadonly}
-            options={BillingTermOptions}
+            options={termOptions}
             placeholder="--Select Terms--"
             searchPlaceholder="Search terms"
             onChange={(value) => onUpdateField("terms", String(value))}
@@ -148,7 +154,7 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
             id="billing-res-center"
             value={values.residentCustomerCode}
             readOnly={isReadonly}
-            options={BillingResponsibilityCenterOptions}
+            options={responsibilityCenterOptions}
             placeholder="--Select Responsibility Center--"
             searchPlaceholder="Search responsibility center"
             onChange={(value) => onUpdateField("residentCustomerCode", String(value))}
@@ -160,7 +166,7 @@ export function BillingCustomerFields({ isReadonly, onUpdateField, values }: Bil
           <input
             id="billing-invoice-no"
             value={values.invoiceNo}
-            readOnly={isReadonly}
+            readOnly
             onChange={(event) => onUpdateField("invoiceNo", event.target.value)}
             className={FieldClassName}
           />

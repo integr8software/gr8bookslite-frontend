@@ -1,4 +1,3 @@
-import { PurchaseRequestStorageKey } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import type {
   PurchaseRequestAccountingEntry,
@@ -7,6 +6,7 @@ import type {
   PurchaseRequestRecord,
   PurchaseRequestStatus,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 const DefaultPurchaseRequestPrintHeader = {
   companyAddress: "Abc, 123, Sample, Malamig, City Of Mandaluyong, Ncr, Second District",
@@ -16,67 +16,6 @@ const DefaultPurchaseRequestPrintHeader = {
   telephoneNo: "0967-237-4514",
   vatRegTin: "000-000-000-000",
 };
-
-export const purchaseRequestSeedRecords: PurchaseRequestRecord[] = [
-  {
-    id: "pr-000292",
-    ...DefaultPurchaseRequestPrintHeader,
-    vceCode: "RMBT0001",
-    vceName: "RMBT Corporation-yes",
-    purchaseType: "Goods",
-    transNo: "000292",
-    prDate: "2026-03-24",
-    status: "Posted",
-    currency: "PHP",
-    exchangeRate: 1,
-    bomNo: "",
-    projectCode: "",
-    projectName: "",
-    vendorAddress: "",
-    remarks: "",
-    forDepartment: "",
-    preparedBy: "",
-    preparedByLabel: "Prepared by",
-    preparedBySignatureFileName: "",
-    preparedBySignatureImageUrl: "",
-    approvedBy: "",
-    approvedByLabel: "Approved by",
-    approvedBySignatureFileName: "",
-    approvedBySignatureImageUrl: "",
-    accountingEntries: [
-      createPurchaseRequestAccountingEntry({
-        accountTitle: "Purchase Request Clearing",
-        debit: 0,
-        particulars: "Purchase request accrual",
-        refNo: "000292",
-      }),
-      createPurchaseRequestAccountingEntry({
-        accountTitle: "Accounts Payable",
-        credit: 0,
-        partyCode: "RMBT0001",
-        partyName: "RMBT Corporation-yes",
-        particulars: "Purchase request accrual",
-        refNo: "000292",
-      }),
-    ],
-    items: [
-      {
-        id: "pr-000292-item-1",
-        itemId: "",
-        serviceMaintenanceId: "",
-        itemCode: "IM0020",
-        barcode: "",
-        description: "Topcoat Matte",
-        uom: "PC",
-        quantity: 10,
-        lotNo: "",
-        expiryDate: "1900-01-01",
-        cost: 102831,
-        responsibilityCenter: "",
-      },
-    ],
-  },
-];
 
 export const emptyPurchaseRequestItem: PurchaseRequestItem = {
   id: "draft-item",
@@ -97,52 +36,13 @@ export function createBlankPurchaseRequestAccountingEntry(): PurchaseRequestAcco
   return createPurchaseRequestAccountingEntry();
 }
 
-export const PurchaseRequestMaterialPlanRecords = [
-  {
-    id: "mp-2026-0001",
-    source: "Material Plan",
-    sourceNo: "MP-2026-0001",
-    partyName: "Material Planning",
-    documentDate: "2026-07-18",
-    remarks: "Material plan request",
-    items: [
-      {
-        itemCode: "IM0020",
-        barcode: "",
-        description: "Topcoat Matte",
-        uom: "PC",
-        quantity: 10,
-        lotNo: "",
-        cost: 0,
-        responsibilityCenter: "",
-      },
-    ],
-  },
-  {
-    id: "so-2026-0001",
-    source: "Sales Order",
-    sourceNo: "SO-2026-0001",
-    partyName: "North Harbor Office Depot",
-    documentDate: "2026-07-21",
-    remarks: "Sales order items requested for purchasing.",
-    items: [
-      {
-        itemCode: "IM0021",
-        barcode: "",
-        description: "Packaging Box",
-        uom: "BOX",
-        quantity: 25,
-        lotNo: "",
-        cost: 0,
-        responsibilityCenter: "",
-      },
-    ],
-  },
-];
+export const PurchaseRequestMaterialPlanRecords: Array<
+  AppCopyFromRecord & {
+  items: PurchaseRequestItem[];
+  }
+> = [];
 
-export function createPurchaseRequestFormValues(
-  record?: PurchaseRequestRecord,
-): PurchaseRequestFormValues {
+export function createPurchaseRequestFormValues(record?: PurchaseRequestRecord): PurchaseRequestFormValues {
   if (record) {
     const normalizedRecord = normalizePurchaseRequestRecordDefaults(record);
 
@@ -158,7 +58,7 @@ export function createPurchaseRequestFormValues(
     vceCode: "",
     vceName: "",
     purchaseType: "Goods",
-    transNo: createNextTransNo(purchaseRequestSeedRecords),
+    transNo: createNextTransNo([]),
     prDate: new Date().toISOString().slice(0, 10),
     status: "Draft",
     currency: "PHP",
@@ -178,16 +78,13 @@ export function createPurchaseRequestFormValues(
     approvedBySignatureFileName: "",
     approvedBySignatureImageUrl: "",
     accountingEntries: createPurchaseRequestAccountingEntries({
-      refNo: createNextTransNo(purchaseRequestSeedRecords),
+      refNo: createNextTransNo([]),
     }),
     items: [{ ...emptyPurchaseRequestItem, id: createPurchaseRequestId("item") }],
   };
 }
 
-export function createPurchaseRequestRecord(
-  values: PurchaseRequestFormValues,
-  id = createPurchaseRequestId("pr"),
-): PurchaseRequestRecord {
+export function createPurchaseRequestRecord(values: PurchaseRequestFormValues, id = createPurchaseRequestId("pr")): PurchaseRequestRecord {
   return {
     id,
     ...values,
@@ -276,29 +173,6 @@ export function formatPurchaseRequestDate(value: string) {
   return `${month}/${day}/${year}`;
 }
 
-export function loadPurchaseRequests() {
-  if (typeof window === "undefined") {
-    return purchaseRequestSeedRecords;
-  }
-
-  try {
-    const stored = window.localStorage.getItem(PurchaseRequestStorageKey);
-
-    if (!stored) {
-      return purchaseRequestSeedRecords;
-    }
-
-    const parsed = JSON.parse(stored) as PurchaseRequestRecord[];
-
-    const records =
-      Array.isArray(parsed) && parsed.length > 0 ? parsed : purchaseRequestSeedRecords;
-
-    return records.map(normalizePurchaseRequestRecordDefaults);
-  } catch {
-    return purchaseRequestSeedRecords;
-  }
-}
-
 function createPurchaseRequestAccountingEntries({
   partyCode = "",
   partyName = "",
@@ -326,9 +200,7 @@ function createPurchaseRequestAccountingEntries({
   ];
 }
 
-function createPurchaseRequestAccountingEntry(
-  entry: Partial<PurchaseRequestAccountingEntry> = {},
-): PurchaseRequestAccountingEntry {
+function createPurchaseRequestAccountingEntry(entry: Partial<PurchaseRequestAccountingEntry> = {}): PurchaseRequestAccountingEntry {
   return {
     id: createPurchaseRequestId("accounting"),
     accountCode: "",
@@ -346,10 +218,8 @@ function createPurchaseRequestAccountingEntry(
   };
 }
 
-function normalizePurchaseRequestRecordDefaults(
-  record: Partial<PurchaseRequestRecord>,
-): PurchaseRequestRecord {
-  const transNo = record.transNo ?? createNextTransNo(purchaseRequestSeedRecords);
+function normalizePurchaseRequestRecordDefaults(record: Partial<PurchaseRequestRecord>): PurchaseRequestRecord {
+  const transNo = record.transNo ?? createNextTransNo([]);
 
   return {
     id: record.id ?? createPurchaseRequestId("pr"),
@@ -415,14 +285,6 @@ function normalizePurchaseRequestStatus(status: unknown): PurchaseRequestStatus 
   if (value === "Approved" || value === "Closed") return "Posted";
 
   return "Draft";
-}
-
-export function savePurchaseRequests(records: PurchaseRequestRecord[]) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(PurchaseRequestStorageKey, JSON.stringify(records));
 }
 
 export function createNextTransNo(records: PurchaseRequestRecord[]) {

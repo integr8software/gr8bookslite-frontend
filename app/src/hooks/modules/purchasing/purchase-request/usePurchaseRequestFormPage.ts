@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { PurchaseRequestHref } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import { AiAssistantPurchaseRequestPrefillStorageKey } from "@/app/src/constants/shared/ai-assistant/AiAssistantConstants";
@@ -36,15 +36,18 @@ import { ServicesMaintenanceQueryKeys } from "@/app/src/services/modules/financi
 import { recordPurchaseRequestAuditLog } from "@/app/src/services/modules/purchasing/purchase-request/PurchaseRequestAuditLog";
 import {
   createPurchaseRequest,
+  mapPurchaseRequestResponse,
   updatePurchaseRequest,
 } from "@/app/src/services/modules/purchasing/purchase-request/PurchaseRequestApi";
+import { PurchaseRequestQueryKeys } from "@/app/src/services/modules/purchasing/purchase-request/PurchaseRequestQueryKeys";
 
 export function usePurchaseRequestFormPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
   const searchParams = useSearchParams();
-  const { addRequest, requests, updateRequest } = usePurchaseRequestStore();
+  const { requests } = usePurchaseRequestStore();
   const itemDescriptionOptions = useItemManagementStore(selectPurchasableItemOptions);
   const accessToken = useAppStore((state) => state.accessToken);
   const activeBranchId = useAppStore((state) => state.activeBranchId);
@@ -54,10 +57,7 @@ export function usePurchaseRequestFormPage() {
   const mode = getPurchaseRequestFormMode(pathname);
   const isReadonly = mode === "view";
   const existingRequest = findPurchaseRequestByRouteId(requests, params.recordId);
-  const assistantPrefill =
-    mode === "add" && searchParams.get("assistant") === "1"
-      ? loadAssistantPurchaseRequestPrefill()
-      : null;
+  const assistantPrefill = mode === "add" && searchParams.get("assistant") === "1" ? loadAssistantPurchaseRequestPrefill() : null;
   const [values, setValues] = useState<PurchaseRequestFormValues>(() => {
     const initialValues = createPurchaseRequestFormValues(existingRequest);
 
@@ -71,6 +71,7 @@ export function usePurchaseRequestFormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
   const [showPreview, setShowPreview] = useState(searchParams.get("preview") === "1");
+  const loadedRequestIdRef = useRef<string | null>(null);
   const serviceOptionsQuery = useQuery({
     queryKey: ServicesMaintenanceQueryKeys.options(companyId),
     queryFn: () => fetchServicesMaintenanceOptions("Purchases"),
@@ -86,10 +87,16 @@ export function usePurchaseRequestFormPage() {
     clearAssistantPurchaseRequestPrefill();
   }, [assistantPrefill]);
 
-  const previewRecord = useMemo(
-    () => createPurchaseRequestRecord(values, params.recordId ?? "preview"),
-    [params.recordId, values],
-  );
+  useEffect(() => {
+    if (mode === "add" || !existingRequest || loadedRequestIdRef.current === existingRequest.id) {
+      return;
+    }
+
+    loadedRequestIdRef.current = existingRequest.id;
+    setValues(createPurchaseRequestFormValues(existingRequest));
+  }, [existingRequest, mode]);
+
+  const previewRecord = useMemo(() => createPurchaseRequestRecord(values, params.recordId ?? "preview"), [params.recordId, values]);
   const draft = useModuleDraft({
     enabled: !isReadonly,
     key: createModuleDraftKey({
@@ -101,16 +108,12 @@ export function usePurchaseRequestFormPage() {
     values,
   });
 
-  function updateField<TKey extends keyof PurchaseRequestFormValues>(
-    field: TKey,
-    value: PurchaseRequestFormValues[TKey],
-  ) {
+  function updateField<TKey extends keyof PurchaseRequestFormValues>(field: TKey, value: PurchaseRequestFormValues[TKey]) {
     if (isReadonly) {
       return;
     }
 
-    const nextValue =
-      field === "vatRegTin" && typeof value === "string" ? FormatTinNumber(value) : value;
+    const nextValue = field === "vatRegTin" && typeof value === "string" ? FormatTinNumber(value) : value;
 
     setValues((current) => {
       if (field === "purchaseType" && nextValue !== current.purchaseType) {
@@ -174,10 +177,7 @@ export function usePurchaseRequestFormPage() {
 
     setValues((current) => ({
       ...current,
-      items: [
-        ...current.items,
-        { ...emptyPurchaseRequestItem, id: createPurchaseRequestId("item") },
-      ],
+      items: [...current.items, { ...emptyPurchaseRequestItem, id: createPurchaseRequestId("item") }],
     }));
     setErrors((current) => ({ ...current, items: undefined }));
   }
@@ -189,10 +189,7 @@ export function usePurchaseRequestFormPage() {
 
     setValues((current) => ({
       ...current,
-      items:
-        current.items.length > 1
-          ? current.items.filter((item) => item.id !== itemId)
-          : current.items,
+      items: current.items.length > 1 ? current.items.filter((item) => item.id !== itemId) : current.items,
     }));
     setErrors((current) => ({ ...current, items: undefined }));
   }
@@ -202,9 +199,7 @@ export function usePurchaseRequestFormPage() {
       return;
     }
 
-    const selectedRecords = PurchaseRequestMaterialPlanRecords.filter((record) =>
-      recordIds.includes(record.id),
-    );
+    const selectedRecords = PurchaseRequestMaterialPlanRecords.filter((record) => recordIds.includes(record.id));
 
     if (selectedRecords.length === 0) {
       return;
@@ -220,9 +215,7 @@ export function usePurchaseRequestFormPage() {
 
     setValues((current) => ({
       ...current,
-      items: current.items.some(purchaseRequestEntryHasData)
-        ? [...current.items, ...copiedItems]
-        : copiedItems,
+      items: current.items.some(purchaseRequestEntryHasData) ? [...current.items, ...copiedItems] : copiedItems,
       remarks:
         current.remarks ||
         selectedRecords
@@ -239,9 +232,7 @@ export function usePurchaseRequestFormPage() {
       return;
     }
 
-    const releaseSubmitLock = acquireModuleActionLock(
-      `purchasing:purchase-request:submit:${mode}:${params.recordId ?? values.transNo}`,
-    );
+    const releaseSubmitLock = acquireModuleActionLock(`purchasing:purchase-request:submit:${mode}:${params.recordId ?? values.transNo}`);
 
     if (!releaseSubmitLock) {
       return;
@@ -265,20 +256,19 @@ export function usePurchaseRequestFormPage() {
         mode === "edit" && params.recordId
           ? await updatePurchaseRequest(params.recordId, values, activeBranchId)
           : await createPurchaseRequest(values, activeBranchId);
-      const nextRequest = createPurchaseRequestRecord(
-        values,
-        response.purchaseRequest.id,
-      );
+      const nextRequest = mapPurchaseRequestResponse(response.purchaseRequest);
+
+      await queryClient.invalidateQueries({
+        queryKey: PurchaseRequestQueryKeys.requests(),
+      });
 
       if (mode === "edit") {
-        updateRequest(nextRequest);
         recordPurchaseRequestAuditLog("UPDATE", nextRequest, {
           branchId: activeBranchId,
           branchName: activeBranchName,
         });
         toast.success("Purchase request updated.");
       } else {
-        addRequest(nextRequest);
         recordPurchaseRequestAuditLog("CREATE", nextRequest, {
           branchId: activeBranchId,
           branchName: activeBranchName,
@@ -289,11 +279,7 @@ export function usePurchaseRequestFormPage() {
       draft.clearDraft();
       router.push(`${PurchaseRequestHref}/view/${nextRequest.id}`);
     } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Could not save the purchase request. Please try again.",
-      );
+      toast.error(error instanceof Error ? error.message : "Could not save the purchase request. Please try again.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -336,10 +322,7 @@ function getPurchaseRequestFormMode(pathname: string): PurchaseRequestFormMode {
   return "add";
 }
 
-function findPurchaseRequestByRouteId(
-  requests: PurchaseRequestRecord[],
-  routeId?: string,
-) {
+function findPurchaseRequestByRouteId(requests: PurchaseRequestRecord[], routeId?: string) {
   if (!routeId) {
     return undefined;
   }
@@ -350,11 +333,7 @@ function findPurchaseRequestByRouteId(
     const normalizedId = request.id.trim().toLowerCase();
     const normalizedTransNo = request.transNo.trim().toLowerCase();
 
-    return (
-      normalizedId === normalizedRouteId ||
-      normalizedTransNo === normalizedRouteId ||
-      `pr-${normalizedTransNo}` === normalizedRouteId
-    );
+    return normalizedId === normalizedRouteId || normalizedTransNo === normalizedRouteId || `pr-${normalizedTransNo}` === normalizedRouteId;
   });
 }
 

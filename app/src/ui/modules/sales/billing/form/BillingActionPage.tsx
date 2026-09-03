@@ -5,10 +5,7 @@ import { useState } from "react";
 import { BillingHref } from "@/app/src/constants/modules/sales/billing/BillingConstants";
 import { useBillingActionForm } from "@/app/src/hooks/modules/sales/billing/useBilling";
 import type { BillingActionMode } from "@/app/src/types/modules/sales/billing/BillingTypes";
-import {
-  BillingDetailsForm,
-  type BillingDetailsSection,
-} from "@/app/src/ui/modules/sales/billing/form/BillingContent";
+import { BillingDetailsForm, type BillingDetailsSection } from "@/app/src/ui/modules/sales/billing/form/BillingContent";
 import { BillingFormHeader } from "@/app/src/ui/modules/sales/billing/form/BillingFormHeader";
 import { BillingEntrySection } from "@/app/src/ui/modules/sales/billing/entries/BillingEntrySection";
 import { BillingNotFound } from "@/app/src/ui/modules/sales/billing/overview/BillingNotFound";
@@ -44,13 +41,18 @@ export function BillingActionPage() {
         />
         <ModuleTabs activeTab={activeTab} ariaLabel="Billing sections" tabs={BillingTabs} onTabChange={setActiveTab} />
         <BillingDetailsForm
+          customerPartyOptions={invoiceForm.customerPartyOptions}
           isReadonly={isReadonly}
+          responsibilityCenterOptions={invoiceForm.responsibilityCenterOptions}
           section={activeTab}
+          termOptions={invoiceForm.termOptions}
           values={invoiceForm.values}
           onUpdateField={invoiceForm.updateField}
         />
         <BillingEntrySection
+          customerPartyOptions={invoiceForm.customerPartyOptions}
           isReadonly={isReadonly}
+          responsibilityCenterOptions={invoiceForm.responsibilityCenterOptions}
           values={invoiceForm.values}
           onAccountingRowsChange={invoiceForm.updateAccountingEntries}
           onRowsChange={invoiceForm.updateLineEntries}

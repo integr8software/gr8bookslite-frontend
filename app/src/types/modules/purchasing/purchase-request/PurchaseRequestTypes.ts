@@ -15,6 +15,8 @@ export type PurchaseRequestStatus =
 
 export type PurchaseRequestItem = {
 	id: string;
+	itemId: string;
+	serviceMaintenanceId: string;
 	itemCode: string;
 	barcode: string;
 	description: string;

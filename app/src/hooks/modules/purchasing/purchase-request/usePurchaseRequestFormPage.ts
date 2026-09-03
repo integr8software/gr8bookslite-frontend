@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { PurchaseRequestHref } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import { AiAssistantPurchaseRequestPrefillStorageKey } from "@/app/src/constants/shared/ai-assistant/AiAssistantConstants";
@@ -21,29 +22,42 @@ import type {
   PurchaseRequestFormMode,
   PurchaseRequestRecord,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+import type { ItemRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
 import type { AiAssistantPurchaseRequestPrefill } from "@/app/src/types/shared/ai-assistant/AiAssistantTypes";
 import { validatePurchaseRequestForm } from "@/app/src/validations/modules/purchasing/purchase-request/PurchaseRequestValidation";
+import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
+import { useItemManagementStore } from "@/app/src/hooks/modules/item-management/items/useItemManagement";
 import { usePurchaseRequestStore } from "@/app/src/hooks/modules/purchasing/purchase-request/usePurchaseRequest";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
+import { fetchServicesMaintenanceOptions } from "@/app/src/services/modules/financial-maintenance/services-maintenance/ServicesMaintenanceApi";
+import { ServicesMaintenanceQueryKeys } from "@/app/src/services/modules/financial-maintenance/services-maintenance/ServicesMaintenanceQueryKeys";
 import { recordPurchaseRequestAuditLog } from "@/app/src/services/modules/purchasing/purchase-request/PurchaseRequestAuditLog";
+import {
+  createPurchaseRequest,
+  mapPurchaseRequestResponse,
+  updatePurchaseRequest,
+} from "@/app/src/services/modules/purchasing/purchase-request/PurchaseRequestApi";
+import { PurchaseRequestQueryKeys } from "@/app/src/services/modules/purchasing/purchase-request/PurchaseRequestQueryKeys";
 
 export function usePurchaseRequestFormPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const pathname = usePathname();
   const params = useParams<{ recordId?: string }>();
   const searchParams = useSearchParams();
-  const { addRequest, requests, updateRequest } = usePurchaseRequestStore();
+  const { requests } = usePurchaseRequestStore();
+  const itemDescriptionOptions = useItemManagementStore(selectPurchasableItemOptions);
+  const accessToken = useAppStore((state) => state.accessToken);
   const activeBranchId = useAppStore((state) => state.activeBranchId);
   const activeBranchName = useAppStore((state) => state.activeBranchName);
+  const authProfileQuery = useAuthProfileQuery({ accessToken });
+  const companyId = authProfileQuery.data?.activeCompanyId ?? null;
   const mode = getPurchaseRequestFormMode(pathname);
   const isReadonly = mode === "view";
   const existingRequest = findPurchaseRequestByRouteId(requests, params.recordId);
-  const assistantPrefill =
-    mode === "add" && searchParams.get("assistant") === "1"
-      ? loadAssistantPurchaseRequestPrefill()
-      : null;
+  const assistantPrefill = mode === "add" && searchParams.get("assistant") === "1" ? loadAssistantPurchaseRequestPrefill() : null;
   const [values, setValues] = useState<PurchaseRequestFormValues>(() => {
     const initialValues = createPurchaseRequestFormValues(existingRequest);
 
@@ -57,6 +71,13 @@ export function usePurchaseRequestFormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
   const [showPreview, setShowPreview] = useState(searchParams.get("preview") === "1");
+  const loadedRequestIdRef = useRef<string | null>(null);
+  const serviceOptionsQuery = useQuery({
+    queryKey: ServicesMaintenanceQueryKeys.options(companyId),
+    queryFn: () => fetchServicesMaintenanceOptions("Purchases"),
+    enabled: Boolean(companyId),
+    retry: false,
+  });
 
   useEffect(() => {
     if (!assistantPrefill) {
@@ -66,10 +87,16 @@ export function usePurchaseRequestFormPage() {
     clearAssistantPurchaseRequestPrefill();
   }, [assistantPrefill]);
 
-  const previewRecord = useMemo(
-    () => createPurchaseRequestRecord(values, params.recordId ?? "preview"),
-    [params.recordId, values],
-  );
+  useEffect(() => {
+    if (mode === "add" || !existingRequest || loadedRequestIdRef.current === existingRequest.id) {
+      return;
+    }
+
+    loadedRequestIdRef.current = existingRequest.id;
+    setValues(createPurchaseRequestFormValues(existingRequest));
+  }, [existingRequest, mode]);
+
+  const previewRecord = useMemo(() => createPurchaseRequestRecord(values, params.recordId ?? "preview"), [params.recordId, values]);
   const draft = useModuleDraft({
     enabled: !isReadonly,
     key: createModuleDraftKey({
@@ -81,21 +108,37 @@ export function usePurchaseRequestFormPage() {
     values,
   });
 
-  function updateField<TKey extends keyof PurchaseRequestFormValues>(
-    field: TKey,
-    value: PurchaseRequestFormValues[TKey],
-  ) {
+  function updateField<TKey extends keyof PurchaseRequestFormValues>(field: TKey, value: PurchaseRequestFormValues[TKey]) {
     if (isReadonly) {
       return;
     }
 
-    const nextValue =
-      field === "vatRegTin" && typeof value === "string" ? FormatTinNumber(value) : value;
+    const nextValue = field === "vatRegTin" && typeof value === "string" ? FormatTinNumber(value) : value;
 
     setValues((current) => {
+      if (field === "purchaseType" && nextValue !== current.purchaseType) {
+        return {
+          ...current,
+          purchaseType: String(nextValue),
+          items: current.items.map((item) => ({
+            ...item,
+            itemId: "",
+            serviceMaintenanceId: "",
+            itemCode: "",
+            barcode: "",
+            description: "",
+            uom: "",
+          })),
+        };
+      }
+
       return { ...current, [field]: nextValue };
     });
-    setErrors((current) => ({ ...current, [field]: undefined }));
+    setErrors((current) => ({
+      ...current,
+      [field]: undefined,
+      ...(field === "purchaseType" ? { items: undefined } : {}),
+    }));
   }
 
   function updateItem(itemId: string, field: keyof PurchaseRequestItem, value: string | number) {
@@ -134,10 +177,7 @@ export function usePurchaseRequestFormPage() {
 
     setValues((current) => ({
       ...current,
-      items: [
-        ...current.items,
-        { ...emptyPurchaseRequestItem, id: createPurchaseRequestId("item") },
-      ],
+      items: [...current.items, { ...emptyPurchaseRequestItem, id: createPurchaseRequestId("item") }],
     }));
     setErrors((current) => ({ ...current, items: undefined }));
   }
@@ -149,10 +189,7 @@ export function usePurchaseRequestFormPage() {
 
     setValues((current) => ({
       ...current,
-      items:
-        current.items.length > 1
-          ? current.items.filter((item) => item.id !== itemId)
-          : current.items,
+      items: current.items.length > 1 ? current.items.filter((item) => item.id !== itemId) : current.items,
     }));
     setErrors((current) => ({ ...current, items: undefined }));
   }
@@ -162,9 +199,7 @@ export function usePurchaseRequestFormPage() {
       return;
     }
 
-    const selectedRecords = PurchaseRequestMaterialPlanRecords.filter((record) =>
-      recordIds.includes(record.id),
-    );
+    const selectedRecords = PurchaseRequestMaterialPlanRecords.filter((record) => recordIds.includes(record.id));
 
     if (selectedRecords.length === 0) {
       return;
@@ -180,9 +215,7 @@ export function usePurchaseRequestFormPage() {
 
     setValues((current) => ({
       ...current,
-      items: current.items.some(purchaseRequestEntryHasData)
-        ? [...current.items, ...copiedItems]
-        : copiedItems,
+      items: current.items.some(purchaseRequestEntryHasData) ? [...current.items, ...copiedItems] : copiedItems,
       remarks:
         current.remarks ||
         selectedRecords
@@ -194,14 +227,12 @@ export function usePurchaseRequestFormPage() {
     toast.success("Source transaction copied.");
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (isReadonly || isSubmittingRef.current) {
       return;
     }
 
-    const releaseSubmitLock = acquireModuleActionLock(
-      `purchasing:purchase-request:submit:${mode}:${params.recordId ?? values.transNo}`,
-    );
+    const releaseSubmitLock = acquireModuleActionLock(`purchasing:purchase-request:submit:${mode}:${params.recordId ?? values.transNo}`);
 
     if (!releaseSubmitLock) {
       return;
@@ -221,17 +252,23 @@ export function usePurchaseRequestFormPage() {
     }
 
     try {
-      const nextRequest = createPurchaseRequestRecord(values, params.recordId);
+      const response =
+        mode === "edit" && params.recordId
+          ? await updatePurchaseRequest(params.recordId, values, activeBranchId)
+          : await createPurchaseRequest(values, activeBranchId);
+      const nextRequest = mapPurchaseRequestResponse(response.purchaseRequest);
+
+      await queryClient.invalidateQueries({
+        queryKey: PurchaseRequestQueryKeys.requests(),
+      });
 
       if (mode === "edit") {
-        updateRequest(nextRequest);
         recordPurchaseRequestAuditLog("UPDATE", nextRequest, {
           branchId: activeBranchId,
           branchName: activeBranchName,
         });
         toast.success("Purchase request updated.");
       } else {
-        addRequest(nextRequest);
         recordPurchaseRequestAuditLog("CREATE", nextRequest, {
           branchId: activeBranchId,
           branchName: activeBranchName,
@@ -241,8 +278,8 @@ export function usePurchaseRequestFormPage() {
 
       draft.clearDraft();
       router.push(`${PurchaseRequestHref}/view/${nextRequest.id}`);
-    } catch {
-      toast.error("Could not save the purchase request. Please try again.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save the purchase request. Please try again.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -255,12 +292,14 @@ export function usePurchaseRequestFormPage() {
     errors,
     existingRequest,
     handleSubmit,
+    itemDescriptionOptions,
     isSubmitting,
     isReadonly,
     mode,
     needsRecord: mode === "edit" || mode === "view",
     previewRecord,
     removeItem,
+    serviceDescriptionOptions: serviceOptionsQuery.data ?? [],
     setShowPreview,
     showPreview,
     updateField,
@@ -283,10 +322,7 @@ function getPurchaseRequestFormMode(pathname: string): PurchaseRequestFormMode {
   return "add";
 }
 
-function findPurchaseRequestByRouteId(
-  requests: PurchaseRequestRecord[],
-  routeId?: string,
-) {
+function findPurchaseRequestByRouteId(requests: PurchaseRequestRecord[], routeId?: string) {
   if (!routeId) {
     return undefined;
   }
@@ -297,12 +333,12 @@ function findPurchaseRequestByRouteId(
     const normalizedId = request.id.trim().toLowerCase();
     const normalizedTransNo = request.transNo.trim().toLowerCase();
 
-    return (
-      normalizedId === normalizedRouteId ||
-      normalizedTransNo === normalizedRouteId ||
-      `pr-${normalizedTransNo}` === normalizedRouteId
-    );
+    return normalizedId === normalizedRouteId || normalizedTransNo === normalizedRouteId || `pr-${normalizedTransNo}` === normalizedRouteId;
   });
+}
+
+function selectPurchasableItemOptions({ items }: { items: ItemRecord[] }) {
+  return items.filter((item) => item.status === "Active" && item.purchasable && !item.service);
 }
 
 function loadAssistantPurchaseRequestPrefill() {

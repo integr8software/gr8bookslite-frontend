@@ -43,9 +43,11 @@ function PurchaseRequestActionPageInner() {
         <PurchaseRequestEntrySection
           accountingRows={page.values.accountingEntries}
           error={page.errors.items}
+          itemDescriptionOptions={page.itemDescriptionOptions}
           isReadonly={page.isReadonly}
           purchaseType={page.values.purchaseType}
           rows={page.values.items}
+          serviceDescriptionOptions={page.serviceDescriptionOptions}
           onAccountingRowsChange={page.updateAccountingEntries}
           onRowsChange={page.updateItems}
         />

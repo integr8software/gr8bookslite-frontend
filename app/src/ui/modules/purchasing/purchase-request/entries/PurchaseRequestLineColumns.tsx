@@ -3,6 +3,8 @@ import {
 	PurchaseRequestUomOptions,
 } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import type { PurchaseRequestItem } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+import type { ItemRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
+import type { ServiceMaintenanceOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import {
 	formatMoneyNumberInput,
@@ -34,8 +36,11 @@ export function createPurchaseRequestLineColumns(
 	isReadonly: boolean,
 	onUpdateEntry: PurchaseRequestLineUpdater,
 	purchaseType?: string,
+	serviceDescriptionOptions: ServiceMaintenanceOptionResponseDto[] = [],
+	itemDescriptionOptions: ItemRecord[] = [],
 ): ModuleDataEntryColumn<PurchaseRequestItem>[] {
 	const isServices = purchaseType?.toLowerCase() === "services";
+	const isGoods = purchaseType?.toLowerCase() === "goods";
 	const activeConfigs = isServices
 		? PurchaseRequestLineColumnConfigs.filter(
 				(column) => !["itemCode", "barcode", "uom"].includes(column.id),
@@ -43,7 +48,7 @@ export function createPurchaseRequestLineColumns(
 		: PurchaseRequestLineColumnConfigs;
 
 	return activeConfigs.map((column) => ({
-		header: column.header,
+		header: isGoods && column.id === "uom" ? "Box" : column.header,
 		id: column.id,
 		width: column.width,
 		widthClassName: column.widthClassName,
@@ -52,8 +57,12 @@ export function createPurchaseRequestLineColumns(
 				column={column}
 				fieldId={context.fieldId}
 				fieldName={context.fieldName}
+				isGoods={isGoods}
+				isServices={isServices}
 				isReadonly={isReadonly}
+				itemDescriptionOptions={itemDescriptionOptions}
 				row={row}
+				serviceDescriptionOptions={serviceDescriptionOptions}
 				onUpdateEntry={onUpdateEntry}
 			/>
 		),
@@ -64,18 +73,76 @@ function PurchaseRequestLineCell({
 	column,
 	fieldId,
 	fieldName,
+	isGoods,
+	isServices,
 	isReadonly,
+	itemDescriptionOptions,
 	onUpdateEntry,
 	row,
+	serviceDescriptionOptions,
 }: {
 	column: PurchaseRequestLineColumnConfig;
 	fieldId: string;
 	fieldName: string;
+	isGoods: boolean;
+	isServices: boolean;
 	isReadonly: boolean;
+	itemDescriptionOptions: ItemRecord[];
 	onUpdateEntry: PurchaseRequestLineUpdater;
 	row: PurchaseRequestItem;
+	serviceDescriptionOptions: ServiceMaintenanceOptionResponseDto[];
 }) {
 	const value = String(row[column.id] ?? "");
+
+	if (isGoods && column.id === "description") {
+		return (
+			<AppAdvancedDropdown
+				id={fieldId}
+				name={fieldName}
+				value={value}
+				readOnly={isReadonly}
+				options={createItemDescriptionDropdownOptions(itemDescriptionOptions, value)}
+				placeholder=""
+				className={EntryDropdownClassName}
+				onChange={(nextValue) =>
+					onUpdateEntry(
+						row.id,
+						getPurchaseRequestItemAutoFillUpdates(itemDescriptionOptions, String(nextValue)),
+					)
+				}
+			/>
+		);
+	}
+
+	if (isServices && column.id === "description") {
+		return (
+			<AppAdvancedDropdown
+				id={fieldId}
+				name={fieldName}
+				value={value}
+				readOnly={isReadonly}
+				options={createServiceDescriptionDropdownOptions(serviceDescriptionOptions, value)}
+				placeholder=""
+				className={EntryDropdownClassName}
+				onChange={(nextValue) =>
+					onUpdateEntry(row.id, { [column.id]: String(nextValue) })
+				}
+			/>
+		);
+	}
+
+	if (isGoods && ["itemCode", "barcode", "uom"].includes(column.id)) {
+		return (
+			<input
+				id={fieldId}
+				name={fieldName}
+				type="text"
+				value={value}
+				readOnly
+				className={entryCellControlClassName("bg-offwhite/35")}
+			/>
+		);
+	}
 
 	if (column.id === "responsibilityCenter") {
 		const options = [
@@ -161,6 +228,72 @@ function PurchaseRequestLineCell({
 
 const EntryDropdownClassName =
 	"[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+
+function createItemDescriptionDropdownOptions(
+	itemOptions: ItemRecord[],
+	value: string,
+) {
+	const dropdownOptions = itemOptions.map((item) => ({
+		name: item.name,
+		value: item.name,
+	}));
+
+	if (
+		value &&
+		!dropdownOptions.some(
+			(option) => option.value.trim().toLowerCase() === value.trim().toLowerCase(),
+		)
+	) {
+		return [{ name: value, value }, ...dropdownOptions];
+	}
+
+	return dropdownOptions;
+}
+
+function getPurchaseRequestItemAutoFillUpdates(
+	itemOptions: ItemRecord[],
+	description: string,
+): Partial<PurchaseRequestItem> {
+	const selectedItem = itemOptions.find(
+		(item) => item.name.trim().toLowerCase() === description.trim().toLowerCase(),
+	);
+
+	if (!selectedItem) {
+		return { description };
+	}
+
+	return {
+		barcode: selectedItem.barcode,
+		description: selectedItem.name,
+		itemCode: selectedItem.code,
+		uom: selectedItem.uom,
+	};
+}
+
+function createServiceDescriptionDropdownOptions(
+	serviceOptions: ServiceMaintenanceOptionResponseDto[],
+	value: string,
+) {
+	const dropdownOptions = serviceOptions.map((service) => {
+		const serviceName = service.serviceName || service.name;
+
+		return {
+			name: serviceName,
+			value: serviceName,
+		};
+	});
+
+	if (
+		value &&
+		!dropdownOptions.some(
+			(option) => option.value.trim().toLowerCase() === value.trim().toLowerCase(),
+		)
+	) {
+		return [{ name: value, value }, ...dropdownOptions];
+	}
+
+	return dropdownOptions;
+}
 
 function entryCellControlClassName(extraClassName?: string) {
 	return joinClasses(

@@ -54,6 +54,12 @@ export async function fetchServicesMaintenance(): Promise<ServicesMaintenanceLis
   };
 }
 
+export async function fetchServicesMaintenanceOptions(): Promise<ServiceMaintenanceOptionResponseDto[]> {
+  const response = await servicesMaintenanceControllerFindOptionsV1({ status: "ACTIVE" });
+
+  return response.services;
+}
+
 export async function fetchServicesMaintenanceAccountOptions(): Promise<ModuleChartAccount[]> {
   const response = await servicesMaintenanceControllerGetAccountOptionsV1();
 

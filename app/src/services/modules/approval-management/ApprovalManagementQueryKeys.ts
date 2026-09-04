@@ -1,6 +1,10 @@
 export const ApprovalManagementQueryKeys = {
-	all: ["approval-management"] as const,
-	modules: () => [...ApprovalManagementQueryKeys.all, "modules"] as const,
-	transactions: () => [...ApprovalManagementQueryKeys.all, "transactions"] as const,
-	workflows: () => [...ApprovalManagementQueryKeys.all, "workflows"] as const,
+	all: (companyId?: number | null) =>
+		["approval-management", companyId ?? "no-company"] as const,
+	modules: (companyId?: number | null) =>
+		[...ApprovalManagementQueryKeys.all(companyId), "modules"] as const,
+	transactions: (companyId?: number | null) =>
+		[...ApprovalManagementQueryKeys.all(companyId), "transactions"] as const,
+	workflows: (companyId?: number | null) =>
+		[...ApprovalManagementQueryKeys.all(companyId), "workflows"] as const,
 };

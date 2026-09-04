@@ -6,14 +6,8 @@ import {
   formatPurchaseOrderAmount,
   getPurchaseOrderTotals,
 } from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
-import type {
-  PurchaseOrderAccountingEntry,
-  PurchaseOrderFieldUpdater,
-  PurchaseOrderFormValues,
-  PurchaseOrderItem,
-} from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
+import type { PurchaseOrderAccountingEntry, PurchaseOrderCopySource, PurchaseOrderItem } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 import type { PurchasingAccountingColumnId, PurchasingEntryTab } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
-import { PurchaseOrderFieldClassName } from "@/app/src/ui/modules/purchasing/purchase-order/form/PurchaseOrderFieldControls";
 import {
   ModuleDataEntry,
   type ModuleDataEntryClearAction,
@@ -21,7 +15,10 @@ import {
   type ModuleDataEntryColumnOption,
   type ModuleDataEntryExportOption,
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import { createPurchaseOrderLineColumns } from "@/app/src/ui/modules/purchasing/purchase-order/entries/PurchaseOrderLineColumns";
+import {
+  createPurchaseOrderLineColumns,
+  getPurchaseOrderDefaultVisibleColumnIds,
+} from "@/app/src/ui/modules/purchasing/purchase-order/entries/PurchaseOrderLineColumns";
 import {
   duplicateEntryRow,
   insertEntryRow,
@@ -41,11 +38,11 @@ type PurchaseOrderEntrySectionProps = {
   accountingRows: PurchaseOrderAccountingEntry[];
   error?: string;
   isReadonly: boolean;
+  purchaseType: string;
+  copyFromSource?: PurchaseOrderCopySource;
   rows: PurchaseOrderItem[];
-  values: PurchaseOrderFormValues;
   onAccountingRowsChange: (rows: PurchaseOrderAccountingEntry[]) => void;
   onRowsChange: (rows: PurchaseOrderItem[]) => void;
-  onUpdateField: PurchaseOrderFieldUpdater<PurchaseOrderFormValues>;
 };
 
 export function PurchaseOrderEntrySection({
@@ -54,17 +51,38 @@ export function PurchaseOrderEntrySection({
   isReadonly,
   onAccountingRowsChange,
   onRowsChange,
-  onUpdateField,
+  purchaseType,
+  copyFromSource = "",
   rows,
-  values,
 }: PurchaseOrderEntrySectionProps) {
   const [activeTab] = useState<PurchasingEntryTab>("details");
+  const [lineColumnIdsByPurchaseType, setLineColumnIdsByPurchaseType] = useState<Record<string, string[]>>({});
+  const purchaseTypeKey = purchaseType.toLowerCase();
+  const sourceHiddenColumnId = copyFromSource === "Purchase Request" ? "canvassNo" : copyFromSource === "Canvass" ? "linePrNo" : "";
+  const visibleLineColumnIds = (lineColumnIdsByPurchaseType[purchaseTypeKey] ?? getPurchaseOrderDefaultVisibleColumnIds(purchaseType)).filter(
+    (columnId) => columnId !== sourceHiddenColumnId,
+  );
   const [visibleAccountingColumnIds, setVisibleAccountingColumnIds] = useState<PurchasingAccountingColumnId[]>([
     ...PurchasingAccountingDefaultVisibleColumnIds,
   ]);
   const updateEntry = useCallback(
     (rowId: string, updates: Partial<PurchaseOrderItem>) => {
-      onRowsChange(rows.map((row) => (row.id === rowId ? normalizeEntry({ ...row, ...updates }) : row)));
+      onRowsChange(
+        rows.map((row) => {
+          if (row.id !== rowId) return row;
+
+          const nextRow = normalizeEntry({ ...row, ...updates });
+
+          if ("discountRate" in updates || "quantity" in updates || "cost" in updates) {
+            nextRow.discountAmount = (nextRow.quantity * nextRow.cost * nextRow.discountRate) / 100;
+          } else if ("discountAmount" in updates) {
+            const grossAmount = nextRow.quantity * nextRow.cost;
+            nextRow.discountRate = grossAmount > 0 ? (nextRow.discountAmount / grossAmount) * 100 : 0;
+          }
+
+          return nextRow;
+        }),
+      );
     },
     [onRowsChange, rows],
   );
@@ -74,10 +92,14 @@ export function PurchaseOrderEntrySection({
     },
     [accountingRows, onAccountingRowsChange],
   );
-  const totals = useMemo(() => getPurchaseOrderTotals({ ...values, items: rows }), [rows, values]);
-  const columns = useMemo<ModuleDataEntryColumn<PurchaseOrderItem>[]>(
+  const totals = useMemo(() => getPurchaseOrderTotals({ items: rows }), [rows]);
+  const allColumns = useMemo<ModuleDataEntryColumn<PurchaseOrderItem>[]>(
     () => createPurchaseOrderLineColumns(isReadonly, updateEntry),
     [isReadonly, updateEntry],
+  );
+  const columns = useMemo(
+    () => allColumns.filter((column) => visibleLineColumnIds.includes(column.id)),
+    [allColumns, visibleLineColumnIds],
   );
   const accountingColumns = useMemo(
     () => createPurchasingAccountingEntryColumns(isReadonly, updateAccountingEntry),
@@ -89,15 +111,15 @@ export function PurchaseOrderEntrySection({
   );
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () =>
-      columns.map((column) => ({
+      allColumns.map((column) => ({
         id: column.id,
-        isHideable: !["itemCode", "itemName", "quantity", "uom"].includes(column.id),
-        isVisible: true,
+        isHideable: !["itemName", "quantity"].includes(column.id),
+        isVisible: visibleLineColumnIds.includes(column.id),
         label: column.header,
         width: column.width,
         widthMode: column.widthMode,
       })),
-    [columns],
+    [allColumns, visibleLineColumnIds],
   );
 
   if (activeTab === "accounting") {
@@ -213,6 +235,7 @@ export function PurchaseOrderEntrySection({
         isReadonly={isReadonly}
         rows={rows}
         summaryCells={{
+          discountAmount: formatPurchaseOrderAmount(totals.discountAmount),
           grossAmount: formatPurchaseOrderAmount(totals.grossAmount),
           netAmount: formatPurchaseOrderAmount(totals.netAmount),
           vatAmount: formatPurchaseOrderAmount(totals.vatAmount),
@@ -227,42 +250,34 @@ export function PurchaseOrderEntrySection({
         onInsertRow={insertRow}
         onMoveRow={moveRow}
         onRemoveRow={removeRow}
-        onToggleColumnVisibility={() => undefined}
+        onToggleColumnVisibility={(columnId, isVisible) =>
+          setLineColumnIdsByPurchaseType((current) => ({
+            ...current,
+            [purchaseTypeKey]: toggleLineColumnVisibility(
+              current[purchaseTypeKey] ?? visibleLineColumnIds,
+              allColumns,
+              columnId,
+              isVisible,
+            ),
+          }))
+        }
         onUpdateColumnHeader={() => undefined}
         onUpdateColumnWidth={() => undefined}
       />
-      <div className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5">
-        <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <CompactAmountField
-            id="purchase-order-gross-amount"
-            label="Gross Amount"
-            readOnly
-            value={formatPurchaseOrderAmount(totals.grossAmount)}
-          />
-          <CompactAmountField
-            id="purchase-order-discount-amount"
-            label="Discount Amount"
-            readOnly={isReadonly}
-            value={values.discountAmount}
-            onChange={(value) => onUpdateField("discountAmount", value)}
-          />
-          <CompactAmountField
-            id="purchase-order-vat-amount"
-            label="VAT Amount"
-            readOnly={isReadonly}
-            value={values.vatAmount}
-            onChange={(value) => onUpdateField("vatAmount", value)}
-          />
-          <CompactAmountField
-            id="purchase-order-net-amount"
-            label="Net Amount"
-            readOnly
-            value={formatPurchaseOrderAmount(totals.netAmount)}
-          />
-        </div>
-      </div>
     </section>
   );
+}
+
+function toggleLineColumnVisibility(
+  current: string[],
+  columns: ModuleDataEntryColumn<PurchaseOrderItem>[],
+  columnId: string,
+  isVisible: boolean,
+) {
+  const visibleIds = new Set(current);
+  if (isVisible) visibleIds.add(columnId);
+  else visibleIds.delete(columnId);
+  return columns.map((column) => column.id).filter((id) => visibleIds.has(id));
 }
 
 function createAccountingColumnOptions(
@@ -320,33 +335,3 @@ const EntryExportOptions = [
   { id: "excel", label: "Excel", onSelect: () => undefined },
   { id: "pdf", label: "PDF", onSelect: () => undefined },
 ] satisfies ModuleDataEntryExportOption[];
-
-function CompactAmountField({
-  id,
-  label,
-  onChange,
-  readOnly,
-  value,
-}: {
-  id: string;
-  label: string;
-  onChange?: (value: number) => void;
-  readOnly: boolean;
-  value: number | string;
-}) {
-  return (
-    <div className="grid min-w-0 gap-2">
-      <label htmlFor={id} className="text-sm font-semibold text-darknavy">
-        {label}
-      </label>
-      <input
-        id={id}
-        type="number"
-        value={value}
-        readOnly={readOnly || !onChange}
-        onChange={(event) => onChange?.(Number(event.target.value))}
-        className={`${PurchaseOrderFieldClassName} text-right tabular-nums`}
-      />
-    </div>
-  );
-}

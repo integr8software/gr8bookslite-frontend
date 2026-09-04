@@ -28,7 +28,7 @@ export function createAccountsPayableVoucherInitialFormValues(baseCurrencyCode =
     creditAccountTitle: "",
     payableType: "Trade Payable",
     remarks: "",
-    status: "Draft",
+    status: "For Approval",
     expenseLines: [createAccountsPayableVoucherExpenseLine(1)],
     accountingEntries: [createAccountsPayableVoucherAccountingEntry(1), createAccountsPayableVoucherAccountingEntry(2)],
   };

@@ -133,7 +133,7 @@ function AccountsPayableVoucherMetrics({
   const totalCount = statistics.totalVouchers;
   const cards = [
     {
-      label: "Total Transaction",
+      label: "Total Transactions",
       value: totalCount,
       summary: "All time",
       icon: FileText,
@@ -151,15 +151,6 @@ function AccountsPayableVoucherMetrics({
       onClick: () => onStatusFilterChange("Posted"),
     },
     {
-      label: "Draft",
-      value: statistics.draftVouchers,
-      summary: formatPercentage(statistics.draftVouchers, totalCount),
-      icon: Clock3,
-      iconClassName: "bg-offwhite text-darknavy",
-      isActive: statusFilter === "Draft",
-      onClick: () => onStatusFilterChange("Draft"),
-    },
-    {
       label: "For Approval",
       value: statistics.forApprovalVouchers,
       summary: formatPercentage(statistics.forApprovalVouchers, totalCount),
@@ -167,6 +158,15 @@ function AccountsPayableVoucherMetrics({
       iconClassName: "bg-emerald-50 text-emerald-700",
       isActive: statusFilter === "For Approval",
       onClick: () => onStatusFilterChange("For Approval"),
+    },
+    {
+      label: "Draft",
+      value: statistics.draftVouchers,
+      summary: formatPercentage(statistics.draftVouchers, totalCount),
+      icon: Clock3,
+      iconClassName: "bg-offwhite text-darknavy",
+      isActive: statusFilter === "Draft",
+      onClick: () => onStatusFilterChange("Draft"),
     },
     {
       label: "Disapproved",

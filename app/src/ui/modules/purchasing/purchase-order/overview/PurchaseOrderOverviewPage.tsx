@@ -8,28 +8,14 @@ import {
 } from "@/app/src/constants/modules/purchasing/purchase-order/PurchaseOrderConstants";
 import { usePurchaseOrderListPage } from "@/app/src/hooks/modules/purchasing/purchase-order/usePurchaseOrderListPage";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import {
-  ModuleTableSearch,
-  ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
+import { ModuleTableSearch, ModuleTableToolbar } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { PurchaseOrderRecordActions } from "@/app/src/ui/modules/purchasing/purchase-order/overview/PurchaseOrderRecordActions";
 
 export function PurchaseOrderOverviewPage() {
-  const {
-    handleConfirmDelete,
-    handleQueryChange,
-    isMutating,
-    lastSyncedAt,
-    pendingDeleteOrder,
-    query,
-    setPendingDeleteOrder,
-    table,
-  } = usePurchaseOrderListPage();
+  const { handleConfirmDelete, handleQueryChange, isMutating, lastSyncedAt, pendingDeleteOrder, query, setPendingDeleteOrder, table } =
+    usePurchaseOrderListPage();
 
   return (
     <section className="grid gap-5">
@@ -72,13 +58,7 @@ export function PurchaseOrderOverviewPage() {
               />
             </ModuleTableToolbar>
           }
-          renderRow={({ id, original }) => (
-            <PurchaseOrderRecordActions
-              key={id}
-              order={original}
-              onDeleteOrder={setPendingDeleteOrder}
-            />
-          )}
+          renderRow={({ id, original }) => <PurchaseOrderRecordActions key={id} order={original} onDeleteOrder={setPendingDeleteOrder} />}
         />
       </div>
       <AppDialog

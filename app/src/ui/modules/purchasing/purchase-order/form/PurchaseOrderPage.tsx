@@ -43,11 +43,11 @@ function PurchaseOrderActionPageInner() {
         accountingRows={page.values.accountingEntries}
         error={page.errors.items}
         isReadonly={page.isReadonly}
+        purchaseType={page.values.purchaseType}
+        copyFromSource={page.values.copyFromSource}
         rows={page.values.items}
-        values={page.values}
         onAccountingRowsChange={page.updateAccountingEntries}
         onRowsChange={page.updateItems}
-        onUpdateField={page.updateField}
       />
       <PurchaseOrderReportPreview isOpen={page.showPreview} record={page.previewRecord} onClose={() => page.setShowPreview(false)} />
     </section>

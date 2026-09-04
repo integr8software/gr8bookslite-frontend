@@ -13,7 +13,7 @@ type PurchaseOrderDetailsFormProps = {
 export function PurchaseOrderDetailsForm({ isReadonly, onUpdateField, values }: PurchaseOrderDetailsFormProps) {
   return (
     <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
-      <PurchaseOrderSupplierFields isReadonly={isReadonly} values={values} onUpdateField={onUpdateField} />
+      <PurchaseOrderSupplierFields isReadonly={isReadonly} isCopyLocked={Boolean(values.copyFromSource)} values={values} onUpdateField={onUpdateField} />
     </section>
   );
 }

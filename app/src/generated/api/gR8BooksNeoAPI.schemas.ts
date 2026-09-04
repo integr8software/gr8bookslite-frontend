@@ -15601,6 +15601,350 @@ export interface UpdatePurchaseRequestStatusDto {
   status: UpdatePurchaseRequestStatusDtoStatus;
 }
 
+export interface PurchaseOrderEntryResponseDto {
+  id: string;
+  /** @nullable */
+  purchaseRequestEntryId?: string | null;
+  /** @nullable */
+  responsibilityCenterId?: string | null;
+  /** @nullable */
+  serviceMaintenanceId?: string | null;
+  /** @nullable */
+  itemId?: string | null;
+  /** @nullable */
+  itemCode?: string | null;
+  /** @nullable */
+  barcode?: string | null;
+  description: string;
+  /** @nullable */
+  color?: string | null;
+  /** @nullable */
+  brand?: string | null;
+  /** @nullable */
+  size?: string | null;
+  /** @nullable */
+  model?: string | null;
+  /** @nullable */
+  uom?: string | null;
+  /** @nullable */
+  lotNo?: string | null;
+  prQty: number;
+  poQty: number;
+  price: number;
+  grossAmount: number;
+  discountRate: number;
+  discountAmount: number;
+  grossAfterDiscount: number;
+  vatAmount: number;
+  vatable: boolean;
+  vatInclusive: boolean;
+  netOfVatAmount: number;
+  netAmount: number;
+  /** @nullable */
+  prNo?: string | null;
+  /** @nullable */
+  canvassNo?: string | null;
+  /** @nullable */
+  responsibilityCenter?: string | null;
+}
+
+export type PurchaseOrderResponseDtoStatus = typeof PurchaseOrderResponseDtoStatus[keyof typeof PurchaseOrderResponseDtoStatus];
+
+
+export const PurchaseOrderResponseDtoStatus = {
+  DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
+  POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface PurchaseOrderResponseDto {
+  id: string;
+  branchUnitId: number;
+  branchName: string;
+  partyId: string;
+  partyCode: string;
+  partyName: string;
+  purchaseType: string;
+  transNo: string;
+  poDate: string;
+  /** @nullable */
+  dateNeeded?: string | null;
+  /** @nullable */
+  address?: string | null;
+  /** @nullable */
+  emailAddress?: string | null;
+  /** @nullable */
+  contactNo?: string | null;
+  /** @nullable */
+  projectResponsibilityCenterId?: string | null;
+  /** @nullable */
+  projectCode?: string | null;
+  /** @nullable */
+  projectName?: string | null;
+  /** @nullable */
+  termId?: string | null;
+  /** @nullable */
+  termsOfPayment?: string | null;
+  /** @nullable */
+  purchaseRequestId?: string | null;
+  /** @nullable */
+  prNo?: string | null;
+  currency: string;
+  exchangeRate: number;
+  /** @nullable */
+  remarks?: string | null;
+  status: PurchaseOrderResponseDtoStatus;
+  items: PurchaseOrderEntryResponseDto[];
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface PurchaseOrderPaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface PurchaseOrderListResponseDto {
+  purchaseOrders: PurchaseOrderResponseDto[];
+  pagination: PurchaseOrderPaginationResponseDto;
+}
+
+export interface PurchaseOrderContainerResponseDto {
+  purchaseOrder: PurchaseOrderResponseDto;
+}
+
+export interface PurchaseOrderItemDto {
+  /** @nullable */
+  purchaseRequestEntryId?: string | null;
+  /** @nullable */
+  responsibilityCenterId?: string | null;
+  /** @nullable */
+  serviceMaintenanceId?: string | null;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  itemId?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  itemCode?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  barcode?: string | null;
+  /** @maxLength 255 */
+  description: string;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  color?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  brand?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  size?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  model?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  uom?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  lotNo?: string | null;
+  /** @minimum 0 */
+  prQty: number;
+  /** @minimum 0 */
+  poQty: number;
+  /** @minimum 0 */
+  price: number;
+  /** @minimum 0 */
+  discountRate?: number;
+  /** @minimum 0 */
+  discountAmount?: number;
+  /** @minimum 0 */
+  vatAmount?: number;
+  vatable?: boolean;
+  vatInclusive?: boolean;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  prNo?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  canvassNo?: string | null;
+  /**
+     * @maxLength 150
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+}
+
+export interface CreatePurchaseOrderDto {
+  /** @minimum 1 */
+  branchUnitId?: number;
+  /** @maxLength 80 */
+  transNo: string;
+  poDate: string;
+  /** @nullable */
+  dateNeeded?: string | null;
+  /** @nullable */
+  partyId?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  partyCode?: string | null;
+  /** @maxLength 20 */
+  purchaseType: string;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  address?: string | null;
+  /**
+     * @maxLength 255
+     * @nullable
+     */
+  emailAddress?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  contactNo?: string | null;
+  /** @nullable */
+  projectResponsibilityCenterId?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * @maxLength 255
+     * @nullable
+     */
+  projectName?: string | null;
+  /** @nullable */
+  termId?: string | null;
+  /**
+     * @maxLength 150
+     * @nullable
+     */
+  termsOfPayment?: string | null;
+  /** @nullable */
+  purchaseRequestId?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  prNo?: string | null;
+  /** @maxLength 10 */
+  currency?: string;
+  /** @minimum 0 */
+  exchangeRate?: number;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  remarks?: string | null;
+  /** @minItems 1 */
+  items: PurchaseOrderItemDto[];
+}
+
+export interface UpdatePurchaseOrderDto {
+  /** @minimum 1 */
+  branchUnitId?: number;
+  /** @maxLength 80 */
+  transNo?: string;
+  poDate?: string;
+  /** @nullable */
+  dateNeeded?: string | null;
+  /** @nullable */
+  partyId?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  partyCode?: string | null;
+  /** @maxLength 20 */
+  purchaseType?: string;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  address?: string | null;
+  /**
+     * @maxLength 255
+     * @nullable
+     */
+  emailAddress?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  contactNo?: string | null;
+  /** @nullable */
+  projectResponsibilityCenterId?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * @maxLength 255
+     * @nullable
+     */
+  projectName?: string | null;
+  /** @nullable */
+  termId?: string | null;
+  /**
+     * @maxLength 150
+     * @nullable
+     */
+  termsOfPayment?: string | null;
+  /** @nullable */
+  purchaseRequestId?: string | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  prNo?: string | null;
+  /** @maxLength 10 */
+  currency?: string;
+  /** @minimum 0 */
+  exchangeRate?: number;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  remarks?: string | null;
+  /** @minItems 1 */
+  items?: PurchaseOrderItemDto[];
+}
+
 export type AuthControllerLoginV1201 = { [key: string]: unknown };
 
 export type AuthControllerGoogleAuthV1Params = {
@@ -20349,5 +20693,22 @@ limit?: number;
  */
 branchUnitId?: number;
 search?: string;
+};
+
+export type PurchaseOrderControllerFindAllV1Params = {
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+search?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+limit?: number;
 };
 

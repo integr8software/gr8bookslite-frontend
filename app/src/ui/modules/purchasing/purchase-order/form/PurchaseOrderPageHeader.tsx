@@ -58,6 +58,7 @@ export function PurchaseOrderFormHeader({
 					) : (
 						<>
 							<AppCopyFromDropdown
+								disabled={Boolean(values.copyFromSource)}
 								records={copyFromRecords}
 								sources={["Purchase Request", "Canvass"]}
 								onApply={onCopyFromSource}

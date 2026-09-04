@@ -24,8 +24,8 @@ export const ServicesMaintenanceReadOnlyFieldClassName = `${ServicesMaintenanceF
 
 export const ServicesMaintenanceStatusOptions = ["Active", "Inactive"] as const satisfies readonly ServicesMaintenanceStatus[];
 export const ServicesMaintenanceAccountSetupModeOptions = [
-  "Auto",
   "Existing",
+  "Auto",
 ] as const satisfies readonly ServicesMaintenanceAccountSetupMode[];
 
 export const ServicesMaintenanceTablePaginationStorageKey = "maintenance:financial-management:services-maintenance";

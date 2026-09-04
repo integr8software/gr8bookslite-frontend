@@ -7,36 +7,48 @@ import type {
   ServicesMaintenanceAccountingSetupTabProps,
   ServicesMaintenanceAccountSetupMode,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { FormField } from "@/app/src/ui/modules/financial-maintenance/services-maintenance/ServicesMaintenanceFields";
 
 export function ServicesMaintenanceAccountingSetupTab({
   accountOptions,
+  canAddExpenseTypeSubAccount,
   errors,
+  expenseNextAccountCode,
+  expenseParentOptions = [],
   isAccountCodeLoading,
+  isExpenseNextAccountCodeLoading,
+  isLoadingExpenseParentOptions,
   isReadonly,
   mode,
   nextAccountCode,
+  nextExpenseSubAccountLevel,
   selectedService,
   values,
   onAccountSetupModeChange,
   onAddAccountTitle,
+  onExpenseParentChange,
+  onOpenExpenseSubAccountDialog,
   onRevenueAccountChange,
 }: ServicesMaintenanceAccountingSetupTabProps) {
   const isAuto = values.accountSetupMode === "Auto";
+  const isPurchase = values.serviceType === "Purchase of Service";
   const selectedAccount = accountOptions.find((account) => account.id === values.revenueCoaId);
   const displayedAccountTitle = isAuto
     ? buildGeneratedServiceRevenueAccountTitle(values.serviceName || "[Name]")
     : (selectedAccount?.accountName ?? selectedService?.revenueAccountTitle ?? "");
   const displayedAccountCode = isAuto
     ? mode === "add"
-      ? isAccountCodeLoading
-        ? "Loading..."
-        : nextAccountCode?.accountCode || "Auto series"
+      ? isPurchase
+        ? isExpenseNextAccountCodeLoading
+          ? "Loading..."
+          : expenseNextAccountCode || (values.expenseParentCoaId ? "Auto series" : "--")
+        : isAccountCodeLoading
+          ? "Loading..."
+          : nextAccountCode?.accountCode || "Auto series"
       : (selectedService?.revenueAccountCode ?? "")
     : (selectedAccount?.accountNumber ?? selectedService?.revenueAccountCode ?? "");
-  const accountCodeLabel = isAuto ? "Possible Account Code" : "Account Code";
-  const accountNameLabel = isAuto ? "Possible Account Name" : "Account Name";
 
   return (
     <div className="grid gap-5">
@@ -53,18 +65,46 @@ export function ServicesMaintenanceAccountingSetupTab({
                 : "border-darknavy/10 bg-white text-darknavy/70 hover:border-skyblue/40"
             } disabled:cursor-not-allowed disabled:bg-darknavy/[0.03]`}
           >
-            <span className="block font-semibold">{option === "Auto" ? "Generate Account Automatically" : "Select Existing Account"}</span>
+            <span className="block font-semibold">
+              {option === "Existing" ? "Select Existing Account" : "Generate Account Automatically"}
+            </span>
             <span className="mt-1 block text-xs text-darknavy/55">
-              {option === "Auto"
-                ? "Create a Service Revenues account for this service."
-                : "Use an existing Service Revenues posting account."}
+              {option === "Existing"
+                ? isPurchase
+                  ? "Use an existing posting account."
+                  : "Use an existing Service Revenues posting account."
+                : isPurchase
+                  ? "Create an expense account for this service."
+                  : "Create a Service Revenues account for this service."}
             </span>
           </button>
         ))}
       </div>
 
+      {isPurchase && isAuto ? (
+        <FormField label="Expense Type" error={errors.expenseParentCoaId} required>
+          <AppAdvancedDropdown
+            value={values.expenseParentCoaId ?? ""}
+            disabled={isReadonly || isLoadingExpenseParentOptions}
+            addAction={
+              onOpenExpenseSubAccountDialog
+                ? {
+                    disabled: !canAddExpenseTypeSubAccount,
+                    label: nextExpenseSubAccountLevel ? "Add Sub Account" : "Add Expense Type",
+                    onClick: onOpenExpenseSubAccountDialog,
+                  }
+                : undefined
+            }
+            options={expenseParentOptions}
+            placeholder={isLoadingExpenseParentOptions ? "Loading expense accounts..." : "--Select Expense Type--"}
+            searchPlaceholder="Search expense types"
+            onChange={onExpenseParentChange ?? (() => {})}
+          />
+        </FormField>
+      ) : null}
+
       <div className="grid gap-4 lg:grid-cols-2">
-        <FormField label={accountCodeLabel}>
+        <FormField label="Account Code">
           <input
             id="services-maintenance-account-code"
             value={displayedAccountCode}
@@ -72,35 +112,32 @@ export function ServicesMaintenanceAccountingSetupTab({
             className={ServicesMaintenanceReadOnlyFieldClassName}
           />
         </FormField>
-        <FormField label={accountNameLabel} required>
-          <input
-            id="services-maintenance-account-title"
-            value={displayedAccountTitle}
-            readOnly
-            className={ServicesMaintenanceReadOnlyFieldClassName}
-          />
+        <FormField label="Account Title" error={!isAuto ? errors.revenueCoaId : undefined} required>
+          {isAuto ? (
+            <input
+              id="services-maintenance-account-title"
+              value={displayedAccountTitle}
+              readOnly
+              className={ServicesMaintenanceReadOnlyFieldClassName}
+            />
+          ) : (
+            <ChartAccountDropdown
+              accounts={accountOptions}
+              addAction={{
+                label: "Add Account Title",
+                onClick: onAddAccountTitle,
+              }}
+              disabled={isReadonly}
+              emptyMessage="No active accounts found."
+              placeholder="--Select Account Title--"
+              searchPlaceholder="Search account title or code"
+              value={values.revenueCoaId}
+              valueField="id"
+              onChange={onRevenueAccountChange}
+            />
+          )}
         </FormField>
       </div>
-
-      {!isAuto ? (
-        <FormField label="Revenue Account" error={errors.revenueCoaId} required>
-          <ChartAccountDropdown
-            accounts={accountOptions}
-            addAction={{
-              label: "Add Account Title",
-              onClick: onAddAccountTitle,
-            }}
-            disabled={isReadonly}
-            emptyMessage="No active Service Revenues accounts found."
-            placeholder="--Select Revenue Account--"
-            searchPlaceholder="Search account title or code"
-            showSelectedDetails
-            value={values.revenueCoaId}
-            valueField="id"
-            onChange={onRevenueAccountChange}
-          />
-        </FormField>
-      ) : null}
     </div>
   );
 }

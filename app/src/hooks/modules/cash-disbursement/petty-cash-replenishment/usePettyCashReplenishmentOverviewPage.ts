@@ -85,7 +85,7 @@ export function usePettyCashReplenishmentOverviewPage() {
       return await updatePettyCashReplenishmentStatusApi(id, status);
     },
     onSuccess: (_, { status }) => {
-      queryClient.invalidateQueries({ queryKey: PettyCashReplenishmentQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: PettyCashReplenishmentQueryKeys.all });
       toast.success(`Petty Cash Replenishment marked as ${status}.`);
     },
     onError: () => {
@@ -98,7 +98,7 @@ export function usePettyCashReplenishmentOverviewPage() {
       return await deletePettyCashReplenishmentApi(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PettyCashReplenishmentQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: PettyCashReplenishmentQueryKeys.all });
       toast.success("Petty Cash Replenishment deleted successfully.");
     },
     onError: () => {

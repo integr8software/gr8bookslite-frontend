@@ -62,6 +62,7 @@ export function OptionRow({
 	view,
 	selectedValues,
 	showSelectionIndicator,
+	showDescriptionTooltip = false,
 	onActive,
 	onSelect,
 }: {
@@ -72,6 +73,7 @@ export function OptionRow({
 	view: AppAdvancedDropdownOptionView;
 	selectedValues: Set<string>;
 	showSelectionIndicator: boolean;
+	showDescriptionTooltip?: boolean;
 	onActive: (value: string) => void;
 	onSelect: (option: AppAdvancedDropdownOption) => void;
 }) {
@@ -79,6 +81,8 @@ export function OptionRow({
 	const isActive = activeValue === option.value;
 	const hasChildren = Boolean(option.children?.length);
 	const optionId = getOptionId(option);
+	const shouldShowTooltip =
+		Boolean(option.description) && (option.showTooltip ?? showDescriptionTooltip);
 	const optionClassName = getOptionClassName({
 		hasChildren,
 		isActive,
@@ -99,63 +103,82 @@ export function OptionRow({
 				{option.label ? (
 					<span className="truncate text-xs text-darknavy/58">{option.label}</span>
 				) : null}
-				<OptionDescription option={option} view={view} />
+				<OptionDescription
+					hasTooltip={shouldShowTooltip}
+					option={option}
+					view={view}
+				/>
 			</span>
 			{option.href ? <ExternalLink className="h-3.5 w-3.5 text-darknavy/35" /> : null}
 		</>
 	);
 
+	const optionInteractiveElement = option.href ? (
+		<Link
+			href={option.href}
+			id={optionId}
+			role="option"
+			aria-selected={isSelected}
+			aria-disabled={option.disabled}
+			data-active={isActive ? "true" : undefined}
+			data-selected={isSelected ? "true" : undefined}
+			className={optionClassName}
+			onMouseEnter={() => {
+				if (!option.disabled) {
+					onActive(option.value);
+				}
+			}}
+			onClick={(event) => {
+				event.stopPropagation();
+				if (option.disabled) {
+					event.preventDefault();
+				}
+			}}
+			style={getOptionIndentStyle(view, level)}
+		>
+			{content}
+		</Link>
+	) : (
+		<button
+			type="button"
+			id={optionId}
+			role="option"
+			aria-selected={isSelected}
+			disabled={option.disabled}
+			data-active={isActive ? "true" : undefined}
+			data-selected={isSelected ? "true" : undefined}
+			onClick={(event) => {
+				event.preventDefault();
+				event.stopPropagation();
+				onSelect(option);
+			}}
+			onMouseEnter={() => {
+				if (!option.disabled) {
+					onActive(option.value);
+				}
+			}}
+			className={optionClassName}
+			style={getOptionIndentStyle(view, level)}
+		>
+			{content}
+		</button>
+	);
+
 	return (
 		<div className={view === AppAdvancedDropdownOptionViewGrid ? "grid min-w-0" : "grid gap-1"}>
-			{option.href ? (
-				<Link
-					href={option.href}
-					id={optionId}
-					role="option"
-					aria-selected={isSelected}
-					aria-disabled={option.disabled}
-					data-active={isActive ? "true" : undefined}
-					data-selected={isSelected ? "true" : undefined}
-					className={optionClassName}
-					onMouseEnter={() => {
-						if (!option.disabled) {
-							onActive(option.value);
-						}
-					}}
-					onClick={(event) => {
-						event.stopPropagation();
-						if (option.disabled) {
-							event.preventDefault();
-						}
-					}}
-					style={getOptionIndentStyle(view, level)}
+			{shouldShowTooltip ? (
+				<ModuleTooltip
+					align="start"
+					className="flex min-w-0 w-full"
+					contentClassName="max-w-80"
+					description={option.description}
+					position="top"
+					title={option.name}
 				>
-					{content}
-				</Link>
+					{optionInteractiveElement}
+				</ModuleTooltip>
 			) : (
-				<button
-					type="button"
-					id={optionId}
-					role="option"
-					aria-selected={isSelected}
-					disabled={option.disabled}
-					data-active={isActive ? "true" : undefined}
-					data-selected={isSelected ? "true" : undefined}
-					onClick={(event) => {
-						event.preventDefault();
-						event.stopPropagation();
-						onSelect(option);
-					}}
-					onMouseEnter={() => {
-						if (!option.disabled) {
-							onActive(option.value);
-						}
-					}}
-					className={optionClassName}
-					style={getOptionIndentStyle(view, level)}
-				>
-					{content}
-				</button>
+				optionInteractiveElement
 			)}
 			{hasChildren
 				? option.children?.map((child) => (
@@ -168,6 +191,7 @@ export function OptionRow({
 							view={view}
 							selectedValues={selectedValues}
 							showSelectionIndicator={showSelectionIndicator}
+							showDescriptionTooltip={showDescriptionTooltip}
 							onActive={onActive}
 							onSelect={onSelect}
 						/>
@@ -248,9 +272,11 @@ export function SelectedSingle({
 }
 
 function OptionDescription({
+	hasTooltip = false,
 	option,
 	view,
 }: {
+	hasTooltip?: boolean;
 	option: AppAdvancedDropdownOption;
 	view: AppAdvancedDropdownOptionView;
 }) {
@@ -258,7 +284,7 @@ function OptionDescription({
 		return null;
 	}
 
-	if (view === AppAdvancedDropdownOptionViewGrid) {
+	if (view === AppAdvancedDropdownOptionViewGrid && !hasTooltip) {
 		return (
 			<ModuleTooltip
 				className="min-w-0 w-full"
@@ -280,3 +306,4 @@ function OptionDescription({
 		</span>
 	);
 }
+

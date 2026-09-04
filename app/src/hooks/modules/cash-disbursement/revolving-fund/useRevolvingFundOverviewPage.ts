@@ -82,7 +82,7 @@ export function useRevolvingFundOverviewPage() {
       return await updateRevolvingFundStatusApi(id, status);
     },
     onSuccess: (_, { status }) => {
-      queryClient.invalidateQueries({ queryKey: RevolvingFundQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: RevolvingFundQueryKeys.all });
       toast.success(`Revolving Fund marked as ${status}.`);
     },
     onError: () => {
@@ -95,7 +95,7 @@ export function useRevolvingFundOverviewPage() {
       return await deleteRevolvingFundApi(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: RevolvingFundQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: RevolvingFundQueryKeys.all });
       toast.success("Revolving Fund deleted successfully.");
     },
     onError: () => {

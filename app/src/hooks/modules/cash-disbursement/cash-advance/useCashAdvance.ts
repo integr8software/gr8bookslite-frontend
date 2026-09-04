@@ -64,16 +64,16 @@ import {
   updateCashAdvanceApi,
   updateCashAdvanceStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/cash-advance/CashAdvanceApi";
+import { CashAdvanceQueryKeys } from "@/app/src/services/modules/cash-disbursement/cash-advance/CashAdvanceQueryKeys";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
 const EmptyCashAdvances: CashAdvanceRecord[] = [];
-const CashAdvanceQueryKey = "cash-advance";
 
 export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?: (state: CashAdvanceStoreState) => TSelected) {
   const queryClient = useQueryClient();
   const activeCompanyId = useAppStore((state) => state.activeCompanyId);
-  const queryKey = ["cash-disbursement", CashAdvanceQueryKey, "records", activeCompanyId] as const;
+  const queryKey = CashAdvanceQueryKeys.records(activeCompanyId);
   const advancesQuery = useQuery({
     queryKey,
     queryFn: async () => {
@@ -90,7 +90,7 @@ export function useCashAdvanceStore<TSelected = CashAdvanceStoreState>(selector?
   const advances = advancesQuery.data ?? EmptyCashAdvances;
 
   const refreshRecords = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: ["cash-disbursement", CashAdvanceQueryKey] });
+    void queryClient.invalidateQueries({ queryKey: CashAdvanceQueryKeys.all });
   }, [queryClient]);
 
   const updateStatusMutation = useMutation({

@@ -56,6 +56,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary List purchase requests
+ */
 export const purchaseRequestControllerFindAllV1 = (
     params?: PurchaseRequestControllerFindAllV1Params,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -125,6 +128,9 @@ export function usePurchaseRequestControllerFindAllV1<TData = Awaited<ReturnType
  params?: PurchaseRequestControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof purchaseRequestControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List purchase requests
+ */
 
 export function usePurchaseRequestControllerFindAllV1<TData = Awaited<ReturnType<typeof purchaseRequestControllerFindAllV1>>, TError = unknown>(
  params?: PurchaseRequestControllerFindAllV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof purchaseRequestControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -143,6 +149,9 @@ export function usePurchaseRequestControllerFindAllV1<TData = Awaited<ReturnType
 
 
 
+/**
+ * @summary Create a purchase request
+ */
 export const purchaseRequestControllerCreateV1 = (
     createPurchaseRequestDto: CreatePurchaseRequestDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -190,7 +199,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type PurchaseRequestControllerCreateV1MutationBody = CreatePurchaseRequestDto
     export type PurchaseRequestControllerCreateV1MutationError = unknown
 
-    export const usePurchaseRequestControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create a purchase request
+ */
+export const usePurchaseRequestControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof purchaseRequestControllerCreateV1>>, TError,{data: CreatePurchaseRequestDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof purchaseRequestControllerCreateV1>>,
@@ -200,7 +212,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getPurchaseRequestControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const purchaseRequestControllerFindPurchaseTypesV1 = (
+    /**
+ * @summary List supported purchase request types
+ */
+export const purchaseRequestControllerFindPurchaseTypesV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -268,6 +283,9 @@ export function usePurchaseRequestControllerFindPurchaseTypesV1<TData = Awaited<
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof purchaseRequestControllerFindPurchaseTypesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List supported purchase request types
+ */
 
 export function usePurchaseRequestControllerFindPurchaseTypesV1<TData = Awaited<ReturnType<typeof purchaseRequestControllerFindPurchaseTypesV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof purchaseRequestControllerFindPurchaseTypesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -286,6 +304,9 @@ export function usePurchaseRequestControllerFindPurchaseTypesV1<TData = Awaited<
 
 
 
+/**
+ * @summary Get a purchase request
+ */
 export const purchaseRequestControllerFindOneV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -354,6 +375,9 @@ export function usePurchaseRequestControllerFindOneV1<TData = Awaited<ReturnType
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof purchaseRequestControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get a purchase request
+ */
 
 export function usePurchaseRequestControllerFindOneV1<TData = Awaited<ReturnType<typeof purchaseRequestControllerFindOneV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof purchaseRequestControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -372,6 +396,9 @@ export function usePurchaseRequestControllerFindOneV1<TData = Awaited<ReturnType
 
 
 
+/**
+ * @summary Update a purchase request
+ */
 export const purchaseRequestControllerUpdateV1 = (
     id: string,
     updatePurchaseRequestDto: UpdatePurchaseRequestDto,
@@ -420,7 +447,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type PurchaseRequestControllerUpdateV1MutationBody = UpdatePurchaseRequestDto
     export type PurchaseRequestControllerUpdateV1MutationError = unknown
 
-    export const usePurchaseRequestControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update a purchase request
+ */
+export const usePurchaseRequestControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof purchaseRequestControllerUpdateV1>>, TError,{id: string;data: UpdatePurchaseRequestDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof purchaseRequestControllerUpdateV1>>,
@@ -430,7 +460,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getPurchaseRequestControllerUpdateV1MutationOptions(options), queryClient);
     }
-    export const purchaseRequestControllerUpdateStatusV1 = (
+    /**
+ * @summary Update purchase request status
+ */
+export const purchaseRequestControllerUpdateStatusV1 = (
     id: string,
     updatePurchaseRequestStatusDto: UpdatePurchaseRequestStatusDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -478,7 +511,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type PurchaseRequestControllerUpdateStatusV1MutationBody = UpdatePurchaseRequestStatusDto
     export type PurchaseRequestControllerUpdateStatusV1MutationError = unknown
 
-    export const usePurchaseRequestControllerUpdateStatusV1 = <TError = unknown,
+    /**
+ * @summary Update purchase request status
+ */
+export const usePurchaseRequestControllerUpdateStatusV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof purchaseRequestControllerUpdateStatusV1>>, TError,{id: string;data: UpdatePurchaseRequestStatusDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof purchaseRequestControllerUpdateStatusV1>>,

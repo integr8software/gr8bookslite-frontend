@@ -82,11 +82,20 @@ export function useDiscountMaintenanceStore<TSelected = DiscountStoreState>(
 
   const addDiscountMutation = useMutation({
     mutationFn: createDiscount,
-    onSuccess: () => {
+    onSuccess: (savedDiscount) => {
       void queryClient.invalidateQueries({
         queryKey: DiscountMaintenanceQueryKeys.all(),
       });
-      toast.success("Discount created successfully.");
+      const code = savedDiscount.accountCode?.trim();
+      const title = savedDiscount.accountTitle?.trim();
+      if (code) {
+        toast.success(
+          savedDiscount.message ||
+            `Discount created successfully. Saved with Account Code - Account Title: ${code} - ${title}.`,
+        );
+      } else {
+        toast.success(savedDiscount.message || "Discount created successfully.");
+      }
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Could not create discount. Please try again.");

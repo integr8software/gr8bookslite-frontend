@@ -15,6 +15,7 @@ import type {
   ServiceMaintenanceAccountOptionResponseDto,
   ServiceMaintenanceNextAccountCodeResponseDto,
   ServiceMaintenanceOptionResponseDto,
+  ServiceMaintenanceOptionResponseDtoServiceType,
   ServiceMaintenanceResponseDto,
   ServiceMaintenanceResponseDtoAccountSetupMode,
   ServiceMaintenanceResponseDtoServiceType,
@@ -58,7 +59,7 @@ export async function fetchServicesMaintenanceAccountOptions(): Promise<ModuleCh
 }
 
 export async function fetchServicesMaintenanceOptions(
-  serviceType: ServicesMaintenanceServiceType,
+  serviceType: ServicesMaintenanceServiceType | "Purchases" | "Sales",
 ): Promise<ServiceMaintenanceOptionResponseDto[]> {
   const response = await servicesMaintenanceControllerFindOptionsByTypeV1(mapServiceTypeToApi(serviceType));
 
@@ -69,10 +70,15 @@ export async function fetchNextServiceRevenueAccountCode(): Promise<ServiceMaint
   return servicesMaintenanceControllerGetNextAccountCodeV1();
 }
 
-export async function createServiceMaintenance(values: ServicesMaintenanceFormValues): Promise<ServicesMaintenance> {
+export async function createServiceMaintenance(
+  values: ServicesMaintenanceFormValues,
+): Promise<ServicesMaintenance & { message?: string }> {
   const response = await servicesMaintenanceControllerCreateV1(toApiServicePayload(values));
 
-  return mapApiService(response.service);
+  return {
+    ...mapApiService(response.service),
+    message: response.message,
+  };
 }
 
 export async function updateServiceMaintenance(service: ServicesMaintenance): Promise<ServicesMaintenance> {
@@ -131,6 +137,10 @@ function toApiServicePayload(service: ServicesMaintenance | ServicesMaintenanceF
     status: mapStatusToApi(service.status),
     accountSetupMode: mapSetupModeToApi(service.accountSetupMode),
     revenueCoaId: service.accountSetupMode === "Existing" ? service.revenueCoaId : null,
+    expenseParentCoaId:
+      service.accountSetupMode === "Auto" && service.serviceType === "Purchase of Service"
+        ? ("expenseParentCoaId" in service ? service.expenseParentCoaId || null : null)
+        : null,
   };
 }
 
@@ -156,6 +166,8 @@ function mapServiceTypeFromApi(
   return value === "PURCHASES" ? "Purchase of Service" : "Sale of Service";
 }
 
-function mapServiceTypeToApi(value: ServicesMaintenanceServiceType): CreateServiceMaintenanceDtoServiceType {
-  return value === "Purchase of Service" ? "PURCHASES" : "SALES";
+function mapServiceTypeToApi(
+  value: ServicesMaintenanceServiceType | "Purchases" | "Sales",
+): CreateServiceMaintenanceDtoServiceType {
+  return value === "Purchase of Service" || value === "Purchases" ? "PURCHASES" : "SALES";
 }

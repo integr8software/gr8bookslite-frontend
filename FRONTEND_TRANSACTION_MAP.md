@@ -417,6 +417,7 @@ app/src/validations/modules/<domain>/<feature>/
 
 app/src/services/modules/<domain>/<feature>/
   <ModuleName>Service.ts
+  <ModuleName>QueryKeys.ts
 ```
 
 `<domain>` is the business module route segment. `<feature>` is the
@@ -1827,9 +1828,39 @@ columns.
 
 `<ModuleName>Service.ts`
 
-- API calls, query keys, server actions, upload/download calls, and operations
-  that talk outside the UI layer.
+- API calls, server actions, upload/download calls, and operations that talk
+  outside the UI layer.
 - Use the shared `ApiClient`.
+
+`<ModuleName>QueryKeys.ts`
+
+- TanStack Query key factory for the feature.
+- Query keys must follow the structured factory pattern with a static `all` tuple
+  and helper functions spreading from `all`:
+
+```ts
+export const <ModuleName>QueryKeys = {
+	all: ["<feature-kebab-name>"] as const,
+	lists: () => [...<ModuleName>QueryKeys.all, "list"] as const,
+	list: (filters?: unknown) => [...<ModuleName>QueryKeys.lists(), filters] as const,
+	records: (companyId?: number | null, branchUnitId?: number | null) =>
+		[...<ModuleName>QueryKeys.all, "records", { companyId, branchUnitId }] as const,
+	details: () => [...<ModuleName>QueryKeys.all, "detail"] as const,
+	detail: (id: string, companyId?: number | null, branchUnitId?: number | null) =>
+		[...<ModuleName>QueryKeys.details(), id, { companyId, branchUnitId }] as const,
+	transactionNo: () => [...<ModuleName>QueryKeys.all, "transaction-no"] as const,
+};
+```
+
+Key rules:
+- `all`: static array `["<feature-kebab-name>"] as const`. Do not make `all` a function.
+  This allows full feature invalidation via
+  `queryClient.invalidateQueries({ queryKey: <ModuleName>QueryKeys.all })`.
+- Subordinate keys: arrow functions spreading `...<ModuleName>QueryKeys.all` to maintain
+  hierarchical cache invalidation.
+- Scoped/parameterized keys: accept arguments (e.g. `id`, `companyId`, `filters`) and append
+  them at the end of the tuple or within a parameters object.
+
 
 ## Shared UI To Reuse
 

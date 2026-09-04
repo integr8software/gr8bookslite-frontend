@@ -47,7 +47,6 @@ export function PaymentTypeFields({ errors, isReadonly, onInputChange, values }:
           onChange={(event) => onInputChange("description", event.target.value)}
           className={`${PaymentTypeFieldClassName} min-h-24 py-3`}
           counterMode="used"
-          placeholder="Enter description"
         />
       </FormField>
 

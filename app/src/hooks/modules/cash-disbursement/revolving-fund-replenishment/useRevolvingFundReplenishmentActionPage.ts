@@ -205,7 +205,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
       return await updateRevolvingFundReplenishmentApi(params.recordId!, submitValues);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: RevolvingFundReplenishmentQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: RevolvingFundReplenishmentQueryKeys.all });
       draft.clearDraft();
       toast.success(
         `Revolving Fund Replenishment ${mode === RevolvingFundReplenishmentActionModes.Add ? "created" : "updated"} successfully.`,
@@ -227,7 +227,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
       return await updateRevolvingFundReplenishmentStatusApi(params.recordId!, status);
     },
     onSuccess: (updatedRecord, status) => {
-      queryClient.invalidateQueries({ queryKey: RevolvingFundReplenishmentQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: RevolvingFundReplenishmentQueryKeys.all });
       queryClient.setQueryData(RevolvingFundReplenishmentQueryKeys.record(params.recordId), updatedRecord);
       setValues((cur) => ({ ...cur, status }));
       toast.success(`Revolving Fund Replenishment marked as ${status}.`);

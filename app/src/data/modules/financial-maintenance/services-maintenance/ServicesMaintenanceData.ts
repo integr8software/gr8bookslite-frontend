@@ -24,8 +24,9 @@ export const ServicesMaintenanceInitialFormValues: ServicesMaintenanceFormValues
   serviceType: "Sale of Service",
   description: "",
   status: "Active",
-  accountSetupMode: "Auto",
+  accountSetupMode: "Existing",
   revenueCoaId: "",
+  expenseParentCoaId: "",
 };
 
 export function createServicesMaintenanceFormValues(service: ServicesMaintenance): ServicesMaintenanceFormValues {
@@ -36,6 +37,7 @@ export function createServicesMaintenanceFormValues(service: ServicesMaintenance
     status: service.status,
     accountSetupMode: service.accountSetupMode,
     revenueCoaId: service.accountSetupMode === "Existing" ? service.revenueCoaId : "",
+    expenseParentCoaId: "",
   };
 }
 

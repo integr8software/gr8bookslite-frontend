@@ -3,6 +3,7 @@
 import { DefaultAccountTypeOptions } from "@/app/src/constants/modules/financial-maintenance/default-account/DefaultAccountConstants";
 import type { DefaultAccountFieldsProps } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
@@ -37,13 +38,14 @@ export function DefaultAccountFields({
       </FormField>
 
       <FormField label="Description" error={errors.description}>
-        <textarea
+        <AppLimitedTextarea
           name="description"
           value={values.description}
           disabled={isReadonly}
+          readOnly={isReadonly}
           onChange={onInputChange}
-          placeholder="Optional notes for this default account"
           rows={3}
+          showCounter={false}
           className="min-h-24 w-full resize-none rounded-md border border-darknavy/10 bg-white px-3 py-2 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
         />
       </FormField>

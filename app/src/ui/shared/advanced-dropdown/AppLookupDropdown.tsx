@@ -10,6 +10,7 @@ export function AppLookupDropdown({
 	placeholder,
 	readOnly = false,
 	searchPlaceholder,
+	showDescriptionTooltip = false,
 	value,
 }: AppLookupDropdownProps) {
 	return (
@@ -27,6 +28,7 @@ export function AppLookupDropdown({
 			placeholder={placeholder}
 			readOnly={readOnly}
 			searchPlaceholder={searchPlaceholder}
+			showDescriptionTooltip={showDescriptionTooltip}
 			value={value}
 		/>
 	);

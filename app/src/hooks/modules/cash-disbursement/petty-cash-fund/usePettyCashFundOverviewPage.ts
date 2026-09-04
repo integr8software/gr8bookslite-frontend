@@ -85,7 +85,7 @@ export function usePettyCashFundOverviewPage() {
       return await updatePettyCashFundStatusApi(id, status);
     },
     onSuccess: (_, { status }) => {
-      queryClient.invalidateQueries({ queryKey: PettyCashFundQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: PettyCashFundQueryKeys.all });
       toast.success(`Petty Cash Fund marked as ${status}.`);
     },
     onError: () => {
@@ -98,7 +98,7 @@ export function usePettyCashFundOverviewPage() {
       return await deletePettyCashFundApi(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PettyCashFundQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: PettyCashFundQueryKeys.all });
       toast.success("Petty Cash Fund deleted successfully.");
     },
     onError: () => {

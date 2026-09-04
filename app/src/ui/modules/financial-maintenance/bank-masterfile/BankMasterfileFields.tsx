@@ -85,7 +85,7 @@ export function BankMasterfileFields({
             ))}
           </select>
         </FormField>
-        <FormField label="Possible Account Code">
+        <FormField label="Account Code">
           <input
             id="bank-masterfile-account-code"
             value={mode === "add" ? (isAccountCodeLoading ? "Loading..." : accountCode || "Auto series") : accountCode}
@@ -93,7 +93,7 @@ export function BankMasterfileFields({
             className={BankMasterfileReadOnlyFieldClassName}
           />
         </FormField>
-        <FormField label="Possible Account Title" required={values.status === "Active"}>
+        <FormField label="Account Title" required={values.status === "Active"}>
           <input id="bank-masterfile-account-title" value={accountName} readOnly className={BankMasterfileReadOnlyFieldClassName} />
         </FormField>
       </div>

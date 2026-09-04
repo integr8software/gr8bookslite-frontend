@@ -209,7 +209,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
       return await updatePettyCashFundApi(params.recordId!, submitValues);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PettyCashFundQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: PettyCashFundQueryKeys.all });
       draft.clearDraft();
       toast.success(`Petty Cash Fund ${mode === PettyCashFundActionModes.Add ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
@@ -229,7 +229,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
       return await updatePettyCashFundStatusApi(params.recordId!, status);
     },
     onSuccess: (updatedRecord, status) => {
-      queryClient.invalidateQueries({ queryKey: PettyCashFundQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: PettyCashFundQueryKeys.all });
       queryClient.setQueryData(PettyCashFundQueryKeys.record(params.recordId), updatedRecord);
       setValues((cur) => ({ ...cur, status }));
       toast.success(`Petty Cash Fund marked as ${status}.`);

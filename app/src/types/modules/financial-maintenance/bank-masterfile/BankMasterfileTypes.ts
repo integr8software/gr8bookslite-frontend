@@ -1,4 +1,4 @@
-import type { ChangeEventHandler, ReactNode } from "react";
+import type { ChangeEventHandler } from "react";
 import type { Row, Table } from "@tanstack/react-table";
 
 export type BankMasterfileStatus = "Active" | "Inactive";

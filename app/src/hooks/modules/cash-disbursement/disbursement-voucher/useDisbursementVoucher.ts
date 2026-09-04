@@ -70,9 +70,9 @@ export function useDisbursementVoucherStore<TSelected = DisbursementVoucherStore
   });
   const refreshRecords = useCallback(() => {
     void queryClient.invalidateQueries({
-      queryKey: DisbursementVoucherQueryKeys.all(activeCompanyId, activeBranchId),
+      queryKey: DisbursementVoucherQueryKeys.all,
     });
-  }, [activeBranchId, activeCompanyId, queryClient]);
+  }, [queryClient]);
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: DisbursementVoucherStatus }) => updateDisbursementVoucherStatusApi(id, status),

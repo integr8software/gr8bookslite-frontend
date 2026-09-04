@@ -74,9 +74,14 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
   }, [companyId, queryClient]);
   const addDefaultAccountMutation = useMutation({
     mutationFn: createDefaultAccount,
-    onSuccess: () => {
+    onSuccess: (savedAccount) => {
       refreshDefaultAccounts();
-      toast.success("Default account created successfully.");
+      const firstGenerated = savedAccount.generatedAccounts?.[0];
+      toast.success(
+        firstGenerated
+          ? `Default account created successfully. Saved with Account Code - Account Title: ${firstGenerated.accountCode} - ${firstGenerated.accountTitle}.`
+          : "Default account created successfully.",
+      );
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Could not create default account. Please try again.");

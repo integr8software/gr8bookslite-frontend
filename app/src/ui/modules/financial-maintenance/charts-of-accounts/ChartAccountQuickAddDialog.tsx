@@ -86,7 +86,13 @@ export function ChartAccountQuickAddDialog({
         }),
       );
       onSaved(savedAccount.id);
-      toast.success("Account title saved.");
+      const savedCode = savedAccount.accountNumber?.trim();
+      const savedTitle = savedAccount.accountName?.trim();
+      toast.success(
+        savedCode
+          ? `Account title saved. Saved with Account Code - Account Title: ${savedCode} - ${savedTitle}.`
+          : "Account title saved.",
+      );
     } catch (error) {
       setError(error instanceof Error ? error.message : "Could not save account title.");
     } finally {

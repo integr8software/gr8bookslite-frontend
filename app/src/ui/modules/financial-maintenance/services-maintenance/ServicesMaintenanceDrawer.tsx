@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import {
   ServicesMaintenanceActionCopy,
@@ -8,19 +8,28 @@ import {
   ServicesMaintenanceTitle,
 } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import { useServicesMaintenanceFormPage } from "@/app/src/hooks/modules/financial-maintenance/services-maintenance/useServicesMaintenanceFormPage";
-import type { ChartAccount } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
+import type {
+  AccountLevel,
+  ChartAccount,
+} from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import type {
   ServicesMaintenance,
   ServicesMaintenanceDrawerProps,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
 import { ChartAccountQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartAccountQuickAddDialog";
+import {
+  DefaultAccountExpenseSubAccountDialog,
+  type DefaultAccountExpenseSubAccountDialogState,
+} from "@/app/src/ui/modules/financial-maintenance/default-account/DefaultAccountExpenseSubAccountDialog";
 import { ServicesMaintenanceAccountingSetupTab } from "@/app/src/ui/modules/financial-maintenance/services-maintenance/ServicesMaintenanceAccountingSetupTab";
 import {
   FormField,
   ServicesMaintenanceFields,
 } from "@/app/src/ui/modules/financial-maintenance/services-maintenance/ServicesMaintenanceFields";
+import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { ModuleDrawer, getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { getAccountLevelLabel } from "@/app/src/utils/accounts.util";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
 
 export function ServicesMaintenanceDrawer({ isOpen, mode, onClose, service }: ServicesMaintenanceDrawerProps) {
@@ -47,6 +56,7 @@ function ServicesMaintenanceDrawerPanel({
   service?: ServicesMaintenance;
 }) {
   const [isAccountTitleDialogOpen, setIsAccountTitleDialogOpen] = useState(false);
+  const [expenseSubAccountDialog, setExpenseSubAccountDialog] = useState<DefaultAccountExpenseSubAccountDialogState>(null);
   const page = useServicesMaintenanceFormPage({
     existingService: service,
     isOpen,
@@ -55,6 +65,25 @@ function ServicesMaintenanceDrawerPanel({
   });
   const copy = ServicesMaintenanceActionCopy[mode];
   const serviceRevenueParentAccount = createServiceRevenueParentAccount(page.nextAccountCode);
+
+  const expenseParentOptions: AppAdvancedDropdownOption[] = page.expenseParentOptions.map((account) => ({
+    value: account.id,
+    name: account.accountTitle,
+    label: account.accountCode,
+    description: getAccountLevelLabel(account.accountLevel),
+  }));
+  const selectedExpenseParentId = page.values.expenseParentCoaId || page.expenseParentOptions[0]?.id || "";
+  const selectedExpenseParentAccount = useMemo(
+    () => page.expenseParentOptions.find((account) => account.id === selectedExpenseParentId) ?? null,
+    [page.expenseParentOptions, selectedExpenseParentId],
+  );
+  const nextExpenseSubAccountLevel = getExpenseSubAccountLevel(selectedExpenseParentAccount?.accountLevel);
+  const canAddExpenseTypeSubAccount =
+    !page.isReadonly &&
+    page.permissions.canCreate &&
+    page.values.serviceType === "Purchase of Service" &&
+    page.values.accountSetupMode === "Auto" &&
+    Boolean(selectedExpenseParentAccount && nextExpenseSubAccountLevel);
 
   function openAccountTitleDialog() {
     if (!serviceRevenueParentAccount) {
@@ -103,15 +132,30 @@ function ServicesMaintenanceDrawerPanel({
 
           <ServicesMaintenanceAccountingSetupTab
             accountOptions={page.accountOptions}
+            canAddExpenseTypeSubAccount={canAddExpenseTypeSubAccount}
             errors={page.errors}
+            expenseNextAccountCode={page.expenseNextAccountCode}
+            expenseParentOptions={expenseParentOptions}
             isAccountCodeLoading={page.isNextAccountCodeLoading}
+            isExpenseNextAccountCodeLoading={page.isExpenseNextAccountCodeLoading}
+            isLoadingExpenseParentOptions={page.isLoadingExpenseParentOptions}
             isReadonly={page.isReadonly}
             mode={mode}
             nextAccountCode={page.nextAccountCode}
+            nextExpenseSubAccountLevel={nextExpenseSubAccountLevel}
             selectedService={service}
             values={page.values}
             onAccountSetupModeChange={page.setAccountSetupMode}
             onAddAccountTitle={openAccountTitleDialog}
+            onExpenseParentChange={page.handleExpenseParentChange}
+            onOpenExpenseSubAccountDialog={() => {
+              if (selectedExpenseParentAccount && nextExpenseSubAccountLevel) {
+                setExpenseSubAccountDialog({
+                  accountLevel: nextExpenseSubAccountLevel,
+                  parentAccount: selectedExpenseParentAccount,
+                });
+              }
+            }}
             onRevenueAccountChange={page.setRevenueAccount}
           />
 
@@ -142,8 +186,32 @@ function ServicesMaintenanceDrawerPanel({
           setIsAccountTitleDialogOpen(false);
         }}
       />
+      <DefaultAccountExpenseSubAccountDialog
+        accountLevel={expenseSubAccountDialog?.accountLevel ?? null}
+        isOpen={Boolean(expenseSubAccountDialog)}
+        parentAccount={expenseSubAccountDialog?.parentAccount ?? null}
+        onClose={() => setExpenseSubAccountDialog(null)}
+        onSaved={async (accountId) => {
+          await page.refreshExpenseParentOptions();
+          page.handleExpenseParentChange(accountId);
+          setExpenseSubAccountDialog(null);
+        }}
+      />
     </>
   );
+}
+
+function getExpenseSubAccountLevel(parentLevel: string | undefined): AccountLevel | null {
+  switch (parentLevel) {
+    case "MAJOR":
+      return "SUB1";
+    case "SUB1":
+      return "SUB2";
+    case "SUB2":
+      return "SUB3";
+    default:
+      return null;
+  }
 }
 
 function createServiceRevenueParentAccount(

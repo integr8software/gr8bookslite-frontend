@@ -64,17 +64,17 @@ import {
   updateCashAdvanceMultipleEntryApi,
   updateCashAdvanceMultipleEntryStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryApi";
+import { CashAdvanceMultipleEntryQueryKeys } from "@/app/src/services/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryQueryKeys";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
 const EmptyCashAdvanceMultipleEntries: CashAdvanceMultipleEntryRecord[] = [];
-const CashAdvanceMultipleEntryQueryKey = "cash-advance-multiple-entry";
 
 export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultipleEntryStoreState>(
   selector?: (state: CashAdvanceMultipleEntryStoreState) => TSelected,
 ) {
   const queryClient = useQueryClient();
   const activeCompanyId = useAppStore((state) => state.activeCompanyId);
-  const queryKey = ["cash-disbursement", CashAdvanceMultipleEntryQueryKey, "records", activeCompanyId] as const;
+  const queryKey = CashAdvanceMultipleEntryQueryKeys.records(activeCompanyId);
   const entriesQuery = useQuery({
     queryKey,
     queryFn: async () => {
@@ -91,7 +91,7 @@ export function useCashAdvanceMultipleEntryStore<TSelected = CashAdvanceMultiple
   const entries = entriesQuery.data ?? EmptyCashAdvanceMultipleEntries;
 
   const refreshRecords = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: ["cash-disbursement", CashAdvanceMultipleEntryQueryKey] });
+    void queryClient.invalidateQueries({ queryKey: CashAdvanceMultipleEntryQueryKeys.all });
   }, [queryClient]);
 
   const updateStatusMutation = useMutation({

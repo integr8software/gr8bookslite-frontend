@@ -1,3 +1,8 @@
 export const PettyCashVoucherQueryKeys = {
-  vouchers: () => ["cash-disbursement", "petty-cash-voucher", "vouchers"] as const,
+	all: ["petty-cash-voucher"] as const,
+	vouchers: () =>
+		[...PettyCashVoucherQueryKeys.all, "vouchers"] as const,
+	voucher: (recordId?: string) =>
+		[...PettyCashVoucherQueryKeys.all, "vouchers", recordId] as const,
 };
+

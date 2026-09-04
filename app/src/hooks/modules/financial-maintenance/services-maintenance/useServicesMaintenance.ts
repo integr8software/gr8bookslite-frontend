@@ -110,11 +110,18 @@ export function useServicesMaintenanceStore<TSelected = ServicesMaintenanceStore
 
   const addServiceMutation = useMutation({
     mutationFn: createServiceMaintenance,
-    onSuccess: () => {
+    onSuccess: (savedService) => {
       void queryClient.invalidateQueries({
         queryKey: ServicesMaintenanceQueryKeys.all(companyId),
       });
-      toast.success("Service created successfully.");
+      if (savedService.accountSetupMode === "Auto" && savedService.revenueAccountCode) {
+        toast.success(
+          savedService.message ||
+            `Service created successfully. Saved with Account Code - Account Title: ${savedService.revenueAccountCode} - ${savedService.revenueAccountTitle}.`,
+        );
+      } else {
+        toast.success(savedService.message || "Service created successfully.");
+      }
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Could not create service. Please try again.");

@@ -75,9 +75,9 @@ export function useCashVoucherStore<TSelected = CashVoucherStoreState>(selector?
 
   const refreshRecords = useCallback(() => {
     void queryClient.invalidateQueries({
-      queryKey: CashVoucherQueryKeys.all(activeCompanyId, activeBranchId),
+      queryKey: CashVoucherQueryKeys.all,
     });
-  }, [activeBranchId, activeCompanyId, queryClient]);
+  }, [queryClient]);
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: CashVoucherStatus }) => {

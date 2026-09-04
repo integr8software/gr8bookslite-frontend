@@ -131,7 +131,11 @@ export function useChartsOfAccounts() {
         setSaveResetToken((current) => current + 1);
       }
       closeDrawer();
-      toast.success(drawerAccount ? "Chart account updated." : "Chart account created.");
+      toast.success(
+        drawerAccount
+          ? "Chart account updated."
+          : `Chart account created. Saved with Account Code - Account Title: ${account.accountNumber} - ${account.accountName}.`,
+      );
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Could not save chart account.");

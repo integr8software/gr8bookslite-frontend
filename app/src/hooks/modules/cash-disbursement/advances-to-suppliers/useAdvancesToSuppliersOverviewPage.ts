@@ -27,6 +27,7 @@ import {
   submitAdvancesToSuppliersApprovalApi,
   updateAdvancesToSuppliersStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersService";
+import { AdvancesToSuppliersQueryKeys } from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersQueryKeys";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import type {
   AdvancesToSuppliersRecord,
@@ -52,8 +53,8 @@ export function useAdvancesToSuppliersOverviewPage() {
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => AdvancesToSuppliersDefaultColumnVisibility);
-  const recordsQueryKey = useMemo(() => ["advances-to-suppliers", "records", activeCompanyId] as const, [activeCompanyId]);
-  const allQueryKey = useMemo(() => ["advances-to-suppliers"] as const, []);
+  const recordsQueryKey = useMemo(() => AdvancesToSuppliersQueryKeys.records(activeCompanyId), [activeCompanyId]);
+  const allQueryKey = AdvancesToSuppliersQueryKeys.all;
   const recordsQuery = useQuery({
     queryKey: recordsQueryKey,
     queryFn: async () => {

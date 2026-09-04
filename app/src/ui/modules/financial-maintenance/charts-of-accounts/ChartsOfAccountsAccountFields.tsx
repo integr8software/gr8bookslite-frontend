@@ -392,7 +392,6 @@ function DescriptionField({
         readOnly={readOnly}
         onChange={(event) => onChange(event.target.value)}
         maxLength={500}
-        placeholder="Enter Description..."
         className={[
           "app-disabled-control min-h-24 w-full rounded-lg border border-darknavy/10 bg-white px-3 py-2 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.035] disabled:text-darknavy/35 disabled:placeholder:text-darknavy/32",
           readOnly ? "cursor-default bg-white text-darknavy/70 placeholder:text-darknavy/35" : "",

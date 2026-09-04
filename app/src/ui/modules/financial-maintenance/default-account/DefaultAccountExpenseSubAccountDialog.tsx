@@ -104,7 +104,14 @@ export function DefaultAccountExpenseSubAccountDialog({
       );
 
       await onSaved(savedAccount.id);
-      toast.success("Service type saved.");
+      const responseAccount = savedAccount as { id: string; accountCode?: string; accountTitle?: string };
+      const savedCode = responseAccount.accountCode?.trim();
+      const savedTitle = responseAccount.accountTitle?.trim() || trimmedName;
+      toast.success(
+        savedCode
+          ? `Service type saved. Saved with Account Code - Account Title: ${savedCode} - ${savedTitle}.`
+          : "Service type saved.",
+      );
     } catch (caughtError) {
       setError(getDefaultAccountSubAccountErrorMessage(caughtError, "Could not save the service sub account."));
     } finally {

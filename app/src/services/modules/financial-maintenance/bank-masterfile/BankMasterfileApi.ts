@@ -52,10 +52,17 @@ export async function fetchNextBankAccountCode(): Promise<BankNextAccountCodeRes
   return bankMasterfileControllerGetNextAccountCodeV1();
 }
 
-export async function createBank(values: BankMasterfileFormValues): Promise<BankMasterfile> {
+export type CreateBankResult = BankMasterfile & {
+  message?: string;
+};
+
+export async function createBank(values: BankMasterfileFormValues): Promise<CreateBankResult> {
   const response = await bankMasterfileControllerCreateV1(toApiBankPayload(values));
 
-  return mapApiBank(response.bankAccount);
+  return {
+    ...mapApiBank(response.bankAccount),
+    message: response.message,
+  };
 }
 
 export async function updateBank(bank: BankMasterfile): Promise<BankMasterfile> {
@@ -73,7 +80,7 @@ export async function updateBankStatus(bank: BankMasterfile): Promise<BankMaster
 }
 export async function importBanks(banks: BankMasterfileFormValues[]): Promise<BankMasterfile[]> {
   const response = await bankMasterfileControllerImportBankAccountsV1({
-    banks: banks.map(toApiBankPayload),
+    banks: banks.map((bank) => toApiBankPayload(bank)),
   });
 
   return response.bankAccounts.map(mapApiBank);

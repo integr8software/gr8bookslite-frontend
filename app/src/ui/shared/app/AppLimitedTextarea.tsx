@@ -3,6 +3,7 @@
 import type { TextareaHTMLAttributes } from "react";
 
 export const AppLimitedTextareaMaxLength = 500;
+export const AppLimitedTextareaDefaultPlaceholder = "Enter a description or notes if needed...";
 
 type AppLimitedTextareaProps = Omit<
   TextareaHTMLAttributes<HTMLTextAreaElement>,
@@ -19,10 +20,18 @@ export function AppLimitedTextarea({
   counterClassName = "mt-1 block text-xs text-darknavy/45",
   counterMode = "remaining",
   maxLength = AppLimitedTextareaMaxLength,
+  placeholder,
   showCounter = true,
   value,
   ...textareaProps
 }: AppLimitedTextareaProps) {
+  const isReadOnly = textareaProps.readOnly;
+  const resolvedPlaceholder =
+    placeholder !== undefined
+      ? placeholder
+      : isReadOnly
+        ? "No description"
+        : AppLimitedTextareaDefaultPlaceholder;
   const textareaValue = value == null ? "" : String(value);
   const remainingCharacters = Math.max(0, maxLength - textareaValue.length);
   const counterText =
@@ -32,7 +41,7 @@ export function AppLimitedTextarea({
 
   return (
     <>
-      <textarea {...textareaProps} value={textareaValue} maxLength={maxLength} />
+      <textarea {...textareaProps} placeholder={resolvedPlaceholder} value={textareaValue} maxLength={maxLength} />
       {showCounter ? <span className={counterClassName}>{counterText}</span> : null}
     </>
   );

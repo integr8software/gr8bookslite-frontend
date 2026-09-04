@@ -209,7 +209,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
       return await updateRevolvingFundApi(params.recordId!, submitValues);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: RevolvingFundQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: RevolvingFundQueryKeys.all });
       draft.clearDraft();
       toast.success(`Revolving Fund ${mode === RevolvingFundActionModes.Add ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
@@ -229,7 +229,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
       return await updateRevolvingFundStatusApi(params.recordId!, status);
     },
     onSuccess: (updatedRecord, status) => {
-      queryClient.invalidateQueries({ queryKey: RevolvingFundQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: RevolvingFundQueryKeys.all });
       queryClient.setQueryData(RevolvingFundQueryKeys.record(params.recordId), updatedRecord);
       setValues((cur) => ({ ...cur, status }));
       toast.success(`Revolving Fund marked as ${status}.`);

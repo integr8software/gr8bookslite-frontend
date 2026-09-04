@@ -1,5 +1,6 @@
 import { ServicesMaintenanceFieldClassName, ServicesMaintenanceServiceTypeOptions } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import type { ServicesMaintenanceFieldsProps } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
 
 export { FormField };
@@ -35,15 +36,15 @@ export function ServicesMaintenanceFields({ errors, isReadonly, values, onInputC
         </select>
       </FormField>
       <FormField label="Description" error={errors.description} className="lg:col-span-2">
-        <textarea
+        <AppLimitedTextarea
           id="services-maintenance-description"
           name="description"
           maxLength={500}
           value={values.description}
           onChange={onInputChange}
           readOnly={isReadonly}
+          showCounter={false}
           className={`${ServicesMaintenanceFieldClassName} min-h-28 resize-y py-3`}
-          placeholder={isReadonly ? "No description" : "Enter description"}
         />
       </FormField>
     </div>

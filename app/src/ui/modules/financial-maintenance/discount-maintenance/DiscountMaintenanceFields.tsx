@@ -55,7 +55,6 @@ export function DiscountMaintenanceFields({
           readOnly={isReadonly}
           className={`${DiscountMaintenanceFieldClassName} min-h-24 py-3`}
           counterMode="used"
-          placeholder="What is this discount for?"
         />
       </FormField>
 

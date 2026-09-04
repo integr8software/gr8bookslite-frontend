@@ -208,7 +208,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
       return await updatePettyCashReplenishmentApi(params.recordId!, submitValues);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PettyCashReplenishmentQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: PettyCashReplenishmentQueryKeys.all });
       draft.clearDraft();
       toast.success(`Petty Cash Replenishment ${mode === PettyCashReplenishmentActionModes.Add ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
@@ -246,7 +246,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
       return await updatePettyCashReplenishmentStatusApi(params.recordId!, status);
     },
     onSuccess: (updatedRecord, status) => {
-      queryClient.invalidateQueries({ queryKey: PettyCashReplenishmentQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: PettyCashReplenishmentQueryKeys.all });
       queryClient.setQueryData(PettyCashReplenishmentQueryKeys.record(params.recordId), updatedRecord);
       setValues((current) => ({ ...current, status }));
       setInitialValues((current) => ({ ...current, status }));

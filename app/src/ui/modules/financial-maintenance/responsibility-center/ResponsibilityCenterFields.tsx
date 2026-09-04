@@ -3,6 +3,7 @@
 import { ResponsibilityCenterFieldClassName } from "@/app/src/constants/modules/financial-maintenance/responsibility-center/ResponsibilityCenterConstants";
 import type { ResponsibilityCenterFieldsProps } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
 import { joinClasses } from "@/app/src/ui/shared/main-layout/utils";
@@ -109,13 +110,13 @@ export function ResponsibilityCenterFields({
       </FormField>
 
       <FormField label="Description" error={errors.description} className="lg:col-span-2">
-        <textarea
+        <AppLimitedTextarea
           name="description"
           value={values.description}
           onChange={onInputChange}
           readOnly={isReadonly}
+          showCounter={false}
           className={joinClasses(ResponsibilityCenterFieldClassName, "min-h-24 resize-y py-3")}
-          placeholder="How this center is used in transactions and reports"
         />
       </FormField>
 

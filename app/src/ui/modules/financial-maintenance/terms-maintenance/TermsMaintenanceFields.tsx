@@ -5,6 +5,7 @@ import {
   TermsMaintenanceSelectClassName,
 } from "@/app/src/constants/modules/financial-maintenance/terms-maintenance/TermsMaintenanceConstants";
 import type { TermsMaintenanceFieldsProps } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
 import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
@@ -24,13 +25,13 @@ export function TermsMaintenanceFields({ errors, isReadonly, values, onInputChan
       </FormField>
 
       <FormField label="Description" error={errors.description} className="lg:col-span-2">
-        <textarea
+        <AppLimitedTextarea
           name="description"
           maxLength={500}
           value={values.description}
           onChange={onInputChange}
           readOnly={isReadonly}
-          placeholder={isReadonly ? "No Description..." : "Enter Description..."}
+          showCounter={false}
           className={`${TermsMaintenanceFieldClassName} min-h-24 resize-y py-3 ${isReadonly ? "placeholder:italic" : ""}`}
         />
       </FormField>

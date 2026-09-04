@@ -2,14 +2,20 @@
 
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import toast from "react-hot-toast";
+import { useQuery } from "@tanstack/react-query";
 import {
   ServicesMaintenanceInitialFormValues,
   createServicesMaintenanceFormValues,
   updateServicesMaintenanceFromForm,
 } from "@/app/src/data/modules/financial-maintenance/services-maintenance/ServicesMaintenanceData";
+import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { useServicesMaintenanceStore } from "@/app/src/hooks/modules/financial-maintenance/services-maintenance/useServicesMaintenance";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
+import { FetchNextChartAccountCode } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
+import { fetchDefaultAccountExpenseParentOptions } from "@/app/src/services/modules/financial-maintenance/default-account/DefaultAccountApi";
+import { DefaultAccountQueryKeys } from "@/app/src/services/modules/financial-maintenance/default-account/DefaultAccountQueryKeys";
 import type {
   ServicesMaintenanceAccountSetupMode,
   ServicesMaintenanceFormErrors,
@@ -26,10 +32,20 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
     isAccountOptionsLoading,
     isNextAccountCodeLoading,
     nextAccountCode,
+    permissions,
     refreshSetup,
     services,
     updateService,
   } = useServicesMaintenanceStore(undefined, { refetchOnMount: false });
+  const accessToken = useAppStore((state) => state.accessToken);
+  const authProfileQuery = useAuthProfileQuery({ accessToken });
+  const companyId = authProfileQuery.data?.activeCompanyId ?? null;
+  const expenseParentOptionsQuery = useQuery({
+    queryKey: DefaultAccountQueryKeys.expenseParentOptions(companyId),
+    queryFn: fetchDefaultAccountExpenseParentOptions,
+    enabled: Boolean(companyId),
+    retry: false,
+  });
   const mode = options.mode ?? "add";
   const existingService = options.existingService;
   const isReadonly = mode === "view";
@@ -52,6 +68,18 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
     values,
   });
 
+  const isPurchaseAuto = values.serviceType === "Purchase of Service" && values.accountSetupMode === "Auto";
+  const expenseNextAccountCodeQuery = useQuery({
+    queryKey: ["chart-of-accounts", "next-code", companyId, values.expenseParentCoaId, "SPECIFIC"],
+    queryFn: () =>
+      FetchNextChartAccountCode({
+        accountLevel: "SPECIFIC",
+        parentAccountId: values.expenseParentCoaId,
+      }),
+    enabled: Boolean(companyId && isPurchaseAuto && values.expenseParentCoaId),
+    retry: false,
+  });
+
   function updateField<Key extends keyof ServicesMaintenanceFormValues>(field: Key, value: ServicesMaintenanceFormValues[Key]) {
     if (isReadonly) return;
 
@@ -59,8 +87,15 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
       ...current,
       [field]: value,
       ...(field === "accountSetupMode" && value === "Auto" ? { revenueCoaId: "" } : {}),
+      ...(field === "accountSetupMode" && value === "Existing" ? { expenseParentCoaId: "" } : {}),
+      ...(field === "serviceType" && value !== "Purchase of Service" ? { expenseParentCoaId: "" } : {}),
     }));
     setErrors((current) => ({ ...current, [field]: undefined }));
+  }
+
+  function handleExpenseParentChange(value: string | string[]) {
+    const parentId = Array.isArray(value) ? (value[0] ?? "") : value;
+    updateField("expenseParentCoaId", parentId);
   }
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
@@ -150,15 +185,22 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
     accountOptions,
     errors,
     existingService,
+    expenseNextAccountCode: expenseNextAccountCodeQuery.data,
+    expenseParentOptions: expenseParentOptionsQuery.data ?? [],
+    handleExpenseParentChange,
     handleFieldChange: updateField,
     handleInputChange,
     handleSubmit,
     isAccountOptionsLoading,
+    isExpenseNextAccountCodeLoading: expenseNextAccountCodeQuery.isFetching,
+    isLoadingExpenseParentOptions: expenseParentOptionsQuery.isLoading,
     isNextAccountCodeLoading,
     isReadonly,
     isSubmitting,
     mode,
     nextAccountCode,
+    permissions,
+    refreshExpenseParentOptions: expenseParentOptionsQuery.refetch,
     refreshSetup,
     setAccountSetupMode: (value: ServicesMaintenanceAccountSetupMode) => updateField("accountSetupMode", value),
     setRevenueAccount: (value: string) => updateField("revenueCoaId", value),

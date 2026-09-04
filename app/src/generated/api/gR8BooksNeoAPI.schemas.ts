@@ -5829,6 +5829,8 @@ export interface ApprovalTransactionApproverResponseDto {
   status: string;
   /** @nullable */
   approvedAt?: string | null;
+  /** @nullable */
+  remarks?: string | null;
 }
 
 export interface ApprovalTransactionResponseDto {
@@ -5836,6 +5838,7 @@ export interface ApprovalTransactionResponseDto {
   moduleScope: string;
   moduleName: string;
   referenceNo: string;
+  remarks: string;
   ruleId: string;
   ruleName: string;
   amount: string;
@@ -5853,6 +5856,14 @@ export interface ApprovalTransactionResponseDto {
 
 export interface ApprovalTransactionsResponseDto {
   transactions: ApprovalTransactionResponseDto[];
+}
+
+export interface ApprovalTransactionActionDto {
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  remarks?: string | null;
 }
 
 export interface CreateApproverSetupDto {
@@ -6003,47 +6014,6 @@ export interface CreateModuleFieldDto {
   fieldType?: string;
   isVisible?: boolean;
   isRequired?: boolean;
-}
-
-export type UserSidebarTreeItemDtoItemType = typeof UserSidebarTreeItemDtoItemType[keyof typeof UserSidebarTreeItemDtoItemType];
-
-
-export const UserSidebarTreeItemDtoItemType = {
-  SECTION: 'SECTION',
-  CONTAINER: 'CONTAINER',
-  LINK: 'LINK',
-} as const;
-
-export interface UserSidebarTreeItemDto {
-  /** @maxLength 120 */
-  key: string;
-  /** @maxLength 160 */
-  label: string;
-  /** @maxLength 500 */
-  description?: string;
-  itemType: UserSidebarTreeItemDtoItemType;
-  /** @minimum 1 */
-  moduleId?: number;
-  iconName?: string;
-  isHidden?: boolean;
-  isPinned?: boolean;
-  isCollapsed?: boolean;
-  children: UserSidebarTreeItemDto[];
-}
-
-export type SaveUserSidebarDtoApplyScope = typeof SaveUserSidebarDtoApplyScope[keyof typeof SaveUserSidebarDtoApplyScope];
-
-
-export const SaveUserSidebarDtoApplyScope = {
-  CURRENT_BRANCH: 'CURRENT_BRANCH',
-  ALL_BRANCHES: 'ALL_BRANCHES',
-} as const;
-
-export interface SaveUserSidebarDto {
-  /** @minimum 0 */
-  version: number;
-  applyScope?: SaveUserSidebarDtoApplyScope;
-  items: UserSidebarTreeItemDto[];
 }
 
 export type AiAssistantQueuedTranscriptionResponseDtoStatus = typeof AiAssistantQueuedTranscriptionResponseDtoStatus[keyof typeof AiAssistantQueuedTranscriptionResponseDtoStatus];
@@ -10216,11 +10186,6 @@ export interface AcknowledgementReceiptJournalEntryDto {
 }
 
 export interface CreateAcknowledgementReceiptDto {
-  /**
-     * @maxLength 40
-     * @nullable
-     */
-  paymentId?: string | null;
   /** @minimum 1 */
   branchUnitId?: number;
   /**
@@ -10254,6 +10219,11 @@ export interface CreateAcknowledgementReceiptDto {
      * @nullable
      */
   billToName?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  paymentId?: string | null;
   /** @maxLength 10 */
   currency: string;
   /** @minimum 0.000001 */
@@ -10291,11 +10261,6 @@ export interface SaveAcknowledgementReceiptResponseDto {
 }
 
 export interface UpdateAcknowledgementReceiptDto {
-  /**
-     * @maxLength 40
-     * @nullable
-     */
-  paymentId?: string | null;
   /** @minimum 1 */
   branchUnitId?: number;
   /**
@@ -10329,6 +10294,11 @@ export interface UpdateAcknowledgementReceiptDto {
      * @nullable
      */
   billToName?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  paymentId?: string | null;
   /** @maxLength 10 */
   currency?: string;
   /** @minimum 0.000001 */
@@ -10668,11 +10638,6 @@ export interface ProvisionalReceiptJournalEntryDto {
 }
 
 export interface CreateProvisionalReceiptDto {
-  /**
-     * @maxLength 40
-     * @nullable
-     */
-  paymentId?: string | null;
   /** @minimum 1 */
   branchUnitId?: number;
   /**
@@ -10706,6 +10671,11 @@ export interface CreateProvisionalReceiptDto {
      * @nullable
      */
   billToName?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  paymentId?: string | null;
   /** @maxLength 10 */
   currency: string;
   /** @minimum 0.000001 */
@@ -10743,11 +10713,6 @@ export interface SaveProvisionalReceiptResponseDto {
 }
 
 export interface UpdateProvisionalReceiptDto {
-  /**
-     * @maxLength 40
-     * @nullable
-     */
-  paymentId?: string | null;
   /** @minimum 1 */
   branchUnitId?: number;
   /**
@@ -10781,6 +10746,11 @@ export interface UpdateProvisionalReceiptDto {
      * @nullable
      */
   billToName?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  paymentId?: string | null;
   /** @maxLength 10 */
   currency?: string;
   /** @minimum 0.000001 */
@@ -17523,22 +17493,6 @@ page?: number;
  * @maximum 100
  */
 limit?: number;
-};
-
-export type UserSidebarControllerGetCustomizationV1Params = {
-branchUnitId: number;
-userId?: string;
-};
-
-export type UserSidebarControllerSaveV1Params = {
-branchUnitId: number;
-userId?: unknown;
-};
-
-export type UserSidebarControllerResetV1Params = {
-branchUnitId: number;
-userId?: string;
-applyScope?: string;
 };
 
 export type AccountsPayableVoucherControllerFindAllV1Params = {

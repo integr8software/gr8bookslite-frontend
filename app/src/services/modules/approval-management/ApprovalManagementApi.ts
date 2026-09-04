@@ -1,4 +1,12 @@
 import { OrvalApiClient } from "@/app/src/services/shared/api/OrvalApiClient";
+import {
+  approvalManagementControllerApproveTransactionV1,
+  approvalManagementControllerDisapproveTransactionV1,
+} from "@/app/src/generated/api/approval-management/approval-management";
+import type {
+  ApprovalManagementControllerApproveTransactionV1MutationBody,
+  ApprovalManagementControllerDisapproveTransactionV1MutationBody,
+} from "@/app/src/generated/api/approval-management/approval-management";
 import type {
   ApprovalManagementModuleOption,
   ApprovalManagementRecord,
@@ -27,11 +35,6 @@ type UpsertApprovalWorkflowResponse = {
 
 type ApprovalTransactionsResponse = {
   transactions: ApprovalTransactionApiRecord[];
-};
-
-export type ApprovalTransactionActionPayload = {
-  remarks?: string | null;
-  transactionId: string;
 };
 
 type UpsertApprovalWorkflowPayload = {
@@ -105,20 +108,24 @@ export async function GetApprovalTransactions() {
   return response.transactions;
 }
 
-export async function ApproveApprovalTransaction({ remarks, transactionId }: ApprovalTransactionActionPayload) {
-  return OrvalApiClient<ApprovalTransactionApiRecord>({
-    data: { remarks },
-    method: "POST",
-    url: `/api/v1/system-administration/approval-management/transactions/${encodeURIComponent(transactionId)}/approve`,
-  });
+export async function ApproveApprovalTransaction({
+  data,
+  transactionId,
+}: {
+  data: ApprovalManagementControllerApproveTransactionV1MutationBody;
+  transactionId: string;
+}) {
+  return approvalManagementControllerApproveTransactionV1(encodeURIComponent(transactionId), data) as Promise<ApprovalTransactionApiRecord>;
 }
 
-export async function DisapproveApprovalTransaction({ remarks, transactionId }: ApprovalTransactionActionPayload) {
-  return OrvalApiClient<ApprovalTransactionApiRecord>({
-    data: { remarks },
-    method: "POST",
-    url: `/api/v1/system-administration/approval-management/transactions/${encodeURIComponent(transactionId)}/disapprove`,
-  });
+export async function DisapproveApprovalTransaction({
+  data,
+  transactionId,
+}: {
+  data: ApprovalManagementControllerDisapproveTransactionV1MutationBody;
+  transactionId: string;
+}) {
+  return approvalManagementControllerDisapproveTransactionV1(encodeURIComponent(transactionId), data) as Promise<ApprovalTransactionApiRecord>;
 }
 
 function mapApprovalWorkflowApiRecord(workflow: ApprovalWorkflowApiRecord): ApprovalManagementRecord {

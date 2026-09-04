@@ -7,7 +7,6 @@ import {
   DisapproveApprovalTransaction,
   GetApprovalManagementModules,
   GetApprovalTransactions,
-  type ApprovalTransactionActionPayload,
 } from "@/app/src/services/modules/approval-management/ApprovalManagementApi";
 import { ApprovalManagementQueryKeys } from "@/app/src/services/modules/approval-management/ApprovalManagementQueryKeys";
 import {
@@ -30,6 +29,7 @@ import type {
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
 type ApprovalTransactionAction = "approve" | "disapprove";
+type ApprovalTransactionActionVariables = Parameters<typeof ApproveApprovalTransaction>[0];
 
 export type ApprovalTransactionActionDialogState = {
   action: ApprovalTransactionAction;
@@ -128,7 +128,7 @@ export function useApprovalTransactions() {
 
   function useTransactionStatusMutation(
     action: ApprovalTransactionAction,
-    mutationFn: (payload: ApprovalTransactionActionPayload) => Promise<ApprovalTransactionApiRecord>,
+    mutationFn: (payload: ApprovalTransactionActionVariables) => Promise<ApprovalTransactionApiRecord>,
     onDone: () => void,
   ) {
     return useMutation({
@@ -166,7 +166,9 @@ export function useApprovalTransactions() {
     }
 
     const payload = {
-      remarks: actionDialog.remarks.trim() || null,
+      data: {
+        remarks: actionDialog.remarks.trim() || null,
+      },
       transactionId: actionDialog.record.id,
     };
 

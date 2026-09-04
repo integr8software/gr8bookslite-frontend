@@ -18,7 +18,7 @@ import { createEwtOptions, createVatOptions } from "@/app/src/data/shared/tax/Ta
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
-import { useMaintenanceResponsibilityCenterOptions } from "@/app/src/hooks/shared/maintenance/useMaintenanceResponsibilityCenterOptions";
+import { useResponsibilityCenterLookup } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenterLookup";
 import type {
   PettyCashFundDetailEntryTableProps,
   PettyCashFundItemColumnId,
@@ -50,7 +50,7 @@ export function PettyCashFundDetailEntryTable({
   const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
   const ewtOptions = useMemo(() => createEwtOptions(taxCodes), [taxCodes]);
 
-  const responsibilityCentersQuery = useMaintenanceResponsibilityCenterOptions();
+  const responsibilityCentersQuery = useResponsibilityCenterLookup();
   const responsibilityCenterOptions = useMemo(
     () => responsibilityCentersQuery.data ?? [],
     [responsibilityCentersQuery.data],

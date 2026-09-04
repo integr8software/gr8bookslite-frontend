@@ -12,6 +12,7 @@ import {
 } from "@tanstack/react-table";
 import {
   AccountLevelLabels,
+  AccountStatuses,
   ChartsOfAccountsDefaultColumnOrder,
   ChartsOfAccountsDefaultColumnVisibility,
   ChartsOfAccountsDefaultSorting,
@@ -80,7 +81,7 @@ export function useChartsOfAccounts() {
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [accountTypeFilter, setAccountTypeFilter] = useState<FilterValue<AccountType>>(ChartsOfAccountsAllFilterValue);
-  const [statusFilter, setStatusFilter] = useState<FilterValue<AccountStatus>>("Active");
+  const [statusFilter, setStatusFilter] = useState<FilterValue<AccountStatus>>(AccountStatuses.Active);
   const [structureFilter, setStructureFilter] = useState<ChartAccountStructureFilter>(ChartsOfAccountsAllFilterValue);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -343,7 +344,7 @@ export function useChartsOfAccounts() {
     setActiveTab(ChartsOfAccountsNavs[0]);
     setSearchQuery("");
     setAccountTypeFilter(ChartsOfAccountsAllFilterValue);
-    setStatusFilter("Active");
+    setStatusFilter(AccountStatuses.Active);
     setStructureFilter(ChartsOfAccountsAllFilterValue);
     table.setPageIndex(0);
   }, [table]);
@@ -397,7 +398,7 @@ export function useChartsOfAccounts() {
       updateStatusMutation.mutate(
         {
           accountId: account.id,
-          status: account.status === "Active" ? "Inactive" : "Active",
+          status: account.status === AccountStatuses.Active ? AccountStatuses.Inactive : AccountStatuses.Active,
         },
         {
           onError: () => {

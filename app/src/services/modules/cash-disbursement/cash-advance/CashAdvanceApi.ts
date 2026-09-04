@@ -18,11 +18,9 @@ import type {
   UpdateCashAdvanceStatusDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
-import {
-  fetchMaintenancePartyOptions,
-  fetchMaintenancePostingAccountOptions,
-  fetchMaintenanceResponsibilityCenterOptions,
-} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
+import { fetchPostingAccountLookupOptions } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartOfAccountsLookupApi";
+import { fetchResponsibilityCenterLookupOptions } from "@/app/src/services/modules/financial-maintenance/responsibility-center/ResponsibilityCenterLookupApi";
+import { fetchPartyLookupOptions } from "@/app/src/services/modules/party-management/PartyLookupApi";
 import type {
   CashAdvanceAccountDropdownOption,
   CashAdvancePartyDropdownOption,
@@ -51,23 +49,44 @@ export async function fetchCashAdvanceList(params?: FetchCashAdvanceListParams):
 }
 
 export async function fetchCashAdvancePartyOptions(): Promise<CashAdvancePartyDropdownOption[]> {
-  const options = await fetchMaintenancePartyOptions();
+  const options = await fetchPartyLookupOptions({ detail: "complete" });
 
-  return options.map((party) => ({
-    name: party.partyName,
-    label: party.partyCode,
-    value: party.partyId,
-    partyId: party.partyId,
-    partyCode: party.partyCode,
-    partyName: party.partyName,
-    cashAdvanceLimit: String(party.cashAdvanceLimit ?? ""),
-    totalCashAdvance: String(party.totalCashAdvance ?? "0.00"),
-    availableCashAdvance: String(party.availableCashAdvance ?? ""),
-  }));
+  return options.map((party) => {
+    const rawAccountingAccounts = party.accountingAccounts as
+      | {
+          employeeAdvanceAccount?: {
+            id?: string;
+            accountCode?: string;
+            accountTitle?: string;
+          } | null;
+        }
+      | undefined;
+
+    const employeeAdvance = rawAccountingAccounts?.employeeAdvanceAccount;
+    const employeeAdvanceAccountId =
+      employeeAdvance?.id ?? (party.employeeAdvanceAccount ? String(party.employeeAdvanceAccount) : undefined);
+    const employeeAdvanceAccountCode = employeeAdvance?.accountCode ?? undefined;
+    const employeeAdvanceAccountTitle = employeeAdvance?.accountTitle ?? undefined;
+
+    return {
+      name: party.partyName,
+      label: party.partyCode,
+      value: party.partyId,
+      partyId: party.partyId,
+      partyCode: party.partyCode,
+      partyName: party.partyName,
+      cashAdvanceLimit: String(party.cashAdvanceLimit ?? ""),
+      totalCashAdvance: String(party.totalCashAdvance ?? "0.00"),
+      availableCashAdvance: String(party.availableCashAdvance ?? ""),
+      employeeAdvanceAccountId,
+      employeeAdvanceAccountCode,
+      employeeAdvanceAccountTitle,
+    };
+  });
 }
 
 export async function fetchCashAdvanceAccountOptions(): Promise<CashAdvanceAccountDropdownOption[]> {
-  const accounts = await fetchMaintenancePostingAccountOptions();
+  const accounts = await fetchPostingAccountLookupOptions();
 
   // Filter accounts under Accounts Receivables (1010103000) or code starting with 1010103
   const arAccounts = accounts.filter(
@@ -94,7 +113,7 @@ export async function fetchCashAdvanceResponsibilityCenters(): Promise<{
   costCenters: CashAdvanceResponsibilityCenterDropdownOption[];
   projects: CashAdvanceResponsibilityCenterDropdownOption[];
 }> {
-  const centers = await fetchMaintenanceResponsibilityCenterOptions();
+  const centers = await fetchResponsibilityCenterLookupOptions();
 
   const isProject = (center: { category?: string; typeName?: string; name?: string }) =>
     center.category?.toLowerCase() === "project" ||

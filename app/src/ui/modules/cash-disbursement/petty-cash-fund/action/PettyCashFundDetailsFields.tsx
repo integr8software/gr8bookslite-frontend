@@ -1,6 +1,10 @@
 "use client";
 
-import { usePettyCashFundDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-fund/usePettyCashFundDetailsLookups";
+import { useMemo } from "react";
+import { usePartyLookup } from "@/app/src/hooks/modules/party-management/usePartyLookup";
+import { usePostingAccountLookup } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartOfAccountsLookup";
+import { useResponsibilityCenterSplitLookup } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenterLookup";
+import { ensureDropdownOption } from "@/app/src/utils/dropdown.util";
 import type { PettyCashFundActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
@@ -24,16 +28,50 @@ export function PettyCashFundDetailsFields({
   onOpenResponsibilityCenterDrawer: () => void;
   page: PettyCashFundActionPageState;
 }) {
-  const {
-    accountOptions,
-    isAccountLookupLoading,
-    isPartyLookupLoading,
-    isProjectLookupLoading,
-    isResponsibilityCenterLookupLoading,
-    partyOptions,
-    projectOptions,
-    responsibilityCenterOptions,
-  } = usePettyCashFundDetailsLookups(page.values);
+  const partyQuery = usePartyLookup();
+  const accountQuery = usePostingAccountLookup();
+  const rcSplitQuery = useResponsibilityCenterSplitLookup();
+
+  const partyOptions = useMemo(() => {
+    return ensureDropdownOption(partyQuery.data ?? [], {
+      value: page.values.partyCode,
+      label: page.values.partyCode,
+      name: page.values.partyName,
+      description: page.values.partyName,
+    });
+  }, [partyQuery.data, page.values.partyCode, page.values.partyName]);
+
+  const accountOptions = useMemo(() => {
+    return ensureDropdownOption(accountQuery.data ?? [], {
+      value: page.values.accountCode,
+      label: page.values.accountCode,
+      name: page.values.accountTitle,
+      description: page.values.accountTitle,
+    });
+  }, [accountQuery.data, page.values.accountCode, page.values.accountTitle]);
+
+  const responsibilityCenterOptions = useMemo(() => {
+    return ensureDropdownOption(rcSplitQuery.costCenterOptions, {
+      value: page.values.responsibilityCenterCode,
+      label: page.values.responsibilityCenterCode,
+      name: page.values.responsibilityCenter,
+      description: page.values.responsibilityCenter,
+    });
+  }, [rcSplitQuery.costCenterOptions, page.values.responsibilityCenterCode, page.values.responsibilityCenter]);
+
+  const projectOptions = useMemo(() => {
+    return ensureDropdownOption(rcSplitQuery.projectOptions, {
+      value: page.values.projectCode,
+      label: page.values.projectCode,
+      name: page.values.projectName,
+      description: page.values.projectName,
+    });
+  }, [rcSplitQuery.projectOptions, page.values.projectCode, page.values.projectName]);
+
+  const isPartyLookupLoading = partyQuery.isLoading;
+  const isAccountLookupLoading = accountQuery.isLoading;
+  const isResponsibilityCenterLookupLoading = rcSplitQuery.isLoading;
+  const isProjectLookupLoading = rcSplitQuery.isLoading;
 
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">

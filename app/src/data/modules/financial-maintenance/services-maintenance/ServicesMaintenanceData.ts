@@ -10,11 +10,13 @@ import type {
 import {
   ServicesMaintenanceAccountSetupModeOptions,
   ServicesMaintenanceImportDefaultColumnIndexes,
-  ServicesMaintenanceImportMaxFileSizeBytes,
-  ServicesMaintenanceImportMinFileSizeBytes,
   ServicesMaintenanceImportTemplateHeaders,
   ServicesMaintenanceServiceTypeOptions,
 } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
+import {
+  ModuleImportDefaultMaxFileSizeBytes,
+  ModuleImportDefaultMinFileSizeBytes,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { formatFileSize } from "@/app/src/utils/file.util";
 import { getModuleImportOptionValue, isModuleImportOptionValue } from "@/app/src/utils/module-import.util";
@@ -254,12 +256,12 @@ export function serviceImportRowHasErrors(row: ServicesMaintenanceImportPreviewR
 }
 
 export function validateServicesMaintenanceImportFileSize(file: File) {
-  if (file.size < ServicesMaintenanceImportMinFileSizeBytes) {
-    return `Upload a file larger than ${formatFileSize(ServicesMaintenanceImportMinFileSizeBytes)}.`;
+  if (file.size < ModuleImportDefaultMinFileSizeBytes) {
+    return `Upload a file larger than ${formatFileSize(ModuleImportDefaultMinFileSizeBytes)}.`;
   }
 
-  if (file.size > ServicesMaintenanceImportMaxFileSizeBytes) {
-    return `Upload a file up to ${formatFileSize(ServicesMaintenanceImportMaxFileSizeBytes)}.`;
+  if (file.size > ModuleImportDefaultMaxFileSizeBytes) {
+    return `Upload a file up to ${formatFileSize(ModuleImportDefaultMaxFileSizeBytes)}.`;
   }
 
   return null;

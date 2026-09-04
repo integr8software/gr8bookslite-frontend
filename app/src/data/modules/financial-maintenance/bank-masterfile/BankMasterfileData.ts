@@ -1,13 +1,15 @@
 import {
   BankImportFieldOrder,
-  BankImportMaxFileSizeBytes,
-  BankImportMinFileSizeBytes,
   BankImportTemplateSampleRow,
   BankImportTemplateHeaders,
   BankMasterfileAccountTypeOptions,
   BankMasterfileCashInBankAccountTitle,
 } from "@/app/src/constants/modules/financial-maintenance/bank-masterfile/BankMasterfileConstants";
 import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
+import {
+  ModuleImportDefaultMaxFileSizeBytes,
+  ModuleImportDefaultMinFileSizeBytes,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import {
   DefaultPreferredBaseCurrencyCode,
   findCurrencyByCode,
@@ -351,8 +353,8 @@ function parseStatus(value: string): BankMasterfileStatus {
 }
 
 export function validateImportFileSize(file: File) {
-  if (file.size < BankImportMinFileSizeBytes) return "The selected file is empty.";
-  if (file.size > BankImportMaxFileSizeBytes) {
+  if (file.size < ModuleImportDefaultMinFileSizeBytes) return "The selected file is empty.";
+  if (file.size > ModuleImportDefaultMaxFileSizeBytes) {
     return `Upload a file up to ${AppMaxFileUploadSizeLabel}.`;
   }
   return null;

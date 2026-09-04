@@ -13,6 +13,7 @@ import {
   updateDiscount,
 } from "@/app/src/services/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceApi";
 import { DiscountMaintenanceQueryKeys } from "@/app/src/services/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceQueryKeys";
+import { DiscountMaintenanceStatuses } from "@/app/src/constants/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceConstants";
 import type {
   Discount,
   DiscountMaintenanceFormValues,
@@ -124,7 +125,7 @@ export function useDiscountMaintenanceStore<TSelected = DiscountStoreState>(
       });
       toast.success(
         didStatusChange
-          ? `Discount ${updatedDiscount.status === "Active" ? "activated" : "deactivated"} successfully.`
+          ? `Discount ${updatedDiscount.status === DiscountMaintenanceStatuses.Active ? "activated" : "deactivated"} successfully.`
           : "Discount updated successfully.",
       );
     },

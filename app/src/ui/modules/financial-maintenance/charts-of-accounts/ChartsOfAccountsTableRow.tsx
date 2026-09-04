@@ -6,6 +6,7 @@ import { ChevronRight, GripVertical, Plus } from "lucide-react";
 import { memo, type CSSProperties } from "react";
 import {
   AccountLevelLabels,
+  AccountStatuses,
   NormalBalanceLabels,
 } from "@/app/src/constants/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsConstants";
 import {
@@ -391,7 +392,7 @@ function RowActions({
   onStatusChange: (account: ChartAccount) => void;
   onView: (account: ChartAccount) => void;
 }) {
-  const nextStatus = account.status === "Active" ? "Inactive" : "Active";
+  const nextStatus = account.status === AccountStatuses.Active ? AccountStatuses.Inactive : AccountStatuses.Active;
   const canManageAccount = permissions.canUpdate && (account.isUserCreated || account.isBankLinked);
 
   return (
@@ -403,8 +404,8 @@ function RowActions({
         <>
           <ModuleTableActionButton variant="edit" label={`Edit ${account.accountName}`} onClick={() => onEdit(account)} />
           <ModuleTableActionButton
-            variant={nextStatus === "Inactive" ? "inactive" : "active"}
-            label={`${nextStatus === "Inactive" ? "Deactivate" : "Activate"} ${account.accountName}`}
+            variant={nextStatus === AccountStatuses.Inactive ? "inactive" : "active"}
+            label={`${nextStatus === AccountStatuses.Inactive ? "Deactivate" : "Activate"} ${account.accountName}`}
             onClick={() => onStatusChange(account)}
           />
         </>

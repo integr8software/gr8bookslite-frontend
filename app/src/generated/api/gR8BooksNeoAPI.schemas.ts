@@ -5388,6 +5388,7 @@ export interface TaxDefaultAccountOptionResponseDto {
   taxCode: string;
   displayCode: string;
   taxDescription: string;
+  sortOrder: number;
   /** @nullable */
   natureOfIncome: string | null;
   taxRate: string;

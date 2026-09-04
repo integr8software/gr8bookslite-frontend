@@ -1,7 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
+import { usePartyLookup } from "@/app/src/hooks/modules/party-management/usePartyLookup";
+import { useResponsibilityCenterSplitLookup } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenterLookup";
+import { ensureDropdownOption } from "@/app/src/utils/dropdown.util";
 import type { CashVoucherDetailsFormProps } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
-import { useCashVoucherDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherDetailsLookups";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
@@ -27,7 +30,29 @@ export function CashVoucherDetailsFields({
   onUpdateField,
   values,
 }: CashVoucherDetailsFormProps) {
-  const { isPartyLookupLoading, isProjectLookupLoading, partyOptions, projectOptions } = useCashVoucherDetailsLookups(values);
+  const partyQuery = usePartyLookup();
+  const rcSplitQuery = useResponsibilityCenterSplitLookup();
+
+  const partyOptions = useMemo(() => {
+    return ensureDropdownOption(partyQuery.data ?? [], {
+      value: values.partyCode,
+      label: values.partyCode,
+      name: values.partyName,
+      description: values.partyName,
+    });
+  }, [partyQuery.data, values.partyCode, values.partyName]);
+
+  const projectOptions = useMemo(() => {
+    return ensureDropdownOption(rcSplitQuery.projectOptions, {
+      value: values.projectCode || values.costCenter,
+      label: values.projectCode || values.costCenter,
+      name: values.projectName,
+      description: values.projectName,
+    });
+  }, [rcSplitQuery.projectOptions, values.costCenter, values.projectCode, values.projectName]);
+
+  const isPartyLookupLoading = partyQuery.isLoading;
+  const isProjectLookupLoading = rcSplitQuery.isLoading;
 
   return (
     <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">

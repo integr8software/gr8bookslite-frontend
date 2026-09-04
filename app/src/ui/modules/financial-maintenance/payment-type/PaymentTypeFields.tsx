@@ -1,6 +1,5 @@
 "use client";
 
-import { PaymentTypeFieldClassName } from "@/app/src/constants/modules/financial-maintenance/payment-type/PaymentTypeConstants";
 import { PaymentTypeOptions } from "@/app/src/data/modules/financial-maintenance/payment-type/PaymentTypeData";
 import type {
   PaymentTypeClassification,
@@ -19,7 +18,6 @@ export function PaymentTypeFields({ errors, isReadonly, onInputChange, values }:
           value={values.paymentType}
           readOnly={isReadonly}
           onChange={(event) => onInputChange("paymentType", event.target.value)}
-          className={PaymentTypeFieldClassName}
           placeholder="Enter payment type name"
         />
       </FormField>
@@ -29,7 +27,6 @@ export function PaymentTypeFields({ errors, isReadonly, onInputChange, values }:
           value={values.type}
           disabled={isReadonly}
           onChange={(event) => onInputChange("type", event.target.value as PaymentTypeClassification)}
-          className={PaymentTypeFieldClassName}
         >
           <option value="">--Select Category--</option>
           {PaymentTypeOptions.map((typeOption) => (
@@ -45,7 +42,6 @@ export function PaymentTypeFields({ errors, isReadonly, onInputChange, values }:
           value={values.description}
           readOnly={isReadonly}
           onChange={(event) => onInputChange("description", event.target.value)}
-          className={`${PaymentTypeFieldClassName} min-h-24 py-3`}
           counterMode="used"
         />
       </FormField>

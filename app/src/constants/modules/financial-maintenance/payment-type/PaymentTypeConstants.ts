@@ -1,5 +1,4 @@
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
-import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
 import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
 import type {
   PaymentTypeClassification,
@@ -23,9 +22,6 @@ export const PaymentTypeTitle = "Payment Type";
 export const PaymentTypeDescription = "Maintain payment type names, categories, and active status for cash disbursement workflows.";
 
 export const PaymentTypeDrawerFormId = "payment-type-drawer-form";
-
-export const PaymentTypeFieldClassName =
-  "h-11 w-full rounded-lg border border-darknavy/12 bg-white px-3 text-sm font-medium text-darknavy outline-none transition focus:border-skyblue/45 focus:ring-4 focus:ring-skyblue/15 disabled:bg-darknavy/5 read-only:bg-darknavy/5";
 
 export const PaymentTypeTablePaginationStorageKey = "maintenance:financial-management:payment-type";
 
@@ -64,13 +60,17 @@ export const PaymentTypeClassificationOptions = [
   "Digital Wallet",
 ] as const satisfies readonly PaymentTypeClassification[];
 
-export const PaymentTypeStatusOptions = ["Active", "Inactive"] as const satisfies readonly PaymentTypeStatus[];
+export const PaymentTypeStatuses = {
+  Active: "Active",
+  Inactive: "Inactive",
+} as const satisfies Record<string, PaymentTypeStatus>;
+
+export const PaymentTypeStatusOptions = [
+  PaymentTypeStatuses.Active,
+  PaymentTypeStatuses.Inactive,
+] as const satisfies readonly PaymentTypeStatus[];
 
 export const PaymentTypeImportTemplateHeaders = ["Payment Type Name", "Description", "Category"];
-
-export const PaymentTypeImportAcceptedFileExtensions = ".xlsx,.csv,.tsv,.txt";
-
-export const PaymentTypeImportAcceptedFileLabel = ".xlsx, .csv, .tsv, .txt";
 
 export const PaymentTypeImportDefaultColumnIndexes: Record<PaymentTypeImportColumnId, number> = {
   paymentType: 0,
@@ -100,20 +100,3 @@ export const PaymentTypeImportColumnHeaders: PaymentTypeImportColumnHeader[] = [
 ];
 
 export const PaymentTypeImportPreviewColumnCount = PaymentTypeImportFieldOrder.length + 1;
-
-export const PaymentTypeImportPreviewGridLabel = "Import preview grid. Paste copied Excel rows here.";
-
-export const PaymentTypeImportPreviewEmptyMessage = "Upload a file, or focus here and paste copied Excel rows.";
-
-export const PaymentTypeImportPreviewPageSize = 20;
-export const PaymentTypeImportBatchSize = 25;
-export const PaymentTypeImportMinFileSizeBytes = 1;
-export const PaymentTypeImportMaxFileSizeBytes = AppMaxFileUploadSizeBytes;
-
-export const ImportFieldOrder = PaymentTypeImportFieldOrder;
-export const SelectionColumnWidth = PaymentTypeImportSelectionColumnWidth;
-export const DefaultColumnWidths = PaymentTypeImportDefaultColumnWidths;
-export const PreviewPageSize = PaymentTypeImportPreviewPageSize;
-export const ImportBatchSize = PaymentTypeImportBatchSize;
-export const MinImportFileSizeBytes = PaymentTypeImportMinFileSizeBytes;
-export const MaxImportFileSizeBytes = PaymentTypeImportMaxFileSizeBytes;

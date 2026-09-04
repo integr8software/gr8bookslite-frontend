@@ -3,12 +3,14 @@
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import {
-  ServicesMaintenanceImportBatchSize,
   ServicesMaintenanceImportDefaultColumnWidths,
   ServicesMaintenanceImportFieldOrder,
-  ServicesMaintenanceImportPreviewPageSize,
 } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
-import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
+import {
+  ModuleImportDefaultBatchSize,
+  ModuleImportDefaultPreviewPageSize,
+  ModuleImportFixedColumnsWidth,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import {
   createBlankServicesMaintenanceImportRow,
   serviceImportRowHasErrors,
@@ -62,11 +64,11 @@ export function useServicesMaintenanceImportDialog({
   const actualInvalidRows = validatedRows.filter(serviceImportRowHasErrors);
   const validRows = validatedRows.filter((row) => !serviceImportRowHasErrors(row));
   const validSelectedRows = validRows.filter((row) => selectedRowIds.has(row.id));
-  const totalPages = Math.max(1, Math.ceil(displayedRows.length / ServicesMaintenanceImportPreviewPageSize));
+  const totalPages = Math.max(1, Math.ceil(displayedRows.length / ModuleImportDefaultPreviewPageSize));
   const safePreviewPage = Math.min(previewPage, totalPages);
   const visibleRows = displayedRows.slice(
-    (safePreviewPage - 1) * ServicesMaintenanceImportPreviewPageSize,
-    safePreviewPage * ServicesMaintenanceImportPreviewPageSize,
+    (safePreviewPage - 1) * ModuleImportDefaultPreviewPageSize,
+    safePreviewPage * ModuleImportDefaultPreviewPageSize,
   );
   const isBusy = Boolean(progress) || isParsing;
   const canImportAllRows = validatedRows.length > 0 && !isBusy;
@@ -108,7 +110,7 @@ export function useServicesMaintenanceImportDialog({
       return next;
     });
     setSelectedRowIds(new Set());
-    setPreviewPage(Math.max(1, Math.ceil(nextRows.length / ServicesMaintenanceImportPreviewPageSize)));
+    setPreviewPage(Math.max(1, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize)));
     setImportError(
       rows.length > uniqueRows.length
         ? `${rows.length - uniqueRows.length} duplicate ${rows.length - uniqueRows.length === 1 ? "row was" : "rows were"} skipped.`
@@ -144,7 +146,7 @@ export function useServicesMaintenanceImportDialog({
     const nextRows = [...previewRows, blankRow];
     setPreviewRows(nextRows);
     setPristineManualRowIds((current) => new Set(current).add(blankRow.id));
-    setPreviewPage(Math.max(1, Math.ceil(nextRows.length / ServicesMaintenanceImportPreviewPageSize)));
+    setPreviewPage(Math.max(1, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize)));
     setImportError(null);
   }
 
@@ -246,7 +248,7 @@ export function useServicesMaintenanceImportDialog({
     const nextRows = renumberServicesMaintenanceImportRows(previewRows.filter((row) => !selectedRowIds.has(row.id)));
     setPreviewRows(nextRows);
     setSelectedRowIds(new Set());
-    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / ServicesMaintenanceImportPreviewPageSize))));
+    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize))));
   }
 
   function movePreviewRow(sourceRowId: string, targetRowId: string, position: "before" | "after") {
@@ -292,8 +294,8 @@ export function useServicesMaintenanceImportDialog({
     setImportError(null);
 
     try {
-      for (let index = 0; index < rowsToImport.length; index += ServicesMaintenanceImportBatchSize) {
-        const batch = rowsToImport.slice(index, index + ServicesMaintenanceImportBatchSize);
+      for (let index = 0; index < rowsToImport.length; index += ModuleImportDefaultBatchSize) {
+        const batch = rowsToImport.slice(index, index + ModuleImportDefaultBatchSize);
         await onImportServices(batch.map((row) => row.service));
         setProgress({
           imported: Math.min(index + batch.length, rowsToImport.length),

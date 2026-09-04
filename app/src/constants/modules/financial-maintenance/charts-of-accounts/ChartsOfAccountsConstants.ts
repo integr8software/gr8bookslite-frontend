@@ -43,7 +43,15 @@ export const AccountTypeLabels: Record<AccountType, string> = {
   EXPENSE: "Expenses",
 };
 
-export const AccountStatuses: AccountStatus[] = ["Active", "Inactive"];
+export const AccountStatuses = {
+  Active: "Active",
+  Inactive: "Inactive",
+} as const satisfies Record<string, AccountStatus>;
+
+export const AccountStatusOptions = [
+  AccountStatuses.Active,
+  AccountStatuses.Inactive,
+] as const satisfies readonly AccountStatus[];
 
 export const NormalBalances: NormalBalance[] = ["DEBIT", "CREDIT"];
 

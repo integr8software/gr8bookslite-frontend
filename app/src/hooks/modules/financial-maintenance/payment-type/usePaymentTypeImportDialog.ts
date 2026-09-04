@@ -3,12 +3,14 @@
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import {
-  DefaultColumnWidths,
-  ImportBatchSize,
-  ImportFieldOrder,
-  PreviewPageSize,
-  SelectionColumnWidth,
+  PaymentTypeImportDefaultColumnWidths,
+  PaymentTypeImportFieldOrder,
+  PaymentTypeImportSelectionColumnWidth,
 } from "@/app/src/constants/modules/financial-maintenance/payment-type/PaymentTypeConstants";
+import {
+  ModuleImportDefaultBatchSize,
+  ModuleImportDefaultPreviewPageSize,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import {
   createBlankPaymentTypeImportRow,
   createExistingPaymentTypeNameMap,
@@ -50,7 +52,7 @@ export function usePaymentTypeImportDialog({
   const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(false);
   const [isImportMenuOpen, setIsImportMenuOpen] = useState(false);
   const [importMode, setImportMode] = useState<PaymentTypeImportMode>("all-rows");
-  const [columnWidths, setColumnWidths] = useState<PaymentTypeImportColumnWidths>(DefaultColumnWidths);
+  const [columnWidths, setColumnWidths] = useState<PaymentTypeImportColumnWidths>(PaymentTypeImportDefaultColumnWidths);
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(() => new Set());
   const existingPaymentTypeNames = useMemo(() => createExistingPaymentTypeNameMap(existingPaymentTypes), [existingPaymentTypes]);
   const validatedRows = useMemo(
@@ -71,10 +73,10 @@ export function usePaymentTypeImportDialog({
   const canImportAllRows = validatedRows.length > 0 && !progress;
   const canImportAllValid = validRows.length > 0 && !progress;
   const canImportSelectedValid = validSelectedRows.length > 0 && !progress;
-  const totalPages = Math.max(1, Math.ceil(displayedRows.length / PreviewPageSize));
+  const totalPages = Math.max(1, Math.ceil(displayedRows.length / ModuleImportDefaultPreviewPageSize));
   const safePreviewPage = Math.min(previewPage, totalPages);
-  const visibleRows = displayedRows.slice((safePreviewPage - 1) * PreviewPageSize, safePreviewPage * PreviewPageSize);
-  const importTableWidth = SelectionColumnWidth + ImportFieldOrder.reduce((total, field) => total + columnWidths[field], 0);
+  const visibleRows = displayedRows.slice((safePreviewPage - 1) * ModuleImportDefaultPreviewPageSize, safePreviewPage * ModuleImportDefaultPreviewPageSize);
+  const importTableWidth = PaymentTypeImportSelectionColumnWidth + PaymentTypeImportFieldOrder.reduce((total, field) => total + columnWidths[field], 0);
 
   function updateColumnWidth(field: PaymentTypeImportColumnId, width: number) {
     setColumnWidths((current) => ({
@@ -118,7 +120,7 @@ export function usePaymentTypeImportDialog({
           return next;
         });
         setSelectedRowIds(new Set());
-        setPreviewPage(Math.max(1, Math.ceil(nextRows.length / PreviewPageSize)));
+        setPreviewPage(Math.max(1, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize)));
       } else {
         const parsedRows = parsePaymentTypeImportText(text);
         const filteredRows = removeDuplicatePaymentTypeImportRows(parsedRows, []);
@@ -151,7 +153,7 @@ export function usePaymentTypeImportDialog({
 
     setPreviewRows(nextRows);
     setPristineManualRowIds((current) => new Set(current).add(blankRow.id));
-    setPreviewPage(Math.max(1, Math.ceil(nextRows.length / PreviewPageSize)));
+    setPreviewPage(Math.max(1, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize)));
     setSelectedRowIds(new Set());
     setImportError(null);
   }
@@ -173,7 +175,7 @@ export function usePaymentTypeImportDialog({
       return next;
     });
     setSelectedRowIds(new Set());
-    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / PreviewPageSize))));
+    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize))));
   }
 
   function movePreviewRow(sourceRowId: string, targetRowId: string, position: "before" | "after") {
@@ -293,7 +295,7 @@ export function usePaymentTypeImportDialog({
       return next;
     });
 
-    const startColumnIndex = ImportFieldOrder.indexOf(field);
+    const startColumnIndex = PaymentTypeImportFieldOrder.indexOf(field);
     const isSingleCellPaste = pastedRows.length === 1 && pastedRows[0]?.length === 1;
 
     if (isSingleCellPaste) {
@@ -320,7 +322,7 @@ export function usePaymentTypeImportDialog({
         const nextPaymentType = { ...targetRow.paymentType };
 
         pastedRow.forEach((cellValue, cellIndex) => {
-          const targetField = ImportFieldOrder[startColumnIndex + cellIndex];
+          const targetField = PaymentTypeImportFieldOrder[startColumnIndex + cellIndex];
 
           if (!targetField) {
             return;
@@ -412,8 +414,8 @@ export function usePaymentTypeImportDialog({
 
     setProgress({ imported: 0, total: paymentTypesToImport.length });
 
-    for (let index = 0; index < paymentTypesToImport.length; index += ImportBatchSize) {
-      const batch = paymentTypesToImport.slice(index, index + ImportBatchSize);
+    for (let index = 0; index < paymentTypesToImport.length; index += ModuleImportDefaultBatchSize) {
+      const batch = paymentTypesToImport.slice(index, index + ModuleImportDefaultBatchSize);
 
       try {
         await onImportPaymentTypes(batch);
@@ -449,7 +451,7 @@ export function usePaymentTypeImportDialog({
       return nextSelected;
     });
     setImportMode("all-rows");
-    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / PreviewPageSize))));
+    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize))));
     setImportError(null);
 
     if (nextRows.length === 0) {

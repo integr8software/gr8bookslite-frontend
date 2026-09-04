@@ -187,3 +187,5 @@ export const MultiCheckColumnIds = new Set<string>(["checkNo", "checkStatus", "c
 
 export const DisbursementVoucherDetailTablePreferencesStorageKey = "gr8books:disbursement-voucher:detail-table-preferences";
 export const DisbursementVoucherAccountingTablePreferencesStorageKey = "gr8books:disbursement-voucher:accounting-table-preferences";
+export const CashDisbursementAccountingGridSessionStorageKey = "cash-disbursement-accounting-grid";
+

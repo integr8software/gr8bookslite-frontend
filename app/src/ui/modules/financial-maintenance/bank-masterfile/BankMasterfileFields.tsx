@@ -1,17 +1,14 @@
 import {
   BankMasterfileAccountTypeOptions,
   BankMasterfileDefaultBankSwitchOption,
-  BankMasterfileFieldClassName,
   BankMasterfileNotDefaultBankSwitchOption,
-  BankMasterfileReadOnlyFieldClassName,
-  BankMasterfileSelectClassName,
 } from "@/app/src/constants/modules/financial-maintenance/bank-masterfile/BankMasterfileConstants";
 import { buildBankMasterfileAccountName } from "@/app/src/data/modules/financial-maintenance/bank-masterfile/BankMasterfileData";
 import type { BankMasterfileFieldsProps } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
-import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
+import { FormField, ReadonlyField } from "@/app/src/ui/shared/field-management/ModuleFormField";
 
 export function BankMasterfileFields({
   accountCode,
@@ -38,7 +35,6 @@ export function BankMasterfileFields({
             value={values.bankName}
             onChange={onInputChange}
             readOnly={isReadonly}
-            className={BankMasterfileFieldClassName}
             placeholder="BDO"
           />
         </FormField>
@@ -49,7 +45,6 @@ export function BankMasterfileFields({
             value={values.branch}
             onChange={onInputChange}
             readOnly={isReadonly}
-            className={BankMasterfileFieldClassName}
             placeholder="Makati Branch"
           />
         </FormField>
@@ -65,7 +60,6 @@ export function BankMasterfileFields({
             value={values.accountNumber}
             onChange={onInputChange}
             readOnly={isReadonly}
-            className={BankMasterfileFieldClassName}
             placeholder="Required before activation"
           />
         </FormField>
@@ -76,7 +70,6 @@ export function BankMasterfileFields({
             value={values.accountType}
             onChange={onInputChange}
             disabled={isReadonly}
-            className={BankMasterfileSelectClassName}
           >
             {BankMasterfileAccountTypeOptions.map((option) => (
               <option key={option} value={option}>
@@ -85,17 +78,12 @@ export function BankMasterfileFields({
             ))}
           </select>
         </FormField>
-        <FormField label="Account Code">
-          <input
-            id="bank-masterfile-account-code"
-            value={mode === "add" ? (isAccountCodeLoading ? "Loading..." : accountCode || "Auto series") : accountCode}
-            readOnly
-            className={BankMasterfileReadOnlyFieldClassName}
-          />
-        </FormField>
-        <FormField label="Account Title" required={values.status === "Active"}>
-          <input id="bank-masterfile-account-title" value={accountName} readOnly className={BankMasterfileReadOnlyFieldClassName} />
-        </FormField>
+        <ReadonlyField label="Account Code">
+          {mode === "add" ? (isAccountCodeLoading ? "Loading..." : accountCode || "Auto series") : accountCode}
+        </ReadonlyField>
+        <ReadonlyField label="Account Title">
+          {accountName}
+        </ReadonlyField>
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
         <FormField label="Series Start" error={errors.seriesStart} required>
@@ -105,7 +93,6 @@ export function BankMasterfileFields({
             value={values.seriesStart}
             onChange={onInputChange}
             readOnly={isReadonly}
-            className={BankMasterfileFieldClassName}
             placeholder="000001"
           />
         </FormField>
@@ -116,7 +103,6 @@ export function BankMasterfileFields({
             value={values.seriesEnd}
             onChange={onInputChange}
             readOnly={isReadonly}
-            className={BankMasterfileFieldClassName}
             placeholder="999999"
           />
         </FormField>
@@ -129,7 +115,6 @@ export function BankMasterfileFields({
             value={values.seriesDigits}
             onChange={onInputChange}
             readOnly={isReadonly}
-            className={BankMasterfileFieldClassName}
             placeholder="6"
           />
         </FormField>
@@ -137,7 +122,7 @@ export function BankMasterfileFields({
       <div className="grid gap-4 lg:grid-cols-3">
         <FormField label="Currency" error={errors.currencyCode} required>
           <AppAdvancedDropdown
-            disabled={isReadonly}
+            readOnly={isReadonly}
             emptyMessage="No active currencies found."
             options={currencyOptions.map((currency) => ({
               description: `${currency.country} - ${currency.name}`,

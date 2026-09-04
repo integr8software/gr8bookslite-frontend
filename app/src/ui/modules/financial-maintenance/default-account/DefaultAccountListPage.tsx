@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DefaultAccountStatuses } from "@/app/src/constants/modules/financial-maintenance/default-account/DefaultAccountConstants";
 import { useDefaultAccountListPage } from "@/app/src/hooks/modules/financial-maintenance/default-account/useDefaultAccountListPage";
 import type { DefaultAccountDrawerState } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
@@ -14,7 +15,7 @@ export function DefaultAccountListPage() {
   const page = useDefaultAccountListPage();
   const [drawerState, setDrawerState] = useState<DefaultAccountDrawerState>(null);
   const [isImportOpen, setIsImportOpen] = useState(false);
-  const hasActiveFilters = page.query.trim().length > 0 || page.statusFilter !== "Active" || page.typeFilter !== "";
+  const hasActiveFilters = page.query.trim().length > 0 || page.statusFilter !== DefaultAccountStatuses.Active || page.typeFilter !== "";
 
   return (
     <section className="grid gap-5">

@@ -2,6 +2,10 @@ import { AccountingPartyFallbackValuePrefix } from "@/app/src/constants/modules/
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { syncTaxDetailsAmount } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
 import {
+  getPartyDefaultEwtCode,
+  getPartyDefaultVatCode,
+} from "@/app/src/data/shared/tax/PartyTaxDefaultsData";
+import {
   isGeneratedEwtEntry,
   isGeneratedVatEntry,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
@@ -214,12 +218,8 @@ export function createDisbursementAccountingEntryColumns({
             value={dropdownValue}
             onChange={(value) => {
               const selectedParty = partyOptions.find((option) => option.value === value);
-              const vatCode =
-                selectedParty?.vatCode ||
-                findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseInputVatTaxSourceKey, "VAT");
-              const ewtCode =
-                selectedParty?.ewtCode ||
-                findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseEwtTaxSourceKey, "EWT");
+              const vatCode = getPartyDefaultVatCode(selectedParty, taxCodes);
+              const ewtCode = getPartyDefaultEwtCode(selectedParty, taxCodes);
               const nextTaxRate = vatCode ? getVatRateFromCode(vatCode, taxCodes) : "0%";
               const vatPercent = vatCode ? getVatPercentFromRate(getVatRateFromCode(vatCode, taxCodes)) : 0;
               const ewtPercent = ewtCode ? getEwtPercentFromCode(ewtCode, taxCodes) : 0;
@@ -318,24 +318,6 @@ export function createDisbursementAccountingEntryColumns({
       ),
     },
   };
-}
-
-type DisbursementVoucherPartyTaxType = "EWT" | "VAT";
-
-function findPartyTaxCode(taxCodes: AlphanumericTaxCode[], sourceKey: string | undefined, taxType: DisbursementVoucherPartyTaxType) {
-  if (!sourceKey) {
-    return "";
-  }
-
-  const taxCode = taxCodes.find(
-    (tax) =>
-      tax.sourceKey === sourceKey &&
-      (taxType === "VAT"
-        ? tax.taxType === "INPUT VAT" || tax.taxType === "VAT"
-        : tax.taxType === "EWT" || tax.taxType === "CWT"),
-  );
-
-  return taxCode ? (taxType === "EWT" ? taxCode.officialAtcCode || taxCode.taxCode : taxCode.taxCode) : "";
 }
 
 export function createDisbursementExpenseEntryColumns({

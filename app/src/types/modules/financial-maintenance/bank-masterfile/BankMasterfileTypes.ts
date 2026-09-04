@@ -24,6 +24,10 @@ export type BankMasterfile = {
   updatedAt?: string;
 };
 
+export type CreateBankResult = BankMasterfile & {
+  message?: string;
+};
+
 export type BankMasterfileFormValues = {
   bankName: string;
   branch: string;

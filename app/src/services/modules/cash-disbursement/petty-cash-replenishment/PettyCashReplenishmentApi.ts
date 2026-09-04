@@ -1,20 +1,15 @@
 "use client";
 
 import {
-  pettyCashReplenishmentControllerCreateV1 as pettyCashReplenishmentControllerCreate,
-  pettyCashReplenishmentControllerFindAllV1 as pettyCashReplenishmentControllerFindAll,
-  pettyCashReplenishmentControllerFindOneV1 as pettyCashReplenishmentControllerFindOne,
-  pettyCashReplenishmentControllerRemoveV1 as pettyCashReplenishmentControllerRemove,
+  pettyCashReplenishmentControllerCreateV1,
+  pettyCashReplenishmentControllerFindAllV1,
+  pettyCashReplenishmentControllerFindOneV1,
+  pettyCashReplenishmentControllerRemoveV1,
   pettyCashReplenishmentControllerSuggestTransactionNumberV1,
-  pettyCashReplenishmentControllerUpdateStatusV1 as pettyCashReplenishmentControllerUpdateStatus,
-  pettyCashReplenishmentControllerUpdateV1 as pettyCashReplenishmentControllerUpdate,
+  pettyCashReplenishmentControllerUpdateStatusV1,
+  pettyCashReplenishmentControllerUpdateV1,
 } from "@/app/src/generated/api/petty-cash-replenishment/petty-cash-replenishment";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
-import {
-  fetchMaintenancePartyOptions,
-  fetchMaintenancePostingAccountOptions,
-  fetchMaintenanceResponsibilityCenterOptions,
-} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import { PettyCashReplenishmentStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentConstants";
 import type {
   CreatePettyCashReplenishmentDto,
@@ -29,7 +24,6 @@ import type {
   PettyCashReplenishmentRecord,
   PettyCashReplenishmentStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { calculatePettyCashReplenishmentTotals } from "@/app/src/data/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentData";
 
@@ -44,7 +38,7 @@ type PettyCashReplenishmentResponseExtras = {
   updatedByUser?: AuditUserSnapshot | null;
 };
 
-type PettyCashReplenishmentQueryParams = NonNullable<Parameters<typeof pettyCashReplenishmentControllerFindAll>[0]>;
+type PettyCashReplenishmentQueryParams = NonNullable<Parameters<typeof pettyCashReplenishmentControllerFindAllV1>[0]>;
 
 export type FetchPettyCashReplenishmentListParams = {
   page?: number;
@@ -235,7 +229,7 @@ export async function fetchPettyCashReplenishmentList(
       params.status) as PettyCashReplenishmentQueryParams["status"];
   }
 
-  const response = (await pettyCashReplenishmentControllerFindAll(queryParams)) as PettyCashReplenishmentListResponseDto;
+  const response = (await pettyCashReplenishmentControllerFindAllV1(queryParams)) as PettyCashReplenishmentListResponseDto;
   return {
     data: (response?.items ?? []).map(mapPettyCashReplenishmentRecordFromDto),
     meta: response?.meta ?? { page: 1, limit: 50, total: 0, totalPages: 1 },
@@ -243,7 +237,7 @@ export async function fetchPettyCashReplenishmentList(
 }
 
 export async function fetchPettyCashReplenishmentById(id: string): Promise<PettyCashReplenishmentRecord> {
-  const response = (await pettyCashReplenishmentControllerFindOne(id)) as PettyCashReplenishmentResponseDto;
+  const response = (await pettyCashReplenishmentControllerFindOneV1(id)) as PettyCashReplenishmentResponseDto;
   return mapPettyCashReplenishmentRecordFromDto(response);
 }
 
@@ -253,35 +247,23 @@ export async function fetchNextPettyCashReplenishmentNo(branchUnitId?: number): 
 
 export async function createPettyCashReplenishmentApi(values: PettyCashReplenishmentFormValues): Promise<PettyCashReplenishmentRecord> {
   const payload = mapPettyCashReplenishmentFormValuesToCreateDto(values);
-  const response = (await pettyCashReplenishmentControllerCreate(payload)) as PettyCashReplenishmentResponseDto;
+  const response = (await pettyCashReplenishmentControllerCreateV1(payload)) as PettyCashReplenishmentResponseDto;
   return mapPettyCashReplenishmentRecordFromDto(response);
 }
 
 export async function updatePettyCashReplenishmentApi(id: string, values: PettyCashReplenishmentFormValues): Promise<PettyCashReplenishmentRecord> {
   const payload = mapPettyCashReplenishmentFormValuesToUpdateDto(values);
-  const response = (await pettyCashReplenishmentControllerUpdate(id, payload)) as PettyCashReplenishmentResponseDto;
+  const response = (await pettyCashReplenishmentControllerUpdateV1(id, payload)) as PettyCashReplenishmentResponseDto;
   return mapPettyCashReplenishmentRecordFromDto(response);
 }
 
 export async function updatePettyCashReplenishmentStatusApi(id: string, status: PettyCashReplenishmentStatus): Promise<PettyCashReplenishmentRecord> {
   const apiStatus = StatusToApi[status];
-  const response = (await pettyCashReplenishmentControllerUpdateStatus(id, { status: apiStatus })) as PettyCashReplenishmentResponseDto;
+  const response = (await pettyCashReplenishmentControllerUpdateStatusV1(id, { status: apiStatus })) as PettyCashReplenishmentResponseDto;
   return mapPettyCashReplenishmentRecordFromDto(response);
 }
 
 export async function deletePettyCashReplenishmentApi(id: string): Promise<{ success: boolean; message: string }> {
-  await pettyCashReplenishmentControllerRemove(id);
+  await pettyCashReplenishmentControllerRemoveV1(id);
   return { success: true, message: "Deleted successfully" };
-}
-
-export async function fetchPettyCashReplenishmentPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenancePartyOptions();
-}
-
-export async function fetchPettyCashReplenishmentAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenancePostingAccountOptions();
-}
-
-export async function fetchPettyCashReplenishmentResponsibilityCenters(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenanceResponsibilityCenterOptions();
 }

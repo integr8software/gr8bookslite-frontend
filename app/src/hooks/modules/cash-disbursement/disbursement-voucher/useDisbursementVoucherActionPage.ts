@@ -35,11 +35,17 @@ import {
   DisbursementVoucherStatuses,
   canEditDisbursementVoucherStatus,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
-import { DisbursementVoucherLineEntriesField } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
+import {
+  CashDisbursementAccountingGridSessionStorageKey,
+  DisbursementVoucherLineEntriesField,
+} from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryConstants";
 import {
   validateDisbursementVoucherDetails,
   validateDisbursementVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
+import { BankMasterfileStatuses } from "@/app/src/constants/modules/financial-maintenance/bank-masterfile/BankMasterfileConstants";
+import { ResponsibilityCenterStatuses } from "@/app/src/constants/modules/financial-maintenance/responsibility-center/ResponsibilityCenterConstants";
+import { PartyInformationActiveStatus } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import { useBankMasterfileStore } from "@/app/src/hooks/modules/financial-maintenance/bank-masterfile/useBankMasterfile";
 import { useDefaultAccountStore } from "@/app/src/hooks/modules/financial-maintenance/default-account/useDefaultAccount";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType";
@@ -179,7 +185,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     const optionsByCode = new Map<string, DisbursementVoucherPartyDropdownOption>();
 
     partyStore.records.forEach((record) => {
-      if (record.status !== "Active") {
+      if (record.status !== PartyInformationActiveStatus) {
         return;
       }
 
@@ -216,7 +222,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const projectOptions = useMemo(
     () =>
       responsibilityCenterStore.centers
-        .filter((center) => center.status === "Active" && center.typeName?.toLowerCase().includes("project"))
+        .filter((center) => center.status === ResponsibilityCenterStatuses.Active && center.typeName?.toLowerCase().includes("project"))
         .map((center) => ({
           label: center.code,
           name: center.name,
@@ -228,7 +234,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const responsibilityCenterOptions = useMemo(
     () =>
       responsibilityCenterStore.centers
-        .filter((center) => center.status === "Active" && !center.typeName?.toLowerCase().includes("project"))
+        .filter((center) => center.status === ResponsibilityCenterStatuses.Active && !center.typeName?.toLowerCase().includes("project"))
         .map((center) => ({
           description: center.code,
           label: center.code,
@@ -241,7 +247,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const bankAccounts = useMemo(
     () =>
       bankMasterfileStore.banks
-        .filter((bank) => bank.status === "Active")
+        .filter((bank) => bank.status === BankMasterfileStatuses.Active)
         .map((bank) => ({
           id: bank.id,
           accountCode: bank.accountCode,
@@ -908,7 +914,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         await createDisbursementVoucherApi(payload);
         toast.success("Disbursement Voucher created successfully.");
       }
-      void queryClient.invalidateQueries({ queryKey: DisbursementVoucherQueryKeys.all(activeCompanyId, activeBranchId) });
+      void queryClient.invalidateQueries({ queryKey: DisbursementVoucherQueryKeys.all });
       draft.clearDraft();
       setPendingSubmitValues(null);
       submitLockReleaseRef.current?.();
@@ -949,7 +955,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     try {
       await updateDisbursementVoucherStatusApi(actionRecordId, status);
       setValues((currentValues) => ({ ...currentValues, status }));
-      void queryClient.invalidateQueries({ queryKey: DisbursementVoucherQueryKeys.all(activeCompanyId, activeBranchId) });
+      void queryClient.invalidateQueries({ queryKey: DisbursementVoucherQueryKeys.all });
       void queryClient.invalidateQueries({
         queryKey: DisbursementVoucherQueryKeys.record(actionRecordId, activeCompanyId, activeBranchId),
       });
@@ -1151,7 +1157,7 @@ function shouldEntryRemarksFollowHeader(entry: DisbursementLineEntry, previousHe
 
 function clearAccountingGridSession() {
   if (typeof window !== "undefined") {
-    sessionStorage.removeItem("cash-disbursement-accounting-grid");
+    sessionStorage.removeItem(CashDisbursementAccountingGridSessionStorageKey);
   }
 }
 

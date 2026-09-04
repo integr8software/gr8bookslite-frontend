@@ -1,8 +1,20 @@
 "use client";
 
-import { isValidElement, useId, type MouseEventHandler, type ReactNode } from "react";
+import {
+  cloneElement,
+  isValidElement,
+  useId,
+  type MouseEventHandler,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 import { joinClasses } from "@/app/src/ui/shared/main-layout/utils";
+
+export const ModuleInputDefaultClassName =
+  "h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.03] disabled:text-darknavy/70 disabled:placeholder:text-darknavy/32 read-only:bg-darknavy/[0.03] read-only:text-darknavy/70";
+
+export const ModuleSelectDefaultClassName = `app-select-control ${ModuleInputDefaultClassName}`;
 
 export type ModuleFormFieldProps = {
   children: ReactNode;
@@ -41,6 +53,21 @@ export function ModuleFormField({
   const generatedId = useId();
   const fieldId = htmlFor ?? id ?? (isValidElement<{ id?: string }>(children) ? (children.props.id ?? generatedId) : generatedId);
 
+  let content = children;
+  if (isValidElement<{ className?: string; id?: string }>(children)) {
+    if (children.type === "input") {
+      content = cloneElement(children as ReactElement<{ className?: string; id?: string }>, {
+        className: joinClasses(ModuleInputDefaultClassName, children.props.className),
+        id: children.props.id ?? fieldId,
+      });
+    } else if (children.type === "select") {
+      content = cloneElement(children as ReactElement<{ className?: string; id?: string }>, {
+        className: joinClasses(ModuleSelectDefaultClassName, children.props.className),
+        id: children.props.id ?? fieldId,
+      });
+    }
+  }
+
   return (
     <div className={className} onMouseDown={onMouseDown}>
       {label ? (
@@ -53,7 +80,7 @@ export function ModuleFormField({
           ) : null}
         </label>
       ) : null}
-      {children}
+      {content}
       {error ? (
         <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span>
       ) : warning ? (

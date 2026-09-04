@@ -29,7 +29,10 @@ import {
   CashVoucherStatuses,
   canEditCashVoucherStatus,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
-import { CashVoucherLineEntriesField } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
+import {
+  CashDisbursementAccountingGridSessionStorageKey,
+  CashVoucherLineEntriesField,
+} from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
 import {
   validateCashVoucherDetails,
   validateCashVoucherEntries,
@@ -760,7 +763,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         toast.success("Cash Voucher created successfully.");
       }
 
-      void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.all(activeCompanyId, activeBranchId) });
+      void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.all });
       draft.clearDraft();
       setPendingSubmitValues(null);
       submitLockReleaseRef.current = null;
@@ -800,7 +803,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     try {
       await updateCashVoucherStatusApi(actionRecordId, status);
       setValues((currentValues) => ({ ...currentValues, status }));
-      void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.all(activeCompanyId, activeBranchId) });
+      void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.all });
       void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.record(actionRecordId, activeCompanyId, activeBranchId) });
       toast.success(`Cash Voucher status updated to ${status}.`);
       releaseActionLock();
@@ -1102,7 +1105,7 @@ function applyPartyTaxDefaults(entry: CashVoucherLineEntry, vatCode: string, ewt
 
 function clearAccountingGridSession() {
   if (typeof window !== "undefined") {
-    sessionStorage.removeItem("cash-disbursement-accounting-grid");
+    sessionStorage.removeItem(CashDisbursementAccountingGridSessionStorageKey);
   }
 }
 

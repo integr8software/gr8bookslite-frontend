@@ -23,6 +23,7 @@ import type {
   BankMasterfileFormValues,
   BankMasterfileListResult,
   BankMasterfileStatus,
+  CreateBankResult,
 } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
 import { cleanOptional } from "@/app/src/utils/string.util";
 
@@ -51,10 +52,6 @@ export async function fetchBanks(): Promise<BankMasterfileListResult> {
 export async function fetchNextBankAccountCode(): Promise<BankNextAccountCodeResponseDto> {
   return bankMasterfileControllerGetNextAccountCodeV1();
 }
-
-export type CreateBankResult = BankMasterfile & {
-  message?: string;
-};
 
 export async function createBank(values: BankMasterfileFormValues): Promise<CreateBankResult> {
   const response = await bankMasterfileControllerCreateV1(toApiBankPayload(values));

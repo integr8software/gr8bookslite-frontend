@@ -1,3 +1,5 @@
+import { QueryLookupScope } from "@/app/src/constants/shared/query/QueryKeyConstants";
+
 export const DisbursementVoucherQueryKeys = {
 	all: ["disbursement-voucher"] as const,
 	records: (companyId?: number | null, branchUnitId?: number | null, query?: unknown) =>
@@ -7,16 +9,16 @@ export const DisbursementVoucherQueryKeys = {
 	transactionNo: (companyId?: number | null, branchUnitId?: number | null) =>
 		[...DisbursementVoucherQueryKeys.all, "transaction-no", companyId, branchUnitId] as const,
 	lookups: () =>
-		[...DisbursementVoucherQueryKeys.all, "lookups"] as const,
+		[...DisbursementVoucherQueryKeys.all, QueryLookupScope] as const,
 	parties: (companyId?: number | null) =>
-		[...DisbursementVoucherQueryKeys.all, "lookups", "parties", companyId] as const,
+		[...DisbursementVoucherQueryKeys.all, QueryLookupScope, "parties", companyId] as const,
 	accounts: (companyId?: number | null) =>
-		[...DisbursementVoucherQueryKeys.all, "lookups", "accounts", companyId] as const,
+		[...DisbursementVoucherQueryKeys.all, QueryLookupScope, "accounts", companyId] as const,
 	responsibilityCenters: (companyId?: number | null) =>
-		[...DisbursementVoucherQueryKeys.all, "lookups", "responsibility-centers", companyId] as const,
+		[...DisbursementVoucherQueryKeys.all, QueryLookupScope, "responsibility-centers", companyId] as const,
 	terms: (companyId?: number | null) =>
-		[...DisbursementVoucherQueryKeys.all, "lookups", "terms", companyId] as const,
+		[...DisbursementVoucherQueryKeys.all, QueryLookupScope, "terms", companyId] as const,
 	expenseTypes: (companyId?: number | null) =>
-		[...DisbursementVoucherQueryKeys.all, "lookups", "expense-types", companyId] as const,
+		[...DisbursementVoucherQueryKeys.all, QueryLookupScope, "expense-types", companyId] as const,
 };
 

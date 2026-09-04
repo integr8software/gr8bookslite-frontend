@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { formatDateTime } from "@/app/src/utils/date.util";
-import { getDefaultAccountTypeLabel } from "@/app/src/constants/modules/financial-maintenance/default-account/DefaultAccountConstants";
+import { DefaultAccountStatuses } from "@/app/src/constants/modules/financial-maintenance/default-account/DefaultAccountConstants";
+import { getDefaultAccountTypeLabel } from "@/app/src/data/modules/financial-maintenance/default-account/DefaultAccountData";
 import type {
   DefaultAccount,
   DefaultAccountPermissions,
@@ -50,8 +51,8 @@ function DefaultAccountCellContent({
   onToggleStatus: (account: DefaultAccount) => void;
   onViewDefaultAccount: (account: DefaultAccount) => void;
 }) {
-  const nextStatus = defaultAccount.status === "Active" ? "Inactive" : "Active";
-  const statusActionLabel = defaultAccount.status === "Active" ? "Inactivate" : "Activate";
+  const nextStatus = defaultAccount.status === DefaultAccountStatuses.Active ? DefaultAccountStatuses.Inactive : DefaultAccountStatuses.Active;
+  const statusActionLabel = defaultAccount.status === DefaultAccountStatuses.Active ? "Inactivate" : "Activate";
 
   switch (columnId) {
     case "defaultAccountName":
@@ -119,7 +120,7 @@ function DefaultAccountCellContent({
           ) : null}
           {permissions.canCancel ? (
             <ModuleTableActionButton
-              variant={nextStatus === "Inactive" ? "inactive" : "active"}
+              variant={nextStatus === DefaultAccountStatuses.Inactive ? "inactive" : "active"}
               onClick={() => onToggleStatus(defaultAccount)}
               label={`${statusActionLabel} ${defaultAccount.defaultAccountName}`}
             />

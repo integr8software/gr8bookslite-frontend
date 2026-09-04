@@ -1,11 +1,13 @@
 import {
   DiscountImportDefaultColumnIndexes,
-  DiscountImportMaxFileSizeBytes,
-  DiscountImportMinFileSizeBytes,
   DiscountImportTemplateHeaders,
   DiscountMaintenanceTypeOptions,
   DiscountMaintenanceValueTypeOptions,
 } from "@/app/src/constants/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceConstants";
+import {
+  ModuleImportDefaultMaxFileSizeBytes,
+  ModuleImportDefaultMinFileSizeBytes,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import type {
   Discount,
   DiscountImportCellErrors,
@@ -389,12 +391,12 @@ export function rowHasErrors(row: DiscountImportPreviewRow) {
 }
 
 export function validateImportFileSize(file: File) {
-  if (file.size < DiscountImportMinFileSizeBytes) {
-    return `Upload a file larger than ${formatFileSize(DiscountImportMinFileSizeBytes)}.`;
+  if (file.size < ModuleImportDefaultMinFileSizeBytes) {
+    return `Upload a file larger than ${formatFileSize(ModuleImportDefaultMinFileSizeBytes)}.`;
   }
 
-  if (file.size > DiscountImportMaxFileSizeBytes) {
-    return `Upload a file up to ${formatFileSize(DiscountImportMaxFileSizeBytes)}.`;
+  if (file.size > ModuleImportDefaultMaxFileSizeBytes) {
+    return `Upload a file up to ${formatFileSize(ModuleImportDefaultMaxFileSizeBytes)}.`;
   }
 
   return null;

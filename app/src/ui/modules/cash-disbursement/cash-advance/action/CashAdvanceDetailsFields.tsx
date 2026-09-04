@@ -8,7 +8,9 @@ import {
 } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { useCashAdvanceActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
-import { useCashAdvanceDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvanceDetailsLookups";
+import { usePartyLookup } from "@/app/src/hooks/modules/party-management/usePartyLookup";
+import { usePostingAccountLookup } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartOfAccountsLookup";
+import { useResponsibilityCenterSplitLookup } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenterLookup";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import type {
@@ -56,6 +58,39 @@ export function CashAdvanceFormPanel({
   return <CashAdvanceDetailsForm form={form} mode={mode} />;
 }
 
+function applyPartyDefaultAccount(
+  form: CashAdvanceFormController,
+  accountOptions: CashAdvanceAccountDropdownOption[],
+  party?: {
+    employeeAdvanceAccountId?: string;
+    employeeAdvanceAccountCode?: string;
+    employeeAdvanceAccountTitle?: string;
+  },
+) {
+  if (!party) return;
+
+  const matchingAccount = accountOptions.find(
+    (account) =>
+      (party.employeeAdvanceAccountId &&
+        (account.accountId === party.employeeAdvanceAccountId || account.value === party.employeeAdvanceAccountId)) ||
+      (party.employeeAdvanceAccountCode &&
+        (account.accountCode === party.employeeAdvanceAccountCode || account.label === party.employeeAdvanceAccountCode)) ||
+      (party.employeeAdvanceAccountTitle &&
+        (account.accountTitle === party.employeeAdvanceAccountTitle || account.name === party.employeeAdvanceAccountTitle)),
+  );
+
+  const accountId = matchingAccount?.accountId || matchingAccount?.value || party.employeeAdvanceAccountId || "";
+  const accountCode = matchingAccount?.accountCode || matchingAccount?.label || party.employeeAdvanceAccountCode || "";
+  const accountTitle = matchingAccount?.accountTitle || matchingAccount?.name || party.employeeAdvanceAccountTitle || "";
+
+  if (accountCode || accountTitle) {
+    form.updateField("accountId", accountId);
+    form.updateField("accountCode", accountCode);
+    form.updateField("accountTitle", accountTitle);
+    form.updateReferenceField("accountCode", accountCode);
+  }
+}
+
 export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormController; mode: CashAdvanceActionMode }) {
   const [activeTab, setActiveTab] = useState<CashAdvanceDetailsSection>("advance");
   const [isCostCenterDrawerOpen, setIsCostCenterDrawerOpen] = useState(false);
@@ -63,19 +98,147 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const responsibilityCenterStore = useResponsibilityCenterStore();
   const partyStore = usePartyManagementStore();
-  const {
-    accountOptions,
-    costCenterOptions,
-    isAccountLookupLoading,
-    isCostCenterLookupLoading,
-    isPartyLookupError,
-    isPartyLookupLoading,
-    isProjectLookupLoading,
-    partyOptions,
-    projectOptions,
-    selectedParty,
-    totalAdvanced,
-  } = useCashAdvanceDetailsLookups(form);
+  const partyQuery = usePartyLookup();
+  const accountQuery = usePostingAccountLookup();
+  const rcSplitQuery = useResponsibilityCenterSplitLookup();
+
+  const accountOptions = useMemo<CashAdvanceAccountDropdownOption[]>(() => {
+    const options: CashAdvanceAccountDropdownOption[] = (accountQuery.data ?? []).map((account) => ({
+      name: account.accountTitle || account.name,
+      label: account.accountCode || account.label,
+      value: account.accountId || account.value,
+      accountId: account.accountId || account.value,
+      accountCode: account.accountCode || account.label,
+      accountTitle: account.accountTitle || account.name,
+    }));
+
+    if (
+      form.values.accountCode &&
+      !options.some((option) => option.value === form.values.accountId || option.label === form.values.accountCode)
+    ) {
+      options.unshift({
+        name: form.values.accountTitle || form.values.accountCode,
+        label: form.values.accountCode,
+        value: form.values.accountId || form.values.accountCode,
+        accountId: form.values.accountId,
+        accountCode: form.values.accountCode,
+        accountTitle: form.values.accountTitle,
+      });
+    }
+
+    return options;
+  }, [accountQuery.data, form.values.accountCode, form.values.accountId, form.values.accountTitle]);
+
+  const costCenterOptions = useMemo<CashAdvanceResponsibilityCenterDropdownOption[]>(() => {
+    const options: CashAdvanceResponsibilityCenterDropdownOption[] = rcSplitQuery.costCenterOptions.map((rc) => ({
+      name: rc.name,
+      label: rc.code || rc.label,
+      value: rc.centerId || rc.value,
+      id: rc.centerId || rc.value,
+      code: rc.code || rc.label,
+    }));
+
+    if (
+      form.values.costCenter &&
+      !options.some((option) => option.value === form.values.costCenterId || option.name === form.values.costCenter)
+    ) {
+      options.unshift({
+        name: form.values.costCenter,
+        label: form.values.referenceFields.costCenterCode || form.values.costCenter,
+        value: form.values.costCenterId || form.values.costCenter,
+        id: form.values.costCenterId,
+        code: form.values.referenceFields.costCenterCode,
+      });
+    }
+
+    return options;
+  }, [
+    form.values.costCenter,
+    form.values.costCenterId,
+    form.values.referenceFields.costCenterCode,
+    rcSplitQuery.costCenterOptions,
+  ]);
+
+  const projectOptions = useMemo<CashAdvanceResponsibilityCenterDropdownOption[]>(() => {
+    const options: CashAdvanceResponsibilityCenterDropdownOption[] = rcSplitQuery.projectOptions.map((rc) => ({
+      name: rc.name,
+      label: rc.code || rc.label,
+      value: rc.centerId || rc.value,
+      id: rc.centerId || rc.value,
+      code: rc.code || rc.label,
+    }));
+
+    if (
+      form.values.referenceFields.projectName &&
+      !options.some((option) => option.value === form.values.projectId || option.name === form.values.referenceFields.projectName)
+    ) {
+      options.unshift({
+        name: form.values.referenceFields.projectName,
+        label: form.values.referenceFields.projectCode || form.values.referenceFields.projectName,
+        value: form.values.projectId || form.values.referenceFields.projectName,
+        id: form.values.projectId,
+        code: form.values.referenceFields.projectCode,
+      });
+    }
+
+    return options;
+  }, [
+    form.values.projectId,
+    form.values.referenceFields.projectCode,
+    form.values.referenceFields.projectName,
+    rcSplitQuery.projectOptions,
+  ]);
+
+  const partyOptions = useMemo<CashAdvancePartyDropdownOption[]>(() => {
+    const options: CashAdvancePartyDropdownOption[] = (partyQuery.data ?? []).map((party) => ({
+      name: party.partyName || party.name,
+      label: party.partyCode || party.label,
+      value: party.partyId || party.value,
+      partyId: party.partyId || party.value,
+      partyCode: party.partyCode || party.label,
+      partyName: party.partyName || party.name,
+      availableCashAdvance: (party as unknown as { availableCashAdvance?: number }).availableCashAdvance,
+      cashAdvanceLimit: (party as unknown as { cashAdvanceLimit?: number }).cashAdvanceLimit,
+      totalCashAdvance: (party as unknown as { totalCashAdvance?: number }).totalCashAdvance,
+    }));
+
+    if (
+      form.values.partyCode &&
+      !options.some((option) => option.value === form.values.partyId || option.label === form.values.partyCode)
+    ) {
+      options.unshift({
+        name: form.values.partyName || form.values.partyCode,
+        label: form.values.partyCode,
+        value: form.values.partyId || form.values.partyCode,
+        partyId: form.values.partyId,
+        partyCode: form.values.partyCode,
+        partyName: form.values.partyName,
+        availableCashAdvance: form.values.availableCashAdvance,
+        cashAdvanceLimit: form.values.cashAdvanceLimit,
+      });
+    }
+
+    return options;
+  }, [
+    form.values.availableCashAdvance,
+    form.values.cashAdvanceLimit,
+    form.values.partyCode,
+    form.values.partyId,
+    form.values.partyName,
+    partyQuery.data,
+  ]);
+
+  const selectedParty = useMemo(
+    () => partyOptions.find((party) => party.value === form.values.partyId || party.partyCode === form.values.partyCode),
+    [form.values.partyCode, form.values.partyId, partyOptions],
+  );
+
+  const totalAdvanced = Number(selectedParty?.totalCashAdvance ?? 0);
+  const isAccountLookupLoading = accountQuery.isLoading;
+  const isCostCenterLookupLoading = rcSplitQuery.isLoading;
+  const isPartyLookupError = partyQuery.isError;
+  const isPartyLookupLoading = partyQuery.isLoading;
+  const isProjectLookupLoading = rcSplitQuery.isLoading;
 
   const costCenterInitialValues = useMemo(
     () => createCostCenterInitialValues(responsibilityCenterStore.classifications, responsibilityCenterStore.types),
@@ -96,7 +259,15 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
     if (!form.values.cashAdvanceLimit && selectedParty.cashAdvanceLimit) {
       form.updateField("cashAdvanceLimit", selectedParty.cashAdvanceLimit);
     }
-  }, [form, selectedParty]);
+    if (
+      !form.values.accountCode &&
+      (selectedParty.employeeAdvanceAccountId ||
+        selectedParty.employeeAdvanceAccountCode ||
+        selectedParty.employeeAdvanceAccountTitle)
+    ) {
+      applyPartyDefaultAccount(form, accountOptions, selectedParty);
+    }
+  }, [accountOptions, form, selectedParty]);
 
   const isReadonly = mode === "view";
 
@@ -159,6 +330,13 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
             form.updateField("availableCashAdvance", record.cashAdvanceLimit ?? "");
             form.updateField("cashAdvanceLimit", record.cashAdvanceLimit ?? "");
             form.updateReferenceField("partyCode", record.partyCodeNo);
+
+            if (record.employeeAdvanceAccount) {
+              applyPartyDefaultAccount(form, accountOptions, {
+                employeeAdvanceAccountId: record.employeeAdvanceAccount,
+              });
+            }
+
             setIsPartyDrawerOpen(false);
           }}
         />
@@ -263,6 +441,8 @@ function CashAdvancePrimaryFields({
               form.updateField("availableCashAdvance", party?.availableCashAdvance ?? "");
               form.updateField("cashAdvanceLimit", party?.cashAdvanceLimit ?? "");
               form.updateReferenceField("partyCode", party?.partyCode || party?.label || "");
+
+              applyPartyDefaultAccount(form, accountOptions, party);
             }}
           />
         </TransactionField>

@@ -18,17 +18,11 @@ import type {
   UpdateCashVoucherDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
-import {
-  fetchMaintenancePartyOptions,
-  fetchMaintenancePostingAccountOptions,
-  fetchMaintenanceResponsibilityCenterOptions,
-} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import type {
   CashVoucherLineEntry,
   CashVoucherRecord,
   CashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 type ApiCashVoucherStatus = CreateCashVoucherDtoStatus | UpdateCashVoucherDtoStatus | string;
 type ApiCashVoucherLineAmountSource = CashVoucherLineEntry & {
@@ -64,42 +58,6 @@ export async function fetchCashVoucherById(id: string): Promise<CashVoucherRecor
 
 export async function fetchNextCashVoucherTransactionNo(): Promise<string> {
   return fetchTransactionNumber(cashVoucherControllerSuggestTransactionNumberV1);
-}
-
-export async function fetchCashVoucherPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenancePartyOptions();
-}
-
-export async function fetchCashVoucherAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenancePostingAccountOptions();
-}
-
-export async function fetchCashVoucherResponsibilityCenters(): Promise<{
-  costCenters: AppAdvancedDropdownOption[];
-  projects: AppAdvancedDropdownOption[];
-}> {
-  const centers = await fetchMaintenanceResponsibilityCenterOptions();
-  const isProject = (rc: { typeName?: string; name?: string }) =>
-    rc.typeName?.toLowerCase().includes("project") || rc.name?.toLowerCase().includes("project");
-
-  const costCenters = centers
-    .filter((rc) => !isProject(rc))
-    .map((rc) => ({
-      name: rc.name,
-      label: rc.code,
-      value: rc.name,
-      description: rc.code,
-    }));
-
-  const projects = centers
-    .filter((rc) => isProject(rc))
-    .map((rc) => ({
-      name: rc.name,
-      label: rc.code,
-      value: rc.name,
-    }));
-
-  return { costCenters, projects };
 }
 
 export async function createCashVoucherApi(payload: {

@@ -1,7 +1,4 @@
-import {
-  ServicesMaintenanceAccountSetupModeOptions,
-  ServicesMaintenanceReadOnlyFieldClassName,
-} from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
+import { ServicesMaintenanceAccountSetupModeOptions } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import { buildGeneratedServiceRevenueAccountTitle } from "@/app/src/data/modules/financial-maintenance/services-maintenance/ServicesMaintenanceData";
 import type {
   ServicesMaintenanceAccountingSetupTabProps,
@@ -10,6 +7,7 @@ import type {
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { FormField } from "@/app/src/ui/modules/financial-maintenance/services-maintenance/ServicesMaintenanceFields";
+import { ReadonlyField } from "@/app/src/ui/shared/field-management/ModuleFormField";
 
 export function ServicesMaintenanceAccountingSetupTab({
   accountOptions,
@@ -104,23 +102,15 @@ export function ServicesMaintenanceAccountingSetupTab({
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <FormField label="Account Code">
-          <input
-            id="services-maintenance-account-code"
-            value={displayedAccountCode}
-            readOnly
-            className={ServicesMaintenanceReadOnlyFieldClassName}
-          />
-        </FormField>
-        <FormField label="Account Title" error={!isAuto ? errors.revenueCoaId : undefined} required>
-          {isAuto ? (
-            <input
-              id="services-maintenance-account-title"
-              value={displayedAccountTitle}
-              readOnly
-              className={ServicesMaintenanceReadOnlyFieldClassName}
-            />
-          ) : (
+        <ReadonlyField label="Account Code">
+          {displayedAccountCode}
+        </ReadonlyField>
+        {isAuto ? (
+          <ReadonlyField label="Account Title">
+            {displayedAccountTitle}
+          </ReadonlyField>
+        ) : (
+          <FormField label="Account Title" error={errors.revenueCoaId} required>
             <ChartAccountDropdown
               accounts={accountOptions}
               addAction={{
@@ -135,8 +125,8 @@ export function ServicesMaintenanceAccountingSetupTab({
               valueField="id"
               onChange={onRevenueAccountChange}
             />
-          )}
-        </FormField>
+          </FormField>
+        )}
       </div>
     </div>
   );

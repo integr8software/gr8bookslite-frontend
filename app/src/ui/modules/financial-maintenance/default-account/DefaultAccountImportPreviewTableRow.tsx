@@ -1,8 +1,8 @@
+import { DefaultAccountTypeOptions } from "@/app/src/constants/modules/financial-maintenance/default-account/DefaultAccountConstants";
 import {
-  DefaultAccountTypeOptions,
+  defaultAccountImportRowHasErrors,
   getDefaultAccountTypeLabel,
-} from "@/app/src/constants/modules/financial-maintenance/default-account/DefaultAccountConstants";
-import { defaultAccountImportRowHasErrors } from "@/app/src/data/modules/financial-maintenance/default-account/DefaultAccountData";
+} from "@/app/src/data/modules/financial-maintenance/default-account/DefaultAccountData";
 import type {
   DefaultAccountImportColumnId,
   DefaultAccountImportPreviewRow,

@@ -1,6 +1,10 @@
 "use client";
 
-import { usePettyCashVoucherDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherDetailsLookups";
+import { useMemo } from "react";
+import { usePartyLookup } from "@/app/src/hooks/modules/party-management/usePartyLookup";
+import { usePostingAccountLookup } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartOfAccountsLookup";
+import { useResponsibilityCenterLookup } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenterLookup";
+import { ensureDropdownOption } from "@/app/src/utils/dropdown.util";
 import type { PettyCashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
@@ -27,14 +31,40 @@ export function PettyCashVoucherDetailsFields({
   onOpenResponsibilityCenterDrawer?: () => void;
   page: PettyCashVoucherActionPageState;
 }) {
-  const {
-    accountOptions,
-    isAccountLookupLoading,
-    isPartyLookupLoading,
-    isResponsibilityCenterLookupLoading,
-    partyOptions,
-    responsibilityCenterOptions,
-  } = usePettyCashVoucherDetailsLookups(page.values);
+  const partyQuery = usePartyLookup();
+  const accountQuery = usePostingAccountLookup();
+  const rcQuery = useResponsibilityCenterLookup();
+
+  const partyOptions = useMemo(() => {
+    return ensureDropdownOption(partyQuery.data ?? [], {
+      value: page.values.partyCode,
+      label: page.values.partyCode,
+      name: page.values.partyName,
+      description: page.values.partyName,
+    });
+  }, [partyQuery.data, page.values.partyCode, page.values.partyName]);
+
+  const accountOptions = useMemo(() => {
+    return ensureDropdownOption(accountQuery.data ?? [], {
+      value: page.values.accountCode,
+      label: page.values.accountCode,
+      name: page.values.accountTitle,
+      description: page.values.accountTitle,
+    });
+  }, [accountQuery.data, page.values.accountCode, page.values.accountTitle]);
+
+  const responsibilityCenterOptions = useMemo(() => {
+    return ensureDropdownOption(rcQuery.data ?? [], {
+      value: page.values.responsibilityCenterCode,
+      label: page.values.responsibilityCenterCode,
+      name: page.values.responsibilityCenter,
+      description: page.values.responsibilityCenter,
+    });
+  }, [rcQuery.data, page.values.responsibilityCenterCode, page.values.responsibilityCenter]);
+
+  const isPartyLookupLoading = partyQuery.isLoading;
+  const isAccountLookupLoading = accountQuery.isLoading;
+  const isResponsibilityCenterLookupLoading = rcQuery.isLoading;
 
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">

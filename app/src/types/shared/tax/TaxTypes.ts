@@ -1,3 +1,5 @@
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+
 export type Tax = {
   id: string;
   sourceKey: string;
@@ -81,6 +83,7 @@ export type TaxDefaultAccountOption = {
   natureOfIncome: string | null;
   sourceKey: string;
   status: string;
+  sortOrder?: number;
   taxCode: string;
   taxDescription: string;
   taxExempt: boolean;
@@ -93,4 +96,17 @@ export type TaxDefaultAccountOptionGroup = {
   classification: TaxDefaultAccountOptionClassification;
   label: string;
   options: TaxDefaultAccountOption[];
+};
+
+export type TaxLookupOption = AppAdvancedDropdownOption & {
+  taxId: string;
+  taxCode: string;
+  taxRate: string;
+  taxType: string;
+  transactionType: string;
+  atc?: string | null;
+  officialAtcCode?: string | null;
+  taxExempt: boolean;
+  rawTax: Tax;
+  [key: string]: unknown;
 };

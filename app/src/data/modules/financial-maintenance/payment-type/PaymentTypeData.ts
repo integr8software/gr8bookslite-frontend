@@ -11,10 +11,12 @@ import type {
 import {
   PaymentTypeClassificationOptions,
   PaymentTypeImportDefaultColumnIndexes,
-  PaymentTypeImportMaxFileSizeBytes,
-  PaymentTypeImportMinFileSizeBytes,
   PaymentTypeImportTemplateHeaders,
 } from "@/app/src/constants/modules/financial-maintenance/payment-type/PaymentTypeConstants";
+import {
+  ModuleImportDefaultMaxFileSizeBytes,
+  ModuleImportDefaultMinFileSizeBytes,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { formatFileSize } from "@/app/src/utils/file.util";
 import { isModuleImportOptionValue } from "@/app/src/utils/module-import.util";
@@ -296,12 +298,12 @@ export function paymentTypeImportRowHasErrors(row: PaymentTypeImportPreviewRow) 
 }
 
 export function validatePaymentTypeImportFileSize(file: File) {
-  if (file.size < PaymentTypeImportMinFileSizeBytes) {
-    return `Upload a file larger than ${formatFileSize(PaymentTypeImportMinFileSizeBytes)}.`;
+  if (file.size < ModuleImportDefaultMinFileSizeBytes) {
+    return `Upload a file larger than ${formatFileSize(ModuleImportDefaultMinFileSizeBytes)}.`;
   }
 
-  if (file.size > PaymentTypeImportMaxFileSizeBytes) {
-    return `Upload a file up to ${formatFileSize(PaymentTypeImportMaxFileSizeBytes)}.`;
+  if (file.size > ModuleImportDefaultMaxFileSizeBytes) {
+    return `Upload a file up to ${formatFileSize(ModuleImportDefaultMaxFileSizeBytes)}.`;
   }
 
   return null;

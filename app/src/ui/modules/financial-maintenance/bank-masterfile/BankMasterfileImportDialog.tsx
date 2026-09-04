@@ -1,9 +1,9 @@
 "use client";
 
 import { AlertCircle } from "lucide-react";
-import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import {
   getModuleImportDataColumnWidth,
+  ModuleImportDefaultPreviewGridLabel,
   ModuleImportRowNumberColumnWidth,
   ModuleImportSelectionColumnWidth,
 } from "@/app/src/constants/shared/module/ModuleImportConstants";
@@ -20,7 +20,7 @@ import {
 } from "@/app/src/ui/shared/module/ModuleImportControls";
 import { ModuleImportResizableColumnHeader } from "@/app/src/ui/shared/module/ModuleImportResizableColumnHeader";
 
-import { TemplateHeaders } from "@/app/src/constants/modules/financial-maintenance/bank-masterfile/BankMasterfileConstants";
+import { BankImportTemplateHeaders } from "@/app/src/constants/modules/financial-maintenance/bank-masterfile/BankMasterfileConstants";
 import type { BankMasterfileImportDialogProps } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
 import { BankImportRow } from "@/app/src/ui/modules/financial-maintenance/bank-masterfile/BankMasterfileImportPreviewTableRow";
 import { downloadBankImportTemplate } from "@/app/src/data/modules/financial-maintenance/bank-masterfile/BankMasterfileData";
@@ -42,7 +42,6 @@ export function BankMasterfileImportDialog({ existingBanks, isOpen, onClose, onI
       onClose={onClose}
       actions={
         <ModuleImportHeaderActions
-          accept=".xlsx,.csv,.tsv,.txt"
           disabled={Boolean(importDialog.progress)}
           isParsing={importDialog.isParsing}
           onDownloadTemplate={() => void downloadBankImportTemplate()}
@@ -98,7 +97,7 @@ export function BankMasterfileImportDialog({ existingBanks, isOpen, onClose, onI
             }
           }}
           className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-purple-200 shadow-[0_0_0_2px_rgba(168,85,247,0.08)] outline-none focus:ring-2 focus:ring-purple-500/15"
-          aria-label="Bank import preview grid. Paste copied Excel rows here."
+          aria-label={ModuleImportDefaultPreviewGridLabel}
         >
           <div className="min-h-36 flex-1 overflow-auto">
             <table
@@ -120,7 +119,7 @@ export function BankMasterfileImportDialog({ existingBanks, isOpen, onClose, onI
                 />
                 {importDialog.columnWidths.map((width, index) => (
                   <col
-                    key={`${TemplateHeaders[index]}-${index}`}
+                    key={`${BankImportTemplateHeaders[index]}-${index}`}
                     style={{
                       width: getModuleImportDataColumnWidth(
                         width,
@@ -142,7 +141,7 @@ export function BankMasterfileImportDialog({ existingBanks, isOpen, onClose, onI
                     onToggleOpen={() => importDialog.setIsSelectionMenuOpen((isOpen) => !isOpen)}
                   />
                   <ModuleImportRowNumberHeader />
-                  {TemplateHeaders.map((header, index) => (
+                  {BankImportTemplateHeaders.map((header, index) => (
                     <ModuleImportResizableColumnHeader
                       key={header}
                       width={importDialog.columnWidths[index] ?? 160}
@@ -170,15 +169,12 @@ export function BankMasterfileImportDialog({ existingBanks, isOpen, onClose, onI
                 ) : (
                   <tr>
                     <td
-                      colSpan={TemplateHeaders.length + 2}
+                      colSpan={BankImportTemplateHeaders.length + 2}
                       className="module-import-empty-cell px-3 py-10 text-center font-medium text-darknavy/45"
                     >
                       <ModuleImportEmptyDropzone
-                        accept=".xlsx,.csv,.tsv,.txt"
-                        acceptedFileLabel=".xlsx, .csv, .tsv, .txt"
                         disabled={Boolean(importDialog.progress)}
                         isParsing={importDialog.isParsing}
-                        maxFileSizeLabel={AppMaxFileUploadSizeLabel}
                         onFileSelect={(file) => void importDialog.handleFileUpload(file)}
                       />
                     </td>

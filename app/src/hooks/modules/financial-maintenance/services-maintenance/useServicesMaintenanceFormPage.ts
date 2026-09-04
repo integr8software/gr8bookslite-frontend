@@ -14,6 +14,7 @@ import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { FetchNextChartAccountCode } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
+import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsQueryKeys";
 import { fetchDefaultAccountExpenseParentOptions } from "@/app/src/services/modules/financial-maintenance/default-account/DefaultAccountApi";
 import { DefaultAccountQueryKeys } from "@/app/src/services/modules/financial-maintenance/default-account/DefaultAccountQueryKeys";
 import type {
@@ -70,7 +71,7 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
 
   const isPurchaseAuto = values.serviceType === "Purchase of Service" && values.accountSetupMode === "Auto";
   const expenseNextAccountCodeQuery = useQuery({
-    queryKey: ["chart-of-accounts", "next-code", companyId, values.expenseParentCoaId, "SPECIFIC"],
+    queryKey: ChartsOfAccountsQueryKeys.nextAccountCode(companyId, values.expenseParentCoaId, "SPECIFIC"),
     queryFn: () =>
       FetchNextChartAccountCode({
         accountLevel: "SPECIFIC",

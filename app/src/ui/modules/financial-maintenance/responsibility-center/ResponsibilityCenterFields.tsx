@@ -1,12 +1,10 @@
 "use client";
 
-import { ResponsibilityCenterFieldClassName } from "@/app/src/constants/modules/financial-maintenance/responsibility-center/ResponsibilityCenterConstants";
 import type { ResponsibilityCenterFieldsProps } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
-import { joinClasses } from "@/app/src/ui/shared/main-layout/utils";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
 
 export function ResponsibilityCenterFields({
@@ -35,7 +33,6 @@ export function ResponsibilityCenterFields({
           value={values.classificationId}
           onChange={onInputChange}
           disabled={isReadonly}
-          className={ResponsibilityCenterFieldClassName}
         >
           <option value="">Select classification</option>
           {classifications.map((classification) => (
@@ -52,7 +49,6 @@ export function ResponsibilityCenterFields({
           value={values.typeId}
           onChange={onInputChange}
           disabled={isReadonly || !values.classificationId}
-          className={ResponsibilityCenterFieldClassName}
         >
           <option value="">Select type</option>
           {typeOptions.map((type) => (
@@ -69,7 +65,6 @@ export function ResponsibilityCenterFields({
           value={values.name}
           onChange={onInputChange}
           readOnly={isReadonly || !values.classificationId}
-          className={ResponsibilityCenterFieldClassName}
           placeholder={values.classificationId ? "Sales Department" : "Select classification first"}
         />
       </FormField>
@@ -80,7 +75,6 @@ export function ResponsibilityCenterFields({
           value={values.code}
           onChange={onInputChange}
           readOnly={isReadonly || !values.typeId}
-          className={ResponsibilityCenterFieldClassName}
           placeholder={codePlaceholder}
         />
       </FormField>
@@ -104,7 +98,6 @@ export function ResponsibilityCenterFields({
           value={values.manager}
           onChange={onInputChange}
           readOnly={isReadonly}
-          className={ResponsibilityCenterFieldClassName}
           placeholder="Maria Santos"
         />
       </FormField>
@@ -116,7 +109,6 @@ export function ResponsibilityCenterFields({
           onChange={onInputChange}
           readOnly={isReadonly}
           showCounter={false}
-          className={joinClasses(ResponsibilityCenterFieldClassName, "min-h-24 resize-y py-3")}
         />
       </FormField>
 

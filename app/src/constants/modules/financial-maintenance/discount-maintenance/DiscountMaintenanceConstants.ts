@@ -9,7 +9,6 @@ import type {
   DiscountTypeFilter,
   DiscountType,
 } from "@/app/src/types/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceTypes";
-import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
 import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
@@ -26,11 +25,6 @@ export const DiscountMaintenanceDescription =
   "Maintain purchase and sales discount definitions with their generated chart account mapping.";
 
 export const DiscountMaintenanceDrawerFormId = "discount-maintenance-drawer-form";
-
-export const DiscountMaintenanceFieldClassName =
-  "min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:bg-darknavy/5 read-only:bg-darknavy/[0.03]";
-
-export const DiscountMaintenanceSelectClassName = `app-select-control ${DiscountMaintenanceFieldClassName}`;
 
 export const DiscountMaintenanceTablePaginationStorageKey = "maintenance:financial-management:discount-maintenance";
 
@@ -127,7 +121,15 @@ export const DiscountMaintenanceTypeFilterOptions = [
 
 export const DiscountMaintenanceValueTypeOptions = ["Percentage", "Fixed"] as const satisfies readonly DiscountType[];
 
-export const DiscountMaintenanceStatusOptions = ["Active", "Inactive"] as const satisfies readonly DiscountStatus[];
+export const DiscountMaintenanceStatuses = {
+  Active: "Active",
+  Inactive: "Inactive",
+} as const satisfies Record<string, DiscountStatus>;
+
+export const DiscountMaintenanceStatusOptions = [
+  DiscountMaintenanceStatuses.Active,
+  DiscountMaintenanceStatuses.Inactive,
+] as const satisfies readonly DiscountStatus[];
 
 export const DiscountMaintenanceActionCopy = {
   add: {
@@ -145,9 +147,6 @@ export const DiscountMaintenanceActionCopy = {
 } as const;
 
 export const DiscountImportTemplateHeaders = ["Discount Name", "Type", "Description", "Discount Type", "Discount Value"];
-
-export const DiscountImportAcceptedFileExtensions = ".xlsx,.csv,.tsv,.txt";
-export const DiscountImportAcceptedFileLabel = ".xlsx, .csv, .tsv, .txt";
 
 export const DiscountImportDefaultColumnIndexes: Record<DiscountImportColumnId, number> = {
   name: 0,
@@ -199,19 +198,3 @@ export const DiscountImportColumnHeaders: DiscountImportColumnHeader[] = [
 ];
 
 export const DiscountImportPreviewColumnCount = DiscountImportFieldOrder.length + 1;
-export const DiscountImportPreviewGridLabel = "Discount import preview grid. Paste copied Excel rows here.";
-export const DiscountImportPreviewEmptyMessage = "Upload a file, add a row, or focus here and paste copied Excel rows.";
-export const DiscountImportPreviewPageSize = 20;
-export const DiscountImportBatchSize = 25;
-export const DiscountImportMinFileSizeBytes = 1;
-export const DiscountImportMaxFileSizeBytes = AppMaxFileUploadSizeBytes;
-
-export const TemplateHeaders = DiscountImportTemplateHeaders;
-export const DefaultColumnIndexes = DiscountImportDefaultColumnIndexes;
-export const ImportFieldOrder = DiscountImportFieldOrder;
-export const SelectionColumnWidth = DiscountImportSelectionColumnWidth;
-export const DefaultColumnWidths = DiscountImportDefaultColumnWidths;
-export const PreviewPageSize = DiscountImportPreviewPageSize;
-export const ImportBatchSize = DiscountImportBatchSize;
-export const MinImportFileSizeBytes = DiscountImportMinFileSizeBytes;
-export const MaxImportFileSizeBytes = DiscountImportMaxFileSizeBytes;

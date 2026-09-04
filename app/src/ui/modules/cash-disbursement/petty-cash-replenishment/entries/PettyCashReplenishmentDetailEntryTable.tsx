@@ -18,8 +18,7 @@ import { createEwtOptions, createVatOptions } from "@/app/src/data/shared/tax/Ta
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
-import { fetchMaintenanceResponsibilityCenterOptions } from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
-import { useQuery } from "@tanstack/react-query";
+import { useMaintenanceResponsibilityCenterOptions } from "@/app/src/hooks/shared/maintenance/useMaintenanceResponsibilityCenterOptions";
 import type {
   PettyCashReplenishmentDetailEntryTableProps,
   PettyCashReplenishmentEntryColumnId,
@@ -58,11 +57,7 @@ export function PettyCashReplenishmentDetailEntryTable({
   const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
   const ewtOptions = useMemo(() => createEwtOptions(taxCodes), [taxCodes]);
 
-  const responsibilityCentersQuery = useQuery({
-    queryKey: ["cash-disbursement", "petty-cash-replenishment", "responsibility-centers"],
-    queryFn: fetchMaintenanceResponsibilityCenterOptions,
-    staleTime: 60_000,
-  });
+  const responsibilityCentersQuery = useMaintenanceResponsibilityCenterOptions();
   const responsibilityCenterOptions = useMemo(
     () => responsibilityCentersQuery.data ?? [],
     [responsibilityCentersQuery.data],

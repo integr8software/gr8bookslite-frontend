@@ -1,4 +1,7 @@
-import { useCashAdvanceMultipleEntryDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/cash-advance-multiple-entry/useCashAdvanceMultipleEntryDetailsLookups";
+import { useMemo } from "react";
+import { usePartyLookup } from "@/app/src/hooks/modules/party-management/usePartyLookup";
+import { usePostingAccountLookup } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartOfAccountsLookup";
+import { ensureDropdownOption } from "@/app/src/utils/dropdown.util";
 import type {
   CashAdvanceMultipleEntryFormController,
   CashAdvanceMultipleEntryFormErrors,
@@ -39,7 +42,29 @@ export function CashAdvanceMultipleEntryDetailsFields({
   projectOptions: AppAdvancedDropdownOption[];
   onUpdateField: CashAdvanceMultipleEntryFormController["updateField"];
 }) {
-  const { accountOptions, isAccountLookupLoading, isPartyLookupLoading, partyOptions } = useCashAdvanceMultipleEntryDetailsLookups(values);
+  const partyQuery = usePartyLookup();
+  const accountQuery = usePostingAccountLookup();
+
+  const partyOptions = useMemo(() => {
+    return ensureDropdownOption(partyQuery.data ?? [], {
+      value: values.partyCode,
+      label: values.partyCode,
+      name: values.partyName,
+      description: values.partyName,
+    });
+  }, [partyQuery.data, values.partyCode, values.partyName]);
+
+  const accountOptions = useMemo(() => {
+    return ensureDropdownOption(accountQuery.data ?? [], {
+      value: values.accountCode,
+      label: values.accountCode,
+      name: values.accountTitle,
+      description: values.accountTitle,
+    });
+  }, [accountQuery.data, values.accountCode, values.accountTitle]);
+
+  const isPartyLookupLoading = partyQuery.isLoading;
+  const isAccountLookupLoading = accountQuery.isLoading;
 
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
@@ -59,6 +84,36 @@ export function CashAdvanceMultipleEntryDetailsFields({
                 const selectedParty = partyOptions.find((option) => option.value === code);
                 onUpdateField("partyCode", selectedParty?.partyCode ?? code);
                 onUpdateField("partyName", selectedParty?.partyName ?? name);
+
+                const matchingAccount = accountOptions.find(
+                  (account) =>
+                    (selectedParty?.employeeAdvanceAccountId &&
+                      (account.accountId === selectedParty.employeeAdvanceAccountId ||
+                        account.value === selectedParty.employeeAdvanceAccountId)) ||
+                    (selectedParty?.employeeAdvanceAccountCode &&
+                      (account.accountCode === selectedParty.employeeAdvanceAccountCode ||
+                        account.label === selectedParty.employeeAdvanceAccountCode ||
+                        account.value === selectedParty.employeeAdvanceAccountCode)) ||
+                    (selectedParty?.employeeAdvanceAccountTitle &&
+                      (account.accountTitle === selectedParty.employeeAdvanceAccountTitle ||
+                        account.name === selectedParty.employeeAdvanceAccountTitle)),
+                );
+
+                const accountCode =
+                  matchingAccount?.accountCode ||
+                  matchingAccount?.label ||
+                  selectedParty?.employeeAdvanceAccountCode ||
+                  "";
+                const accountTitle =
+                  matchingAccount?.accountTitle ||
+                  matchingAccount?.name ||
+                  selectedParty?.employeeAdvanceAccountTitle ||
+                  "";
+
+                if (accountCode || accountTitle) {
+                  onUpdateField("accountCode", accountCode);
+                  onUpdateField("accountTitle", accountTitle);
+                }
               }}
             />
           </TransactionField>

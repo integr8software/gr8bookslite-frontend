@@ -1,6 +1,4 @@
 import {
-  DiscountMaintenanceFieldClassName,
-  DiscountMaintenanceSelectClassName,
   DiscountMaintenanceTypeOptions,
   DiscountMaintenanceValueTypeOptions,
 } from "@/app/src/constants/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceConstants";
@@ -26,7 +24,6 @@ export function DiscountMaintenanceFields({
           value={values.name}
           onChange={onInputChange}
           readOnly={isReadonly}
-          className={DiscountMaintenanceFieldClassName}
           placeholder="Enter discount name"
         />
       </FormField>
@@ -37,7 +34,6 @@ export function DiscountMaintenanceFields({
           value={values.type}
           onChange={onInputChange}
           disabled={isReadonly}
-          className={DiscountMaintenanceSelectClassName}
         >
           {DiscountMaintenanceTypeOptions.map((type) => (
             <option key={type} value={type}>
@@ -53,7 +49,6 @@ export function DiscountMaintenanceFields({
           value={values.description}
           onChange={onInputChange}
           readOnly={isReadonly}
-          className={`${DiscountMaintenanceFieldClassName} min-h-24 py-3`}
           counterMode="used"
         />
       </FormField>
@@ -65,7 +60,6 @@ export function DiscountMaintenanceFields({
             value={values.discountType}
             onChange={onInputChange}
             disabled={isReadonly}
-            className={DiscountMaintenanceSelectClassName}
           >
             {DiscountMaintenanceValueTypeOptions.map((type) => (
               <option key={type} value={type}>
@@ -85,7 +79,6 @@ export function DiscountMaintenanceFields({
             value={values.amount}
             onChange={onInputChange}
             readOnly={isReadonly}
-            className={DiscountMaintenanceFieldClassName}
             placeholder={values.discountType === "Percentage" ? "Enter percentage" : "Enter fixed amount"}
           />
         </FormField>

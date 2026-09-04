@@ -2,6 +2,7 @@ import type {
   ServicesMaintenanceCellContentProps,
   ServicesMaintenanceTableRowProps,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
+import { ServicesMaintenanceStatuses } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import { ModuleTableActionButton, ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
@@ -40,8 +41,8 @@ function ServicesMaintenanceCellContent({
   onToggleStatus,
   onViewService,
 }: ServicesMaintenanceCellContentProps) {
-  const nextStatus = service.status === "Active" ? "Inactive" : "Active";
-  const statusActionLabel = service.status === "Active" ? "Inactivate" : "Activate";
+  const nextStatus = service.status === ServicesMaintenanceStatuses.Active ? ServicesMaintenanceStatuses.Inactive : ServicesMaintenanceStatuses.Active;
+  const statusActionLabel = service.status === ServicesMaintenanceStatuses.Active ? "Inactivate" : "Activate";
 
   switch (columnId) {
     case "serviceName":
@@ -80,7 +81,7 @@ function ServicesMaintenanceCellContent({
             <>
               <ModuleTableActionButton variant="edit" onClick={() => onEditService(service)} label={`Edit ${service.serviceName}`} />
               <ModuleTableActionButton
-                variant={nextStatus === "Inactive" ? "inactive" : "active"}
+                variant={nextStatus === ServicesMaintenanceStatuses.Inactive ? "inactive" : "active"}
                 onClick={() => onToggleStatus(service)}
                 label={`${statusActionLabel} ${service.serviceName}`}
               />

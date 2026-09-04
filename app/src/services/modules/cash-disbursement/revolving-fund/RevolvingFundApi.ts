@@ -1,20 +1,15 @@
 "use client";
 
 import {
-  revolvingFundControllerCreateV1 as revolvingFundControllerCreate,
-  revolvingFundControllerFindAllV1 as revolvingFundControllerFindAll,
-  revolvingFundControllerFindOneV1 as revolvingFundControllerFindOne,
-  revolvingFundControllerRemoveV1 as revolvingFundControllerRemove,
+  revolvingFundControllerCreateV1,
+  revolvingFundControllerFindAllV1,
+  revolvingFundControllerFindOneV1,
+  revolvingFundControllerRemoveV1,
   revolvingFundControllerSuggestTransactionNumberV1,
-  revolvingFundControllerUpdateStatusV1 as revolvingFundControllerUpdateStatus,
-  revolvingFundControllerUpdateV1 as revolvingFundControllerUpdate,
+  revolvingFundControllerUpdateStatusV1,
+  revolvingFundControllerUpdateV1,
 } from "@/app/src/generated/api/revolving-fund/revolving-fund";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
-import {
-  fetchMaintenancePartyOptions,
-  fetchMaintenancePostingAccountOptions,
-  fetchMaintenanceResponsibilityCenterOptions,
-} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import { RevolvingFundStatuses } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import type {
   CreateRevolvingFundDto,
@@ -30,7 +25,6 @@ import type {
   RevolvingFundRecord,
   RevolvingFundStatus,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { calculateRevolvingFundTotals } from "@/app/src/data/modules/cash-disbursement/revolving-fund/RevolvingFundData";
 
@@ -49,7 +43,7 @@ type RevolvingFundDetailExtras = {
   type?: string | null;
 };
 
-type RevolvingFundQueryParams = NonNullable<Parameters<typeof revolvingFundControllerFindAll>[0]>;
+type RevolvingFundQueryParams = NonNullable<Parameters<typeof revolvingFundControllerFindAllV1>[0]>;
 
 export type FetchRevolvingFundListParams = {
   page?: number;
@@ -236,7 +230,7 @@ export async function fetchRevolvingFundList(params?: FetchRevolvingFundListPara
     queryParams.status = (StatusToApi[params.status as RevolvingFundStatus] ?? params.status) as RevolvingFundQueryParams["status"];
   }
 
-  const response = (await revolvingFundControllerFindAll(queryParams)) as RevolvingFundListResponseDto;
+  const response = (await revolvingFundControllerFindAllV1(queryParams)) as RevolvingFundListResponseDto;
   return {
     data: (response?.items ?? []).map(mapRevolvingFundRecordFromDto),
     meta: response?.meta ?? { page: 1, limit: 50, total: 0, totalPages: 1 },
@@ -244,7 +238,7 @@ export async function fetchRevolvingFundList(params?: FetchRevolvingFundListPara
 }
 
 export async function fetchRevolvingFundById(id: string): Promise<RevolvingFundRecord> {
-  const response = (await revolvingFundControllerFindOne(id)) as RevolvingFundResponseDto;
+  const response = (await revolvingFundControllerFindOneV1(id)) as RevolvingFundResponseDto;
   return mapRevolvingFundRecordFromDto(response);
 }
 
@@ -254,35 +248,23 @@ export async function fetchNextRevolvingFundNo(branchUnitId?: number): Promise<s
 
 export async function createRevolvingFundApi(values: RevolvingFundFormValues): Promise<RevolvingFundRecord> {
   const payload = mapRevolvingFundFormValuesToCreateDto(values);
-  const response = (await revolvingFundControllerCreate(payload)) as RevolvingFundResponseDto;
+  const response = (await revolvingFundControllerCreateV1(payload)) as RevolvingFundResponseDto;
   return mapRevolvingFundRecordFromDto(response);
 }
 
 export async function updateRevolvingFundApi(id: string, values: RevolvingFundFormValues): Promise<RevolvingFundRecord> {
   const payload = mapRevolvingFundFormValuesToUpdateDto(values);
-  const response = (await revolvingFundControllerUpdate(id, payload)) as RevolvingFundResponseDto;
+  const response = (await revolvingFundControllerUpdateV1(id, payload)) as RevolvingFundResponseDto;
   return mapRevolvingFundRecordFromDto(response);
 }
 
 export async function updateRevolvingFundStatusApi(id: string, status: RevolvingFundStatus): Promise<RevolvingFundRecord> {
   const apiStatus = StatusToApi[status];
-  const response = (await revolvingFundControllerUpdateStatus(id, { status: apiStatus })) as RevolvingFundResponseDto;
+  const response = (await revolvingFundControllerUpdateStatusV1(id, { status: apiStatus })) as RevolvingFundResponseDto;
   return mapRevolvingFundRecordFromDto(response);
 }
 
 export async function deleteRevolvingFundApi(id: string): Promise<{ success: boolean; message: string }> {
-  await revolvingFundControllerRemove(id);
+  await revolvingFundControllerRemoveV1(id);
   return { success: true, message: "Deleted successfully" };
-}
-
-export async function fetchRevolvingFundPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenancePartyOptions();
-}
-
-export async function fetchRevolvingFundAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenancePostingAccountOptions();
-}
-
-export async function fetchRevolvingFundResponsibilityCenters(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenanceResponsibilityCenterOptions();
 }

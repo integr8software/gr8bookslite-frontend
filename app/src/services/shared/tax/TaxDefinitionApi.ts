@@ -1,3 +1,4 @@
+import { QueryLookupScope } from "@/app/src/constants/shared/query/QueryKeyConstants";
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type { ApiTaxDefinitionLookup, TaxDefinitionLookup } from "@/app/src/types/shared/tax/TaxDefinitionTypes";
 
@@ -5,7 +6,7 @@ const TaxDefinitionsApiPath = "/tax";
 
 export const TaxDefinitionQueryKeys = {
   all: (companyId?: number | null) => ["taxDefinitions", companyId ?? "no-company"] as const,
-  lookup: (companyId?: number | null) => [...TaxDefinitionQueryKeys.all(companyId), "lookup"] as const,
+  lookup: (companyId?: number | null) => [...TaxDefinitionQueryKeys.all(companyId), QueryLookupScope] as const,
 };
 
 export async function fetchTaxDefinitions(): Promise<TaxDefinitionLookup> {

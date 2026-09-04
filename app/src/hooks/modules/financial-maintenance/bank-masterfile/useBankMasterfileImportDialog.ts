@@ -3,12 +3,14 @@
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import {
-  ImportBatchSize,
-  ImportFieldOrder,
-  PreviewPageSize,
-  TemplateHeaders,
+  BankImportFieldOrder,
+  BankImportTemplateHeaders,
 } from "@/app/src/constants/modules/financial-maintenance/bank-masterfile/BankMasterfileConstants";
-import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
+import {
+  ModuleImportDefaultBatchSize,
+  ModuleImportDefaultPreviewPageSize,
+  ModuleImportFixedColumnsWidth,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import {
   cleanBankValues,
   createBlankRow,
@@ -51,7 +53,7 @@ export function useBankMasterfileImportDialog({
   const [pristineManualRowIds, setPristineManualRowIds] = useState<Set<string>>(() => new Set());
   const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(false);
   const [isImportMenuOpen, setIsImportMenuOpen] = useState(false);
-  const [columnWidths, setColumnWidths] = useState(() => TemplateHeaders.map(() => 160));
+  const [columnWidths, setColumnWidths] = useState(() => BankImportTemplateHeaders.map(() => 160));
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(() => new Set());
   const [importMode, setImportMode] = useState<BankImportMode>("all-rows");
   const validatedRows = useMemo(() => validateBankImportRows(previewRows, existingBanks), [existingBanks, previewRows]);
@@ -65,9 +67,9 @@ export function useBankMasterfileImportDialog({
   const validRows = nonBlankRows.filter((row) => !rowHasBankImportErrors(row));
   const validSelectedRows = validRows.filter((row) => selectedRowIds.has(row.id));
   const importableRows = importMode === "selected-valid" ? validSelectedRows : importMode === "all-valid" ? validRows : nonBlankRows;
-  const totalPages = Math.max(1, Math.ceil(displayedRows.length / PreviewPageSize));
+  const totalPages = Math.max(1, Math.ceil(displayedRows.length / ModuleImportDefaultPreviewPageSize));
   const safePreviewPage = Math.min(previewPage, totalPages);
-  const visibleRows = displayedRows.slice((safePreviewPage - 1) * PreviewPageSize, safePreviewPage * PreviewPageSize);
+  const visibleRows = displayedRows.slice((safePreviewPage - 1) * ModuleImportDefaultPreviewPageSize, safePreviewPage * ModuleImportDefaultPreviewPageSize);
   const isBusy = Boolean(progress) || isParsing;
   const canImport = importableRows.length > 0 && !isBusy;
   const canImportAllRows = validatedRows.length > 0 && !isBusy;
@@ -114,7 +116,7 @@ export function useBankMasterfileImportDialog({
       return next;
     });
     setSelectedRowIds(new Set());
-    setPreviewPage(Math.max(1, Math.ceil(nextRows.length / PreviewPageSize)));
+    setPreviewPage(Math.max(1, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize)));
     setImportError(null);
 
     if (rows.length > uniqueRows.length) {
@@ -166,7 +168,7 @@ export function useBankMasterfileImportDialog({
       return;
     }
 
-    const startColumnIndex = ImportFieldOrder.indexOf(field);
+    const startColumnIndex = BankImportFieldOrder.indexOf(field);
     const isSingleCellPaste = pastedRows.length === 1 && pastedRows[0]?.length === 1;
 
     if (isSingleCellPaste) {
@@ -191,7 +193,7 @@ export function useBankMasterfileImportDialog({
         const nextValues = { ...targetRow.values };
 
         pastedRow.forEach((cellValue, cellIndex) => {
-          const targetField = ImportFieldOrder[startColumnIndex + cellIndex];
+          const targetField = BankImportFieldOrder[startColumnIndex + cellIndex];
 
           if (!targetField) {
             return;
@@ -225,7 +227,7 @@ export function useBankMasterfileImportDialog({
 
     setPreviewRows(nextRows);
     setPristineManualRowIds((current) => new Set(current).add(blankRow.id));
-    setPreviewPage(Math.ceil(nextRows.length / PreviewPageSize));
+    setPreviewPage(Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize));
     setImportError(null);
   }
 
@@ -300,7 +302,7 @@ export function useBankMasterfileImportDialog({
       return next;
     });
     setSelectedRowIds(new Set());
-    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / PreviewPageSize))));
+    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize))));
   }
 
   function movePreviewRow(sourceRowId: string, targetRowId: string, position: "before" | "after") {
@@ -344,8 +346,8 @@ export function useBankMasterfileImportDialog({
     setImportError(null);
 
     try {
-      for (let index = 0; index < rowsToImport.length; index += ImportBatchSize) {
-        const batch = rowsToImport.slice(index, index + ImportBatchSize);
+      for (let index = 0; index < rowsToImport.length; index += ModuleImportDefaultBatchSize) {
+        const batch = rowsToImport.slice(index, index + ModuleImportDefaultBatchSize);
         await onImportBanks(batch.map((row) => cleanBankValues(row.values)));
         setProgress({
           imported: Math.min(index + batch.length, rowsToImport.length),

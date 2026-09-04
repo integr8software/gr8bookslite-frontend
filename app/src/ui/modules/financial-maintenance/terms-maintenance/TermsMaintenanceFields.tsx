@@ -1,9 +1,5 @@
 import type { ClipboardEventHandler, KeyboardEventHandler } from "react";
-import {
-  TermsMaintenanceDatemodeOptions,
-  TermsMaintenanceFieldClassName,
-  TermsMaintenanceSelectClassName,
-} from "@/app/src/constants/modules/financial-maintenance/terms-maintenance/TermsMaintenanceConstants";
+import { TermsMaintenanceDatemodeOptions } from "@/app/src/constants/modules/financial-maintenance/terms-maintenance/TermsMaintenanceConstants";
 import type { TermsMaintenanceFieldsProps } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
@@ -19,7 +15,6 @@ export function TermsMaintenanceFields({ errors, isReadonly, values, onInputChan
           value={values.name}
           onChange={onInputChange}
           readOnly={isReadonly}
-          className={TermsMaintenanceFieldClassName}
           placeholder="Enter Term Name..."
         />
       </FormField>
@@ -32,7 +27,7 @@ export function TermsMaintenanceFields({ errors, isReadonly, values, onInputChan
           onChange={onInputChange}
           readOnly={isReadonly}
           showCounter={false}
-          className={`${TermsMaintenanceFieldClassName} min-h-24 resize-y py-3 ${isReadonly ? "placeholder:italic" : ""}`}
+          className={isReadonly ? "placeholder:italic" : undefined}
         />
       </FormField>
 
@@ -42,7 +37,6 @@ export function TermsMaintenanceFields({ errors, isReadonly, values, onInputChan
           value={values.datemode}
           onChange={onInputChange}
           disabled={isReadonly}
-          className={TermsMaintenanceSelectClassName}
         >
           {TermsMaintenanceDatemodeOptions.map((option) => (
             <option key={option} value={option}>
@@ -69,7 +63,6 @@ export function TermsMaintenanceFields({ errors, isReadonly, values, onInputChan
           onPaste={preventNonWholeNumberPaste}
           onWheel={(event) => event.currentTarget.blur()}
           readOnly={isReadonly}
-          className={TermsMaintenanceFieldClassName}
           placeholder="Enter period"
         />
       </FormField>

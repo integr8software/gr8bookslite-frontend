@@ -7,7 +7,6 @@ import type {
   TermsMaintenanceDatemode,
   TermsMaintenanceStatus,
 } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
-import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
 import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
@@ -23,11 +22,6 @@ export const TermsMaintenanceTitle = "Terms Maintenance";
 export const TermsMaintenanceDescription = "Manage datemode and period definitions used for term reporting and payment cycles.";
 
 export const TermsMaintenanceDrawerFormId = "terms-maintenance-drawer-form";
-
-export const TermsMaintenanceFieldClassName =
-  "h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.03] disabled:text-darknavy/70 disabled:placeholder:text-darknavy/32 read-only:bg-darknavy/[0.03] read-only:text-darknavy/70";
-
-export const TermsMaintenanceSelectClassName = `app-select-control ${TermsMaintenanceFieldClassName} enabled:bg-white enabled:text-darknavy disabled:bg-darknavy/[0.03] disabled:text-darknavy/70`;
 
 export const TermsMaintenanceTablePaginationStorageKey = "maintenance:financial-management:terms-maintenance";
 
@@ -111,7 +105,15 @@ export const TermsMaintenanceExportColumns: ModuleTableExportColumn<TermsMainten
 
 export const TermsMaintenanceDatemodeOptions = ["Day", "Month", "Year"] as const satisfies readonly TermsMaintenanceDatemode[];
 
-export const TermsMaintenanceStatusOptions = ["Active", "Inactive"] as const satisfies readonly TermsMaintenanceStatus[];
+export const TermsMaintenanceStatuses = {
+  Active: "Active",
+  Inactive: "Inactive",
+} as const satisfies Record<string, TermsMaintenanceStatus>;
+
+export const TermsMaintenanceStatusOptions = [
+  TermsMaintenanceStatuses.Active,
+  TermsMaintenanceStatuses.Inactive,
+] as const satisfies readonly TermsMaintenanceStatus[];
 
 export const TermsMaintenanceActionCopy = {
   add: {
@@ -129,10 +131,6 @@ export const TermsMaintenanceActionCopy = {
 } as const;
 
 export const TermImportTemplateHeaders = ["Term Name", "Datemode", "Period"];
-
-export const TermImportAcceptedFileExtensions = ".xlsx,.csv,.tsv,.txt";
-
-export const TermImportAcceptedFileLabel = ".xlsx, .csv, .tsv, .txt";
 
 export const TermImportDefaultColumnIndexes: Record<TermImportColumnId, number> = {
   name: 0,
@@ -170,22 +168,3 @@ export const TermImportColumnHeaders: TermImportColumnHeader[] = [
 ];
 
 export const TermImportPreviewColumnCount = TermImportFieldOrder.length + 1;
-
-export const TermImportPreviewGridLabel = "Import preview grid. Paste copied Excel rows here.";
-
-export const TermImportPreviewEmptyMessage = "Upload a file, or focus here and paste copied Excel rows.";
-
-export const TermImportPreviewPageSize = 20;
-export const TermImportBatchSize = 25;
-export const TermImportMinFileSizeBytes = 1;
-export const TermImportMaxFileSizeBytes = AppMaxFileUploadSizeBytes;
-
-export const TemplateHeaders = TermImportTemplateHeaders;
-export const DefaultColumnIndexes = TermImportDefaultColumnIndexes;
-export const ImportFieldOrder = TermImportFieldOrder;
-export const SelectionColumnWidth = TermImportSelectionColumnWidth;
-export const DefaultColumnWidths = TermImportDefaultColumnWidths;
-export const PreviewPageSize = TermImportPreviewPageSize;
-export const ImportBatchSize = TermImportBatchSize;
-export const MinImportFileSizeBytes = TermImportMinFileSizeBytes;
-export const MaxImportFileSizeBytes = TermImportMaxFileSizeBytes;

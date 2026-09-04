@@ -1,4 +1,4 @@
-import { ServicesMaintenanceFieldClassName, ServicesMaintenanceServiceTypeOptions } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
+import { ServicesMaintenanceServiceTypeOptions } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
 import type { ServicesMaintenanceFieldsProps } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
@@ -15,7 +15,6 @@ export function ServicesMaintenanceFields({ errors, isReadonly, values, onInputC
           value={values.serviceName}
           onChange={onInputChange}
           readOnly={isReadonly}
-          className={ServicesMaintenanceFieldClassName}
           placeholder="Enter service name"
         />
       </FormField>
@@ -26,7 +25,6 @@ export function ServicesMaintenanceFields({ errors, isReadonly, values, onInputC
           value={values.serviceType}
           onChange={onInputChange}
           disabled={isReadonly}
-          className={ServicesMaintenanceFieldClassName}
         >
           {ServicesMaintenanceServiceTypeOptions.map((option) => (
             <option key={option} value={option}>
@@ -44,7 +42,6 @@ export function ServicesMaintenanceFields({ errors, isReadonly, values, onInputC
           onChange={onInputChange}
           readOnly={isReadonly}
           showCounter={false}
-          className={`${ServicesMaintenanceFieldClassName} min-h-28 resize-y py-3`}
         />
       </FormField>
     </div>

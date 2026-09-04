@@ -1,20 +1,15 @@
 "use client";
 
 import {
-  pettyCashFundControllerCreateV1 as pettyCashFundControllerCreate,
-  pettyCashFundControllerFindAllV1 as pettyCashFundControllerFindAll,
-  pettyCashFundControllerFindOneV1 as pettyCashFundControllerFindOne,
-  pettyCashFundControllerRemoveV1 as pettyCashFundControllerRemove,
+  pettyCashFundControllerCreateV1,
+  pettyCashFundControllerFindAllV1,
+  pettyCashFundControllerFindOneV1,
+  pettyCashFundControllerRemoveV1,
   pettyCashFundControllerSuggestTransactionNumberV1,
-  pettyCashFundControllerUpdateStatusV1 as pettyCashFundControllerUpdateStatus,
-  pettyCashFundControllerUpdateV1 as pettyCashFundControllerUpdate,
+  pettyCashFundControllerUpdateStatusV1,
+  pettyCashFundControllerUpdateV1,
 } from "@/app/src/generated/api/petty-cash-fund/petty-cash-fund";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
-import {
-  fetchMaintenancePartyOptions,
-  fetchMaintenancePostingAccountOptions,
-  fetchMaintenanceResponsibilityCenterOptions,
-} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import { PettyCashFundStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import type {
   CreatePettyCashFundDto,
@@ -30,7 +25,6 @@ import type {
   PettyCashFundRecord,
   PettyCashFundStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { calculatePettyCashFundTotals } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund/PettyCashFundData";
 
@@ -49,7 +43,7 @@ type PettyCashFundDetailExtras = {
   type?: string | null;
 };
 
-type PettyCashFundQueryParams = NonNullable<Parameters<typeof pettyCashFundControllerFindAll>[0]>;
+type PettyCashFundQueryParams = NonNullable<Parameters<typeof pettyCashFundControllerFindAllV1>[0]>;
 
 export type FetchPettyCashFundListParams = {
   page?: number;
@@ -236,7 +230,7 @@ export async function fetchPettyCashFundList(params?: FetchPettyCashFundListPara
     queryParams.status = (StatusToApi[params.status as PettyCashFundStatus] ?? params.status) as PettyCashFundQueryParams["status"];
   }
 
-  const response = (await pettyCashFundControllerFindAll(queryParams)) as PettyCashFundListResponseDto;
+  const response = (await pettyCashFundControllerFindAllV1(queryParams)) as PettyCashFundListResponseDto;
   return {
     data: (response?.items ?? []).map(mapPettyCashFundRecordFromDto),
     meta: response?.meta ?? { page: 1, limit: 50, total: 0, totalPages: 1 },
@@ -244,7 +238,7 @@ export async function fetchPettyCashFundList(params?: FetchPettyCashFundListPara
 }
 
 export async function fetchPettyCashFundById(id: string): Promise<PettyCashFundRecord> {
-  const response = (await pettyCashFundControllerFindOne(id)) as PettyCashFundResponseDto;
+  const response = (await pettyCashFundControllerFindOneV1(id)) as PettyCashFundResponseDto;
   return mapPettyCashFundRecordFromDto(response);
 }
 
@@ -254,35 +248,23 @@ export async function fetchNextPettyCashFundNo(branchUnitId?: number): Promise<s
 
 export async function createPettyCashFundApi(values: PettyCashFundFormValues): Promise<PettyCashFundRecord> {
   const payload = mapPettyCashFundFormValuesToCreateDto(values);
-  const response = (await pettyCashFundControllerCreate(payload)) as PettyCashFundResponseDto;
+  const response = (await pettyCashFundControllerCreateV1(payload)) as PettyCashFundResponseDto;
   return mapPettyCashFundRecordFromDto(response);
 }
 
 export async function updatePettyCashFundApi(id: string, values: PettyCashFundFormValues): Promise<PettyCashFundRecord> {
   const payload = mapPettyCashFundFormValuesToUpdateDto(values);
-  const response = (await pettyCashFundControllerUpdate(id, payload)) as PettyCashFundResponseDto;
+  const response = (await pettyCashFundControllerUpdateV1(id, payload)) as PettyCashFundResponseDto;
   return mapPettyCashFundRecordFromDto(response);
 }
 
 export async function updatePettyCashFundStatusApi(id: string, status: PettyCashFundStatus): Promise<PettyCashFundRecord> {
   const apiStatus = StatusToApi[status];
-  const response = (await pettyCashFundControllerUpdateStatus(id, { status: apiStatus })) as PettyCashFundResponseDto;
+  const response = (await pettyCashFundControllerUpdateStatusV1(id, { status: apiStatus })) as PettyCashFundResponseDto;
   return mapPettyCashFundRecordFromDto(response);
 }
 
 export async function deletePettyCashFundApi(id: string): Promise<{ success: boolean; message: string }> {
-  await pettyCashFundControllerRemove(id);
+  await pettyCashFundControllerRemoveV1(id);
   return { success: true, message: "Deleted successfully" };
-}
-
-export async function fetchPettyCashFundPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenancePartyOptions();
-}
-
-export async function fetchPettyCashFundAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenancePostingAccountOptions();
-}
-
-export async function fetchPettyCashFundResponsibilityCenters(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenanceResponsibilityCenterOptions();
 }

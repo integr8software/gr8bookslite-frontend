@@ -21,11 +21,9 @@ import type {
   UpdateDisbursementVoucherDto,
   UpdateDisbursementVoucherDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
-import {
-  fetchMaintenancePartyOptions,
-  fetchMaintenancePostingAccountOptions,
-  fetchMaintenanceResponsibilityCenterOptions,
-} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
+import { fetchPostingAccountLookupOptions } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartOfAccountsLookupApi";
+import { fetchResponsibilityCenterLookupOptions } from "@/app/src/services/modules/financial-maintenance/responsibility-center/ResponsibilityCenterLookupApi";
+import { fetchPartyLookupOptions } from "@/app/src/services/modules/party-management/PartyLookupApi";
 import type {
   DisbursementLineEntry,
   DisbursementVoucherRecord,
@@ -88,18 +86,18 @@ export async function fetchNextDisbursementVoucherTransactionNo(branchUnitId?: n
 }
 
 export async function fetchDisbursementVoucherPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenancePartyOptions();
+  return fetchPartyLookupOptions({ detail: "complete" });
 }
 
 export async function fetchDisbursementVoucherAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenancePostingAccountOptions();
+  return fetchPostingAccountLookupOptions();
 }
 
 export async function fetchDisbursementVoucherResponsibilityCenters(): Promise<{
   costCenters: AppAdvancedDropdownOption[];
   projects: AppAdvancedDropdownOption[];
 }> {
-  const centers = await fetchMaintenanceResponsibilityCenterOptions();
+  const centers = await fetchResponsibilityCenterLookupOptions();
   const isProject = (rc: { typeName?: string; name?: string }) =>
     rc.typeName?.toLowerCase().includes("project") || rc.name?.toLowerCase().includes("project");
 

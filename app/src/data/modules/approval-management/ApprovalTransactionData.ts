@@ -1,5 +1,4 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import type { ApprovalTransactionApiRecord } from "@/app/src/services/modules/approval-management/ApprovalManagementApi";
 import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import {
   AllApproversFilter,
@@ -10,6 +9,7 @@ import {
   DoneStatus,
 } from "@/app/src/constants/modules/approval-management/ApprovalTransactionConstants";
 import type {
+  ApprovalTransactionApiRecord,
   ApprovalTransactionApprover,
   ApprovalTransactionFilters,
   ApprovalTransactionRow,

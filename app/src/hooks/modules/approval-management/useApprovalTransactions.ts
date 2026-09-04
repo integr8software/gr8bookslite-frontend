@@ -8,7 +8,6 @@ import {
   GetApprovalManagementModules,
   GetApprovalTransactions,
   type ApprovalTransactionActionPayload,
-  type ApprovalTransactionApiRecord,
 } from "@/app/src/services/modules/approval-management/ApprovalManagementApi";
 import { ApprovalManagementQueryKeys } from "@/app/src/services/modules/approval-management/ApprovalManagementQueryKeys";
 import {
@@ -24,7 +23,10 @@ import {
   mapApprovalTransactionRow,
   matchesTransactionFilters,
 } from "@/app/src/data/modules/approval-management/ApprovalTransactionData";
-import type { ApprovalTransactionRow } from "@/app/src/types/modules/approval-management/ApprovalTransactionTypes";
+import type {
+  ApprovalTransactionApiRecord,
+  ApprovalTransactionRow,
+} from "@/app/src/types/modules/approval-management/ApprovalTransactionTypes";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
 type ApprovalTransactionAction = "approve" | "disapprove";
@@ -77,6 +79,8 @@ export function useApprovalTransactions() {
   );
   const approveMutation = useTransactionStatusMutation("approve", ApproveApprovalTransaction, closeActionSurfaces);
   const disapproveMutation = useTransactionStatusMutation("disapprove", DisapproveApprovalTransaction, closeActionSurfaces);
+
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns table state handlers.
   const table = useReactTable({
     columns: ApprovalTransactionColumns,
     data: filteredRows,

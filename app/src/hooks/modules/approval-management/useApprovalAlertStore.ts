@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import type { ApprovalTransactionApiRecord } from "@/app/src/services/modules/approval-management/ApprovalManagementApi";
+import type { ApprovalTransactionApiRecord } from "@/app/src/types/modules/approval-management/ApprovalTransactionTypes";
 
 export type ApprovalManagementTab = "approver-setup" | "approval-rules";
 

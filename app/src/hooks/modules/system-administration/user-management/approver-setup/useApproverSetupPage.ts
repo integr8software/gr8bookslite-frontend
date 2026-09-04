@@ -13,6 +13,7 @@ import {
 	ApproverSetupAllStatusesFilter,
 	ApproverSetupAllTypesFilter,
 	ApproverSetupCurrentDate,
+	ApproverSetupTemporaryType,
 } from "@/app/src/constants/modules/system-administration/user-management/approver-setup/ApproverSetupConstants";
 import {
 	CreateApproverSetup,
@@ -177,7 +178,7 @@ export function useApproverSetupPage() {
 		(record) => record.status === "Active",
 	).length;
 	const temporaryCount = records.filter(
-		(record) => record.assignmentType === "Temporary",
+		(record) => record.assignmentType === ApproverSetupTemporaryType,
 	).length;
 	const levelCount = new Set(records.map((record) => record.levelName)).size;
 	const expiringCount = records.filter(
@@ -293,7 +294,7 @@ export function useApproverSetupPage() {
 			return;
 		}
 
-		if (formValues.assignmentType === "Temporary" && !formValues.effectiveTo) {
+		if (formValues.assignmentType === ApproverSetupTemporaryType && !formValues.effectiveTo) {
 			setDrawerError("Enter a valid until date.");
 			return;
 		}
@@ -316,7 +317,7 @@ export function useApproverSetupPage() {
 			status: formValues.status,
 			type: formValues.assignmentType,
 			validUntil:
-				formValues.assignmentType === "Temporary"
+				formValues.assignmentType === ApproverSetupTemporaryType
 					? formValues.effectiveTo
 					: undefined,
 		};
@@ -428,11 +429,11 @@ export function createRecordFromFormValues(
 		assignmentType: values.assignmentType,
 		condition: values.condition.trim() as ApproverCondition,
 		effectiveFrom:
-			values.assignmentType === "Temporary"
+			values.assignmentType === ApproverSetupTemporaryType
 				? values.effectiveFrom || "2026-07-08"
 				: undefined,
 		effectiveTo:
-			values.assignmentType === "Temporary"
+			values.assignmentType === ApproverSetupTemporaryType
 				? values.effectiveTo || undefined
 				: undefined,
 		lastUpdatedAt: "2026-07-08",

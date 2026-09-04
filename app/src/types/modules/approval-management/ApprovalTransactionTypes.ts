@@ -1,4 +1,27 @@
-import type { ApprovalTransactionApiRecord } from "@/app/src/services/modules/approval-management/ApprovalManagementApi";
+export type ApprovalTransactionApiRecord = {
+  amount: string;
+  approvers: Array<{
+    approvedAt: string | null;
+    name: string;
+    remarks?: string | null;
+    sequence: number;
+    status: string;
+    userId: number;
+  }>;
+  blockerName?: string | null;
+  canUpdateStatus: boolean;
+  isSequential: boolean;
+  currentApproverId?: number | null;
+  id: string;
+  moduleName: string;
+  moduleScope: string;
+  referenceNo: string;
+  remarks: string;
+  requestedAt: string;
+  ruleId: string;
+  ruleName: string;
+  status: string;
+};
 
 export type ApprovalTransactionApprover = ApprovalTransactionApiRecord["approvers"][number];
 

@@ -5,6 +5,7 @@ import type {
   ApprovalRoutingRuleRecord,
   ApprovalStageRecord,
 } from "@/app/src/types/modules/approval-management/ApprovalManagementTypes";
+import type { ApprovalTransactionApiRecord } from "@/app/src/types/modules/approval-management/ApprovalTransactionTypes";
 
 type ApprovalManagementModulesResponse = {
   modules: Array<ApprovalManagementModuleOption & { id: number }>;
@@ -22,31 +23,6 @@ type ApprovalWorkflowsResponse = {
 type UpsertApprovalWorkflowResponse = {
   message: string;
   workflow: ApprovalWorkflowApiRecord;
-};
-
-export type ApprovalTransactionApiRecord = {
-  amount: string;
-  approvers: Array<{
-    approvedAt: string | null;
-    name: string;
-    remarks?: string | null;
-    sequence: number;
-    status: string;
-    userId: number;
-  }>;
-  blockerName?: string | null;
-  canUpdateStatus: boolean;
-  isSequential: boolean;
-  currentApproverId?: number | null;
-  id: string;
-  moduleName: string;
-  moduleScope: string;
-  referenceNo: string;
-  remarks: string;
-  requestedAt: string;
-  ruleId: string;
-  ruleName: string;
-  status: string;
 };
 
 type ApprovalTransactionsResponse = {

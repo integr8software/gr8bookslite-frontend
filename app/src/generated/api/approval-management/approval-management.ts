@@ -26,6 +26,7 @@ import type {
 
 import type {
   ApprovalManagementModulesResponseDto,
+  ApprovalTransactionActionDto,
   ApprovalTransactionResponseDto,
   ApprovalTransactionsResponseDto,
   ApprovalWorkflowResponseDto,
@@ -456,12 +457,15 @@ export function useApprovalManagementControllerFindTransactionsV1<TData = Awaite
  */
 export const approvalManagementControllerApproveTransactionV1 = (
     transactionId: string,
+    approvalTransactionActionDto: ApprovalTransactionActionDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
 
 
       return OrvalApiClient<ApprovalTransactionResponseDto>(
-      {url: `/api/v1/system-administration/approval-management/transactions/${transactionId}/approve`, method: 'POST', signal
+      {url: `/api/v1/system-administration/approval-management/transactions/${transactionId}/approve`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: approvalTransactionActionDto, signal
     },
       options);
     }
@@ -469,8 +473,8 @@ export const approvalManagementControllerApproveTransactionV1 = (
 
 
 export const getApprovalManagementControllerApproveTransactionV1MutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approvalManagementControllerApproveTransactionV1>>, TError,{transactionId: string}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof approvalManagementControllerApproveTransactionV1>>, TError,{transactionId: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approvalManagementControllerApproveTransactionV1>>, TError,{transactionId: string;data: ApprovalTransactionActionDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof approvalManagementControllerApproveTransactionV1>>, TError,{transactionId: string;data: ApprovalTransactionActionDto}, TContext> => {
 
 const mutationKey = ['approvalManagementControllerApproveTransactionV1'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -482,10 +486,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approvalManagementControllerApproveTransactionV1>>, {transactionId: string}> = (props) => {
-          const {transactionId} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approvalManagementControllerApproveTransactionV1>>, {transactionId: string;data: ApprovalTransactionActionDto}> = (props) => {
+          const {transactionId,data} = props ?? {};
 
-          return  approvalManagementControllerApproveTransactionV1(transactionId,requestOptions)
+          return  approvalManagementControllerApproveTransactionV1(transactionId,data,requestOptions)
         }
 
 
@@ -496,18 +500,18 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type ApprovalManagementControllerApproveTransactionV1MutationResult = NonNullable<Awaited<ReturnType<typeof approvalManagementControllerApproveTransactionV1>>>
-
+    export type ApprovalManagementControllerApproveTransactionV1MutationBody = ApprovalTransactionActionDto
     export type ApprovalManagementControllerApproveTransactionV1MutationError = unknown
 
     /**
  * @summary Approve an approval transaction
  */
 export const useApprovalManagementControllerApproveTransactionV1 = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approvalManagementControllerApproveTransactionV1>>, TError,{transactionId: string}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approvalManagementControllerApproveTransactionV1>>, TError,{transactionId: string;data: ApprovalTransactionActionDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof approvalManagementControllerApproveTransactionV1>>,
         TError,
-        {transactionId: string},
+        {transactionId: string;data: ApprovalTransactionActionDto},
         TContext
       > => {
       return useMutation(getApprovalManagementControllerApproveTransactionV1MutationOptions(options), queryClient);
@@ -517,12 +521,15 @@ export const useApprovalManagementControllerApproveTransactionV1 = <TError = unk
  */
 export const approvalManagementControllerDisapproveTransactionV1 = (
     transactionId: string,
+    approvalTransactionActionDto: ApprovalTransactionActionDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
 
 
       return OrvalApiClient<ApprovalTransactionResponseDto>(
-      {url: `/api/v1/system-administration/approval-management/transactions/${transactionId}/disapprove`, method: 'POST', signal
+      {url: `/api/v1/system-administration/approval-management/transactions/${transactionId}/disapprove`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: approvalTransactionActionDto, signal
     },
       options);
     }
@@ -530,8 +537,8 @@ export const approvalManagementControllerDisapproveTransactionV1 = (
 
 
 export const getApprovalManagementControllerDisapproveTransactionV1MutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approvalManagementControllerDisapproveTransactionV1>>, TError,{transactionId: string}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof approvalManagementControllerDisapproveTransactionV1>>, TError,{transactionId: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approvalManagementControllerDisapproveTransactionV1>>, TError,{transactionId: string;data: ApprovalTransactionActionDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof approvalManagementControllerDisapproveTransactionV1>>, TError,{transactionId: string;data: ApprovalTransactionActionDto}, TContext> => {
 
 const mutationKey = ['approvalManagementControllerDisapproveTransactionV1'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -543,10 +550,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approvalManagementControllerDisapproveTransactionV1>>, {transactionId: string}> = (props) => {
-          const {transactionId} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approvalManagementControllerDisapproveTransactionV1>>, {transactionId: string;data: ApprovalTransactionActionDto}> = (props) => {
+          const {transactionId,data} = props ?? {};
 
-          return  approvalManagementControllerDisapproveTransactionV1(transactionId,requestOptions)
+          return  approvalManagementControllerDisapproveTransactionV1(transactionId,data,requestOptions)
         }
 
 
@@ -557,18 +564,18 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type ApprovalManagementControllerDisapproveTransactionV1MutationResult = NonNullable<Awaited<ReturnType<typeof approvalManagementControllerDisapproveTransactionV1>>>
-
+    export type ApprovalManagementControllerDisapproveTransactionV1MutationBody = ApprovalTransactionActionDto
     export type ApprovalManagementControllerDisapproveTransactionV1MutationError = unknown
 
     /**
  * @summary Disapprove an approval transaction
  */
 export const useApprovalManagementControllerDisapproveTransactionV1 = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approvalManagementControllerDisapproveTransactionV1>>, TError,{transactionId: string}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approvalManagementControllerDisapproveTransactionV1>>, TError,{transactionId: string;data: ApprovalTransactionActionDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof approvalManagementControllerDisapproveTransactionV1>>,
         TError,
-        {transactionId: string},
+        {transactionId: string;data: ApprovalTransactionActionDto},
         TContext
       > => {
       return useMutation(getApprovalManagementControllerDisapproveTransactionV1MutationOptions(options), queryClient);

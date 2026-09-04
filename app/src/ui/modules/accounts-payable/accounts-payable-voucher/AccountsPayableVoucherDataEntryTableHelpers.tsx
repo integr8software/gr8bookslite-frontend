@@ -129,6 +129,7 @@ export function PartyDropdown({
   canAddPartyName = false,
   isReadonly,
   onAddPartyName,
+  onOpen,
   onSelect,
   options,
   partyCode,
@@ -137,6 +138,7 @@ export function PartyDropdown({
   canAddPartyName?: boolean;
   isReadonly: boolean;
   onAddPartyName?: () => void;
+  onOpen?: () => void;
   onSelect: (partyCode: string, partyName: string) => void;
   options: AppAdvancedDropdownOption[];
   partyCode: string;
@@ -158,6 +160,8 @@ export function PartyDropdown({
       placeholder="Select Party Name"
       searchPlaceholder="Search Party Name"
       className={entryDropdownClassName()}
+      showSelectedDetails
+      onOpen={onOpen}
       onChange={(value) => {
         const selectedValue = String(value);
         const party = options.find((option) => option.value === selectedValue);

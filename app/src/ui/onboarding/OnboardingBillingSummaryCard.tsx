@@ -18,6 +18,12 @@ export function OnboardingBillingSummaryCard({
 	selectedBillingCycle,
 }: OnboardingBillingSummaryCardProps) {
 	const isManualBilling = billingMode === "MANUAL";
+	const trialDays = selectedPlan?.trialDays ?? 0;
+	const trialPriceInCents = selectedPlan?.trialPriceInCents ?? 0;
+	const isTrial = trialDays > 0;
+	const isFreeTrial = isTrial && trialPriceInCents === 0;
+	const trialPriceDisplay = selectedPlan?.trialPrice ?? `₱${(trialPriceInCents / 100).toFixed(2)}`;
+
 	const selectedPrice = selectedPlan
 		? selectedBillingCycle === "monthly"
 			? selectedPlan.monthlyPrice
@@ -33,10 +39,16 @@ export function OnboardingBillingSummaryCard({
 			: "Charged every month";
 	const renewalLabel =
 		isManualBilling
-			? "You will renew manually through hosted checkout."
+			? isTrial
+				? "You will renew manually through hosted checkout after trial."
+				: "You will renew manually through hosted checkout."
+			: isTrial
+			? selectedBillingCycle === "yearly"
+				? "Renews yearly after your trial ends."
+				: "Renews monthly after your trial ends."
 			: selectedBillingCycle === "yearly"
-			? "Renews yearly after your free trial ends."
-			: "Renews monthly after your free trial ends.";
+			? "Renews yearly."
+			: "Renews monthly.";
 
 	return (
 		<aside className="overflow-hidden rounded-2xl border border-skyblue/30 bg-white text-darknavy shadow-[0_20px_50px_rgba(33,39,56,0.12)]">
@@ -48,7 +60,7 @@ export function OnboardingBillingSummaryCard({
 				<div className="mt-7 flex items-end justify-between gap-4">
 					<div>
 						<p className="text-xs font-semibold uppercase tracking-[0.18em] text-darknavy/45">
-							After your trial
+							{isTrial ? "After your trial" : "Subscription price"}
 						</p>
 						<p className="mt-2 whitespace-nowrap text-4xl font-semibold tracking-[-0.04em]">
 							{selectedPrice ?? "Choose a plan"}
@@ -57,9 +69,11 @@ export function OnboardingBillingSummaryCard({
 							{cadenceLabel}
 						</p>
 					</div>
-					<span className="mb-1 rounded-full bg-citron px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-darknavy">
-						15 days free
-					</span>
+					{isTrial && (
+						<span className="mb-1 rounded-full bg-citron px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-darknavy">
+							{isFreeTrial ? `${trialDays} days free` : `${trialPriceDisplay} / ${trialDays} days`}
+						</span>
+					)}
 				</div>
 			</div>
 
@@ -86,6 +100,16 @@ export function OnboardingBillingSummaryCard({
 						</dd>
 					</div>
 					<div className="flex items-start justify-between gap-5 pt-4 text-sm">
+						<dt className="text-darknavy/45">Due today</dt>
+						<dd className="max-w-52 text-right font-semibold text-darknavy">
+							{isFreeTrial
+								? "₱0.00 (Free trial)"
+								: isTrial
+								? `${trialPriceDisplay} (Trial fee)`
+								: selectedPrice ?? "—"}
+						</dd>
+					</div>
+					<div className="flex items-start justify-between gap-5 pt-4 text-sm">
 						<dt className="text-darknavy/45">Next payment</dt>
 						<dd className="max-w-52 text-right leading-6 text-darknavy/65">
 							{renewalLabel}
@@ -94,9 +118,17 @@ export function OnboardingBillingSummaryCard({
 				</dl>
 
 				<p className="mt-6 rounded-xl bg-skyblue/10 p-4 text-xs leading-5 text-darknavy/60">
-					{isManualBilling
-						? "No charge today. When your free trial ends, you will renew manually through hosted checkout."
-						: "No charge today. Your card is charged only after the free trial ends."}
+					{isFreeTrial
+						? isManualBilling
+							? "No charge today. When your free trial ends, you will renew manually through hosted checkout."
+							: "No charge today. Your card is charged only after the free trial ends."
+						: isTrial
+						? isManualBilling
+							? `Charged ${trialPriceDisplay} today for ${trialDays}-day trial access. When your trial ends, you will renew manually through hosted checkout.`
+							: `Charged ${trialPriceDisplay} today for ${trialDays}-day trial access. Your card is charged ${selectedPrice ?? "the regular price"} recurringly after the trial ends.`
+						: isManualBilling
+						? "Charged today via hosted checkout. You will renew manually for subsequent periods."
+						: "Charged today. Subsequent renewals will be charged automatically to your card."}
 				</p>
 			</div>
 		</aside>

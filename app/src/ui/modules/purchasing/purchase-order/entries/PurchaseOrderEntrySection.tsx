@@ -8,6 +8,8 @@ import {
 } from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
 import type { PurchaseOrderAccountingEntry, PurchaseOrderCopySource, PurchaseOrderItem } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 import type { PurchasingAccountingColumnId, PurchasingEntryTab } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
+import type { ItemRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
+import type { ServiceMaintenanceOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import {
   ModuleDataEntry,
   type ModuleDataEntryClearAction,
@@ -37,10 +39,12 @@ import {
 type PurchaseOrderEntrySectionProps = {
   accountingRows: PurchaseOrderAccountingEntry[];
   error?: string;
+  itemDescriptionOptions: ItemRecord[];
   isReadonly: boolean;
   purchaseType: string;
   copyFromSource?: PurchaseOrderCopySource;
   rows: PurchaseOrderItem[];
+  serviceDescriptionOptions: ServiceMaintenanceOptionResponseDto[];
   onAccountingRowsChange: (rows: PurchaseOrderAccountingEntry[]) => void;
   onRowsChange: (rows: PurchaseOrderItem[]) => void;
 };
@@ -48,12 +52,14 @@ type PurchaseOrderEntrySectionProps = {
 export function PurchaseOrderEntrySection({
   accountingRows,
   error,
+  itemDescriptionOptions,
   isReadonly,
   onAccountingRowsChange,
   onRowsChange,
   purchaseType,
   copyFromSource = "",
   rows,
+  serviceDescriptionOptions,
 }: PurchaseOrderEntrySectionProps) {
   const [activeTab] = useState<PurchasingEntryTab>("details");
   const [lineColumnIdsByPurchaseType, setLineColumnIdsByPurchaseType] = useState<Record<string, string[]>>({});
@@ -94,8 +100,15 @@ export function PurchaseOrderEntrySection({
   );
   const totals = useMemo(() => getPurchaseOrderTotals({ items: rows }), [rows]);
   const allColumns = useMemo<ModuleDataEntryColumn<PurchaseOrderItem>[]>(
-    () => createPurchaseOrderLineColumns(isReadonly, updateEntry),
-    [isReadonly, updateEntry],
+    () =>
+      createPurchaseOrderLineColumns(
+        isReadonly,
+        updateEntry,
+        purchaseType,
+        serviceDescriptionOptions,
+        itemDescriptionOptions,
+      ),
+    [isReadonly, itemDescriptionOptions, purchaseType, serviceDescriptionOptions, updateEntry],
   );
   const columns = useMemo(
     () => allColumns.filter((column) => visibleLineColumnIds.includes(column.id)),

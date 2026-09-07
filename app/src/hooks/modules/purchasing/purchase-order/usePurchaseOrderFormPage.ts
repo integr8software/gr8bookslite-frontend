@@ -23,7 +23,9 @@ import { usePurchaseOrderStore } from "@/app/src/hooks/modules/purchasing/purcha
 import { createPurchaseOrder, mapPurchaseOrderResponse, updatePurchaseOrder } from "@/app/src/services/modules/purchasing/purchase-order/PurchaseOrderApi";
 import { PurchaseOrderQueryKeys } from "@/app/src/services/modules/purchasing/purchase-order/PurchaseOrderQueryKeys";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
+import { useItemManagementStore } from "@/app/src/hooks/modules/item-management/items/useItemManagement";
 import { usePurchaseRequestStore } from "@/app/src/hooks/modules/purchasing/purchase-request/usePurchaseRequest";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
@@ -38,6 +40,9 @@ import type {
 import type { CanvassFormItem, CanvassFormRecord } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
 import type { PurchaseRequestItem, PurchaseRequestRecord } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+import type { ItemRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
+import { fetchServicesMaintenanceOptions } from "@/app/src/services/modules/financial-maintenance/services-maintenance/ServicesMaintenanceApi";
+import { ServicesMaintenanceQueryKeys } from "@/app/src/services/modules/financial-maintenance/services-maintenance/ServicesMaintenanceQueryKeys";
 import { validatePurchaseOrderForm } from "@/app/src/validations/modules/purchasing/purchase-order/PurchaseOrderValidation";
 
 export function usePurchaseOrderFormPage() {
@@ -46,7 +51,11 @@ export function usePurchaseOrderFormPage() {
   const params = useParams<{ recordId?: string }>();
   const searchParams = useSearchParams();
   const { orders } = usePurchaseOrderStore();
+  const itemDescriptionOptions = useItemManagementStore(selectPurchasableItemOptions);
+  const accessToken = useAppStore((state) => state.accessToken);
   const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const authProfileQuery = useAuthProfileQuery({ accessToken });
+  const companyId = authProfileQuery.data?.activeCompanyId ?? null;
   const queryClient = useQueryClient();
   const { requests: purchaseRequests } = usePurchaseRequestStore();
   const canvassForms = useMemo(() => loadCanvassForms(), []);
@@ -81,9 +90,17 @@ export function usePurchaseOrderFormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
   const [showPreview, setShowPreview] = useState(searchParams.get("preview") === "1");
+  const serviceOptionsQuery = useQuery({
+    queryKey: ServicesMaintenanceQueryKeys.options(companyId),
+    queryFn: () => fetchServicesMaintenanceOptions("Purchases"),
+    enabled: Boolean(companyId),
+    retry: false,
+  });
   const previewRecord = useMemo(() => createPurchaseOrderRecord(values, params.recordId ?? "preview"), [params.recordId, values]);
   const draft = useModuleDraft({
-    enabled: !isReadonly,
+    // A new purchase order must never revive the previous unfinished add form.
+    // Keep recovery only for edits to a specific existing transaction.
+    enabled: mode === "edit",
     key: createModuleDraftKey({
       mode,
       moduleId: "purchasing:purchase-order",
@@ -103,8 +120,30 @@ export function usePurchaseOrderFormPage() {
   function updateField<TKey extends keyof PurchaseOrderFormValues>(field: TKey, value: PurchaseOrderFormValues[TKey]) {
     if (isReadonly) return;
 
-    setValues((current) => ({ ...current, [field]: value }));
-    setErrors((current) => ({ ...current, [field]: undefined }));
+    setValues((current) => {
+      if (field === "purchaseType" && value !== current.purchaseType) {
+        return {
+          ...current,
+          purchaseType: String(value),
+          items: current.items.map((item) => ({
+            ...item,
+            itemId: "",
+            serviceMaintenanceId: "",
+            itemCode: "",
+            barcode: "",
+            itemName: "",
+            uom: "",
+          })),
+        };
+      }
+
+      return { ...current, [field]: value };
+    });
+    setErrors((current) => ({
+      ...current,
+      [field]: undefined,
+      ...(field === "purchaseType" ? { items: undefined } : {}),
+    }));
   }
 
   function updateItems(items: PurchaseOrderItem[]) {
@@ -209,6 +248,7 @@ export function usePurchaseOrderFormPage() {
     errors,
     existingOrder,
     handleSubmit,
+    itemDescriptionOptions,
     isSubmitting,
     isReadonly,
     mode,
@@ -218,12 +258,17 @@ export function usePurchaseOrderFormPage() {
     recordId: params.recordId,
     setShowPreview,
     showPreview,
+    serviceDescriptionOptions: serviceOptionsQuery.data ?? [],
     copyFromSourceRecords,
     updateField,
     updateAccountingEntries,
     updateItems,
     values,
   };
+}
+
+function selectPurchasableItemOptions({ items }: { items: ItemRecord[] }) {
+  return items.filter((item) => item.status === "Active" && item.purchasable && !item.service);
 }
 
 function createItemsFromPurchaseRequest(record: PurchaseRequestRecord) {

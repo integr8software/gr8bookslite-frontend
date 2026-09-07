@@ -8,6 +8,8 @@ import {
   getPurchaseOrderItemNetAmount,
 } from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
 import type { PurchaseOrderItem } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
+import type { ItemRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
+import type { ServiceMaintenanceOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { MoneyNumberField, parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
@@ -32,7 +34,13 @@ type PurchaseOrderLineUpdater = (rowId: string, updates: Partial<PurchaseOrderIt
 export function createPurchaseOrderLineColumns(
   isReadonly: boolean,
   onUpdateEntry: PurchaseOrderLineUpdater,
+  purchaseType: string,
+  serviceDescriptionOptions: ServiceMaintenanceOptionResponseDto[] = [],
+  itemDescriptionOptions: ItemRecord[] = [],
 ): ModuleDataEntryColumn<PurchaseOrderItem>[] {
+  const isServices = purchaseType.toLowerCase() === "services";
+  const usesItemMaintenance = ["goods", "assets"].includes(purchaseType.toLowerCase());
+
   return PurchaseOrderLineColumnConfigs.map((column) => ({
     header: column.header,
     id: column.id,
@@ -43,8 +51,12 @@ export function createPurchaseOrderLineColumns(
         column={column}
         fieldId={context.fieldId}
         fieldName={context.fieldName}
+        isServices={isServices}
         isReadonly={isReadonly}
+        itemDescriptionOptions={itemDescriptionOptions}
         row={row}
+        serviceDescriptionOptions={serviceDescriptionOptions}
+        usesItemMaintenance={usesItemMaintenance}
         onUpdateEntry={onUpdateEntry}
       />
     ),
@@ -55,16 +67,24 @@ function PurchaseOrderLineCell({
   column,
   fieldId,
   fieldName,
+  isServices,
   isReadonly,
+  itemDescriptionOptions,
   onUpdateEntry,
   row,
+  serviceDescriptionOptions,
+  usesItemMaintenance,
 }: {
   column: PurchaseOrderLineColumnConfig;
   fieldId: string;
   fieldName: string;
+  isServices: boolean;
   isReadonly: boolean;
+  itemDescriptionOptions: ItemRecord[];
   onUpdateEntry: PurchaseOrderLineUpdater;
   row: PurchaseOrderItem;
+  serviceDescriptionOptions: ServiceMaintenanceOptionResponseDto[];
+  usesItemMaintenance: boolean;
 }) {
   if (column.id === "grossAmount") {
     return (
@@ -93,6 +113,53 @@ function PurchaseOrderLineCell({
   }
 
   const value = String(row[column.id] ?? "");
+
+  if (usesItemMaintenance && column.id === "itemName") {
+    return (
+      <AppAdvancedDropdown
+        id={fieldId}
+        name={fieldName}
+        value={value}
+        readOnly={isReadonly}
+        options={createItemDescriptionDropdownOptions(itemDescriptionOptions, value)}
+        placeholder=""
+        className={EntryDropdownClassName}
+        onChange={(nextValue) =>
+          onUpdateEntry(row.id, getPurchaseOrderItemAutoFillUpdates(itemDescriptionOptions, String(nextValue)))
+        }
+      />
+    );
+  }
+
+  if (isServices && column.id === "itemName") {
+    return (
+      <AppAdvancedDropdown
+        id={fieldId}
+        name={fieldName}
+        value={value}
+        readOnly={isReadonly}
+        options={createServiceDescriptionDropdownOptions(serviceDescriptionOptions, value)}
+        placeholder=""
+        className={EntryDropdownClassName}
+        onChange={(nextValue) =>
+          onUpdateEntry(row.id, getPurchaseOrderServiceUpdates(serviceDescriptionOptions, String(nextValue)))
+        }
+      />
+    );
+  }
+
+  if (usesItemMaintenance && ["itemCode", "barcode", "uom"].includes(column.id)) {
+    return (
+      <input
+        id={fieldId}
+        name={fieldName}
+        type="text"
+        value={value}
+        readOnly
+        className={entryCellControlClassName("bg-offwhite/35")}
+      />
+    );
+  }
 
   if (column.kind === "select") {
     return (
@@ -140,6 +207,70 @@ function PurchaseOrderLineCell({
 
 const EntryDropdownClassName =
   "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
+
+function createItemDescriptionDropdownOptions(itemOptions: ItemRecord[], value: string) {
+  const dropdownOptions = itemOptions.map((item) => ({ name: item.name, value: item.name }));
+
+  if (value && !dropdownOptions.some((option) => option.value.trim().toLowerCase() === value.trim().toLowerCase())) {
+    return [{ name: value, value }, ...dropdownOptions];
+  }
+
+  return dropdownOptions;
+}
+
+function getPurchaseOrderItemAutoFillUpdates(
+  itemOptions: ItemRecord[],
+  description: string,
+): Partial<PurchaseOrderItem> {
+  const selectedItem = itemOptions.find(
+    (item) => item.name.trim().toLowerCase() === description.trim().toLowerCase(),
+  );
+
+  if (!selectedItem) return { itemName: description };
+
+  return {
+    barcode: selectedItem.barcode,
+    itemId: selectedItem.id,
+    itemCode: selectedItem.code,
+    itemName: selectedItem.name,
+    serviceMaintenanceId: "",
+    uom: selectedItem.uom,
+  };
+}
+
+function createServiceDescriptionDropdownOptions(
+  serviceOptions: ServiceMaintenanceOptionResponseDto[],
+  value: string,
+) {
+  const dropdownOptions = serviceOptions.map((service) => {
+    const serviceName = service.serviceName || service.name;
+    return { name: serviceName, value: serviceName };
+  });
+
+  if (value && !dropdownOptions.some((option) => option.value.trim().toLowerCase() === value.trim().toLowerCase())) {
+    return [{ name: value, value }, ...dropdownOptions];
+  }
+
+  return dropdownOptions;
+}
+
+function getPurchaseOrderServiceUpdates(
+  serviceOptions: ServiceMaintenanceOptionResponseDto[],
+  description: string,
+): Partial<PurchaseOrderItem> {
+  const selectedService = serviceOptions.find(
+    (service) => (service.serviceName || service.name).trim().toLowerCase() === description.trim().toLowerCase(),
+  );
+
+  return {
+    barcode: "",
+    itemId: "",
+    itemCode: "",
+    itemName: description,
+    serviceMaintenanceId: selectedService?.id ?? "",
+    uom: "",
+  };
+}
 
 function entryCellControlClassName(extraClassName?: string) {
   return joinClasses(

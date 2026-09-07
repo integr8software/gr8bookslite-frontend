@@ -68,10 +68,12 @@ function PurchaseOrderActionPageInner() {
       <PurchaseOrderEntrySection
         accountingRows={page.values.accountingEntries}
         error={page.errors.items}
+        itemDescriptionOptions={page.itemDescriptionOptions}
         isReadonly={page.isReadonly}
         purchaseType={page.values.purchaseType}
         copyFromSource={page.values.copyFromSource}
         rows={page.values.items}
+        serviceDescriptionOptions={page.serviceDescriptionOptions}
         onAccountingRowsChange={page.updateAccountingEntries}
         onRowsChange={page.updateItems}
       />

@@ -481,27 +481,28 @@ export interface SelectOnboardingPlanResponseDto {
 }
 
 export interface SaveOnboardingBillingDto {
+  billingMode?: "MANUAL" | "AUTO";
   /** @minLength 2 */
-  cardholderName: string;
-  billingEmail: string;
+  cardholderName?: string;
+  billingEmail?: string;
   /** @pattern ^\d{4}$ */
-  cardLast4: string;
+  cardLast4?: string;
   /** @minLength 2 */
-  cardBrand: string;
+  cardBrand?: string;
   /**
      * @minimum 1
      * @maximum 12
      */
-  expiryMonth: number;
+  expiryMonth?: number;
   /**
      * @minimum 2000
      * @maximum 9999
      */
-  expiryYear: number;
+  expiryYear?: number;
   /** @minLength 5 */
-  billingAddress: string;
+  billingAddress?: string;
   /** @pattern ^pm_[A-Za-z0-9]+$ */
-  paymentMethodId: string;
+  paymentMethodId?: string;
 }
 
 /**

@@ -5043,6 +5043,8 @@ export interface CreateServiceMaintenanceDto {
   accountSetupMode: CreateServiceMaintenanceDtoAccountSetupMode;
   /** @nullable */
   revenueCoaId?: string | null;
+  /** @nullable */
+  expenseParentCoaId?: string | null;
 }
 
 export interface SaveServiceMaintenanceResponseDto {
@@ -5087,6 +5089,8 @@ export interface UpdateServiceMaintenanceDto {
   accountSetupMode?: UpdateServiceMaintenanceDtoAccountSetupMode;
   /** @nullable */
   revenueCoaId?: string | null;
+  /** @nullable */
+  expenseParentCoaId?: string | null;
 }
 
 export type UpdateServiceMaintenanceStatusDtoStatus = typeof UpdateServiceMaintenanceStatusDtoStatus[keyof typeof UpdateServiceMaintenanceStatusDtoStatus];
@@ -5477,6 +5481,228 @@ export const UpdateResponsibilityCenterStatusDtoStatus = {
 
 export interface UpdateResponsibilityCenterStatusDto {
   status: UpdateResponsibilityCenterStatusDtoStatus;
+}
+
+export type TaxResponseDtoStatus = typeof TaxResponseDtoStatus[keyof typeof TaxResponseDtoStatus];
+
+
+export const TaxResponseDtoStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export interface TaxResponseDto {
+  id: number;
+  sourceKey: string;
+  transactionType: string;
+  taxType: string;
+  taxCode: string;
+  taxDescription: string;
+  taxRate: string;
+  taxExempt: boolean;
+  /** @nullable */
+  taxAlias: string | null;
+  /** @nullable */
+  atc: string | null;
+  /** @nullable */
+  officialAtcCode: string | null;
+  /** @nullable */
+  natureOfIncome: string | null;
+  sortOrder: number;
+  status: TaxResponseDtoStatus;
+}
+
+export interface TaxListResponseDto {
+  taxCodes: TaxResponseDto[];
+  taxes: TaxResponseDto[];
+}
+
+export interface TaxAutocompleteOptionResponseDto {
+  label: string;
+  description: string;
+  tax: TaxResponseDto;
+  taxCode: TaxResponseDto;
+}
+
+export interface TaxAutocompleteResponseDto {
+  taxCodes: TaxAutocompleteOptionResponseDto[];
+  taxes: TaxAutocompleteOptionResponseDto[];
+}
+
+export interface TaxTransactionTypesResponseDto {
+  transactionTypes: string[];
+}
+
+export interface TaxTypesResponseDto {
+  taxTypes: string[];
+}
+
+export interface PartyDefaultClassificationResponseDto {
+  key: string;
+  label: string;
+  transactionType: string;
+  taxTypes: string[];
+  officialAtcCodePrefix?: string;
+}
+
+export interface PartyDefaultClassificationsResponseDto {
+  classifications: PartyDefaultClassificationResponseDto[];
+}
+
+export interface TaxDefaultAccountOptionResponseDto {
+  sourceKey: string;
+  transactionType: string;
+  taxType: string;
+  taxCode: string;
+  displayCode: string;
+  taxDescription: string;
+  sortOrder: number;
+  /** @nullable */
+  natureOfIncome: string | null;
+  taxRate: string;
+  taxExempt: boolean;
+  /** @nullable */
+  defaultAccountRole: string | null;
+  /** @nullable */
+  defaultAccountCode: string | null;
+  /** @nullable */
+  defaultAccountTitle: string | null;
+  status: string;
+}
+
+export type TaxDefaultAccountOptionGroupResponseDtoClassification = typeof TaxDefaultAccountOptionGroupResponseDtoClassification[keyof typeof TaxDefaultAccountOptionGroupResponseDtoClassification];
+
+
+export const TaxDefaultAccountOptionGroupResponseDtoClassification = {
+  'output-sales': 'output-sales',
+  'input-importation': 'input-importation',
+  'input-purchases': 'input-purchases',
+  'input-all': 'input-all',
+  'purchase-ewt': 'purchase-ewt',
+  'purchase-fwt': 'purchase-fwt',
+  'purchase-wvat': 'purchase-wvat',
+  'sales-cwt': 'sales-cwt',
+  'sales-wvat': 'sales-wvat',
+} as const;
+
+export interface TaxDefaultAccountOptionGroupResponseDto {
+  classification: TaxDefaultAccountOptionGroupResponseDtoClassification;
+  label: string;
+  options: TaxDefaultAccountOptionResponseDto[];
+}
+
+export interface TaxDefaultAccountOptionsResponseDto {
+  companyId: number;
+  groups: TaxDefaultAccountOptionGroupResponseDto[];
+  options: TaxDefaultAccountOptionResponseDto[];
+}
+
+export interface TaxDefaultChartAccountResponseDto {
+  id: string;
+  accountCode: string;
+  accountTitle: string;
+  accountType: string;
+  accountNature: string;
+  status: string;
+  isPostingAccount: boolean;
+}
+
+export type TaxPostingAccountResponseDtoTransactionScope = typeof TaxPostingAccountResponseDtoTransactionScope[keyof typeof TaxPostingAccountResponseDtoTransactionScope];
+
+
+export const TaxPostingAccountResponseDtoTransactionScope = {
+  SALE: 'SALE',
+  PURCHASE: 'PURCHASE',
+  BOTH: 'BOTH',
+} as const;
+
+export type TaxPostingAccountResponseDtoPostingEvent = typeof TaxPostingAccountResponseDtoPostingEvent[keyof typeof TaxPostingAccountResponseDtoPostingEvent];
+
+
+export const TaxPostingAccountResponseDtoPostingEvent = {
+  RECOGNITION: 'RECOGNITION',
+  SETTLEMENT: 'SETTLEMENT',
+  REFUND: 'REFUND',
+  REVERSAL: 'REVERSAL',
+  ADJUSTMENT: 'ADJUSTMENT',
+} as const;
+
+export type TaxPostingAccountResponseDtoEntrySide = typeof TaxPostingAccountResponseDtoEntrySide[keyof typeof TaxPostingAccountResponseDtoEntrySide];
+
+
+export const TaxPostingAccountResponseDtoEntrySide = {
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
+} as const;
+
+export type TaxPostingAccountResponseDtoAmountSource = typeof TaxPostingAccountResponseDtoAmountSource[keyof typeof TaxPostingAccountResponseDtoAmountSource];
+
+
+export const TaxPostingAccountResponseDtoAmountSource = {
+  TAX_AMOUNT: 'TAX_AMOUNT',
+  RECOVERABLE_AMOUNT: 'RECOVERABLE_AMOUNT',
+  WITHHELD_AMOUNT: 'WITHHELD_AMOUNT',
+} as const;
+
+export interface TaxPostingAccountResponseDto {
+  transactionScope: TaxPostingAccountResponseDtoTransactionScope;
+  postingEvent: TaxPostingAccountResponseDtoPostingEvent;
+  accountRole: string;
+  entrySide: TaxPostingAccountResponseDtoEntrySide;
+  amountSource: TaxPostingAccountResponseDtoAmountSource;
+  priority: number;
+  /** @nullable */
+  companyAccountMappingId: string | null;
+  /** @nullable */
+  chartAccount: TaxDefaultChartAccountResponseDto | null;
+}
+
+export type TaxWithDefaultAccountsResponseDtoStatus = typeof TaxWithDefaultAccountsResponseDtoStatus[keyof typeof TaxWithDefaultAccountsResponseDtoStatus];
+
+
+export const TaxWithDefaultAccountsResponseDtoStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export interface TaxWithDefaultAccountsResponseDto {
+  id: number;
+  sourceKey: string;
+  transactionType: string;
+  taxType: string;
+  taxCode: string;
+  taxDescription: string;
+  taxRate: string;
+  taxExempt: boolean;
+  /** @nullable */
+  taxAlias: string | null;
+  /** @nullable */
+  atc: string | null;
+  /** @nullable */
+  officialAtcCode: string | null;
+  /** @nullable */
+  natureOfIncome: string | null;
+  sortOrder: number;
+  status: TaxWithDefaultAccountsResponseDtoStatus;
+  postingAccounts: TaxPostingAccountResponseDto[];
+  defaultTaxAccounts: TaxPostingAccountResponseDto[];
+}
+
+export interface TaxDefaultAccountsListResponseDto {
+  companyId: number;
+  taxCodes: TaxWithDefaultAccountsResponseDto[];
+  taxes: TaxWithDefaultAccountsResponseDto[];
+}
+
+export interface TaxDefaultAccountsContainerResponseDto {
+  companyId: number;
+  tax: TaxWithDefaultAccountsResponseDto;
+  taxCode: TaxWithDefaultAccountsResponseDto;
+}
+
+export interface TaxContainerResponseDto {
+  tax: TaxResponseDto;
+  taxCode: TaxResponseDto;
 }
 
 export interface WarehouseBranchResponseDto {
@@ -11754,6 +11980,22 @@ export interface CashVoucherListResponseDto {
   statistics?: CashVoucherStatisticsDto;
 }
 
+export interface CashVoucherDefaultAccountDto {
+  /** Chart Account ID */
+  accountId: string;
+  /** Account Code */
+  accountCode: string;
+  /** Account Title */
+  accountTitle: string;
+}
+
+export interface CashVoucherDefaultAccountsResponseDto {
+  /** Default Cash on Hand Account for Cash Voucher */
+  defaultCashAccount: CashVoucherDefaultAccountDto;
+  /** Default settlement credit account (synonym for defaultCashAccount in CV) */
+  creditAccount?: CashVoucherDefaultAccountDto;
+}
+
 export interface CashVoucherSingleResponseDto {
   /** Cash Voucher Record */
   data: CashVoucherRecordResponseDto;
@@ -17789,6 +18031,25 @@ export const TaxControllerListAutocompleteV1SortDirection = {
   desc: 'desc',
 } as const;
 
+export type TaxControllerListTaxDefaultAccountOptionsV1Params = {
+classification?: TaxControllerListTaxDefaultAccountOptionsV1Classification;
+};
+
+export type TaxControllerListTaxDefaultAccountOptionsV1Classification = typeof TaxControllerListTaxDefaultAccountOptionsV1Classification[keyof typeof TaxControllerListTaxDefaultAccountOptionsV1Classification];
+
+
+export const TaxControllerListTaxDefaultAccountOptionsV1Classification = {
+  'output-sales': 'output-sales',
+  'input-importation': 'input-importation',
+  'input-purchases': 'input-purchases',
+  'input-all': 'input-all',
+  'purchase-ewt': 'purchase-ewt',
+  'purchase-fwt': 'purchase-fwt',
+  'purchase-wvat': 'purchase-wvat',
+  'sales-cwt': 'sales-cwt',
+  'sales-wvat': 'sales-wvat',
+} as const;
+
 export type TaxControllerListTaxesWithDefaultAccountsV1Params = {
 /**
  * @minimum 1
@@ -20879,4 +21140,3 @@ page?: number;
  */
 limit?: number;
 };
-

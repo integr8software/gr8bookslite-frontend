@@ -2,9 +2,9 @@ import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import type { Content, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 import {
-  CashAdvancePdfNoBordersLayout,
-  CashAdvancePdfRequestFormLayout,
-} from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
+  ReportPdfNoBordersLayout,
+  ReportPdfRequestFormLayout,
+} from "@/app/src/constants/shared/reports/ReportPdfLayoutConstants";
 import { formatCashAdvanceCurrency } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import type { CashAdvanceFormValues } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
 import { formatDate } from "@/app/src/utils/date.util";
@@ -65,7 +65,7 @@ function createCashAdvancePdfDefinition(values: CashAdvanceFormValues): TDocumen
                     ],
                   ],
                 },
-                layout: CashAdvancePdfNoBordersLayout,
+                layout: ReportPdfNoBordersLayout,
               },
               { text: "" },
               { text: "" },
@@ -103,7 +103,7 @@ function createCashAdvancePdfDefinition(values: CashAdvanceFormValues): TDocumen
             ],
           ],
         },
-        layout: CashAdvancePdfRequestFormLayout,
+        layout: ReportPdfRequestFormLayout,
       },
       horizontalLine(547, [0, 10, 0, 6]),
       {

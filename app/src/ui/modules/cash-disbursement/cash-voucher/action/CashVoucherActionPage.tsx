@@ -4,14 +4,15 @@ import { Suspense, useMemo } from "react";
 import type { ReactNode } from "react";
 import {
   CashVoucherActionTabs,
+  CashVoucherCopySources,
   CashVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
-import {
-  CashVoucherCopySources,
-} from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import { createProjectResponsibilityCenterInitialValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { useCashVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherActionPage";
-import type { CashVoucherActionMode, CashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
+import type {
+  CashVoucherActionMode,
+  CashVoucherActionPageState,
+} from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import { DefaultAccountDrawer } from "@/app/src/ui/modules/financial-maintenance/default-account/DefaultAccountDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
@@ -54,13 +55,7 @@ function CashVoucherActionInner({ mode }: { mode: CashVoucherActionMode }) {
   );
 }
 
-function CashVoucherActionShell({
-  children,
-  voucherAction,
-}: {
-  children: ReactNode;
-  voucherAction: CashVoucherActionPageState;
-}) {
+function CashVoucherActionShell({ children, voucherAction }: { children: ReactNode; voucherAction: CashVoucherActionPageState }) {
   if (voucherAction.isReadonly) {
     return <section className="grid min-w-0 gap-5">{children}</section>;
   }
@@ -73,9 +68,7 @@ function CashVoucherActionShell({
 }
 
 function CashVoucherActionContent({ voucherAction }: { voucherAction: CashVoucherActionPageState }) {
-  const hasDetailsError = Object.entries(voucherAction.errors).some(
-    ([field, error]) => Boolean(error) && field !== "attachments",
-  );
+  const hasDetailsError = Object.entries(voucherAction.errors).some(([field, error]) => Boolean(error) && field !== "attachments");
   const hasAttachmentsError = Boolean(voucherAction.errors.attachments);
   const actionTabs = CashVoucherActionTabs.map((tab) => ({
     ...tab,
@@ -100,8 +93,8 @@ function CashVoucherActionContent({ voucherAction }: { voucherAction: CashVouche
         onConfirmSubmit={voucherAction.confirmCashVoucherSubmit}
         onCopyFrom={voucherAction.handleCopyFrom}
         onPreview={() => voucherAction.setIsReportPreviewOpen(true)}
-        onSaveDraft={() => voucherAction.requestCashVoucherSubmit(CashVoucherStatuses.draft)}
-        onSubmit={() => voucherAction.requestCashVoucherSubmit(CashVoucherStatuses.forApproval)}
+        onSaveDraft={() => voucherAction.requestCashVoucherSubmit(CashVoucherStatuses.Draft)}
+        onSubmit={() => voucherAction.requestCashVoucherSubmit(CashVoucherStatuses.ForApproval)}
         onUpdateStatus={voucherAction.handleUpdateStatus}
       />
       <ModuleTabs

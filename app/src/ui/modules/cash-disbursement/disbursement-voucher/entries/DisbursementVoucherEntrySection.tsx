@@ -30,6 +30,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     defaultAccounts,
     entries,
     errors,
+    isMultiCheckNumber,
     isReadonly,
     onAddEntries,
     onAddExpenseType,
@@ -45,12 +46,16 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     partyOptions: livePartyOptions,
     partyCode,
     partyName,
+    paymentMethod,
+    paymentTypeRecord,
     responsibilityCenterOptions: liveResponsibilityCenterOptions,
     totalCredit,
     totalDebit,
   } = props;
   const variance = Math.abs(totalDebit - totalCredit);
   const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+  const isDebitMemo =
+    paymentTypeRecord?.type === "Debit Memo" || (paymentMethod ?? "").trim().toLowerCase().includes("debit memo");
 
   const [entryView, setEntryView] = useState<DisbursementEntryView>(DisbursementVoucherExpenseEntryView);
   const {
@@ -84,12 +89,24 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
     [entries, onUpdateEntryFields, partyCode, partyName],
   );
 
+  const accountingColumnLabels = useMemo(() => {
+    if (!isDebitMemo) {
+      return DisbursementEntryColumnLabels;
+    }
+    return {
+      ...DisbursementEntryColumnLabels,
+      checkNo: "Debit Memo No.",
+      checkDate: "Debit Memo Date",
+      checkStatus: "Debit Memo Status",
+    };
+  }, [isDebitMemo]);
+
   const accountingColumns = useMemo(
     () =>
       createDisbursementAccountingEntryColumns({
         canAddPartyName,
         chartAccounts,
-        columnLabels: DisbursementEntryColumnLabels,
+        columnLabels: accountingColumnLabels,
         columnWidths: DefaultDisbursementEntryColumnWidths,
         ewtOptions,
         isReadonly,
@@ -101,6 +118,7 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
         vatOptions,
       }),
     [
+      accountingColumnLabels,
       canAddPartyName,
       chartAccounts,
       ewtOptions,
@@ -136,6 +154,8 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
         accountingColumns={accountingColumns}
         accountingRows={entries}
         errors={errors}
+        isDebitMemo={isDebitMemo}
+        isMultiCheckNumber={isMultiCheckNumber}
         isReadonly={isReadonly}
         title={<DisbursementVoucherEntryTabs activeTab={entryView} onTabChange={setEntryView} />}
         totalCredit={totalCredit}
@@ -160,6 +180,8 @@ export function DisbursementVoucherEntrySection(props: VoucherDataEntryProps) {
       ewtOptions={ewtOptions}
       expenseAccounts={expenseAccounts}
       expenseRows={expenseRows}
+      isDebitMemo={isDebitMemo}
+      isMultiCheckNumber={isMultiCheckNumber}
       isReadonly={isReadonly}
       title={<DisbursementVoucherEntryTabs activeTab={entryView} onTabChange={setEntryView} />}
       onAddEntries={onAddEntries}

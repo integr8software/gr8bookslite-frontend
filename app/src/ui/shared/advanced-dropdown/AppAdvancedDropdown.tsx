@@ -88,6 +88,7 @@ export function AppAdvancedDropdown({
 	removeSelectionOnSelectedOptionClick = true,
 	searchPlaceholder = "Search options",
 	selectionMode = AppAdvancedDropdownSelectionModeSingle,
+	showDescriptionTooltip = false,
 	showSelectionIndicator = true,
 	showSelectedDetails = false,
 	showSelectionRemoveButton = true,
@@ -575,6 +576,7 @@ export function AppAdvancedDropdown({
 							view={optionViewToggle ? optionView : AppAdvancedDropdownOptionViewList}
 							selectedValues={selectedValueSet}
 							showSelectionIndicator={showSelectionIndicator}
+							showDescriptionTooltip={showDescriptionTooltip}
 							onActive={setActiveOptionValue}
 							onSelect={selectOption}
 						/>

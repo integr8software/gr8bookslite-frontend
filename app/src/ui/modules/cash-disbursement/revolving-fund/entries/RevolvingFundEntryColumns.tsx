@@ -1,9 +1,3 @@
-import {
-  RevolvingFundEntryTypeOptions,
-  RevolvingFundEntryEwtCodeOptions,
-  RevolvingFundEntryVatTypeOptions,
-  RevolvingFundResponsibilityCenterOptions,
-} from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import { calculateRevolvingFundItemTaxFields } from "@/app/src/data/modules/cash-disbursement/revolving-fund/RevolvingFundData";
 import type {
   RevolvingFundActionPageState,
@@ -27,6 +21,9 @@ export function createRevolvingFundItemColumns(
   labels: Record<RevolvingFundItemColumnId, string>,
   widths: Record<RevolvingFundItemColumnId, number>,
   supplierOptions: AppAdvancedDropdownOption[],
+  vatOptions: AppAdvancedDropdownOption[] = [],
+  ewtOptions: AppAdvancedDropdownOption[] = [],
+  responsibilityCenterOptions: AppAdvancedDropdownOption[] = [],
   onOpenResponsibilityCenterDrawer?: RevolvingFundOpenResponsibilityCenterDrawerHandler,
   onOpenSupplierDrawer?: RevolvingFundOpenSupplierDrawerHandler,
 ): Record<RevolvingFundItemColumnId, ModuleDataEntryColumn<RevolvingFundItem>> {
@@ -130,8 +127,8 @@ export function createRevolvingFundItemColumns(
             const selectedSupplier = supplierOptions.find(
               (option) => option.value === value || option.name === value || option.label === value,
             );
-            const vatType = getDefaultVatType(selectedSupplier, row.vatType, RevolvingFundEntryVatTypeOptions);
-            const ewtCode = getDefaultEwtCode(selectedSupplier, row.ewtCode, RevolvingFundEntryEwtCodeOptions);
+            const vatType = getDefaultVatType(selectedSupplier, row.vatType, vatOptions);
+            const ewtCode = getDefaultEwtCode(selectedSupplier, row.ewtCode, ewtOptions);
             page.updateItem(row.id, {
               supplierCode: String(selectedSupplier?.label ?? selectedSupplier?.value ?? ""),
               supplierName: selectedSupplier?.name ?? String(value),
@@ -168,16 +165,16 @@ export function createRevolvingFundItemColumns(
         ...calculateRevolvingFundItemTaxFields(value, row.vatType, row.ewtCode),
       }),
     ),
-    type: dropdown("type", RevolvingFundEntryTypeOptions),
+    type: text("type"),
     vatType: {
-      ...dropdown("vatType", RevolvingFundEntryVatTypeOptions),
+      ...dropdown("vatType", vatOptions),
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
           id={context.fieldId}
           name={context.fieldName}
           value={row.vatType}
           readOnly={page.isReadonly}
-          options={RevolvingFundEntryVatTypeOptions}
+          options={vatOptions}
           placeholder="Select VAT Type"
           searchPlaceholder="Search VAT Type"
           onChange={(value) =>
@@ -192,14 +189,14 @@ export function createRevolvingFundItemColumns(
     vatPercent: calculatedMoney("vatPercent"),
     vatAmount: calculatedMoney("vatAmount"),
     ewtCode: {
-      ...dropdown("ewtCode", RevolvingFundEntryEwtCodeOptions),
+      ...dropdown("ewtCode", ewtOptions),
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
           id={context.fieldId}
           name={context.fieldName}
           value={row.ewtCode}
           readOnly={page.isReadonly}
-          options={RevolvingFundEntryEwtCodeOptions}
+          options={ewtOptions}
           optionViewToggle
           placeholder="Select EWT Code"
           searchPlaceholder="Search tax name, code, rate, or description"
@@ -235,7 +232,7 @@ export function createRevolvingFundItemColumns(
           name={context.fieldName}
           value={row.responsibilityCenterCode}
           readOnly={page.isReadonly}
-          options={RevolvingFundResponsibilityCenterOptions}
+          options={responsibilityCenterOptions}
           placeholder="Select Responsibility Center"
           searchPlaceholder="Search Responsibility Center"
           addAction={
@@ -244,7 +241,7 @@ export function createRevolvingFundItemColumns(
               : undefined
           }
           onChange={(value) => {
-            const selectedCenter = RevolvingFundResponsibilityCenterOptions.find((option) => option.value === value);
+            const selectedCenter = responsibilityCenterOptions.find((option) => option.value === value);
             page.updateItem(row.id, {
               responsibilityCenterCode: String(selectedCenter?.value ?? ""),
               responsibilityCenterName: selectedCenter?.name ?? "",

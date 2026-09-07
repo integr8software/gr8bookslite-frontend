@@ -10,22 +10,25 @@ import type {
 import {
   ServicesMaintenanceAccountSetupModeOptions,
   ServicesMaintenanceImportDefaultColumnIndexes,
-  ServicesMaintenanceImportMaxFileSizeBytes,
-  ServicesMaintenanceImportMinFileSizeBytes,
   ServicesMaintenanceImportTemplateHeaders,
   ServicesMaintenanceServiceTypeOptions,
 } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
+import {
+  ModuleImportDefaultMaxFileSizeBytes,
+  ModuleImportDefaultMinFileSizeBytes,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import { downloadBlob } from "@/app/src/ui/shared/module/module-table/ModuleTableExportDownload";
 import { formatFileSize } from "@/app/src/utils/file.util";
 import { getModuleImportOptionValue, isModuleImportOptionValue } from "@/app/src/utils/module-import.util";
 
 export const ServicesMaintenanceInitialFormValues: ServicesMaintenanceFormValues = {
   serviceName: "",
-  serviceType: "Sales",
+  serviceType: "Sale of Service",
   description: "",
   status: "Active",
-  accountSetupMode: "Auto",
+  accountSetupMode: "Existing",
   revenueCoaId: "",
+  expenseParentCoaId: "",
 };
 
 export function createServicesMaintenanceFormValues(service: ServicesMaintenance): ServicesMaintenanceFormValues {
@@ -36,6 +39,7 @@ export function createServicesMaintenanceFormValues(service: ServicesMaintenance
     status: service.status,
     accountSetupMode: service.accountSetupMode,
     revenueCoaId: service.accountSetupMode === "Existing" ? service.revenueCoaId : "",
+    expenseParentCoaId: "",
   };
 }
 
@@ -77,7 +81,7 @@ export function createBlankServicesMaintenanceImportRow(rowNumber: number): Serv
       description: "",
       revenueCoaId: "",
       serviceName: "",
-      serviceType: "Sales",
+      serviceType: "Sale of Service",
       status: "Active",
     },
   };
@@ -228,7 +232,7 @@ export function validateServicesMaintenanceImportRows(
     }
 
     if (!isModuleImportOptionValue(row.service.serviceType, ServicesMaintenanceServiceTypeOptions)) {
-      cellErrors.serviceType = ["Choose Purchases or Sales."];
+      cellErrors.serviceType = ["Choose Purchase of Service or Sale of Service."];
     }
 
     if (row.service.description.trim().length > 500) {
@@ -252,12 +256,12 @@ export function serviceImportRowHasErrors(row: ServicesMaintenanceImportPreviewR
 }
 
 export function validateServicesMaintenanceImportFileSize(file: File) {
-  if (file.size < ServicesMaintenanceImportMinFileSizeBytes) {
-    return `Upload a file larger than ${formatFileSize(ServicesMaintenanceImportMinFileSizeBytes)}.`;
+  if (file.size < ModuleImportDefaultMinFileSizeBytes) {
+    return `Upload a file larger than ${formatFileSize(ModuleImportDefaultMinFileSizeBytes)}.`;
   }
 
-  if (file.size > ServicesMaintenanceImportMaxFileSizeBytes) {
-    return `Upload a file up to ${formatFileSize(ServicesMaintenanceImportMaxFileSizeBytes)}.`;
+  if (file.size > ModuleImportDefaultMaxFileSizeBytes) {
+    return `Upload a file up to ${formatFileSize(ModuleImportDefaultMaxFileSizeBytes)}.`;
   }
 
   return null;
@@ -295,12 +299,12 @@ function normalizeImportedServicesMaintenanceSetupMode(value: string): ServicesM
 function normalizeImportedServicesMaintenanceServiceType(value: string): ServicesMaintenanceServiceType {
   const normalized = value.trim().toLowerCase();
 
-  if (!normalized || normalized === "sales" || normalized === "sale") {
-    return "Sales";
+  if (!normalized || normalized === "sales" || normalized === "sale" || normalized === "saleofservice") {
+    return "Sale of Service";
   }
-  if (normalized === "purchases" || normalized === "purchase") return "Purchases";
+  if (normalized === "purchases" || normalized === "purchase" || normalized === "purchaseofservice") return "Purchase of Service";
 
-  return (getModuleImportOptionValue(value, ServicesMaintenanceServiceTypeOptions) ?? "Sales") as ServicesMaintenanceServiceType;
+  return (getModuleImportOptionValue(value, ServicesMaintenanceServiceTypeOptions) ?? "Sale of Service") as ServicesMaintenanceServiceType;
 }
 
 function getServicesMaintenanceImportHeaderIndexes(row: string[]) {
@@ -319,7 +323,7 @@ function normalizeServicesMaintenanceImportHeader(value: string): ServicesMainte
   const normalized = value.toLowerCase().replace(/[^a-z0-9]/g, "");
 
   if (["servicename", "service", "name"].includes(normalized)) return "serviceName";
-  if (["servicetype", "type"].includes(normalized)) return "serviceType";
+  if (["servicetype", "typeofservice", "type"].includes(normalized)) return "serviceType";
   if (["description", "remarks", "details"].includes(normalized)) return "description";
   if (["accountsetup", "accountsetupmode", "setup"].includes(normalized)) return "accountSetupMode";
   if (["revenueaccountid", "revenuecoaid", "accountid"].includes(normalized)) return "revenueCoaId";

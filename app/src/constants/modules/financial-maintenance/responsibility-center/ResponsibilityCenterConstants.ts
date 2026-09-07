@@ -20,9 +20,6 @@ export const ResponsibilityCenterDefaultSorting: SortingState = [{ id: "name", d
 
 export const ResponsibilityCenterDrawerFormId = "responsibility-center-drawer-form";
 
-export const ResponsibilityCenterFieldClassName =
-  "min-h-11 w-full rounded-md border border-darknavy/15 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue focus:ring-2 focus:ring-skyblue/20 disabled:cursor-not-allowed disabled:bg-darknavy/5 read-only:bg-darknavy/[0.03]";
-
 export const ResponsibilityCenterTableColumns = [
   {
     key: "code",
@@ -175,7 +172,15 @@ export const ResponsibilityCenterFinancialTypeOptions: ResponsibilityCenterFinan
   "Investment Center",
 ];
 
-export const ResponsibilityCenterStatusOptions: ResponsibilityCenterStatus[] = ["Active", "Inactive"];
+export const ResponsibilityCenterStatuses = {
+  Active: "Active",
+  Inactive: "Inactive",
+} as const satisfies Record<string, ResponsibilityCenterStatus>;
+
+export const ResponsibilityCenterStatusOptions: ResponsibilityCenterStatus[] = [
+  ResponsibilityCenterStatuses.Active,
+  ResponsibilityCenterStatuses.Inactive,
+];
 
 export const ResponsibilityCenterTypeDefinitions: ResponsibilityCenterTypeDefinition[] = [
   {

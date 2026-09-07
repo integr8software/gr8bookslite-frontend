@@ -36,7 +36,7 @@ function createPettyCashVoucherHistory(page: PettyCashVoucherActionPageState): M
     return [];
   }
 
-  const currentStatus = page.values.status === PettyCashVoucherStatuses.open ? record.status : page.values.status;
+  const currentStatus = page.values.status === PettyCashVoucherStatuses.Open ? record.status : page.values.status;
   const history: ModuleHistoryEntry<PettyCashVoucherStatus>[] = [
     {
       action: "Voucher created",
@@ -44,11 +44,11 @@ function createPettyCashVoucherHistory(page: PettyCashVoucherActionPageState): M
       createdAt: record.dateCreated,
       description: `${record.voucherNo} was created.`,
       id: `${record.id}-created`,
-      status: PettyCashVoucherStatuses.draft,
+      status: PettyCashVoucherStatuses.Draft,
     },
   ];
 
-  if (record.dateModified !== record.dateCreated || currentStatus !== PettyCashVoucherStatuses.draft) {
+  if (record.dateModified !== record.dateCreated || currentStatus !== PettyCashVoucherStatuses.Draft) {
     history.push({
       action: `Status changed to ${currentStatus}`,
       actor: record.updatedBy,

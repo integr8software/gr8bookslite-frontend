@@ -1,10 +1,12 @@
 import {
   TermImportDefaultColumnIndexes,
-  TermImportMaxFileSizeBytes,
-  TermImportMinFileSizeBytes,
   TermImportTemplateHeaders,
   TermsMaintenanceDatemodeOptions,
 } from "@/app/src/constants/modules/financial-maintenance/terms-maintenance/TermsMaintenanceConstants";
+import {
+  ModuleImportDefaultMaxFileSizeBytes,
+  ModuleImportDefaultMinFileSizeBytes,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import type {
   TermImportCellErrors,
   TermImportCellWarnings,
@@ -300,12 +302,12 @@ export function rowHasErrors(row: TermImportPreviewRow) {
 }
 
 export function validateImportFileSize(file: File) {
-  if (file.size < TermImportMinFileSizeBytes) {
-    return `Upload a file larger than ${formatFileSize(TermImportMinFileSizeBytes)}.`;
+  if (file.size < ModuleImportDefaultMinFileSizeBytes) {
+    return `Upload a file larger than ${formatFileSize(ModuleImportDefaultMinFileSizeBytes)}.`;
   }
 
-  if (file.size > TermImportMaxFileSizeBytes) {
-    return `Upload a file up to ${formatFileSize(TermImportMaxFileSizeBytes)}.`;
+  if (file.size > ModuleImportDefaultMaxFileSizeBytes) {
+    return `Upload a file up to ${formatFileSize(ModuleImportDefaultMaxFileSizeBytes)}.`;
   }
 
   return null;

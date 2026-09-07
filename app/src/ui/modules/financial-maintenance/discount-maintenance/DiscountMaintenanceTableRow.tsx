@@ -3,6 +3,7 @@ import type {
   DiscountMaintenanceTableRecord,
   DiscountMaintenanceTableRowProps,
 } from "@/app/src/types/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceTypes";
+import { DiscountMaintenanceStatuses } from "@/app/src/constants/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceConstants";
 import { formatDateTime } from "@/app/src/utils/date.util";
 import { ModuleTableActionButton, ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
@@ -53,8 +54,8 @@ function DiscountMaintenanceCellContent({
   onToggleStatus: (discount: DiscountMaintenanceTableRecord) => void;
   onViewDiscount: (discount: DiscountMaintenanceTableRecord) => void;
 }) {
-  const nextStatus = discount.status === "Active" ? "Inactive" : "Active";
-  const statusActionLabel = discount.status === "Active" ? "Deactivate" : "Activate";
+  const nextStatus = discount.status === DiscountMaintenanceStatuses.Active ? DiscountMaintenanceStatuses.Inactive : DiscountMaintenanceStatuses.Active;
+  const statusActionLabel = discount.status === DiscountMaintenanceStatuses.Active ? "Deactivate" : "Activate";
 
   switch (columnId) {
     case "name":
@@ -107,7 +108,7 @@ function DiscountMaintenanceCellContent({
                 label={`Edit ${discount.name}`}
               />
               <ModuleTableActionButton
-                variant={nextStatus === "Inactive" ? "inactive" : "active"}
+                variant={nextStatus === DiscountMaintenanceStatuses.Inactive ? "inactive" : "active"}
                 onClick={() => onToggleStatus(discount)}
                 data-spotlight-id="maintenance-record-status"
                 label={`${statusActionLabel} ${discount.name}`}

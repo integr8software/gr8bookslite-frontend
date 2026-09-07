@@ -27,7 +27,7 @@ import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () => void; page: RevolvingFundActionPageState }) {
   const [confirmation, setConfirmation] = useState<RevolvingFundConfirmationAction | null>(null);
   const transactionNo = page.record?.transactionNo ?? page.values.transactionNo;
-  const isDraftEdit = page.mode === "edit" && page.record?.status === RevolvingFundStatuses.draft;
+  const isDraftEdit = page.mode === "edit" && page.record?.status === RevolvingFundStatuses.Draft;
   const isSaveAction = page.mode === "add" || isDraftEdit;
   const title =
     page.mode === "add" ? (
@@ -85,7 +85,7 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
                 disabled={page.isSubmitting}
                 label={isSaveAction ? "Save" : "Update"}
                 onAction={() => {
-                  if (page.validate(RevolvingFundStatuses.forApproval)) {
+                  if (page.validate(RevolvingFundStatuses.ForApproval)) {
                     setConfirmation("save");
                   }
                 }}
@@ -95,7 +95,7 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
                         {
                           label: "Save As Draft",
                           onSelect: () => {
-                            if (page.validate(RevolvingFundStatuses.draft)) {
+                            if (page.validate(RevolvingFundStatuses.Draft)) {
                               setConfirmation("draft");
                             }
                           },
@@ -152,15 +152,15 @@ export function RevolvingFundActionHeader({ onPreview, page }: { onPreview: () =
             let isSuccessful = false;
 
             if (confirmation === "save") {
-              isSuccessful = await page.save(RevolvingFundStatuses.forApproval);
+              isSuccessful = await page.save(RevolvingFundStatuses.ForApproval);
             } else if (confirmation === "draft") {
-              isSuccessful = await page.save(RevolvingFundStatuses.draft);
+              isSuccessful = await page.save(RevolvingFundStatuses.Draft);
             } else if (confirmation === "approve") {
-              isSuccessful = await page.updateStatus(RevolvingFundStatuses.posted);
+              isSuccessful = await page.updateStatus(RevolvingFundStatuses.Posted);
             } else if (confirmation === "disapprove") {
-              isSuccessful = await page.updateStatus(RevolvingFundStatuses.disapproved);
+              isSuccessful = await page.updateStatus(RevolvingFundStatuses.Disapproved);
             } else {
-              isSuccessful = await page.updateStatus(RevolvingFundStatuses.cancelled);
+              isSuccessful = await page.updateStatus(RevolvingFundStatuses.Cancelled);
             }
 
             if (isSuccessful) {

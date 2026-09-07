@@ -129,6 +129,8 @@ export type DisbursementVoucherAccountingEntryTableProps = {
   accountingColumns?: Record<DisbursementEntryColumnId, ModuleDataEntryColumn<DisbursementLineEntry>>;
   accountingRows: DisbursementLineEntry[];
   errors: DisbursementVoucherFormErrors;
+  isDebitMemo?: boolean;
+  isMultiCheckNumber?: boolean;
   isReadonly: boolean;
   title?: ReactNode;
   onAddEntries?: (count: number) => void;
@@ -150,6 +152,8 @@ export type DisbursementVoucherDetailEntryTableProps = {
   ewtOptions: AppAdvancedDropdownOption[];
   expenseAccounts: ModuleChartAccount[];
   expenseRows: DisbursementLineEntry[];
+  isDebitMemo?: boolean;
+  isMultiCheckNumber?: boolean;
   isReadonly: boolean;
   lineErrors?: Record<string, Partial<Record<string, string>>>;
   title?: ReactNode;
@@ -187,3 +191,11 @@ export type DisbursementAccountingExportTheme = {
   excelAccentArgb: string;
   excelAccentContrastArgb: string;
 };
+
+export type GeneratedAccountingAccount = {
+  accountCode: string;
+  accountName: string;
+};
+
+export type GeneratedAccountingAccountMap = Record<string, GeneratedAccountingAccount | undefined>;
+

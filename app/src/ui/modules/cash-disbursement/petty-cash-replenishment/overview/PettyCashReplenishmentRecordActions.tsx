@@ -29,31 +29,31 @@ export function PettyCashReplenishmentRecordActions({
   record: PettyCashReplenishmentRecord;
 }) {
   const [status, setStatus] = useState<PettyCashReplenishmentStatus | null>(null);
-  const isPosted = record.status === PettyCashReplenishmentStatuses.posted;
-  const isDisapproved = record.status === PettyCashReplenishmentStatuses.disapproved;
-  const isCancelled = record.status === PettyCashReplenishmentStatuses.cancelled;
+  const isPosted = record.status === PettyCashReplenishmentStatuses.Posted;
+  const isDisapproved = record.status === PettyCashReplenishmentStatuses.Disapproved;
+  const isCancelled = record.status === PettyCashReplenishmentStatuses.Cancelled;
   const canEdit = canEditPettyCashReplenishment(record.status);
   const items: ModuleActionMenuItem[] = [
     {
       type: "button",
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      disabled: record.status !== PettyCashReplenishmentStatuses.forApproval && !isPosted,
+      disabled: record.status !== PettyCashReplenishmentStatuses.ForApproval && !isPosted,
       onSelect: () =>
         isPosted
-          ? onUpdateStatus(record, PettyCashReplenishmentStatuses.forApproval)
-          : setStatus(PettyCashReplenishmentStatuses.posted),
+          ? onUpdateStatus(record, PettyCashReplenishmentStatuses.ForApproval)
+          : setStatus(PettyCashReplenishmentStatuses.Posted),
     },
     {
       type: "button",
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      disabled: record.status !== PettyCashReplenishmentStatuses.forApproval && !isDisapproved,
+      disabled: record.status !== PettyCashReplenishmentStatuses.ForApproval && !isDisapproved,
       tone: isDisapproved ? "default" : "danger",
       onSelect: () =>
         isDisapproved
-          ? onUpdateStatus(record, PettyCashReplenishmentStatuses.forApproval)
-          : setStatus(PettyCashReplenishmentStatuses.disapproved),
+          ? onUpdateStatus(record, PettyCashReplenishmentStatuses.ForApproval)
+          : setStatus(PettyCashReplenishmentStatuses.Disapproved),
     },
     {
       type: "button",
@@ -63,8 +63,8 @@ export function PettyCashReplenishmentRecordActions({
       tone: isCancelled ? "default" : "danger",
       onSelect: () =>
         isCancelled
-          ? onUpdateStatus(record, PettyCashReplenishmentStatuses.draft)
-          : setStatus(PettyCashReplenishmentStatuses.cancelled),
+          ? onUpdateStatus(record, PettyCashReplenishmentStatuses.Draft)
+          : setStatus(PettyCashReplenishmentStatuses.Cancelled),
     },
   ];
   return (
@@ -106,7 +106,7 @@ export function PettyCashReplenishmentRecordActions({
           title={`Mark as ${status}?`}
           description={`This will update ${record.transactionNo} to ${status}.`}
           confirmLabel={`Mark as ${status}`}
-          tone={status === PettyCashReplenishmentStatuses.posted ? "success" : "danger"}
+          tone={status === PettyCashReplenishmentStatuses.Posted ? "success" : "danger"}
           onCancel={() => setStatus(null)}
           onConfirm={() => {
             onUpdateStatus(record, status);

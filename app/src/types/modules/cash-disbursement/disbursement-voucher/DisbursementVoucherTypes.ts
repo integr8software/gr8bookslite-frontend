@@ -6,7 +6,7 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 import type { useDisbursementVoucherPreviewTable } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import type { useDisbursementVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucherActionPage";
 
-export type DisbursementVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
+export type DisbursementVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
 
 export type DisbursementVoucherDisplayStatus = DisbursementVoucherStatus;
 export type DisbursementVoucherPreviewTableState = ReturnType<typeof useDisbursementVoucherPreviewTable>;
@@ -398,3 +398,14 @@ export type DisbursementVoucherReportPreviewProps = {
 };
 
 export type DisbursementVoucherPdfText = string | Array<string | { text: string; bold?: boolean }>;
+
+export type DisbursementVoucherGeneratedAccount = {
+  accountCode: string;
+  accountName: string;
+};
+
+export type DisbursementVoucherGeneratedAccountOptions = {
+  cashAccount?: DisbursementVoucherGeneratedAccount | null;
+  inputVatAccount?: DisbursementVoucherGeneratedAccount | null;
+  withholdingTaxAccount?: DisbursementVoucherGeneratedAccount | null;
+};

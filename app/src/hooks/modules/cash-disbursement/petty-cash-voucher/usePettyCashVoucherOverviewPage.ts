@@ -14,10 +14,10 @@ import {
   PettyCashVoucherAllStatusFilter,
   PettyCashVoucherDefaultColumnVisibility,
   PettyCashVoucherRecordStatuses,
-  PettyCashVoucherStatusOptions,
+  PettyCashVoucherStatusFilters,
   PettyCashVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
-import { PettyCashVoucherQueryKeys } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
+import { PettyCashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherQueryKeys";
 import type {
   PettyCashVoucherRecord,
   PettyCashVoucherStatus,
@@ -210,13 +210,13 @@ export function usePettyCashVoucherOverviewPage() {
       ...PettyCashVoucherRecordStatuses.map((status) => {
         const count = vouchers.filter((v) => v.status === status).length;
         const tone =
-          status === PettyCashVoucherStatuses.posted
+          status === PettyCashVoucherStatuses.Posted
             ? ("emerald" as const)
-            : status === PettyCashVoucherStatuses.forApproval
+            : status === PettyCashVoucherStatuses.ForApproval
               ? ("amber" as const)
-              : status === PettyCashVoucherStatuses.draft
+              : status === PettyCashVoucherStatuses.Draft
                 ? ("blue" as const)
-                : status === PettyCashVoucherStatuses.disapproved
+                : status === PettyCashVoucherStatuses.Disapproved
                   ? ("red" as const)
                   : ("slate" as const);
 
@@ -250,11 +250,11 @@ export function usePettyCashVoucherOverviewPage() {
     handleUpdateStatus: onUpdateStatus,
     hasActiveFilters: Boolean(
       searchQuery ||
-        statusFilter !== PettyCashVoucherAllStatusFilter ||
-        dateRange.from ||
-        dateRange.to ||
-        amountRange.from ||
-        amountRange.to,
+      statusFilter !== PettyCashVoucherAllStatusFilter ||
+      dateRange.from ||
+      dateRange.to ||
+      amountRange.from ||
+      amountRange.to,
     ),
     isLoading: vouchersQuery.isLoading,
     isUpdatingStatus: updateStatusMutation.isPending || deleteMutation.isPending,
@@ -271,7 +271,7 @@ export function usePettyCashVoucherOverviewPage() {
     statisticCards,
     statistics: statisticCards,
     statusFilter,
-    statusOptions: PettyCashVoucherStatusOptions,
+    statusOptions: PettyCashVoucherStatusFilters,
     table,
     updateStatusMutation,
   };

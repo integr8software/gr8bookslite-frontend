@@ -49,13 +49,13 @@ function CashAdvanceActionInner({ mode }: { mode: CashAdvanceActionMode }) {
           onDiscard={advanceForm.discardDraft}
           onPreview={() => setIsReportPreviewOpen(true)}
           onSaveDraft={
-            mode === "add" || advanceForm.record?.status === CashAdvanceStatuses.draft
+            mode === "add" || advanceForm.record?.status === CashAdvanceStatuses.Draft
               ? () => {
-                  void advanceForm.submitAdvance(CashAdvanceStatuses.draft);
+                  void advanceForm.submitAdvance(CashAdvanceStatuses.Draft);
                 }
               : undefined
           }
-          onSubmit={() => { void advanceForm.submitAdvance(CashAdvanceStatuses.forApproval); }}
+          onSubmit={() => { void advanceForm.submitAdvance(CashAdvanceStatuses.ForApproval); }}
           onUpdateStatus={advanceForm.updateAdvanceStatus}
           onValidate={advanceForm.validateAdvance}
           record={advanceForm.record}

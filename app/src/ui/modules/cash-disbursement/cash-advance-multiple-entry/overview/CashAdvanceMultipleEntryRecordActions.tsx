@@ -27,13 +27,13 @@ export function CashAdvanceMultipleEntryRecordActions({
 }) {
   const [statusToConfirm, setStatusToConfirm] = useState<CashAdvanceStatus | null>(null);
   const status = record.status;
-  const isPosted = status === CashAdvanceMultipleEntryStatuses.posted;
-  const isDisapproved = status === CashAdvanceMultipleEntryStatuses.disapproved;
-  const isCancelled = status === CashAdvanceMultipleEntryStatuses.cancelled;
-  const approvalUndoStatus: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.forApproval;
+  const isPosted = status === CashAdvanceMultipleEntryStatuses.Posted;
+  const isDisapproved = status === CashAdvanceMultipleEntryStatuses.Disapproved;
+  const isCancelled = status === CashAdvanceMultipleEntryStatuses.Cancelled;
+  const approvalUndoStatus: CashAdvanceStatus = CashAdvanceMultipleEntryStatuses.ForApproval;
   const cancelStatus: CashAdvanceStatus = isCancelled
-    ? CashAdvanceMultipleEntryStatuses.draft
-    : CashAdvanceMultipleEntryStatuses.cancelled;
+    ? CashAdvanceMultipleEntryStatuses.Draft
+    : CashAdvanceMultipleEntryStatuses.Cancelled;
   const statusDialogCopy = statusToConfirm
     ? getCashAdvanceMultipleEntryStatusDialogCopy(statusToConfirm, record.transNo, status)
     : null;
@@ -43,7 +43,7 @@ export function CashAdvanceMultipleEntryRecordActions({
       disabled: !canApproveStatus(status),
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () => setStatusToConfirm(isPosted ? approvalUndoStatus : CashAdvanceMultipleEntryStatuses.posted),
+      onSelect: () => setStatusToConfirm(isPosted ? approvalUndoStatus : CashAdvanceMultipleEntryStatuses.Posted),
       type: "button",
     },
     {
@@ -51,7 +51,7 @@ export function CashAdvanceMultipleEntryRecordActions({
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
       onSelect: () =>
-        setStatusToConfirm(isDisapproved ? approvalUndoStatus : CashAdvanceMultipleEntryStatuses.disapproved),
+        setStatusToConfirm(isDisapproved ? approvalUndoStatus : CashAdvanceMultipleEntryStatuses.Disapproved),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
@@ -120,21 +120,21 @@ export function CashAdvanceMultipleEntryRecordActions({
 }
 
 function canEditStatus(status: CashAdvanceStatus) {
-  return status === CashAdvanceMultipleEntryStatuses.draft || status === CashAdvanceMultipleEntryStatuses.forApproval;
+  return status === CashAdvanceMultipleEntryStatuses.Draft || status === CashAdvanceMultipleEntryStatuses.ForApproval;
 }
 
 function canApproveStatus(status: CashAdvanceStatus) {
-  return status === CashAdvanceMultipleEntryStatuses.forApproval || status === CashAdvanceMultipleEntryStatuses.posted;
+  return status === CashAdvanceMultipleEntryStatuses.ForApproval || status === CashAdvanceMultipleEntryStatuses.Posted;
 }
 
 function canDisapproveStatus(status: CashAdvanceStatus) {
-  return status === CashAdvanceMultipleEntryStatuses.forApproval || status === CashAdvanceMultipleEntryStatuses.disapproved;
+  return status === CashAdvanceMultipleEntryStatuses.ForApproval || status === CashAdvanceMultipleEntryStatuses.Disapproved;
 }
 
 function canCancelStatus(status: CashAdvanceStatus) {
   return (
-    status === CashAdvanceMultipleEntryStatuses.draft ||
-    status === CashAdvanceMultipleEntryStatuses.forApproval ||
-    status === CashAdvanceMultipleEntryStatuses.cancelled
+    status === CashAdvanceMultipleEntryStatuses.Draft ||
+    status === CashAdvanceMultipleEntryStatuses.ForApproval ||
+    status === CashAdvanceMultipleEntryStatuses.Cancelled
   );
 }

@@ -29,6 +29,7 @@ import type {
   CashVoucherControllerFindOneV1Params,
   CashVoucherControllerRemoveV1200,
   CashVoucherControllerSuggestTransactionNumberV1Params,
+  CashVoucherDefaultAccountsResponseDto,
   CashVoucherListResponseDto,
   CashVoucherSingleResponseDto,
   CreateCashVoucherDto,
@@ -297,6 +298,98 @@ export function useCashVoucherControllerSuggestTransactionNumberV1<TData = Await
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getCashVoucherControllerSuggestTransactionNumberV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Get default accounts for cash voucher (Cash on Hand)
+ */
+export const cashVoucherControllerGetDefaultAccountsV1 = (
+
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<CashVoucherDefaultAccountsResponseDto>(
+      {url: `/api/v1/cash-disbursement/cash-voucher/default-accounts`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getCashVoucherControllerGetDefaultAccountsV1QueryKey = () => {
+    return [
+    `/api/v1/cash-disbursement/cash-voucher/default-accounts`
+    ] as const;
+    }
+
+
+export const getCashVoucherControllerGetDefaultAccountsV1QueryOptions = <TData = Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getCashVoucherControllerGetDefaultAccountsV1QueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>> = ({ signal }) => cashVoucherControllerGetDefaultAccountsV1(requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type CashVoucherControllerGetDefaultAccountsV1QueryResult = NonNullable<Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>>
+export type CashVoucherControllerGetDefaultAccountsV1QueryError = unknown
+
+
+export function useCashVoucherControllerGetDefaultAccountsV1<TData = Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>,
+          TError,
+          Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCashVoucherControllerGetDefaultAccountsV1<TData = Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>,
+          TError,
+          Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCashVoucherControllerGetDefaultAccountsV1<TData = Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get default accounts for cash voucher (Cash on Hand)
+ */
+
+export function useCashVoucherControllerGetDefaultAccountsV1<TData = Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashVoucherControllerGetDefaultAccountsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getCashVoucherControllerGetDefaultAccountsV1QueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

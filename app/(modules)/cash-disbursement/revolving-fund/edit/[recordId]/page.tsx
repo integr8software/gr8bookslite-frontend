@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { RevolvingFundActionModes } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import { RevolvingFundActionPage } from "@/app/src/ui/modules/cash-disbursement/revolving-fund/action/RevolvingFundActionPage";
 
 const PageTitle = "Edit Revolving Fund";
@@ -10,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function CashDisbursementRevolvingFundEditPage() {
-  return <RevolvingFundActionPage mode="edit" />;
+  return <RevolvingFundActionPage mode={RevolvingFundActionModes.Edit} />;
 }

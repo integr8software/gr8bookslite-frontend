@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { CashAdvanceMultipleEntryActionModes } from "@/app/src/constants/modules/cash-disbursement/cash-advance-multiple-entry/CashAdvanceMultipleEntryConstants";
 import { CashAdvanceMultipleEntryActionPage } from "@/app/src/ui/modules/cash-disbursement/cash-advance-multiple-entry/action/CashAdvanceMultipleEntryActionPage";
 
 const PageTitle = "View Cash Advance Multiple Entry";
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default function CashDisbursementCashAdvanceMultipleEntryViewPage() {
-  return <CashAdvanceMultipleEntryActionPage mode="view" />;
+  return <CashAdvanceMultipleEntryActionPage mode={CashAdvanceMultipleEntryActionModes.View} />;
 }
 
 

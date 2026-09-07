@@ -9,42 +9,41 @@ import {
   createTaxDetails,
   syncTaxDetailsAmount,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
-import { clearAccountingGridSession } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherAccountingGridSessionData";
 import {
   canUpdateCashVoucherStatus,
   createInitialCashVoucherFormValues,
-  createManualCashVoucherTransactionId,
   createVoucherActionReturnLink,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherActionData";
 import {
   createAutomaticAccountingEntries,
   hasNonZeroAccountingAmount,
   isGeneratedAccountingEntry,
+  isPaymentCreditEntry,
   normalizeCashVoucherLineEntryFields,
   shouldSyncCashVoucherEntryParty,
   syncCashVoucherLineEntryTaxDetails,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherAccountingEntryData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import {
+  CashVoucherActionModes,
   CashVoucherLink,
   CashVoucherStatuses,
   canEditCashVoucherStatus,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
 import {
-  CashDisbursementActionModeAdd,
-  CashDisbursementActiveStatus,
-  CashDisbursementTaxTypeEwt,
-  CashDisbursementTaxTypeVat,
-} from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
-import { CashVoucherLineEntriesField } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
+  CashDisbursementAccountingGridSessionStorageKey,
+  CashVoucherLineEntriesField,
+} from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryConstants";
 import {
   validateCashVoucherDetails,
   validateCashVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/cash-voucher/CashVoucherValidation";
 import { useDefaultAccountStore } from "@/app/src/hooks/modules/financial-maintenance/default-account/useDefaultAccount";
+import { useCashVoucherDefaultAccounts } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherDefaultAccounts";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
+import { useTaxDefaultAccountOptionGroups } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import type {
   CashVoucherLineEntry,
@@ -58,11 +57,20 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
-import type { ChartAccount } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
+import type { GeneratedAccountingAccount } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryTypes";
+import type { TaxDefaultAccountOption } from "@/app/src/types/shared/tax/TaxTypes";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
-import { getEwtPercentFromCode, getVatPercentFromRate, getVatRateFromCode } from "@/app/src/data/shared/tax/TaxData";
+import {
+  getEwtPercentFromCode,
+  getVatPercentFromRate,
+  getVatRateFromCode,
+  PurchaseTaxTypeCwt,
+  PurchaseTaxTypeEwt,
+  PurchaseTaxTypeInputVat,
+  PurchaseTaxTypeVat,
+} from "@/app/src/data/shared/tax/TaxData";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { hasModuleDraftChanges } from "@/app/src/hooks/shared/module/useModuleDraftChanges";
@@ -76,8 +84,6 @@ import {
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherEntryRowData";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { CashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherQueryKeys";
-import { FetchChartAccountsTree } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
-import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsQueryKeys";
 import {
   createCashVoucherApi,
   fetchCashVoucherById,
@@ -123,19 +129,37 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const responsibilityCenterStore = useResponsibilityCenterStore();
   const defaultAccounts = defaultAccountStore.defaultAccounts;
   const taxCodesQuery = useAlphanumericTaxCodes();
+  const taxDefaultAccountOptionsQuery = useTaxDefaultAccountOptionGroups();
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
-  const chartAccountsQuery = useQuery({
-    queryKey: ChartsOfAccountsQueryKeys.tree(activeCompanyId),
-    queryFn: FetchChartAccountsTree,
-    enabled: activeCompanyId !== null,
-    staleTime: 60_000,
-  });
-  const cashOnHandAccount = useMemo(() => findCashOnHandAccount(chartAccountsQuery.data ?? []), [chartAccountsQuery.data]);
+  const inputVatAccountsByTaxCode = useMemo(
+    () =>
+      createGeneratedAccountingAccountMap(
+        taxDefaultAccountOptionsQuery.data?.find((group) => group.classification === "input-purchases")?.options ?? [],
+      ),
+    [taxDefaultAccountOptionsQuery.data],
+  );
+  const withholdingTaxAccountsByCode = useMemo(
+    () =>
+      createGeneratedAccountingAccountMap(
+        taxDefaultAccountOptionsQuery.data?.find((group) => group.classification === "purchase-ewt")?.options ?? [],
+      ),
+    [taxDefaultAccountOptionsQuery.data],
+  );
+  const defaultAccountsQuery = useCashVoucherDefaultAccounts();
+  const cashOnHandAccount = useMemo<GeneratedAccountingAccount | undefined>(() => {
+    const account = defaultAccountsQuery.data?.defaultCashAccount;
+    if (!account) return undefined;
+
+    return {
+      accountCode: account.accountCode,
+      accountName: account.accountTitle,
+    };
+  }, [defaultAccountsQuery.data]);
   const partyOptions = useMemo<CashVoucherPartyDropdownOption[]>(() => {
     const optionsByCode = new Map<string, CashVoucherPartyDropdownOption>();
 
     partyStore.records.forEach((record) => {
-      if (record.status !== CashDisbursementActiveStatus) {
+      if (record.status !== "Active") {
         return;
       }
 
@@ -163,7 +187,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }, [partyStore.records]);
   const responsibilityCenterOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
     return responsibilityCenterStore.centers
-      .filter((center) => center.status === CashDisbursementActiveStatus)
+      .filter((center) => center.status === "Active")
       .map((center) => ({
         description: center.typeName || center.category || "",
         label: center.code,
@@ -179,14 +203,14 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const recordQuery = useQuery({
     queryKey: CashVoucherQueryKeys.record(recordId, activeCompanyId, activeBranchId),
     queryFn: () => fetchCashVoucherById(recordId),
-    enabled: Boolean(recordId && mode !== CashDisbursementActionModeAdd),
+    enabled: Boolean(recordId && mode !== CashVoucherActionModes.Add),
   });
 
   const existingVoucher: CashVoucherRecord | undefined = recordQuery.data;
 
   // Auto-populate values when existing record is loaded
   useEffect(() => {
-    if (!existingVoucher || mode === CashDisbursementActionModeAdd) return;
+    if (!existingVoucher || mode === CashVoucherActionModes.Add) return;
 
     const rawDetails: Array<Record<string, unknown>> = (
       existingVoucher.lineEntries && existingVoucher.lineEntries.length > 0
@@ -236,7 +260,9 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     const voucherGrossAmount =
       mappedEntries
         .filter((entry) => !isGeneratedAccountingEntry(entry))
-        .reduce((sum, entry) => sum + Number(entry.taxDetails.grossAmount || 0), 0) || existingVoucher.amount || 0;
+        .reduce((sum, entry) => sum + Number(entry.taxDetails.grossAmount || 0), 0) ||
+      existingVoucher.amount ||
+      0;
 
     queueMicrotask(() => {
       const nextValues = {
@@ -282,7 +308,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }, [existingVoucher, mode]);
 
   useEffect(() => {
-    if (!existingVoucher || mode === CashDisbursementActionModeAdd || partyOptions.length === 0 || taxCodes.length === 0) {
+    if (!existingVoucher || mode === CashVoucherActionModes.Add || partyOptions.length === 0 || taxCodes.length === 0) {
       return;
     }
 
@@ -308,8 +334,10 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
           blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
           cashAccount: cashOnHandAccount,
           generatedRemarksOverrides: generatedRemarksOverridesRef.current,
+          inputVatAccountsByTaxCode,
           isCashPayment: true,
           paymentMethod: "Cash",
+          withholdingTaxAccountsByCode,
         }),
       };
     }
@@ -319,35 +347,64 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       setInitialValues(applyDefaults);
       hydratedPartyTaxDefaultsRecordIdRef.current = recordKey;
     });
-  }, [cashOnHandAccount, existingVoucher, mode, partyOptions, taxCodes]);
+  }, [cashOnHandAccount, existingVoucher, inputVatAccountsByTaxCode, mode, partyOptions, taxCodes, withholdingTaxAccountsByCode]);
+
+  useEffect(() => {
+    if (!cashOnHandAccount) {
+      return;
+    }
+
+    setValues((current) => {
+      const needsUpdate = current.lineEntries.some(
+        (entry) => isPaymentCreditEntry(entry) && (!entry.accountCode || !entry.accountName),
+      );
+      if (!needsUpdate) {
+        return current;
+      }
+
+      return {
+        ...current,
+        lineEntries: current.lineEntries.map((entry) =>
+          isPaymentCreditEntry(entry) && (!entry.accountCode || !entry.accountName)
+            ? {
+                ...entry,
+                accountCode: cashOnHandAccount.accountCode,
+                accountName: cashOnHandAccount.accountName,
+              }
+            : entry,
+        ),
+      };
+    });
+  }, [cashOnHandAccount]);
 
   // Load next transaction number on create mode
   useEffect(() => {
-    if (mode !== CashDisbursementActionModeAdd) return;
+    if (mode !== CashVoucherActionModes.Add) return;
 
     void refreshNextTransactionNo();
   }, [mode]);
 
   const currentStatus = existingVoucher?.status ?? values.status;
-  const isReadonly = mode === "view" || (mode === "edit" && !canEditCashVoucherStatus(currentStatus));
+  const isReadonly = mode === CashVoucherActionModes.View || (mode === CashVoucherActionModes.Edit && !canEditCashVoucherStatus(currentStatus));
   const totalDebit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.debit, 0), [values.lineEntries]);
   const totalCredit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.credit, 0), [values.lineEntries]);
-  const isRecordMissing = mode !== CashDisbursementActionModeAdd && !recordQuery.isLoading && !existingVoucher;
+  const isRecordMissing = mode !== CashVoucherActionModes.Add && !recordQuery.isLoading && !existingVoucher;
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === CashDisbursementActionModeAdd ? hasModuleDraftChanges(values, initialValues, ["transactionId", "voucherNo"]) : rawIsDirty;
+  const isDirty =
+    mode === CashVoucherActionModes.Add ? hasModuleDraftChanges(values, initialValues, ["transactionId", "voucherNo"]) : rawIsDirty;
   const draft = useModuleDraft({
     enabled: !isReadonly,
     initialValues,
     isDirty,
     key: createModuleDraftKey({ mode, moduleId: "cash-disbursement:cash-voucher", recordId: params.recordId }),
-    restoreValues: mode === CashDisbursementActionModeAdd ? restoreCashVoucherAddDraftValues : undefined,
+    restoreValues: mode === CashVoucherActionModes.Add ? restoreCashVoucherAddDraftValues : undefined,
     setValues,
     values,
   });
 
   async function resetAddValuesWithNextTransactionNo() {
-    const nextValues = createInitialCashVoucherFormValues({ mode: CashDisbursementActionModeAdd });
+    const nextValues = createInitialCashVoucherFormValues({ mode: "add" });
 
     try {
       const nextTransNo = await fetchNextCashVoucherTransactionNo();
@@ -388,7 +445,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   function discardDraft() {
     draft.clearDraft();
 
-    if (mode === CashDisbursementActionModeAdd) {
+    if (mode === CashVoucherActionModes.Add) {
       void resetAddValuesWithNextTransactionNo();
       return;
     }
@@ -401,7 +458,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }, []);
 
   useEffect(() => {
-    if (mode !== CashDisbursementActionModeAdd || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+    if (mode !== CashVoucherActionModes.Add || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
       return;
     }
 
@@ -443,10 +500,12 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         lineEntries: createAutomaticAccountingEntries(editableEntries, {
           bankAccount: null,
           blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
+          cashAccount: cashOnHandAccount,
           generatedRemarksOverrides: generatedRemarksOverridesRef.current,
+          inputVatAccountsByTaxCode,
           isCashPayment: true,
           paymentMethod: "Cash",
-          cashAccount: cashOnHandAccount,
+          withholdingTaxAccountsByCode,
         }),
       };
     });
@@ -485,10 +544,12 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     return createAutomaticAccountingEntries(entries, {
       bankAccount: null,
       blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
+      cashAccount: cashOnHandAccount,
       generatedRemarksOverrides: generatedRemarksOverridesRef.current,
+      inputVatAccountsByTaxCode,
       isCashPayment: true,
       paymentMethod: "Cash",
-      cashAccount: cashOnHandAccount,
+      withholdingTaxAccountsByCode,
     });
   }
 
@@ -501,8 +562,8 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       const previousPartyCode = current.partyCode;
       const previousPartyName = current.partyName;
       const selectedParty = partyStore.records.find((record) => record.partyCodeNo === partyCode);
-      const vatCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseInputVatTaxSourceKey, CashDisbursementTaxTypeVat);
-      const ewtCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseEwtTaxSourceKey, CashDisbursementTaxTypeEwt);
+      const vatCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseInputVatTaxSourceKey, PurchaseTaxTypeVat);
+      const ewtCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseEwtTaxSourceKey, PurchaseTaxTypeEwt);
       const vatPercent = vatCode ? getVatPercentFromRate(getVatRateFromCode(vatCode, taxCodes)) : 0;
       const ewtPercent = ewtCode ? getEwtPercentFromCode(ewtCode, taxCodes) : 0;
       const nextEntries = current.lineEntries.map((entry) =>
@@ -524,8 +585,10 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
           blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
           cashAccount: cashOnHandAccount,
           generatedRemarksOverrides: generatedRemarksOverridesRef.current,
+          inputVatAccountsByTaxCode,
           isCashPayment: true,
           paymentMethod: "Cash",
+          withholdingTaxAccountsByCode,
         }),
       };
     });
@@ -664,7 +727,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
 
   function requestCashVoucherSubmit(status: CashVoucherStatus) {
     if (isReadonly || isSubmittingRef.current) return;
-    if (mode === "edit" && !isDirty && status === currentStatus) {
+    if (mode === CashVoucherActionModes.Edit && !isDirty && status === currentStatus) {
       toast.error("No changes to save.");
       return;
     }
@@ -677,9 +740,9 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     const valuesForSubmit = {
       ...values,
       status,
-      transactionId: values.transactionId.trim() || createManualCashVoucherTransactionId(),
+      transactionId: values.transactionId.trim(),
     };
-    const shouldValidate = status !== CashVoucherStatuses.draft;
+    const shouldValidate = status !== CashVoucherStatuses.Draft;
     const detailsErrors = shouldValidate ? validateCashVoucherDetails(valuesForSubmit) : {};
     const entryErrors = shouldValidate ? validateCashVoucherEntries(valuesForSubmit) : {};
     const nextErrors = { ...detailsErrors, ...entryErrors };
@@ -705,7 +768,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     setIsSubmitting(true);
 
     try {
-      if (mode === "edit" && recordId) {
+      if (mode === CashVoucherActionModes.Edit && recordId) {
         await updateCashVoucherApi(recordId, {
           branchUnitId: activeBranchId ?? undefined,
           voucherDate: pendingSubmitValues.voucherDate,
@@ -744,7 +807,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         toast.success("Cash Voucher created successfully.");
       }
 
-      void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.all(activeCompanyId, activeBranchId) });
+      void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.all });
       draft.clearDraft();
       setPendingSubmitValues(null);
       submitLockReleaseRef.current = null;
@@ -769,7 +832,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
 
   function handleSubmit(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
-    requestCashVoucherSubmit(CashVoucherStatuses.forApproval);
+    requestCashVoucherSubmit(CashVoucherStatuses.ForApproval);
   }
 
   async function handleUpdateStatus(status: CashVoucherStatus) {
@@ -784,7 +847,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     try {
       await updateCashVoucherStatusApi(actionRecordId, status);
       setValues((currentValues) => ({ ...currentValues, status }));
-      void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.all(activeCompanyId, activeBranchId) });
+      void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.all });
       void queryClient.invalidateQueries({ queryKey: CashVoucherQueryKeys.record(actionRecordId, activeCompanyId, activeBranchId) });
       toast.success(`Cash Voucher status updated to ${status}.`);
       releaseActionLock();
@@ -914,31 +977,8 @@ function shouldEntryRemarksFollowHeader(entry: CashVoucherLineEntry, previousHea
 function restoreCashVoucherAddDraftValues(draftValues: CashVoucherFormValues): CashVoucherFormValues {
   return {
     ...draftValues,
-    status: CashVoucherStatuses.open,
+    status: CashVoucherStatuses.Open,
   };
-}
-
-function findCashOnHandAccount(accounts: ChartAccount[]): { accountCode: string; accountName: string } | undefined {
-  for (const account of accounts) {
-    if (
-      account.status === CashDisbursementActiveStatus &&
-      account.isPostingAccount &&
-      account.accountName.trim().toLowerCase() === "cash on hand"
-    ) {
-      return {
-        accountCode: account.accountNumber,
-        accountName: account.accountName,
-      };
-    }
-
-    const childAccount = findCashOnHandAccount(account.children ?? []);
-
-    if (childAccount) {
-      return childAccount;
-    }
-  }
-
-  return undefined;
 }
 
 function applyMissingPartyTaxDefaultsToEntries(
@@ -961,10 +1001,7 @@ function applyMissingPartyTaxDefaultsToEntries(
     }
 
     const selectedParty = partyOptions.find(
-      (option) =>
-        option.value === partyCode ||
-        option.label === partyCode ||
-        option.name.trim().toLowerCase() === partyName.toLowerCase(),
+      (option) => option.value === partyCode || option.label === partyCode || option.name.trim().toLowerCase() === partyName.toLowerCase(),
     );
 
     if (!selectedParty) {
@@ -972,9 +1009,9 @@ function applyMissingPartyTaxDefaultsToEntries(
     }
 
     const defaultVatCode =
-      selectedParty.vatCode || findPartyTaxCode(taxCodes, selectedParty.defaultPurchaseInputVatTaxSourceKey, CashDisbursementTaxTypeVat);
+      selectedParty.vatCode || findPartyTaxCode(taxCodes, selectedParty.defaultPurchaseInputVatTaxSourceKey, PurchaseTaxTypeVat);
     const defaultEwtCode =
-      selectedParty.ewtCode || findPartyTaxCode(taxCodes, selectedParty.defaultPurchaseEwtTaxSourceKey, CashDisbursementTaxTypeEwt);
+      selectedParty.ewtCode || findPartyTaxCode(taxCodes, selectedParty.defaultPurchaseEwtTaxSourceKey, PurchaseTaxTypeEwt);
     const currentVatCode = entry.taxDetails?.vatCode || entry.vatType || "";
     const currentEwtCode = entry.taxDetails?.ewtCode || entry.ewtCode || "";
     const nextVatCode = currentVatCode || defaultVatCode;
@@ -1007,6 +1044,30 @@ function applyMissingPartyTaxDefaultsToEntries(
   });
 
   return { changed, entries: nextEntries };
+}
+
+function createGeneratedAccountingAccountMap(taxOptions: TaxDefaultAccountOption[]): Record<string, GeneratedAccountingAccount> {
+  const accountByKey: Record<string, GeneratedAccountingAccount> = {};
+
+  taxOptions.forEach((taxOption) => {
+    if (!taxOption.defaultAccountCode || !taxOption.defaultAccountTitle) {
+      return;
+    }
+
+    const account = {
+      accountCode: taxOption.defaultAccountCode,
+      accountName: taxOption.defaultAccountTitle,
+    };
+
+    [taxOption.taxCode, taxOption.displayCode, taxOption.sourceKey].forEach((key) => {
+      const normalizedKey = key?.trim();
+      if (normalizedKey) {
+        accountByKey[normalizedKey] = account;
+      }
+    });
+  });
+
+  return accountByKey;
 }
 
 function getHydratedCashVoucherGrossAmount(detail: Record<string, unknown>) {
@@ -1044,7 +1105,7 @@ function roundHydratedCashVoucherAmount(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-type CashVoucherPartyTaxType = typeof CashDisbursementTaxTypeEwt | typeof CashDisbursementTaxTypeVat;
+type CashVoucherPartyTaxType = typeof PurchaseTaxTypeEwt | typeof PurchaseTaxTypeVat;
 
 function findPartyTaxCode(taxCodes: AlphanumericTaxCode[], sourceKey: string | undefined, taxType: CashVoucherPartyTaxType) {
   if (!sourceKey) {
@@ -1054,12 +1115,12 @@ function findPartyTaxCode(taxCodes: AlphanumericTaxCode[], sourceKey: string | u
   const taxCode = taxCodes.find(
     (tax) =>
       tax.sourceKey === sourceKey &&
-      (taxType === CashDisbursementTaxTypeVat
-        ? tax.taxType === "INPUT VAT" || tax.taxType === CashDisbursementTaxTypeVat
-        : tax.taxType === CashDisbursementTaxTypeEwt || tax.taxType === "CWT"),
+      (taxType === PurchaseTaxTypeVat
+        ? tax.taxType === PurchaseTaxTypeInputVat || tax.taxType === PurchaseTaxTypeVat
+        : tax.taxType === PurchaseTaxTypeEwt || tax.taxType === PurchaseTaxTypeCwt),
   );
 
-  return taxCode ? (taxType === CashDisbursementTaxTypeEwt ? taxCode.officialAtcCode || taxCode.taxCode : taxCode.taxCode) : "";
+  return taxCode ? (taxType === PurchaseTaxTypeEwt ? taxCode.officialAtcCode || taxCode.taxCode : taxCode.taxCode) : "";
 }
 
 function applyPartyTaxDefaults(entry: CashVoucherLineEntry, vatCode: string, ewtCode: string, vatPercent: number, ewtPercent: number) {
@@ -1085,3 +1146,10 @@ function applyPartyTaxDefaults(entry: CashVoucherLineEntry, vatCode: string, ewt
     vatType: vatCode,
   };
 }
+
+function clearAccountingGridSession() {
+  if (typeof window !== "undefined") {
+    sessionStorage.removeItem(CashDisbursementAccountingGridSessionStorageKey);
+  }
+}
+

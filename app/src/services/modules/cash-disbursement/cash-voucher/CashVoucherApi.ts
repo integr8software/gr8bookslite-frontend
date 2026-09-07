@@ -2,6 +2,7 @@ import {
   cashVoucherControllerCreateV1,
   cashVoucherControllerFindAllV1,
   cashVoucherControllerFindOneV1,
+  cashVoucherControllerGetDefaultAccountsV1,
   cashVoucherControllerRemoveV1,
   cashVoucherControllerSuggestTransactionNumberV1,
   cashVoucherControllerUpdatePutV1,
@@ -9,6 +10,7 @@ import {
 } from "@/app/src/generated/api/cash-voucher/cash-voucher";
 import type {
   CashVoucherControllerFindAllV1Params,
+  CashVoucherDefaultAccountsResponseDto,
   CashVoucherListResponseDto,
   CashVoucherRecordResponseDto,
   CashVoucherSingleResponseDto,
@@ -17,13 +19,11 @@ import type {
   UpdateCashVoucherDto,
   UpdateCashVoucherDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
-import { CashDisbursementApiAllStatusFilter } from "@/app/src/constants/modules/cash-disbursement/CashDisbursementConstants";
+import { fetchPostingAccountLookupOptions } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartOfAccountsLookupApi";
+import { fetchResponsibilityCenterLookupOptions } from "@/app/src/services/modules/financial-maintenance/responsibility-center/ResponsibilityCenterLookupApi";
+import { fetchPartyLookupOptions } from "@/app/src/services/modules/party-management/PartyLookupApi";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
-import {
-  fetchMaintenancePartyOptions,
-  fetchMaintenancePostingAccountOptions,
-  fetchMaintenanceResponsibilityCenterOptions,
-} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
+import type { ResponsibilityCenterLookupOption } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterLookupTypes";
 import type {
   CashVoucherLineEntry,
   CashVoucherRecord,
@@ -47,9 +47,9 @@ export async function fetchCashVoucherList(params?: FetchCashVoucherListParams):
   const response = await cashVoucherControllerFindAllV1({
     ...params,
     status:
-      params?.status && params.status !== CashDisbursementApiAllStatusFilter
+      params?.status && params.status !== "all" && params.status !== "All"
         ? mapCashVoucherStatusToApi(params.status)
-        : params?.status,
+        : undefined,
   });
 
   return {
@@ -68,19 +68,23 @@ export async function fetchNextCashVoucherTransactionNo(): Promise<string> {
 }
 
 export async function fetchCashVoucherPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenancePartyOptions();
+  return fetchPartyLookupOptions({ detail: "complete" });
 }
 
 export async function fetchCashVoucherAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenancePostingAccountOptions();
+  return fetchPostingAccountLookupOptions();
+}
+
+export async function fetchCashVoucherDefaultAccounts(): Promise<CashVoucherDefaultAccountsResponseDto> {
+  return cashVoucherControllerGetDefaultAccountsV1();
 }
 
 export async function fetchCashVoucherResponsibilityCenters(): Promise<{
   costCenters: AppAdvancedDropdownOption[];
   projects: AppAdvancedDropdownOption[];
 }> {
-  const centers = await fetchMaintenanceResponsibilityCenterOptions();
-  const isProject = (rc: { typeName?: string; name?: string }) =>
+  const centers = await fetchResponsibilityCenterLookupOptions();
+  const isProject = (rc: ResponsibilityCenterLookupOption) =>
     rc.typeName?.toLowerCase().includes("project") || rc.name?.toLowerCase().includes("project");
 
   const costCenters = centers
@@ -434,7 +438,6 @@ function mapCashVoucherStatusFromApi(status: string): CashVoucherStatus {
   const statusMap: Record<string, CashVoucherStatus> = {
     APPROVED: "Posted",
     CANCELLED: "Cancelled",
-    CLOSED: "Closed",
     DISAPPROVED: "Disapproved",
     DRAFT: "Draft",
     FOR_APPROVAL: "For Approval",
@@ -447,7 +450,6 @@ function mapCashVoucherStatusFromApi(status: string): CashVoucherStatus {
 function mapCashVoucherStatusToApi(status: string): ApiCashVoucherStatus {
   const statusMap: Record<string, ApiCashVoucherStatus> = {
     Cancelled: "CANCELLED",
-    Closed: "CLOSED",
     Disapproved: "DISAPPROVED",
     Draft: "DRAFT",
     "For Approval": "FOR_APPROVAL",

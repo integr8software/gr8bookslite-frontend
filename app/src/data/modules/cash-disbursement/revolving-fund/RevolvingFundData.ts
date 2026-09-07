@@ -8,6 +8,7 @@ import type {
 import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { calculateTaxAmounts } from "@/app/src/data/shared/tax/TaxData";
 import { todayDateValue } from "@/app/src/utils/date.util";
+import { parseTaxPercent } from "@/app/src/utils/percentage.util";
 
 export function createBlankRevolvingFundItem(): RevolvingFundItem {
   return {
@@ -70,8 +71,8 @@ export function createRevolvingFundFormValues(
             {
               ...createBlankRevolvingFundItem(),
               date: record.documentDate,
-              supplierCode: "V100006",
-              supplierName: "All4U Restaurant",
+              supplierCode: "",
+              supplierName: "",
               amount,
               ...calculateRevolvingFundItemTaxFields(amount),
               grossAmount: amount,
@@ -83,7 +84,7 @@ export function createRevolvingFundFormValues(
   return {
     transactionNo,
     documentDate: todayDateValue(),
-    status: RevolvingFundStatuses.open,
+    status: RevolvingFundStatuses.Open,
     partyCode: "",
     partyName: "",
     responsibilityCenter: "",
@@ -190,13 +191,7 @@ function getRevolvingFundVatPercent(vatType: string) {
 }
 
 function getRevolvingFundEwtPercent(ewtCode: string) {
-  const rates: Record<string, number> = {
-    W05: 5,
-    W10: 10,
-    WV01: 1,
-    WV02: 2,
-  };
-  return rates[ewtCode] ?? 0;
+  return parseTaxPercent(ewtCode);
 }
 
 function roundRevolvingFundTaxAmount(value: number) {

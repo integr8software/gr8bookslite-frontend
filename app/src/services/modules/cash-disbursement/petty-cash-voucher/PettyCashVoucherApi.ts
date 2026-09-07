@@ -1,20 +1,15 @@
 "use client";
 
 import {
-  pettyCashVoucherControllerCreateV1 as pettyCashVoucherControllerCreate,
-  pettyCashVoucherControllerFindAllV1 as pettyCashVoucherControllerFindAll,
-  pettyCashVoucherControllerFindOneV1 as pettyCashVoucherControllerFindOne,
-  pettyCashVoucherControllerRemoveV1 as pettyCashVoucherControllerRemove,
+  pettyCashVoucherControllerCreateV1,
+  pettyCashVoucherControllerFindAllV1,
+  pettyCashVoucherControllerFindOneV1,
+  pettyCashVoucherControllerRemoveV1,
   pettyCashVoucherControllerSuggestTransactionNumberV1,
-  pettyCashVoucherControllerUpdateStatusV1 as pettyCashVoucherControllerUpdateStatus,
-  pettyCashVoucherControllerUpdateV1 as pettyCashVoucherControllerUpdate,
+  pettyCashVoucherControllerUpdateStatusV1,
+  pettyCashVoucherControllerUpdateV1,
 } from "@/app/src/generated/api/petty-cash-voucher/petty-cash-voucher";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
-import {
-  fetchMaintenancePartyOptions,
-  fetchMaintenancePostingAccountOptions,
-  fetchMaintenanceResponsibilityCenterOptions,
-} from "@/app/src/services/shared/maintenance/MaintenanceLookupApi";
 import type {
   CreatePettyCashVoucherDto,
   PettyCashVoucherListResponseDto,
@@ -40,7 +35,7 @@ type PettyCashVoucherResponseExtras = {
   updatedByUser?: AuditUserSnapshot | null;
 };
 
-type PettyCashVoucherQueryParams = NonNullable<Parameters<typeof pettyCashVoucherControllerFindAll>[0]>;
+type PettyCashVoucherQueryParams = NonNullable<Parameters<typeof pettyCashVoucherControllerFindAllV1>[0]>;
 
 export type FetchPettyCashVoucherListParams = {
   page?: number;
@@ -97,8 +92,16 @@ export function mapPettyCashVoucherRecordFromDto(dto: PettyCashVoucherResponseDt
     exchangeRate: dto.exchangeRate !== undefined && dto.exchangeRate !== null ? String(dto.exchangeRate) : "1.00",
     amount: grossAmount,
     disburseAmount,
+    ewtAmount: dto.ewtAmount,
+    ewtCode: dto.ewtCode ?? "",
+    ewtRate: dto.ewtRate ?? `${dto.ewtPercent ?? 0}%`,
     remarks: dto.remarks ?? "",
     status: StatusFromApi[dto.status] ?? "Draft",
+    netAmount: dto.netAmount,
+    vatable: dto.vatable as PettyCashVoucherRecord["vatable"],
+    vatAmount: dto.vatAmount,
+    vatRate: dto.vatRate ?? `${dto.vatPercent ?? 0}%`,
+    vatType: dto.vatType ?? "",
     createdBy: createdUser ? `${createdUser.firstName ?? ""} ${createdUser.lastName ?? ""}`.trim() : "",
     dateCreated: dto.createdAt,
     updatedBy: updatedUser ? `${updatedUser.firstName ?? ""} ${updatedUser.lastName ?? ""}`.trim() : "",
@@ -155,7 +158,7 @@ export async function fetchPettyCashVoucherList(params?: FetchPettyCashVoucherLi
     queryParams.status = (StatusToApi[params.status as PettyCashVoucherStatus] ?? params.status) as PettyCashVoucherQueryParams["status"];
   }
 
-  const response = (await pettyCashVoucherControllerFindAll(queryParams)) as PettyCashVoucherListResponseDto;
+  const response = (await pettyCashVoucherControllerFindAllV1(queryParams)) as PettyCashVoucherListResponseDto;
   return {
     data: (response?.items ?? []).map(mapPettyCashVoucherRecordFromDto),
     meta: response?.meta ?? { page: 1, limit: 50, total: 0, totalPages: 1 },
@@ -163,7 +166,7 @@ export async function fetchPettyCashVoucherList(params?: FetchPettyCashVoucherLi
 }
 
 export async function fetchPettyCashVoucherById(id: string): Promise<PettyCashVoucherRecord> {
-  const response = (await pettyCashVoucherControllerFindOne(id)) as PettyCashVoucherResponseDto;
+  const response = (await pettyCashVoucherControllerFindOneV1(id)) as PettyCashVoucherResponseDto;
   return mapPettyCashVoucherRecordFromDto(response);
 }
 
@@ -173,35 +176,23 @@ export async function fetchNextPettyCashVoucherNo(branchUnitId?: number): Promis
 
 export async function createPettyCashVoucherApi(values: PettyCashVoucherFormValues): Promise<PettyCashVoucherRecord> {
   const payload = mapPettyCashVoucherFormValuesToCreateDto(values);
-  const response = (await pettyCashVoucherControllerCreate(payload)) as PettyCashVoucherResponseDto;
+  const response = (await pettyCashVoucherControllerCreateV1(payload)) as PettyCashVoucherResponseDto;
   return mapPettyCashVoucherRecordFromDto(response);
 }
 
 export async function updatePettyCashVoucherApi(id: string, values: PettyCashVoucherFormValues): Promise<PettyCashVoucherRecord> {
   const payload = mapPettyCashVoucherFormValuesToUpdateDto(values);
-  const response = (await pettyCashVoucherControllerUpdate(id, payload)) as PettyCashVoucherResponseDto;
+  const response = (await pettyCashVoucherControllerUpdateV1(id, payload)) as PettyCashVoucherResponseDto;
   return mapPettyCashVoucherRecordFromDto(response);
 }
 
 export async function updatePettyCashVoucherStatusApi(id: string, status: PettyCashVoucherStatus): Promise<PettyCashVoucherRecord> {
   const apiStatus = StatusToApi[status];
-  const response = (await pettyCashVoucherControllerUpdateStatus(id, { status: apiStatus })) as PettyCashVoucherResponseDto;
+  const response = (await pettyCashVoucherControllerUpdateStatusV1(id, { status: apiStatus })) as PettyCashVoucherResponseDto;
   return mapPettyCashVoucherRecordFromDto(response);
 }
 
 export async function deletePettyCashVoucherApi(id: string): Promise<{ success: boolean; message: string }> {
-  await pettyCashVoucherControllerRemove(id);
+  await pettyCashVoucherControllerRemoveV1(id);
   return { success: true, message: "Deleted successfully" };
-}
-
-export async function fetchPettyCashVoucherPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenancePartyOptions();
-}
-
-export async function fetchPettyCashVoucherAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenancePostingAccountOptions();
-}
-
-export async function fetchPettyCashVoucherResponsibilityCenters(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchMaintenanceResponsibilityCenterOptions();
 }

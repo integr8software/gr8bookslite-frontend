@@ -35,7 +35,10 @@ export function useCashAdvanceDetailsLookups(form: CashAdvanceFormController) {
   const accountOptions = useMemo<CashAdvanceAccountDropdownOption[]>(() => {
     const options = [...(accountQuery.data ?? [])];
 
-    if (form.values.accountCode && !options.some((option) => option.value === form.values.accountId || option.label === form.values.accountCode)) {
+    if (
+      form.values.accountCode &&
+      !options.some((option) => option.value === form.values.accountId || option.label === form.values.accountCode)
+    ) {
       options.unshift({
         name: form.values.accountTitle || form.values.accountCode,
         label: form.values.accountCode,
@@ -52,7 +55,10 @@ export function useCashAdvanceDetailsLookups(form: CashAdvanceFormController) {
   const costCenterOptions = useMemo<CashAdvanceResponsibilityCenterDropdownOption[]>(() => {
     const options = [...(responsibilityCenterQuery.data?.costCenters ?? [])];
 
-    if (form.values.costCenter && !options.some((option) => option.value === form.values.costCenterId || option.name === form.values.costCenter)) {
+    if (
+      form.values.costCenter &&
+      !options.some((option) => option.value === form.values.costCenterId || option.name === form.values.costCenter)
+    ) {
       options.unshift({
         name: form.values.costCenter,
         label: form.values.referenceFields.costCenterCode || form.values.costCenter,
@@ -63,7 +69,12 @@ export function useCashAdvanceDetailsLookups(form: CashAdvanceFormController) {
     }
 
     return options;
-  }, [form.values.costCenter, form.values.costCenterId, form.values.referenceFields.costCenterCode, responsibilityCenterQuery.data?.costCenters]);
+  }, [
+    form.values.costCenter,
+    form.values.costCenterId,
+    form.values.referenceFields.costCenterCode,
+    responsibilityCenterQuery.data?.costCenters,
+  ]);
 
   const projectOptions = useMemo<CashAdvanceResponsibilityCenterDropdownOption[]>(() => {
     const options = [...(responsibilityCenterQuery.data?.projects ?? [])];
@@ -82,12 +93,20 @@ export function useCashAdvanceDetailsLookups(form: CashAdvanceFormController) {
     }
 
     return options;
-  }, [form.values.projectId, form.values.referenceFields.projectCode, form.values.referenceFields.projectName, responsibilityCenterQuery.data?.projects]);
+  }, [
+    form.values.projectId,
+    form.values.referenceFields.projectCode,
+    form.values.referenceFields.projectName,
+    responsibilityCenterQuery.data?.projects,
+  ]);
 
   const partyOptions = useMemo<CashAdvancePartyDropdownOption[]>(() => {
     const options = [...(partyQuery.data ?? [])];
 
-    if (form.values.partyCode && !options.some((option) => option.value === form.values.partyId || option.label === form.values.partyCode)) {
+    if (
+      form.values.partyCode &&
+      !options.some((option) => option.value === form.values.partyId || option.label === form.values.partyCode)
+    ) {
       options.unshift({
         name: form.values.partyName || form.values.partyCode,
         label: form.values.partyCode,

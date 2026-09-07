@@ -18,6 +18,9 @@ export type CashAdvancePartyDropdownOption = AppAdvancedDropdownOption & {
   partyName?: string;
   cashAdvanceLimit?: string;
   totalCashAdvance?: string;
+  employeeAdvanceAccountId?: string;
+  employeeAdvanceAccountCode?: string;
+  employeeAdvanceAccountTitle?: string;
 };
 
 export type CashAdvanceAccountDropdownOption = AppAdvancedDropdownOption & {

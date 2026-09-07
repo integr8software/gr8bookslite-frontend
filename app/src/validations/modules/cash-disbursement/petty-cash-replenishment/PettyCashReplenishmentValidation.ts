@@ -22,13 +22,13 @@ const schema = z.object({
 
 export function validatePettyCashReplenishmentForm(values: PettyCashReplenishmentFormValues): PettyCashReplenishmentFormErrors {
   const errors: PettyCashReplenishmentFormErrors = {};
-  const result = (values.status === PettyCashReplenishmentStatuses.draft ? draftSchema : schema).safeParse(values);
+  const result = (values.status === PettyCashReplenishmentStatuses.Draft ? draftSchema : schema).safeParse(values);
   if (!result.success) {
     for (const issue of result.error.issues) {
       errors[issue.path[0] as keyof PettyCashReplenishmentFormValues] ??= issue.message;
     }
   }
-  if (values.status === PettyCashReplenishmentStatuses.draft) return errors;
+  if (values.status === PettyCashReplenishmentStatuses.Draft) return errors;
   if (
     values.entries.length === 0 ||
     values.entries.every((entry) => !entry.pettyCashNo.trim() && (parseAmount(entry.amount) ?? 0) <= 0)

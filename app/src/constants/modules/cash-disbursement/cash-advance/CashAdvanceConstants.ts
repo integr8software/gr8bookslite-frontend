@@ -1,6 +1,7 @@
 import type { ColumnOrderState, SortingState, VisibilityState } from "@tanstack/react-table";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
+  CashAdvanceActionMode,
   CashAdvanceDetailsSection,
   CashAdvanceStatus,
   CashAdvanceSubmitConfirmationAction,
@@ -12,48 +13,26 @@ export const CashAdvanceLink = getModuleRoute("CA");
 export const CashAdvanceAddLink = `${CashAdvanceLink}/add`;
 export const getCashAdvanceEditLink = (recordId: string) => `${CashAdvanceLink}/edit/${recordId}`;
 export const getCashAdvanceViewLink = (recordId: string) => `${CashAdvanceLink}/view/${recordId}`;
-export const CashAdvanceTransactionNumberPrefix = "CA-";
-export const CashAdvanceTransactionNumberPadding = 6;
+
+export const CashAdvanceActionModes = {
+  Add: "add",
+  Edit: "edit",
+  View: "view",
+} as const satisfies Record<string, CashAdvanceActionMode>;
 
 export const CashAdvanceTabs = [
   { id: "advance", label: "Cash Advance Details" },
   { id: "attachment", label: "File Attachments" },
 ] satisfies ModuleTabItem<CashAdvanceDetailsSection>[];
 
-export const CashAdvanceFieldClassName =
-  "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy";
-
-export const CashAdvanceReadOnlyFieldClassName =
-  "app-data-entry-field transaction-readonly-placeholder h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-darknavy/5 px-3 text-sm font-medium text-darknavy/60 outline-none placeholder:text-darknavy/35";
-
-export const CashAdvancePdfNoBordersLayout = {
-  hLineWidth: () => 0,
-  vLineWidth: () => 0,
-  paddingLeft: () => 0,
-  paddingRight: () => 0,
-  paddingTop: () => 0,
-  paddingBottom: () => 0,
-};
-
-export const CashAdvancePdfRequestFormLayout = {
-  hLineWidth: () => 1,
-  vLineWidth: () => 1,
-  hLineColor: () => "#000000",
-  vLineColor: () => "#000000",
-  paddingLeft: () => 0,
-  paddingRight: () => 0,
-  paddingTop: () => 0,
-  paddingBottom: () => 0,
-};
-
 export const CashAdvanceStatuses = {
-  cancelled: "Cancelled",
-  disapproved: "Disapproved",
-  draft: "Draft",
-  forApproval: "For Approval",
-  open: "Open",
-  posted: "Posted",
-} as const;
+  Cancelled: "Cancelled",
+  Disapproved: "Disapproved",
+  Draft: "Draft",
+  ForApproval: "For Approval",
+  Open: "Open",
+  Posted: "Posted",
+} as const satisfies Record<string, CashAdvanceStatus>;
 
 export const CashAdvanceSubmitConfirmationDialogTitles: Record<CashAdvanceSubmitConfirmationAction, string> = {
   save: "Save Cash Advance?",
@@ -67,31 +46,37 @@ export const CashAdvanceSubmitConfirmationDialogConfirmLabels: Record<CashAdvanc
 
 export const CashAdvanceAllStatusFilter = "all";
 
+export const EditableCashAdvanceStatuses: readonly CashAdvanceStatus[] = [CashAdvanceStatuses.Draft];
+
 export const CashAdvanceStatusFilterOptions = [
   { label: "All statuses", value: CashAdvanceAllStatusFilter },
-  { label: CashAdvanceStatuses.posted, value: CashAdvanceStatuses.posted },
+  { label: "Draft", value: CashAdvanceStatuses.Draft },
   {
-    label: CashAdvanceStatuses.forApproval,
-    value: CashAdvanceStatuses.forApproval,
+    label: "For Approval",
+    value: CashAdvanceStatuses.ForApproval,
   },
-  { label: CashAdvanceStatuses.draft, value: CashAdvanceStatuses.draft },
+  { label: "Posted", value: CashAdvanceStatuses.Posted },
   {
-    label: CashAdvanceStatuses.disapproved,
-    value: CashAdvanceStatuses.disapproved,
+    label: "Disapproved",
+    value: CashAdvanceStatuses.Disapproved,
   },
   {
-    label: CashAdvanceStatuses.cancelled,
-    value: CashAdvanceStatuses.cancelled,
+    label: "Cancelled",
+    value: CashAdvanceStatuses.Cancelled,
   },
 ] as const;
 
+export const CashAdvanceRecordStatuses = [
+  CashAdvanceStatuses.Draft,
+  CashAdvanceStatuses.ForApproval,
+  CashAdvanceStatuses.Posted,
+  CashAdvanceStatuses.Disapproved,
+  CashAdvanceStatuses.Cancelled,
+] as const satisfies readonly CashAdvanceStatus[];
+
 export const CashAdvanceStatusFilters = [
   CashAdvanceAllStatusFilter,
-  CashAdvanceStatuses.posted,
-  CashAdvanceStatuses.forApproval,
-  CashAdvanceStatuses.draft,
-  CashAdvanceStatuses.disapproved,
-  CashAdvanceStatuses.cancelled,
+  ...CashAdvanceRecordStatuses,
 ] as const;
 
 export const CashAdvanceTablePaginationStorageKey = "cash-disbursement-cash-advance";
@@ -136,30 +121,24 @@ export const CashAdvanceDefaultColumnVisibility: VisibilityState = {
 
 export const CashAdvanceDefaultSorting: SortingState = [{ id: "createdAt", desc: true }];
 
-export function getCashAdvanceTableMinWidthClassName(visibleColumnCount: number) {
-  if (visibleColumnCount >= 13) return "min-w-[150rem]";
-  if (visibleColumnCount >= 10) return "min-w-[122rem]";
-  return "min-w-[76rem]";
-}
-
 export function canEditCashAdvanceStatus(status: CashAdvanceStatus) {
-  return status === CashAdvanceStatuses.draft;
+  return EditableCashAdvanceStatuses.includes(status);
 }
 
 export function canApproveCashAdvanceStatus(status: CashAdvanceStatus) {
-  return status === CashAdvanceStatuses.forApproval || status === CashAdvanceStatuses.posted;
+  return status === CashAdvanceStatuses.ForApproval || status === CashAdvanceStatuses.Posted;
 }
 
 export function canDisapproveCashAdvanceStatus(status: CashAdvanceStatus) {
-  return status === CashAdvanceStatuses.forApproval || status === CashAdvanceStatuses.disapproved;
+  return status === CashAdvanceStatuses.ForApproval || status === CashAdvanceStatuses.Disapproved;
 }
 
 export function canCancelCashAdvanceStatus(status: CashAdvanceStatus) {
-  return status === CashAdvanceStatuses.draft || status === CashAdvanceStatuses.forApproval || status === CashAdvanceStatuses.cancelled;
+  return status === CashAdvanceStatuses.Draft || status === CashAdvanceStatuses.ForApproval || status === CashAdvanceStatuses.Cancelled;
 }
 
 export function getCashAdvanceStatusDialogCopy(status: CashAdvanceStatus, recordLabel: string, currentStatus?: CashAdvanceStatus) {
-  if (status === CashAdvanceStatuses.forApproval && currentStatus === CashAdvanceStatuses.posted) {
+  if (status === CashAdvanceStatuses.ForApproval && currentStatus === CashAdvanceStatuses.Posted) {
     return {
       confirmLabel: "Undo Approved",
       description: `This will undo the approval of ${recordLabel} and return it to For Approval.`,
@@ -170,7 +149,7 @@ export function getCashAdvanceStatusDialogCopy(status: CashAdvanceStatus, record
     };
   }
 
-  if (status === CashAdvanceStatuses.forApproval && currentStatus === CashAdvanceStatuses.disapproved) {
+  if (status === CashAdvanceStatuses.ForApproval && currentStatus === CashAdvanceStatuses.Disapproved) {
     return {
       confirmLabel: "Undo Disapproved",
       description: `This will undo the disapproval of ${recordLabel} and return it to For Approval.`,
@@ -181,7 +160,7 @@ export function getCashAdvanceStatusDialogCopy(status: CashAdvanceStatus, record
     };
   }
 
-  if (currentStatus === CashAdvanceStatuses.cancelled) {
+  if (currentStatus === CashAdvanceStatuses.Cancelled) {
     return {
       confirmLabel: "Undo Cancelled",
       description: `This will undo the cancellation of ${recordLabel}.`,
@@ -192,7 +171,7 @@ export function getCashAdvanceStatusDialogCopy(status: CashAdvanceStatus, record
     };
   }
 
-  if (status === CashAdvanceStatuses.posted) {
+  if (status === CashAdvanceStatuses.Posted) {
     return {
       confirmLabel: "Approve Cash Advance",
       description: `This will approve ${recordLabel} and update its status to Posted.`,
@@ -203,7 +182,7 @@ export function getCashAdvanceStatusDialogCopy(status: CashAdvanceStatus, record
     };
   }
 
-  if (status === CashAdvanceStatuses.disapproved) {
+  if (status === CashAdvanceStatuses.Disapproved) {
     return {
       confirmLabel: "Disapprove Cash Advance",
       description: `This will mark ${recordLabel} as Disapproved.`,

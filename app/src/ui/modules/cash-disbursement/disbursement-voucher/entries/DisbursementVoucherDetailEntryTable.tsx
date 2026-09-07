@@ -32,6 +32,8 @@ export function DisbursementVoucherDetailEntryTable({
   ewtOptions,
   expenseAccounts,
   expenseRows,
+  isDebitMemo,
+  isMultiCheckNumber,
   isReadonly,
   lineErrors,
   title = "",
@@ -48,6 +50,16 @@ export function DisbursementVoucherDetailEntryTable({
   updateExpenseEntryFields,
   vatOptions,
 }: DisbursementVoucherDetailEntryTableProps) {
+  const defaultExpenseColumnLabels = useMemo(() => {
+    if (!isDebitMemo) return ExpenseEntryColumnLabels;
+    return {
+      ...ExpenseEntryColumnLabels,
+      checkNo: "Debit Memo No.",
+      checkDate: "Debit Memo Date",
+      checkStatus: "Debit Memo Status",
+    };
+  }, [isDebitMemo]);
+
   const {
     columnOrder: expenseColumnOrder,
     visibleColumnIds: visibleExpenseColumnIds,
@@ -64,11 +76,11 @@ export function DisbursementVoucherDetailEntryTable({
     defaultColumnOrder: DefaultExpenseEntryColumnOrder,
     defaultVisibleColumnIds: DefaultVisibleExpenseEntryColumnOrder,
     defaultColumnWidths: DefaultExpenseEntryColumnWidths,
-    defaultColumnLabels: ExpenseEntryColumnLabels,
+    defaultColumnLabels: defaultExpenseColumnLabels,
     protectedColumnIds: ProtectedExpenseEntryColumnIds,
   });
 
-  const hasMultiCheckNumberColumn = false;
+  const hasMultiCheckNumberColumn = Boolean(isMultiCheckNumber);
   const visibleExpenseColumnOrder = expenseColumnOrder.filter((columnId) =>
     MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : visibleExpenseColumnIds.includes(columnId),
   );
@@ -134,7 +146,7 @@ export function DisbursementVoucherDetailEntryTable({
         .map((columnId) => ({
           id: columnId,
           isHideable: !ProtectedExpenseEntryColumnIds.has(columnId),
-          isVisible: visibleExpenseColumnIds.includes(columnId),
+          isVisible: MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : visibleExpenseColumnIds.includes(columnId),
           label: expenseColumnLabels[columnId],
           width: expenseColumnWidths[columnId],
         })),

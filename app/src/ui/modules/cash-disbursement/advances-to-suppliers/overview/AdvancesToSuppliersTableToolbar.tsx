@@ -1,4 +1,4 @@
-import { AdvancesToSuppliersStatusOptions } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
+import { AdvancesToSuppliersStatusFilterOptions } from "@/app/src/constants/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersConstants";
 import type { AdvancesToSuppliersOverviewPageState } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
@@ -41,7 +41,7 @@ export function AdvancesToSuppliersTableToolbar({
         <ModuleTableFilterSelect
           label="Status"
           value={page.statusFilter}
-          options={AdvancesToSuppliersStatusOptions.map((status) => ({ label: status, value: status }))}
+          options={AdvancesToSuppliersStatusFilterOptions}
           onChange={page.setStatusFilter}
         />
         <ModuleTableColumnVisibilityButton table={page.table} />

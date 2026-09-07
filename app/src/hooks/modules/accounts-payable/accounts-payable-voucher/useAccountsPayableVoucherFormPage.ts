@@ -28,6 +28,10 @@ import {
   updateAccountsPayableVoucherFromForm,
 } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
 import {
+  getPurchaseOrderItemNetAmount,
+  getPurchaseOrderTotals,
+} from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
+import {
   findModuleChartAccount,
   getModuleChartAccounts,
   type ModuleChartAccount,
@@ -37,7 +41,9 @@ import {
   useAccountsPayableVoucherStore,
   useAccountsPayableVoucherRecord,
   useAccountsPayableVoucherPartyOptions,
+  useAccountsPayableVoucherTermOptions,
 } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
+import { usePurchaseOrderStore } from "@/app/src/hooks/modules/purchasing/purchase-order/usePurchaseOrder";
 import { useTaxDefinitionOptions } from "@/app/src/hooks/shared/tax/useTaxDefinitionOptions";
 import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
@@ -62,6 +68,7 @@ import type {
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import type { TaxDefinitionDefaultAccountIds } from "@/app/src/types/shared/tax/TaxDefinitionTypes";
 import type { Tax } from "@/app/src/types/shared/tax/TaxTypes";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { getEwtPercentFromCode, getVatPercentFromRate, getVatRateFromCode } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
 import { validateAccountsPayableVoucherForm } from "@/app/src/validations/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherValidation";
 
@@ -97,12 +104,30 @@ export function useAccountsPayableVoucherFormPage() {
   const accessToken = useAppStore((state) => state.accessToken);
   const authProfileQuery = useAuthProfileQuery({ accessToken });
   const { addRecord, isMutating, records, updateRecord, updateStatus } = useAccountsPayableVoucherStore();
+  const { orders: purchaseOrders } = usePurchaseOrderStore();
   const partyOptionsQuery = useAccountsPayableVoucherPartyOptions();
+  const termOptionsQuery = useAccountsPayableVoucherTermOptions();
   const taxDefinitionOptions = useTaxDefinitionOptions({
     transactionScope: "PURCHASE",
   });
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
   const partyRecords = useMemo(() => partyOptionsQuery.data ?? [], [partyOptionsQuery.data]);
+  const termRecords = useMemo(() => termOptionsQuery.data ?? [], [termOptionsQuery.data]);
+  const purchaseOrderCopyRecords = useMemo<AppCopyFromRecord[]>(
+    () =>
+      purchaseOrders
+        .filter((order) => order.status !== "Cancelled")
+        .map((order) => ({
+          amount: String(getPurchaseOrderTotals(order).netAmount),
+          documentDate: order.documentDate,
+          id: order.id,
+          partyName: order.vceName,
+          remarks: order.remarks || order.prNo,
+          source: "Purchase Order",
+          sourceNo: order.transNo,
+        })),
+    [purchaseOrders],
+  );
   const taxAccountingContext = useMemo(
     () => ({
       accountOptions: taxDefinitionOptions.accountOptions,
@@ -326,6 +351,87 @@ export function useAccountsPayableVoucherFormPage() {
     }
 
     void updateCurrencyFromExchangeRates(currencyCode);
+  }
+
+  function copyFromPurchaseOrder(recordIds: string[]) {
+    if (isReadonly) {
+      return;
+    }
+
+    const order = purchaseOrders.find((record) => recordIds.includes(record.id));
+
+    if (!order) {
+      toast.error("No purchase order was selected.");
+      return;
+    }
+
+    const party = partyRecords.find((record) => record.partyCodeNo === order.vceCode);
+    const term = termRecords.find(
+      (record) => record.name.trim().toLowerCase() === order.termsOfPayment.trim().toLowerCase(),
+    );
+    const payableAccount = party?.defaultPayableAccount
+      ? findModuleChartAccount(party.defaultPayableAccount, taxAccountingContext.accountOptions) ??
+        findModuleChartAccount(party.defaultPayableAccount)
+      : undefined;
+    const sourceExpenseAccount = order.accountingEntries.find(
+      (entry) => entry.accountCode.trim() !== "" && entry.accountTitle.trim() !== "" && Number(entry.credit || 0) === 0,
+    );
+    const copiedExpenseLines = order.items
+      .filter(
+        (item) =>
+          item.itemCode.trim() !== "" ||
+          item.itemName.trim() !== "" ||
+          Math.abs(getPurchaseOrderItemNetAmount(item)) > 0,
+      )
+      .map((item, index) => {
+        const amount = getPurchaseOrderItemNetAmount(item);
+
+        return createAccountsPayableVoucherExpenseLine(index + 1, {
+          amount,
+          currencyCode: order.currency,
+          exchangeRate: order.exchangeRate,
+          expenseAccountCode: sourceExpenseAccount?.accountCode ?? "",
+          expenseType: sourceExpenseAccount?.accountTitle || item.itemName,
+          netAmount: amount,
+          particulars: item.itemName || order.remarks,
+          partyCode: order.vceCode,
+          partyId: party?.id,
+          partyName: order.vceName,
+          referenceNo: order.transNo,
+          responsibilityCenterId: item.responsibilityCenterId,
+          responsibilityCenter: item.responsibilityCenter,
+          totalAmountDue: amount,
+        });
+      });
+
+    hasEditedCurrencyRef.current = true;
+    setValues((current) => {
+      const nextValues: AccountsPayableVoucherFormValues = {
+        ...current,
+        address: order.address || party?.address?.addressLine1 || current.address,
+        contactNo: order.contactNo || party?.contactNo || current.contactNo,
+        contactPerson: party?.contactPerson || current.contactPerson,
+        creditAccountCode: payableAccount?.accountNumber || current.creditAccountCode,
+        creditAccountId: payableAccount?.id || current.creditAccountId,
+        creditAccountTitle: payableAccount?.accountName || current.creditAccountTitle,
+        currency: order.currency || current.currency,
+        exchangeRate: order.exchangeRate || current.exchangeRate,
+        expenseLines: copiedExpenseLines.length > 0 ? copiedExpenseLines : current.expenseLines,
+        partyCode: order.vceCode || current.partyCode,
+        partyId: party?.id || current.partyId,
+        partyName: order.vceName || current.partyName,
+        projectCode: order.projectCode || current.projectCode,
+        projectName: order.projectName || current.projectName,
+        referenceNo: order.transNo,
+        remarks: order.remarks || current.remarks,
+        termId: term?.id || party?.termId || current.termId,
+        terms: term?.name || order.termsOfPayment || party?.termName || current.terms,
+      };
+
+      return syncAccountsPayableVoucherWithGeneratedAccountingEntries(nextValues, taxAccountingContext);
+    });
+    setErrors({});
+    toast.success("Purchase order details copied to the APV.");
   }
 
   function updateExpenseLine(lineId: string, field: AccountsPayableVoucherExpenseLineField, value: string | number) {
@@ -789,6 +895,7 @@ export function useAccountsPayableVoucherFormPage() {
     addExpenseLines,
     clearAccountingEntries,
     clearExpenseLines,
+    copyFromPurchaseOrder,
     duplicateAccountingEntry,
     duplicateExpenseLine,
     errors,
@@ -816,6 +923,7 @@ export function useAccountsPayableVoucherFormPage() {
     moveAccountingEntry,
     moveExpenseLine,
     needsRecord: mode === AccountsPayableVoucherEditMode || mode === AccountsPayableVoucherViewMode,
+    purchaseOrderCopyRecords,
     removeAccountingEntry,
     removeExpenseLine,
     setIsCancelDialogOpen,

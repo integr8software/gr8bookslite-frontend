@@ -1,8 +1,6 @@
-import {
-	PurchaseRequestResponsibilityCenterOptions,
-	PurchaseRequestUomOptions,
-} from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
+import { PurchaseRequestUomOptions } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import type { PurchaseRequestItem } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { ItemRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
 import type { ServiceMaintenanceOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
@@ -38,6 +36,7 @@ export function createPurchaseRequestLineColumns(
 	purchaseType?: string,
 	serviceDescriptionOptions: ServiceMaintenanceOptionResponseDto[] = [],
 	itemDescriptionOptions: ItemRecord[] = [],
+	responsibilityCenters: ResponsibilityCenter[] = [],
 ): ModuleDataEntryColumn<PurchaseRequestItem>[] {
 	const isServices = purchaseType?.toLowerCase() === "services";
 	const usesItemMaintenance = ["goods", "assets"].includes(
@@ -63,6 +62,7 @@ export function createPurchaseRequestLineColumns(
 				isServices={isServices}
 				isReadonly={isReadonly}
 				itemDescriptionOptions={itemDescriptionOptions}
+				responsibilityCenters={responsibilityCenters}
 				row={row}
 				serviceDescriptionOptions={serviceDescriptionOptions}
 				onUpdateEntry={onUpdateEntry}
@@ -79,6 +79,7 @@ function PurchaseRequestLineCell({
 	isServices,
 	isReadonly,
 	itemDescriptionOptions,
+	responsibilityCenters,
 	onUpdateEntry,
 	row,
 	serviceDescriptionOptions,
@@ -90,6 +91,7 @@ function PurchaseRequestLineCell({
 	isServices: boolean;
 	isReadonly: boolean;
 	itemDescriptionOptions: ItemRecord[];
+	responsibilityCenters: ResponsibilityCenter[];
 	onUpdateEntry: PurchaseRequestLineUpdater;
 	row: PurchaseRequestItem;
 	serviceDescriptionOptions: ServiceMaintenanceOptionResponseDto[];
@@ -153,31 +155,28 @@ function PurchaseRequestLineCell({
 	}
 
 	if (column.id === "responsibilityCenter") {
-		const options = [
-			...PurchaseRequestResponsibilityCenterOptions.map((option) => ({
-				name: option,
-				value: option,
-			})),
-			...(value &&
-			!PurchaseRequestResponsibilityCenterOptions.includes(
-				value as (typeof PurchaseRequestResponsibilityCenterOptions)[number],
-			)
-				? [{ name: value, value }]
-				: []),
-		];
+		const options = createResponsibilityCenterOptions(responsibilityCenters, row);
+		const selectedValue = row.responsibilityCenterId || value;
 
 		return (
 			<AppAdvancedDropdown
 				id={fieldId}
 				name={fieldName}
-				value={value}
+				value={selectedValue}
 				readOnly={isReadonly}
 				options={options}
 				placeholder=""
 				className={EntryDropdownClassName}
-				onChange={(nextValue) =>
-					onUpdateEntry(row.id, { [column.id]: String(nextValue) })
-				}
+				onChange={(nextValue) => {
+					const selectedCenter = responsibilityCenters.find(
+						(center) => center.id === String(nextValue),
+					);
+
+					onUpdateEntry(row.id, {
+						responsibilityCenterId: selectedCenter?.id ?? "",
+						responsibilityCenter: selectedCenter?.name ?? String(nextValue),
+					});
+				}}
 			/>
 		);
 	}
@@ -232,6 +231,40 @@ function PurchaseRequestLineCell({
 			className={entryCellControlClassName()}
 		/>
 	);
+}
+
+function createResponsibilityCenterOptions(
+	centers: ResponsibilityCenter[],
+	row: PurchaseRequestItem,
+) {
+	const options = centers
+		.filter((center) => center.status === "Active")
+		.map((center) => ({
+			description: `${center.category} · ${center.financialType}`,
+			label: center.code,
+			name: center.name,
+			selectedDetails: center.code,
+			value: center.id,
+		}));
+	const hasCurrentCenter = row.responsibilityCenterId
+		? options.some((option) => option.value === row.responsibilityCenterId)
+		: options.some(
+				(option) =>
+					option.name.trim().toLowerCase() ===
+					row.responsibilityCenter.trim().toLowerCase(),
+			);
+
+	if (row.responsibilityCenter && !hasCurrentCenter) {
+		options.unshift({
+			description: "Current responsibility center",
+			label: row.responsibilityCenter,
+			name: row.responsibilityCenter,
+			selectedDetails: "",
+			value: row.responsibilityCenterId || row.responsibilityCenter,
+		});
+	}
+
+	return options;
 }
 
 const EntryDropdownClassName =

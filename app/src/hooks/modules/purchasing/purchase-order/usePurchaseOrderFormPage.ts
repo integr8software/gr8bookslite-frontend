@@ -94,7 +94,10 @@ export function usePurchaseOrderFormPage() {
   });
 
   useEffect(() => {
-    if (existingOrder && (mode === "edit" || mode === "view")) setValues(createPurchaseOrderFormValues(existingOrder));
+    if (existingOrder && (mode === "edit" || mode === "view")) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydrate route state after the purchase-order query resolves.
+      setValues(createPurchaseOrderFormValues(existingOrder));
+    }
   }, [existingOrder, mode]);
 
   function updateField<TKey extends keyof PurchaseOrderFormValues>(field: TKey, value: PurchaseOrderFormValues[TKey]) {
@@ -144,6 +147,7 @@ export function usePurchaseOrderFormPage() {
 
     setValues((current) => ({
       ...current,
+      partyId: "",
       vceCode: firstPurchaseRequest?.vceCode || current.vceCode,
       vceName: firstPurchaseRequest?.vceName || getCanvassSelectedSupplierName(firstCanvassForm) || current.vceName,
       currency: firstPurchaseRequest?.currency || firstCanvassForm?.currency || current.currency,
@@ -241,6 +245,7 @@ function createPurchaseOrderItemFromPurchaseRequestItem(record: PurchaseRequestR
     quantity: Number(item.quantity) || 0,
     uom: item.uom || "PC",
     cost: Number(item.cost) || 0,
+    responsibilityCenterId: item.responsibilityCenterId,
     responsibilityCenter: item.responsibilityCenter,
     linePrNo: record.transNo,
     canvassNo: "",

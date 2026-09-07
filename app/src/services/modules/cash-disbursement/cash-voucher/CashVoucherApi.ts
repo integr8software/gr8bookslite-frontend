@@ -17,12 +17,17 @@ import type {
   UpdateCashVoucherDto,
   UpdateCashVoucherDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import { fetchPostingAccountLookupOptions } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartOfAccountsLookupApi";
+import { fetchResponsibilityCenterLookupOptions } from "@/app/src/services/modules/financial-maintenance/responsibility-center/ResponsibilityCenterLookupApi";
+import { fetchPartyLookupOptions } from "@/app/src/services/modules/party-management/PartyLookupApi";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
+import type { ResponsibilityCenterLookupOption } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterLookupTypes";
 import type {
   CashVoucherLineEntry,
   CashVoucherRecord,
   CashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 type ApiCashVoucherStatus = CreateCashVoucherDtoStatus | UpdateCashVoucherDtoStatus | string;
 type ApiCashVoucherLineAmountSource = CashVoucherLineEntry & {
@@ -58,6 +63,42 @@ export async function fetchCashVoucherById(id: string): Promise<CashVoucherRecor
 
 export async function fetchNextCashVoucherTransactionNo(): Promise<string> {
   return fetchTransactionNumber(cashVoucherControllerSuggestTransactionNumberV1);
+}
+
+export async function fetchCashVoucherPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
+  return fetchPartyLookupOptions({ detail: "complete" });
+}
+
+export async function fetchCashVoucherAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
+  return fetchPostingAccountLookupOptions();
+}
+
+export async function fetchCashVoucherResponsibilityCenters(): Promise<{
+  costCenters: AppAdvancedDropdownOption[];
+  projects: AppAdvancedDropdownOption[];
+}> {
+  const centers = await fetchResponsibilityCenterLookupOptions();
+  const isProject = (rc: ResponsibilityCenterLookupOption) =>
+    rc.typeName?.toLowerCase().includes("project") || rc.name?.toLowerCase().includes("project");
+
+  const costCenters = centers
+    .filter((rc) => !isProject(rc))
+    .map((rc) => ({
+      name: rc.name,
+      label: rc.code,
+      value: rc.name,
+      description: rc.code,
+    }));
+
+  const projects = centers
+    .filter((rc) => isProject(rc))
+    .map((rc) => ({
+      name: rc.name,
+      label: rc.code,
+      value: rc.name,
+    }));
+
+  return { costCenters, projects };
 }
 
 export async function createCashVoucherApi(payload: {

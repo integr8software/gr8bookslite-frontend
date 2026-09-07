@@ -1,7 +1,4 @@
-import { useMemo } from "react";
-import { usePartyLookup } from "@/app/src/hooks/modules/party-management/usePartyLookup";
-import { usePostingAccountLookup } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartOfAccountsLookup";
-import { ensureDropdownOption } from "@/app/src/utils/dropdown.util";
+import { useCashAdvanceMultipleEntryDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/cash-advance-multiple-entry/useCashAdvanceMultipleEntryDetailsLookups";
 import type {
   CashAdvanceMultipleEntryFormController,
   CashAdvanceMultipleEntryFormErrors,
@@ -42,29 +39,7 @@ export function CashAdvanceMultipleEntryDetailsFields({
   projectOptions: AppAdvancedDropdownOption[];
   onUpdateField: CashAdvanceMultipleEntryFormController["updateField"];
 }) {
-  const partyQuery = usePartyLookup();
-  const accountQuery = usePostingAccountLookup();
-
-  const partyOptions = useMemo(() => {
-    return ensureDropdownOption(partyQuery.data ?? [], {
-      value: values.partyCode,
-      label: values.partyCode,
-      name: values.partyName,
-      description: values.partyName,
-    });
-  }, [partyQuery.data, values.partyCode, values.partyName]);
-
-  const accountOptions = useMemo(() => {
-    return ensureDropdownOption(accountQuery.data ?? [], {
-      value: values.accountCode,
-      label: values.accountCode,
-      name: values.accountTitle,
-      description: values.accountTitle,
-    });
-  }, [accountQuery.data, values.accountCode, values.accountTitle]);
-
-  const isPartyLookupLoading = partyQuery.isLoading;
-  const isAccountLookupLoading = accountQuery.isLoading;
+  const { accountOptions, isAccountLookupLoading, isPartyLookupLoading, partyOptions } = useCashAdvanceMultipleEntryDetailsLookups(values);
 
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">

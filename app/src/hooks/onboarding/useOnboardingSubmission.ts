@@ -362,8 +362,13 @@ export function useOnboardingSubmission({
             throw new Error("Select a plan before continuing.");
           }
 
+          const trialDays = selectedPlan.trialDays ?? 0;
+          const trialPriceInCents = selectedPlan.trialPriceInCents ?? 0;
+          const isTrial = trialDays > 0;
+          const isFreeTrial = isTrial && trialPriceInCents === 0;
+
           // If the plan has a free trial, start the free trial at ₱0 without upfront charge
-          if ((selectedPlan.trialDays ?? 0) > 0) {
+          if (isFreeTrial) {
             const billingResponse = await SaveOnboardingBilling(token, {
               billingMode: "MANUAL",
               billingEmail: values.billingEmail.trim() || undefined,
@@ -377,11 +382,15 @@ export function useOnboardingSubmission({
             return;
           }
 
-          const checkout = await CreateManualCheckout({
-            amountLabel:
-              selectedBillingCycle === "yearly"
+          const amountLabel =
+            isTrial && trialPriceInCents > 0
+              ? selectedPlan.trialPrice ?? `₱${(trialPriceInCents / 100).toFixed(2)}`
+              : selectedBillingCycle === "yearly"
                 ? selectedPlan.yearlyPrice
-                : selectedPlan.monthlyPrice,
+                : selectedPlan.monthlyPrice;
+
+          const checkout = await CreateManualCheckout({
+            amountLabel,
             billingCycle: GetOnboardingApiBillingCycle(selectedBillingCycle),
             companyName:
               values.taxpayerType === "individual"

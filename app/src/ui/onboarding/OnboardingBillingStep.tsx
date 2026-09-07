@@ -20,9 +20,15 @@ export function OnboardingBillingStep({
   handleBack,
   handleNext,
 }: OnboardingBillingStepProps) {
-  const isTrialPlan = Boolean(
-    selectedPlan && (selectedPlan.trialDays ?? 0) > 0,
-  );
+  const trialDays = selectedPlan?.trialDays ?? 0;
+  const trialPriceInCents = selectedPlan?.trialPriceInCents ?? 0;
+  const isTrialPlan = Boolean(selectedPlan && trialDays > 0);
+  const isFreeTrial = Boolean(isTrialPlan && trialPriceInCents === 0);
+  const trialPriceDisplay = selectedPlan?.trialPrice ?? `₱${(trialPriceInCents / 100).toFixed(2)}`;
+  const regularPrice =
+    selectedBillingCycle === "yearly"
+      ? selectedPlan?.yearlyPrice
+      : selectedPlan?.monthlyPrice;
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.12fr_0.88fr]">
@@ -37,7 +43,7 @@ export function OnboardingBillingStep({
             <div className="rounded-2xl border border-skyblue/20 bg-skyblue/8 p-5">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-darknavy text-offwhite">
-                  {isTrialPlan ? (
+                  {isFreeTrial ? (
                     <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
                   ) : (
                     <ExternalLink className="h-5 w-5" aria-hidden="true" />
@@ -45,13 +51,17 @@ export function OnboardingBillingStep({
                 </div>
                 <div>
                   <h3 className="font-semibold text-darknavy">
-                    {isTrialPlan
-                      ? "15-Day Free Trial Included"
+                    {isFreeTrial
+                      ? `${trialDays}-Day Free Trial Included`
+                      : isTrialPlan
+                      ? `${trialDays}-Day Trial (${trialPriceDisplay})`
                       : "Hosted checkout preview"}
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-darknavy/62">
-                    {isTrialPlan
-                      ? "No payment is required today. Your 15-day free trial will activate immediately at ₱0.00 cost with full access. Once your trial ends, you will renew manually through hosted checkout to continue your subscription."
+                    {isFreeTrial
+                      ? `No payment is required today. Your ${trialDays}-day free trial will activate immediately at ₱0.00 cost with full access. Once your trial ends, you will renew manually through hosted checkout to continue your subscription.`
+                      : isTrialPlan
+                      ? `Today's trial charge is ${trialPriceDisplay} for ${trialDays} days. Continue opens PayMongo checkout to pay for your trial access. After your trial ends, renewal will be ${regularPrice ?? "regular price"}.`
                       : "Continue opens a mock PayMongo checkout screen where manual payment outcomes can be reviewed. No card details are saved, and no automatic renewal is enabled."}
                   </p>
                 </div>
@@ -161,7 +171,7 @@ export function OnboardingBillingStep({
           <OnboardingActionRow
             showBack
             primaryLabel={
-              values.billingMode === "MANUAL" && !isTrialPlan
+              values.billingMode === "MANUAL" && !isFreeTrial
                 ? "Continue to hosted checkout"
                 : "Continue"
             }

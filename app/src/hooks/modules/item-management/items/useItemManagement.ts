@@ -2,16 +2,17 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { fetchItems, createItem, saveItem, deactivateItem, itemSaveError } from "@/app/src/services/modules/item-management/items/ItemManagementApi";
 import {
-  loadCompanyItemRecords,
   MockItemVariations,
   MockItemBundles,
   MockItemSuppliers,
-  MockItems,
   MockItemSetupRecords,
   MockPriceLists,
-  saveCompanyItemRecords,
 } from "@/app/src/data/modules/item-management/items/ItemManagementData";
+import {
+  ItemInactiveStatus,
+} from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { ItemManagementQueryKeys } from "@/app/src/services/modules/item-management/items/ItemManagementQueryKeys";
 import type {
@@ -33,12 +34,12 @@ type ItemManagementStoreState = {
   addItemVariation: (variation: ItemVariationRecord) => void;
   addItemBundle: (bundle: ItemBundleRecord) => void;
   addItemSupplier: (supplier: ItemSupplierRecord) => void;
-  addItem: (item: ItemRecord) => void;
+  addItem: (item: ItemRecord) => Promise<ItemRecord>;
   addPriceList: (priceList: ItemPriceListRecord) => void;
   updateItemVariation: (variation: ItemVariationRecord) => void;
   updateItemBundle: (bundle: ItemBundleRecord) => void;
   updateItemSupplier: (supplier: ItemSupplierRecord) => void;
-  updateItem: (item: ItemRecord) => void;
+  updateItem: (item: ItemRecord) => Promise<ItemRecord>;
   updatePriceList: (priceList: ItemPriceListRecord) => void;
   deleteItem: (itemId: string) => void;
   getSetupRecords: (kind: ItemSetupKind) => ItemSetupRecord[];
@@ -60,9 +61,8 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
   const activeCompanyId = useAppStore((state) => state.activeCompanyId);
   const itemsQuery = useQuery({
     queryKey: ItemManagementQueryKeys.items(activeCompanyId),
-    queryFn: async () => loadCompanyItemRecords(activeCompanyId),
+    queryFn: fetchItems,
     enabled: activeCompanyId !== null,
-    placeholderData: MockItems,
     retry: false,
   });
   const itemVariationsQuery = useQuery({
@@ -118,12 +118,9 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
 
   function updateCachedItems(updater: (items: ItemRecord[]) => ItemRecord[]) {
     const queryKey = ItemManagementQueryKeys.items(activeCompanyId);
-    const currentItems =
-      queryClient.getQueryData<ItemRecord[]>(queryKey) ??
-      loadCompanyItemRecords(activeCompanyId);
+    const currentItems = queryClient.getQueryData<ItemRecord[]>(queryKey) ?? [];
     const nextItems = updater(currentItems);
 
-    saveCompanyItemRecords(activeCompanyId, nextItems);
     queryClient.setQueryData<ItemRecord[]>(queryKey, nextItems);
   }
 
@@ -172,7 +169,8 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
   }
 
   const addItemMutation = useMutation({
-    mutationFn: async (item: ItemRecord) => item,
+    mutationFn: createItem,
+    onError: (error) => toast.error(itemSaveError(error)),
     onSuccess: (item) => {
       updateCachedItems((items) => [...items, item]);
       toast.success("Item created.");
@@ -180,7 +178,8 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
   });
 
   const updateItemMutation = useMutation({
-    mutationFn: async (item: ItemRecord) => item,
+    mutationFn: saveItem,
+    onError: (error) => toast.error(itemSaveError(error)),
     onSuccess: (item) => {
       updateCachedItems((items) =>
         items.map((currentItem) => (currentItem.id === item.id ? item : currentItem)),
@@ -190,10 +189,11 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
   });
 
   const deleteItemMutation = useMutation({
-    mutationFn: async (itemId: string) => itemId,
+    mutationFn: deactivateItem,
+    onError: (error) => toast.error(itemSaveError(error)),
     onSuccess: (itemId) => {
       updateCachedItems((items) =>
-        items.map((item) => (item.id === itemId ? { ...item, status: "Inactive" } : item)),
+        items.map((item) => (item.id === itemId ? { ...item, status: ItemInactiveStatus } : item)),
       );
       toast.success("Item set inactive.");
     },
@@ -336,7 +336,7 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
     onSuccess: ({ kind, recordId }) => {
       updateCachedSetupRecords(kind, (records) =>
         records.map((record) =>
-          record.id === recordId ? { ...record, status: "Inactive" } : record,
+          record.id === recordId ? { ...record, status: ItemInactiveStatus } : record,
         ),
       );
       toast.success("Setup record set inactive.");
@@ -347,17 +347,17 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
     itemVariations: itemVariationsQuery.data,
     itemBundles: itemBundlesQuery.data,
     itemSuppliers: itemSuppliersQuery.data,
-    items: itemsQuery.data ?? MockItems,
+    items: itemsQuery.data ?? [],
     priceLists: priceListsQuery.data,
     addItemVariation: (variation) => addItemVariationMutation.mutate(variation),
     addItemBundle: (bundle) => addItemBundleMutation.mutate(bundle),
     addItemSupplier: (supplier) => addItemSupplierMutation.mutate(supplier),
-    addItem: (item) => addItemMutation.mutate(item),
+    addItem: (item) => addItemMutation.mutateAsync(item),
     addPriceList: (priceList) => addPriceListMutation.mutate(priceList),
     updateItemVariation: (variation) => updateItemVariationMutation.mutate(variation),
     updateItemBundle: (bundle) => updateItemBundleMutation.mutate(bundle),
     updateItemSupplier: (supplier) => updateItemSupplierMutation.mutate(supplier),
-    updateItem: (item) => updateItemMutation.mutate(item),
+    updateItem: (item) => updateItemMutation.mutateAsync(item),
     updatePriceList: (priceList) => updatePriceListMutation.mutate(priceList),
     deleteItem: (itemId) => deleteItemMutation.mutate(itemId),
     getSetupRecords: (kind) => setupQueries[kind].data,

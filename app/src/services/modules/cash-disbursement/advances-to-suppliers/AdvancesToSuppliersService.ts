@@ -11,10 +11,6 @@ import {
   advancesToSuppliersControllerUpdateV1,
 } from "@/app/src/generated/api/advances-to-suppliers/advances-to-suppliers";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
-import { fetchPostingAccountLookupOptions } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartOfAccountsLookupApi";
-import { fetchResponsibilityCenterLookupOptions } from "@/app/src/services/modules/financial-maintenance/responsibility-center/ResponsibilityCenterLookupApi";
-import { fetchPartyLookupOptions } from "@/app/src/services/modules/party-management/PartyLookupApi";
-import type { ResponsibilityCenterLookupOption } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterLookupTypes";
 import type {
   AdvanceToSupplierResponseDto,
   AdvanceToSupplierListResponseDto,
@@ -32,7 +28,6 @@ import type {
   AdvancesToSuppliersRecord,
   AdvancesToSuppliersStatus,
 } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 type FetchAdvancesToSuppliersListParams = AdvancesToSuppliersControllerFindAllV1Params;
 type MappedAdvancesToSuppliersListResponse = Omit<AdvanceToSupplierListResponseDto, "items"> & {
@@ -130,41 +125,6 @@ export async function deleteAdvancesToSuppliersApi(id: string): Promise<{ succes
   return { success: true, message: "Deleted successfully" };
 }
 
-export async function fetchAdvancesToSuppliersPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchPartyLookupOptions({ detail: "complete" });
-}
-
-export async function fetchAdvancesToSuppliersAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  const accounts = await fetchPostingAccountLookupOptions();
-  const supplierAdvanceAccounts = accounts.filter((account) => {
-    const title = String(account.accountTitle ?? account.name ?? "").toLowerCase();
-    return title.includes("advance") || title.includes("supplier") || title.includes("deposit");
-  });
-  const finalAccounts = supplierAdvanceAccounts.length > 0 ? supplierAdvanceAccounts : accounts;
-
-  return finalAccounts;
-}
-
-export async function fetchAdvancesToSuppliersResponsibilityCenters(): Promise<{
-  responsibilityCenters: AppAdvancedDropdownOption[];
-  projects: AppAdvancedDropdownOption[];
-}> {
-  const centers = await fetchResponsibilityCenterLookupOptions();
-  const isProject = (center: ResponsibilityCenterLookupOption) =>
-    String(center.category ?? "").toLowerCase() === "project" ||
-    String(center.typeName ?? "")
-      .toLowerCase()
-      .includes("project") ||
-    String(center.name ?? "")
-      .toLowerCase()
-      .includes("project");
-
-  return {
-    responsibilityCenters: centers.filter((center) => !isProject(center)).map(mapResponsibilityCenterOption),
-    projects: centers.filter((center) => isProject(center)).map(mapResponsibilityCenterOption),
-  };
-}
-
 function mapFormValuesToCreateDto(values: AdvancesToSuppliersFormValues): CreateAdvanceToSupplierDto {
   return {
     partyId: values.partyId,
@@ -225,15 +185,6 @@ function mapAdvancesToSuppliersRecordFromDto(dto: AdvanceToSupplierResponseDto):
     createdAt: dto.createdAt,
     updatedBy: dto.updatedBy ?? "",
     updatedAt: dto.updatedAt ?? "",
-  };
-}
-
-function mapResponsibilityCenterOption(center: ResponsibilityCenterLookupOption): AppAdvancedDropdownOption {
-  return {
-    name: center.name,
-    label: center.code || center.label,
-    value: center.code || center.value,
-    description: center.name,
   };
 }
 

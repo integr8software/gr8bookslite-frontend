@@ -75,10 +75,11 @@ import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { DisbursementVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherQueryKeys";
 import { FetchChartAccountsTree } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsQueryKeys";
+import { usePostingAccountLookup } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartOfAccountsLookup";
+import { useDisbursementVoucherDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucherDetailsLookups";
 import {
   createDisbursementVoucherApi,
   fetchDisbursementVoucherById,
-  fetchDisbursementVoucherAccountOptions,
   fetchNextDisbursementVoucherTransactionNo,
   updateDisbursementVoucherApi,
   updateDisbursementVoucherStatusApi,
@@ -114,11 +115,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     queryFn: () => fetchDisbursementVoucherById(routeTransactionId),
     enabled: Boolean(routeTransactionId && mode !== DisbursementVoucherActionModes.Add),
   });
-  const accountOptionsQuery = useQuery({
-    queryKey: DisbursementVoucherQueryKeys.accounts(activeCompanyId),
-    queryFn: fetchDisbursementVoucherAccountOptions,
-    enabled: activeCompanyId !== null,
-  });
+  const accountOptionsQuery = usePostingAccountLookup();
   const chartAccountsQuery = useQuery({
     queryKey: ChartsOfAccountsQueryKeys.tree(activeCompanyId),
     queryFn: FetchChartAccountsTree,
@@ -177,72 +174,12 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       ),
     [taxDefaultAccountOptionsQuery.data],
   );
-  const paymentTypeRecords = useMemo(
-    () => createDisbursementVoucherPaymentTypeRecords(paymentTypeStore.paymentTypes),
-    [paymentTypeStore.paymentTypes],
-  );
-  const partyOptions = useMemo<DisbursementVoucherPartyDropdownOption[]>(() => {
-    const optionsByCode = new Map<string, DisbursementVoucherPartyDropdownOption>();
-
-    partyStore.records.forEach((record) => {
-      if (record.status !== PartyInformationActiveStatus) {
-        return;
-      }
-
-      const partyCode = record.partyCodeNo.trim();
-      const partyName = getPartyDisplayName(record).trim() || partyCode;
-
-      if (!partyCode || optionsByCode.has(partyCode)) {
-        return;
-      }
-
-      const partyTypes = Array.isArray(record.partyTypes)
-        ? record.partyTypes
-            .map((item) => (typeof item === "string" ? item : (item as { partyType?: string })?.partyType || ""))
-            .filter(Boolean)
-            .join(", ")
-        : "";
-
-      optionsByCode.set(partyCode, {
-        defaultPurchaseInputVatTaxSourceKey: record.defaultPurchaseInputVatTaxSourceKey ?? undefined,
-        defaultPurchaseEwtTaxSourceKey: record.defaultPurchaseEwtTaxSourceKey ?? undefined,
-        defaultSalesOutputVatTaxSourceKey: record.defaultSalesOutputVatTaxSourceKey ?? undefined,
-        defaultSalesCwtTaxSourceKey: record.defaultSalesCwtTaxSourceKey ?? undefined,
-        description: partyTypes,
-        label: partyCode,
-        name: partyName,
-        selectedDetails: partyCode,
-        value: partyCode,
-      });
-    });
-
-    return Array.from(optionsByCode.values());
-  }, [partyStore.records]);
-
-  const projectOptions = useMemo(
-    () =>
-      responsibilityCenterStore.centers
-        .filter((center) => center.status === ResponsibilityCenterStatuses.Active && center.typeName?.toLowerCase().includes("project"))
-        .map((center) => ({
-          label: center.code,
-          name: center.name,
-          value: center.name,
-        })),
-    [responsibilityCenterStore.centers],
-  );
-
-  const responsibilityCenterOptions = useMemo(
-    () =>
-      responsibilityCenterStore.centers
-        .filter((center) => center.status === ResponsibilityCenterStatuses.Active && !center.typeName?.toLowerCase().includes("project"))
-        .map((center) => ({
-          description: center.code,
-          label: center.code,
-          name: center.name,
-          value: center.name,
-        })),
-    [responsibilityCenterStore.centers],
-  );
+  const {
+    partyOptions,
+    paymentTypeRecords,
+    projectOptions,
+    responsibilityCenterOptions,
+  } = useDisbursementVoucherDetailsLookups(values);
 
   const bankAccounts = useMemo(
     () =>
@@ -578,9 +515,18 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       return;
     }
 
-    const selectedParty = partyStore.records.find(
-      (record) => record.partyCodeNo === partyCode || getPartyDisplayName(record).trim().toLowerCase() === partyName.trim().toLowerCase(),
-    );
+    const selectedParty =
+      partyOptions.find(
+        (opt) =>
+          opt.value === partyCode ||
+          opt.label === partyCode ||
+          opt.name.trim().toLowerCase() === partyName.trim().toLowerCase(),
+      ) ??
+      partyStore.records.find(
+        (record) =>
+          record.partyCodeNo === partyCode ||
+          getPartyDisplayName(record).trim().toLowerCase() === partyName.trim().toLowerCase(),
+      );
     const defaultVatCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseInputVatTaxSourceKey, "VAT");
     const defaultEwtCode = findPartyTaxCode(taxCodes, selectedParty?.defaultPurchaseEwtTaxSourceKey, "EWT");
     const nextTaxRate = defaultVatCode ? getVatRateFromCode(defaultVatCode, taxCodes) : "0%";

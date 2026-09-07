@@ -21,9 +21,6 @@ import type {
   UpdateDisbursementVoucherDto,
   UpdateDisbursementVoucherDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
-import { fetchPostingAccountLookupOptions } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartOfAccountsLookupApi";
-import { fetchResponsibilityCenterLookupOptions } from "@/app/src/services/modules/financial-maintenance/responsibility-center/ResponsibilityCenterLookupApi";
-import { fetchPartyLookupOptions } from "@/app/src/services/modules/party-management/PartyLookupApi";
 import type {
   DisbursementLineEntry,
   DisbursementVoucherRecord,
@@ -31,7 +28,6 @@ import type {
   DisbursementVoucherPaymentDetails,
   DisbursementAttachment,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 type ApiDisbursementVoucherStatus = CreateDisbursementVoucherDtoStatus | UpdateDisbursementVoucherDtoStatus | string;
 type ApiDisbursementVoucherLineAmountSource = DisbursementLineEntry & {
@@ -83,42 +79,6 @@ export async function fetchDisbursementVoucherById(id: string): Promise<Disburse
 export async function fetchNextDisbursementVoucherTransactionNo(branchUnitId?: number): Promise<string> {
   const response = await disbursementVoucherControllerSuggestTransactionNumberV1({ branchUnitId });
   return response.transactionNo;
-}
-
-export async function fetchDisbursementVoucherPartyOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchPartyLookupOptions({ detail: "complete" });
-}
-
-export async function fetchDisbursementVoucherAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
-  return fetchPostingAccountLookupOptions();
-}
-
-export async function fetchDisbursementVoucherResponsibilityCenters(): Promise<{
-  costCenters: AppAdvancedDropdownOption[];
-  projects: AppAdvancedDropdownOption[];
-}> {
-  const centers = await fetchResponsibilityCenterLookupOptions();
-  const isProject = (rc: { typeName?: string; name?: string }) =>
-    rc.typeName?.toLowerCase().includes("project") || rc.name?.toLowerCase().includes("project");
-
-  const costCenters = centers
-    .filter((rc) => !isProject(rc))
-    .map((rc) => ({
-      name: rc.name,
-      label: rc.code,
-      value: rc.name,
-      description: rc.code,
-    }));
-
-  const projects = centers
-    .filter((rc) => isProject(rc))
-    .map((rc) => ({
-      name: rc.name,
-      label: rc.code,
-      value: rc.name,
-    }));
-
-  return { costCenters, projects };
 }
 
 export async function fetchDisbursementVoucherExpenseAccountOptions(): Promise<DefaultAccountOptionResponseDto[]> {

@@ -32,14 +32,18 @@ const CopyFromPageSizeOptions = [5, 10, 15, 20, 25, 50];
 export function AppCopyFromDropdown({
   disabled = false,
   enableSourceSearch = false,
+  lockedPartyName,
   records,
+  restrictToSameParty = false,
   selectionMode = "multiple",
   sources,
   onApply,
 }: {
   disabled?: boolean;
   enableSourceSearch?: boolean;
+  lockedPartyName?: string;
   records: AppCopyFromRecord[];
+  restrictToSameParty?: boolean;
   selectionMode?: "multiple" | "single";
   sources: string[];
   onApply: (recordIds: string[]) => void;
@@ -71,6 +75,55 @@ export function AppCopyFromDropdown({
   const filteredRecords = useMemo(() => filterCopyFromRecords(sourceRecords, filters), [filters, sourceRecords]);
   const selectedRecords = useMemo(() => sourceRecords.filter((record) => selectedIds.includes(record.id)), [selectedIds, sourceRecords]);
   const selectedTotalAmount = selectedRecords.reduce((total, record) => total + parseCopyFromAmount(record.amount), 0);
+
+  // Compute disabled record IDs, their reasons, and current active party name
+  const { activePartyDisplayName, disabledIds, disabledReasons } = useMemo(() => {
+    const disabledSet = new Set<string>();
+    const reasons = new Map<string, string>();
+
+    // 1. Mark records with explicit disabled flag (e.g., already copied to entries)
+    for (const record of sourceRecords) {
+      if (record.disabled) {
+        disabledSet.add(record.id);
+        reasons.set(record.id, record.disabledReason || "Already added");
+      }
+    }
+
+    // 2. Party restriction
+    let activeParty = "";
+    let displayName = "";
+    if (restrictToSameParty) {
+      const normalizedLockedParty = lockedPartyName?.trim().toLowerCase() ?? "";
+      if (normalizedLockedParty) {
+        activeParty = normalizedLockedParty;
+        displayName = lockedPartyName?.trim() ?? "";
+      } else if (selectedIds.length > 0) {
+        const firstSelectedRecord = sourceRecords.find((record) => selectedIds.includes(record.id));
+        if (firstSelectedRecord?.partyName) {
+          activeParty = firstSelectedRecord.partyName.trim().toLowerCase();
+          displayName = firstSelectedRecord.partyName.trim();
+        }
+      }
+
+      if (activeParty) {
+        for (const record of sourceRecords) {
+          if (!disabledSet.has(record.id)) {
+            const recParty = record.partyName?.trim().toLowerCase() ?? "";
+            if (recParty && recParty !== activeParty) {
+              disabledSet.add(record.id);
+              reasons.set(record.id, `Different party (${record.partyName})`);
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      activePartyDisplayName: displayName,
+      disabledIds: disabledSet,
+      disabledReasons: reasons,
+    };
+  }, [lockedPartyName, restrictToSameParty, selectedIds, sourceRecords]);
 
   useEffect(() => {
     if (!isMenuOpen && !isDialogOpen) {
@@ -130,12 +183,52 @@ export function AppCopyFromDropdown({
   }
 
   function toggleRecord(recordId: string) {
+    if (disabledIds.has(recordId)) {
+      return;
+    }
+
     setSelectedIds((currentIds) => {
       if (selectionMode === "single") {
         return currentIds.includes(recordId) ? [] : [recordId];
       }
 
       return currentIds.includes(recordId) ? currentIds.filter((currentId) => currentId !== recordId) : [...currentIds, recordId];
+    });
+  }
+
+  function toggleBatch(recordIds: string[], shouldSelect: boolean) {
+    setSelectedIds((currentIds) => {
+      if (!shouldSelect) {
+        const toRemove = new Set(recordIds);
+        return currentIds.filter((id) => !toRemove.has(id));
+      }
+
+      // If restrictToSameParty, ensure all added IDs belong to the same party
+      if (restrictToSameParty) {
+        const normalizedLockedParty = lockedPartyName?.trim().toLowerCase() ?? "";
+        const activeParty =
+          normalizedLockedParty ||
+          (() => {
+            if (currentIds.length > 0) {
+              const first = sourceRecords.find((r) => currentIds.includes(r.id));
+              return first?.partyName?.trim().toLowerCase() ?? "";
+            }
+            const firstNew = sourceRecords.find((r) => recordIds.includes(r.id));
+            return firstNew?.partyName?.trim().toLowerCase() ?? "";
+          })();
+
+        if (activeParty) {
+          const validNewIds = recordIds.filter((id) => {
+            if (disabledIds.has(id)) return false;
+            const rec = sourceRecords.find((r) => r.id === id);
+            return (rec?.partyName?.trim().toLowerCase() ?? "") === activeParty;
+          });
+          return Array.from(new Set([...currentIds, ...validNewIds]));
+        }
+      }
+
+      const selectableOnly = recordIds.filter((id) => !disabledIds.has(id));
+      return Array.from(new Set([...currentIds, ...selectableOnly]));
     });
   }
 
@@ -203,18 +296,24 @@ export function AppCopyFromDropdown({
         </div>
       ) : null}
       <AppCopyFromSourceDialog
+        activePartyDisplayName={activePartyDisplayName}
         activeSource={activeSource}
+        disabledIds={disabledIds}
+        disabledReasons={disabledReasons}
         filters={filters}
         filteredRecords={filteredRecords}
         isOpen={isDialogOpen}
+        lockedPartyName={lockedPartyName}
         pagination={pagination}
         selectionMode={selectionMode}
         selectedIds={selectedIds}
         selectedTotalAmount={selectedTotalAmount}
         onApply={applySelection}
+        onClearSelection={() => setSelectedIds([])}
         onClose={closeDialog}
         onFiltersChange={updateFilters}
         onPaginationChange={setPagination}
+        onToggleBatch={toggleBatch}
         onToggleRecord={toggleRecord}
       />
     </div>
@@ -222,32 +321,44 @@ export function AppCopyFromDropdown({
 }
 
 export function AppCopyFromSourceDialog({
+  activePartyDisplayName,
   activeSource,
+  disabledIds = new Set(),
+  disabledReasons = new Map(),
   filters,
   filteredRecords,
   isOpen,
+  lockedPartyName,
   pagination,
   selectionMode,
   selectedIds,
   selectedTotalAmount,
   onApply,
+  onClearSelection,
   onClose,
   onFiltersChange,
   onPaginationChange,
+  onToggleBatch,
   onToggleRecord,
 }: {
+  activePartyDisplayName?: string;
   activeSource: string;
+  disabledIds?: Set<string>;
+  disabledReasons?: Map<string, string>;
   filters: AppCopyFromFiltersValue;
   filteredRecords: AppCopyFromRecord[];
   isOpen: boolean;
+  lockedPartyName?: string;
   pagination: PaginationState;
   selectionMode: "multiple" | "single";
   selectedIds: string[];
   selectedTotalAmount: number;
   onApply: () => void;
+  onClearSelection?: () => void;
   onClose: () => void;
   onFiltersChange: (value: AppCopyFromFiltersValue) => void;
   onPaginationChange: (value: PaginationState | ((current: PaginationState) => PaginationState)) => void;
+  onToggleBatch?: (recordIds: string[], shouldSelect: boolean) => void;
   onToggleRecord: (recordId: string) => void;
 }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -270,27 +381,33 @@ export function AppCopyFromSourceDialog({
           }
 
           const visibleRecordIds = table.getRowModel().rows.map((row) => row.original.id);
-          const hasVisibleRows = visibleRecordIds.length > 0;
-          const isAllVisibleSelected = hasVisibleRows && visibleRecordIds.every((recordId) => selectedIds.includes(recordId));
-          const isPartiallySelected = visibleRecordIds.some((recordId) => selectedIds.includes(recordId)) && !isAllVisibleSelected;
+          const selectableRecordIds = visibleRecordIds.filter((recordId) => !disabledIds.has(recordId));
+          const hasSelectableRows = selectableRecordIds.length > 0;
+          const isAllSelectableSelected = hasSelectableRows && selectableRecordIds.every((recordId) => selectedIds.includes(recordId));
+          const isPartiallySelected = selectableRecordIds.some((recordId) => selectedIds.includes(recordId)) && !isAllSelectableSelected;
 
           return (
             <input
               type="checkbox"
-              checked={isAllVisibleSelected}
+              checked={isAllSelectableSelected}
               ref={(input) => {
                 if (input) {
                   input.indeterminate = isPartiallySelected;
                 }
               }}
-              disabled={!hasVisibleRows}
+              disabled={!hasSelectableRows}
               onChange={() => {
-                if (!hasVisibleRows) {
+                if (!hasSelectableRows) {
                   return;
                 }
 
-                if (isAllVisibleSelected) {
-                  visibleRecordIds.forEach((recordId) => {
+                if (onToggleBatch) {
+                  onToggleBatch(selectableRecordIds, !isAllSelectableSelected);
+                  return;
+                }
+
+                if (isAllSelectableSelected) {
+                  selectableRecordIds.forEach((recordId) => {
                     if (selectedIds.includes(recordId)) {
                       onToggleRecord(recordId);
                     }
@@ -298,7 +415,7 @@ export function AppCopyFromSourceDialog({
                   return;
                 }
 
-                visibleRecordIds.forEach((recordId) => {
+                selectableRecordIds.forEach((recordId) => {
                   if (!selectedIds.includes(recordId)) {
                     onToggleRecord(recordId);
                   }
@@ -337,7 +454,7 @@ export function AppCopyFromSourceDialog({
         meta: { className: "text-right tabular-nums" },
       },
     ],
-    [onToggleRecord, selectedIds, selectionMode],
+    [disabledIds, onToggleBatch, onToggleRecord, selectedIds, selectionMode],
   );
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table is the shared table engine for module dialogs.
   const table = useReactTable({
@@ -378,6 +495,28 @@ export function AppCopyFromSourceDialog({
       titleId="copy-from-dialog-title"
       onClose={onClose}
     >
+      {activePartyDisplayName ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-sky-100 bg-sky-50/80 px-5 py-2.5 text-xs text-darknavy">
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-2 w-2 rounded-full bg-skyblue" />
+            <span>
+              Transactions restricted to: <strong className="font-semibold text-darknavy">{activePartyDisplayName}</strong>
+            </span>
+            <span className="text-darknavy/50">
+              (Transactions from other parties cannot be selected)
+            </span>
+          </div>
+          {!lockedPartyName && onClearSelection && selectedIds.length > 0 ? (
+            <button
+              type="button"
+              onClick={onClearSelection}
+              className="text-xs font-semibold text-skyblue hover:underline"
+            >
+              Clear selection to choose another party
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       <ModuleTable
         enableColumnReorder={false}
         emptyDescription="Try a different source number, party, amount, date, or remarks."
@@ -391,11 +530,17 @@ export function AppCopyFromSourceDialog({
         paginationStorageKey={`copy-from:${activeSource}:default-10`}
         renderRow={({ id, original }) => {
           const isSelected = selectedIds.includes(original.id);
+          const isDisabled = disabledIds.has(original.id);
+          const disabledReason = disabledReasons.get(original.id);
 
           return (
             <tr
               key={id}
               onClick={(event) => {
+                if (isDisabled) {
+                  return;
+                }
+
                 const target = event.target;
                 if (target instanceof HTMLElement && target.closest("input, button, a, select, textarea, label")) {
                   return;
@@ -404,29 +549,43 @@ export function AppCopyFromSourceDialog({
                 onToggleRecord(original.id);
               }}
               className={joinClasses(
-                "module-table-row cursor-pointer border-b border-darknavy/8 last:border-b-0",
+                "module-table-row border-b border-darknavy/8 last:border-b-0",
+                isDisabled ? "cursor-not-allowed bg-slate-50/60 opacity-45" : "cursor-pointer",
                 isSelected && "bg-skyblue/10",
               )}
+              title={isDisabled && disabledReason ? disabledReason : undefined}
             >
               <td
                 className={joinClasses(
                   "sticky left-0 z-20 !w-14 !p-0 text-center shadow-[6px_0_12px_rgba(33,39,56,0.08)]",
                   isSelected ? "bg-skyblue/10" : "bg-white",
+                  isDisabled && "!bg-slate-50",
                 )}
               >
                 <input
                   type={selectionMode === "single" ? "radio" : "checkbox"}
                   name={selectionMode === "single" ? `copy-from-${activeSource}-selection` : undefined}
                   checked={isSelected}
+                  disabled={isDisabled}
                   onChange={() => onToggleRecord(original.id)}
                   className={joinClasses(
                     "h-4 w-4 border-darknavy/20 text-skyblue focus:ring-skyblue/35",
                     selectionMode === "single" ? "rounded-full" : "rounded",
+                    isDisabled && "cursor-not-allowed opacity-50",
                   )}
                   aria-label={`Select ${original.sourceNo}`}
                 />
               </td>
-              <td className="font-semibold text-darknavy">{original.sourceNo}</td>
+              <td className="font-semibold text-darknavy">
+                <div className="flex items-center gap-2">
+                  <span>{original.sourceNo}</span>
+                  {isDisabled && disabledReason ? (
+                    <span className="inline-flex items-center rounded border border-darknavy/10 bg-darknavy/5 px-1.5 py-0.5 text-[10px] font-medium text-darknavy/60">
+                      {disabledReason}
+                    </span>
+                  ) : null}
+                </div>
+              </td>
               <td>{formatCopyFromDate(original.documentDate)}</td>
               <td>{formatCopyFromText(original.partyName)}</td>
               <td className="max-w-md text-darknavy/65">

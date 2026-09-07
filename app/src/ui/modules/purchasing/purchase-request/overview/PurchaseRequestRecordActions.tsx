@@ -25,7 +25,7 @@ export function PurchaseRequestRecordActions({ request }: PurchaseRequestRecordA
       <td className="px-4 py-4">
         <span className="inline-flex rounded-full bg-skyblue/12 px-3 py-1 text-xs font-semibold text-darknavy">{request.status}</span>
       </td>
-      <td className="px-4 py-4 text-right font-semibold">{formatPurchaseRequestCurrency(getPurchaseRequestTotal(request))}</td>
+      <td className="px-4 py-4 text-left font-semibold">{formatPurchaseRequestCurrency(getPurchaseRequestTotal(request))}</td>
       <td className="px-4 py-4">
         <ModuleTableActions>
           <ModuleTableActionLink

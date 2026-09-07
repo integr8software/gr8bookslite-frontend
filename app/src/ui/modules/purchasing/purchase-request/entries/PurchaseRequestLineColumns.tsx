@@ -305,9 +305,12 @@ function getPurchaseRequestItemAutoFillUpdates(
 
 	return {
 		barcode: selectedItem.barcode,
+		cost: selectedItem.costPrice,
 		description: selectedItem.name,
 		itemId: selectedItem.id,
 		itemCode: selectedItem.code,
+		responsibilityCenterId: selectedItem.responsibilityCenterId ?? "",
+		responsibilityCenter: selectedItem.responsibilityCenter,
 		serviceMaintenanceId: "",
 		uom: selectedItem.uom,
 	};

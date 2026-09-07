@@ -59,29 +59,6 @@ export function usePurchaseOrderFormPage() {
   const queryClient = useQueryClient();
   const { requests: purchaseRequests } = usePurchaseRequestStore();
   const canvassForms = useMemo(() => loadCanvassForms(), []);
-  const copyFromRecords = useMemo<AppCopyFromRecord[]>(
-    () => [
-      ...purchaseRequests.map((record) => ({
-        amount: formatPurchaseRequestCurrency(getPurchaseRequestTotal(record)),
-        documentDate: record.prDate,
-        id: record.id,
-        partyName: record.vceName,
-        remarks: record.remarks,
-        source: "Purchase Request",
-        sourceNo: record.transNo,
-      })),
-      ...canvassForms.map((record) => ({
-        amount: String(getCanvassFormTotal(record)),
-        documentDate: record.documentDate,
-        id: record.id,
-        partyName: getCanvassSelectedSupplierName(record),
-        remarks: record.remarks,
-        source: "Canvass",
-        sourceNo: record.transNo,
-      })),
-    ],
-    [canvassForms, purchaseRequests],
-  );
   const mode = getPurchaseOrderFormMode(pathname);
   const isReadonly = mode === "view";
   const existingOrder = findPurchaseOrderByRouteId(orders, params.recordId);
@@ -96,11 +73,82 @@ export function usePurchaseOrderFormPage() {
     enabled: Boolean(companyId),
     retry: false,
   });
+  const copyFromRecords = useMemo<AppCopyFromRecord[]>(
+    () => {
+      const currentPartyName = values.vceName.trim().toLowerCase();
+      const copiedPrNos = new Set(
+        values.items
+          .map((item) => item.linePrNo.trim())
+          .filter(Boolean),
+      );
+      const copiedCanvassNos = new Set(
+        values.items
+          .map((item) => item.canvassNo.trim())
+          .filter(Boolean),
+      );
+
+      const prRecords: AppCopyFromRecord[] = purchaseRequests.map((record) => {
+        const isAlreadyCopied = copiedPrNos.has(record.transNo.trim());
+        const isDifferentParty = Boolean(currentPartyName && record.vceName.trim().toLowerCase() !== currentPartyName);
+
+        let disabled = false;
+        let disabledReason = "";
+        if (isAlreadyCopied) {
+          disabled = true;
+          disabledReason = "Already in entries";
+        } else if (isDifferentParty) {
+          disabled = true;
+          disabledReason = `Different party (${record.vceName})`;
+        }
+
+        return {
+          amount: formatPurchaseRequestCurrency(getPurchaseRequestTotal(record)),
+          documentDate: record.prDate,
+          id: record.id,
+          partyName: record.vceName,
+          remarks: record.remarks,
+          source: "Purchase Request",
+          sourceNo: record.transNo,
+          disabled,
+          disabledReason,
+        };
+      });
+
+      const canvassRecords: AppCopyFromRecord[] = canvassForms.map((record) => {
+        const canvassSupplier = getCanvassSelectedSupplierName(record);
+        const isAlreadyCopied = copiedCanvassNos.has(record.transNo.trim());
+        const isDifferentParty = Boolean(currentPartyName && canvassSupplier.trim().toLowerCase() !== currentPartyName);
+
+        let disabled = false;
+        let disabledReason = "";
+        if (isAlreadyCopied) {
+          disabled = true;
+          disabledReason = "Already in entries";
+        } else if (isDifferentParty) {
+          disabled = true;
+          disabledReason = `Different party (${canvassSupplier})`;
+        }
+
+        return {
+          amount: String(getCanvassFormTotal(record)),
+          documentDate: record.documentDate,
+          id: record.id,
+          partyName: canvassSupplier,
+          remarks: record.remarks,
+          source: "Canvass",
+          sourceNo: record.transNo,
+          disabled,
+          disabledReason,
+        };
+      });
+
+      return [...prRecords, ...canvassRecords];
+    },
+    [canvassForms, purchaseRequests, values.vceName, values.items],
+  );
   const previewRecord = useMemo(() => createPurchaseOrderRecord(values, params.recordId ?? "preview"), [params.recordId, values]);
   const draft = useModuleDraft({
-    // A new purchase order must never revive the previous unfinished add form.
-    // Keep recovery only for edits to a specific existing transaction.
-    enabled: mode === "edit",
+    enabled: !isReadonly,
     key: createModuleDraftKey({
       mode,
       moduleId: "purchasing:purchase-order",
@@ -170,17 +218,46 @@ export function usePurchaseOrderFormPage() {
       return;
     }
 
+    // Validate: all selected PRs must be from the same party
+    const prPartyNames = [...new Set(selectedPurchaseRequests.map((record) => record.vceName.trim().toLowerCase()).filter(Boolean))];
+    const canvassPartyNames = [...new Set(selectedCanvassForms.map((record) => getCanvassSelectedSupplierName(record).trim().toLowerCase()).filter(Boolean))];
+    const allSourcePartyNames = [...new Set([...prPartyNames, ...canvassPartyNames])];
+
+    if (allSourcePartyNames.length > 1) {
+      toast.error("Cannot copy from different party names. Please select transactions from the same party.");
+      return;
+    }
+
+    // Validate: selected party must match the PO's current party (if already set)
+    const currentPartyName = values.vceName.trim().toLowerCase();
+
+    if (currentPartyName && allSourcePartyNames.length === 1 && allSourcePartyNames[0] !== currentPartyName) {
+      toast.error("Selected transactions must match the current party name on this purchase order.");
+      return;
+    }
+
+    // Filter out PRs already copied (by transNo matching linePrNo in existing items)
+    const existingPrNos = new Set(values.items.map((item) => item.linePrNo.trim()).filter(Boolean));
+    const newPurchaseRequests = selectedPurchaseRequests.filter((record) => !existingPrNos.has(record.transNo.trim()));
+    const existingCanvassNos = new Set(values.items.map((item) => item.canvassNo.trim()).filter(Boolean));
+    const newCanvassForms = selectedCanvassForms.filter((record) => !existingCanvassNos.has(record.transNo.trim()));
+
+    if (newPurchaseRequests.length === 0 && newCanvassForms.length === 0) {
+      toast.error("The selected transactions have already been copied to this purchase order.");
+      return;
+    }
+
     const copiedItems = [
-      ...selectedPurchaseRequests.flatMap(createItemsFromPurchaseRequest),
-      ...selectedCanvassForms.flatMap(createItemsFromCanvassForm),
+      ...newPurchaseRequests.flatMap(createItemsFromPurchaseRequest),
+      ...newCanvassForms.flatMap(createItemsFromCanvassForm),
     ];
-    const firstPurchaseRequest = selectedPurchaseRequests[0];
-    const firstCanvassForm = selectedCanvassForms[0];
+    const firstPurchaseRequest = newPurchaseRequests[0] ?? selectedPurchaseRequests[0];
+    const firstCanvassForm = newCanvassForms[0] ?? selectedCanvassForms[0];
     const prNos = [
-      ...selectedPurchaseRequests.map((record) => record.transNo),
-      ...selectedCanvassForms.flatMap((record) => [record.prNo, ...record.items.map((item) => item.prNo)]),
+      ...newPurchaseRequests.map((record) => record.transNo),
+      ...newCanvassForms.flatMap((record) => [record.prNo, ...record.items.map((item) => item.prNo)]),
     ].filter(Boolean);
-    const remarks = [...selectedPurchaseRequests.map((record) => record.remarks), ...selectedCanvassForms.map((record) => record.remarks)]
+    const remarks = [...newPurchaseRequests.map((record) => record.remarks), ...newCanvassForms.map((record) => record.remarks)]
       .filter(Boolean)
       .join("; ");
 
@@ -194,8 +271,8 @@ export function usePurchaseOrderFormPage() {
       address: firstPurchaseRequest?.vendorAddress || current.address,
       deliveryDate: firstCanvassForm?.requiredBefore || current.deliveryDate,
       prNo: mergeUniqueTextValues(current.prNo, prNos),
-      purchaseRequestId: selectedPurchaseRequests.length === 1 ? selectedPurchaseRequests[0].id : "",
-      copyFromSource: selectedPurchaseRequests.length > 0 ? "Purchase Request" : "Canvass",
+      purchaseRequestId: newPurchaseRequests.length === 1 ? newPurchaseRequests[0].id : "",
+      copyFromSource: newPurchaseRequests.length > 0 ? "Purchase Request" : "Canvass",
       purchaseType: firstPurchaseRequest?.purchaseType || current.purchaseType,
       projectCode: firstPurchaseRequest?.projectCode || current.projectCode,
       projectName: firstPurchaseRequest?.projectName || current.projectName,

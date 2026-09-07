@@ -40,22 +40,40 @@ export function PurchaseOrderSupplierFields({
   values,
 }: PurchaseOrderSupplierFieldsProps) {
   const sourceReadOnly = isReadonly || isCopyLocked;
+  const selectedPartyOption = partyOptions.find((p) => p.value === values.vceCode);
+  const partyDisplayName = selectedPartyOption
+    ? `${selectedPartyOption.name}${selectedPartyOption.value ? ` - ${selectedPartyOption.value}` : ""}`
+    : values.vceName
+      ? `${values.vceName}${values.vceCode ? ` - ${values.vceCode}` : ""}`
+      : values.vceCode;
+
   return (
     <div className="grid min-w-0 gap-5 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-4">
-        <FieldShell controlId="purchase-order-party-name" label="Party Name" isRequired>
-          <AppAdvancedDropdown
+        {sourceReadOnly ? (
+          <TextField
             id="purchase-order-party-name"
-            className="w-full min-w-0"
-            value={values.vceCode}
-            readOnly={sourceReadOnly}
-            options={partyOptions}
-            placeholder="Select Party Name"
-            searchPlaceholder="Search Party Name"
-            showSelectedDetails
-            onChange={(value) => onSelectParty(String(value))}
+            label="Party Name"
+            isRequired
+            readOnly
+            value={partyDisplayName}
+            onChange={() => undefined}
           />
-        </FieldShell>
+        ) : (
+          <FieldShell controlId="purchase-order-party-name" label="Party Name" isRequired>
+            <AppAdvancedDropdown
+              id="purchase-order-party-name"
+              className="w-full min-w-0"
+              value={values.vceCode}
+              readOnly={false}
+              options={partyOptions}
+              placeholder="Select Party Name"
+              searchPlaceholder="Search Party Name"
+              showSelectedDetails
+              onChange={(value) => onSelectParty(String(value))}
+            />
+          </FieldShell>
+        )}
         <TextField
           id="purchase-order-address"
           label="Address"
@@ -84,10 +102,7 @@ export function PurchaseOrderSupplierFields({
           value={values.projectName}
           onChange={(value) => onUpdateField("projectName", value)}
         />
-        <div className="grid min-w-0 gap-2">
-          <label htmlFor="purchase-order-remarks" className="text-sm font-semibold text-darknavy">
-            Remarks
-          </label>
+        <FieldShell controlId="purchase-order-remarks" label="Remarks">
           <AppLimitedTextarea
             id="purchase-order-remarks"
             readOnly={sourceReadOnly}
@@ -97,7 +112,7 @@ export function PurchaseOrderSupplierFields({
             counterMode="remaining"
             maxLength={250}
           />
-        </div>
+        </FieldShell>
       </div>
       <div className="grid min-w-0 content-start gap-4">
         <TextField

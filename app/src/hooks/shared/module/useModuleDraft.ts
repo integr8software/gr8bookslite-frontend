@@ -20,6 +20,8 @@ export type UseModuleDraftOptions<TValues> = {
 	initialValues?: TValues;
 	isDirty?: boolean;
 	key: string;
+	/** Start a fresh draft when false instead of recovering stored values. */
+	restoreOnMount?: boolean;
 	restoreValues?: (draftValues: TValues, currentValues: TValues) => TValues;
 	setValues: (updater: (current: TValues) => TValues) => void;
 	values: TValues;
@@ -88,6 +90,26 @@ export function resolveScopedDraftKey(
 	return { scopeToken, storageKey };
 }
 
+function isPageReload(): boolean {
+	if (typeof window === "undefined" || !window.performance) {
+		return false;
+	}
+
+	try {
+		const navEntries = window.performance.getEntriesByType?.("navigation");
+		if (navEntries && navEntries.length > 0) {
+			return (navEntries[0] as PerformanceNavigationTiming).type === "reload";
+		}
+
+		return (
+			(window.performance as unknown as { navigation?: { type?: number } })
+				.navigation?.type === 1
+		);
+	} catch {
+		return false;
+	}
+}
+
 export function useModuleDraft<TValues>({
 	branchId: explicitBranchId,
 	companyId: explicitCompanyId,
@@ -96,6 +118,7 @@ export function useModuleDraft<TValues>({
 	initialValues,
 	isDirty,
 	key,
+	restoreOnMount = true,
 	restoreValues,
 	setValues,
 	values,
@@ -113,6 +136,9 @@ export function useModuleDraft<TValues>({
 		resolvedCompanyId,
 		resolvedBranchId,
 	);
+
+	const isAddMode = key.includes(":add") || key.endsWith("/add");
+	const sessionKey = `draft_session:${storageKey}`;
 
 	const loadedKeyRef = useRef<string | null>(null);
 	const skipNextSaveRef = useRef(false);
@@ -144,6 +170,13 @@ export function useModuleDraft<TValues>({
 	const persistDraft = useCallback(() => {
 		if (isFormClean()) {
 			removeStoredDraft();
+			if (isAddMode && typeof window !== "undefined") {
+				try {
+					window.sessionStorage.removeItem(sessionKey);
+				} catch {
+					// Ignore session storage error
+				}
+			}
 			return;
 		}
 
@@ -157,14 +190,35 @@ export function useModuleDraft<TValues>({
 		};
 
 		window.localStorage.setItem(storageKey, JSON.stringify(draft));
+		if (isAddMode && typeof window !== "undefined") {
+			try {
+				window.sessionStorage.setItem(sessionKey, "active");
+			} catch {
+				// Ignore session storage error
+			}
+		}
 		hasShownSaveErrorRef.current = false;
 	}, [
+		isAddMode,
 		isFormClean,
 		removeStoredDraft,
 		scopeToken,
+		sessionKey,
 		storageKey,
 		values,
 	]);
+
+	useEffect(() => {
+		return () => {
+			if (isAddMode && typeof window !== "undefined") {
+				try {
+					window.sessionStorage.removeItem(sessionKey);
+				} catch {
+					// Ignore session storage error
+				}
+			}
+		};
+	}, [isAddMode, sessionKey]);
 
 	useEffect(() => {
 		if (!enabled || loadedKeyRef.current === storageKey) {
@@ -176,6 +230,26 @@ export function useModuleDraft<TValues>({
 
 		try {
 			const storedDraft = window.localStorage.getItem(storageKey);
+
+			if (!restoreOnMount) {
+				removeStoredDraft();
+				if (isAddMode && typeof window !== "undefined") {
+					window.sessionStorage.removeItem(sessionKey);
+				}
+				return;
+			}
+
+			// In "add" mode, only apply draft when already inside of add (e.g. reload or active session),
+			// not when clicking the "+ Add" button from outside to start a new transaction.
+			if (isAddMode && typeof window !== "undefined") {
+				const isInsideAddSession =
+					window.sessionStorage.getItem(sessionKey) === "active" || isPageReload();
+				if (!isInsideAddSession) {
+					removeStoredDraft();
+					window.sessionStorage.removeItem(sessionKey);
+					return;
+				}
+			}
 
 			if (!storedDraft) {
 				return;
@@ -211,8 +285,12 @@ export function useModuleDraft<TValues>({
 		cancelPendingSave,
 		enabled,
 		initialValues,
+		isAddMode,
+		removeStoredDraft,
+		restoreOnMount,
 		restoreValues,
 		scopeToken,
+		sessionKey,
 		setValues,
 		storageKey,
 	]);

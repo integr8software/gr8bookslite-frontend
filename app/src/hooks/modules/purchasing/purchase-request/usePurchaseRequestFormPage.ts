@@ -58,8 +58,8 @@ export function usePurchaseRequestFormPage() {
   const isReadonly = mode === "view";
   const existingRequest = findPurchaseRequestByRouteId(requests, params.recordId);
   const assistantPrefill = mode === "add" && searchParams.get("assistant") === "1" ? loadAssistantPurchaseRequestPrefill() : null;
-  const [values, setValues] = useState<PurchaseRequestFormValues>(() => {
-    const initialValues = createPurchaseRequestFormValues(existingRequest);
+  const [initialValues] = useState<PurchaseRequestFormValues>(() => {
+    const initialValues = createPurchaseRequestFormValues(existingRequest, mode === "add" ? requests : undefined);
 
     if (!assistantPrefill) {
       return initialValues;
@@ -67,6 +67,7 @@ export function usePurchaseRequestFormPage() {
 
     return applyAssistantPurchaseRequestPrefill(initialValues, assistantPrefill);
   });
+  const [values, setValues] = useState<PurchaseRequestFormValues>(initialValues);
   const [errors, setErrors] = useState<PurchaseRequestFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
@@ -99,6 +100,7 @@ export function usePurchaseRequestFormPage() {
   const previewRecord = useMemo(() => createPurchaseRequestRecord(values, params.recordId ?? "preview"), [params.recordId, values]);
   const draft = useModuleDraft({
     enabled: !isReadonly,
+    initialValues,
     key: createModuleDraftKey({
       mode,
       moduleId: "purchasing:purchase-request",

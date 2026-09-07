@@ -359,7 +359,22 @@ export function useOnboardingSubmission({
 
         if (values.billingMode === "MANUAL") {
           if (!selectedPlan) {
-            throw new Error("Select a plan before continuing to checkout.");
+            throw new Error("Select a plan before continuing.");
+          }
+
+          // If the plan has a free trial, start the free trial at ₱0 without upfront charge
+          if ((selectedPlan.trialDays ?? 0) > 0) {
+            const billingResponse = await SaveOnboardingBilling(token, {
+              billingMode: "MANUAL",
+              billingEmail: values.billingEmail.trim() || undefined,
+            });
+
+            setStepIndex((current) => current + 1);
+            setHasPersistedBillingSetup(true);
+            toast.success(
+              billingResponse.message || "Free trial billing preference saved.",
+            );
+            return;
           }
 
           const checkout = await CreateManualCheckout({
@@ -398,6 +413,7 @@ export function useOnboardingSubmission({
         });
 
         const billingResponse = await SaveOnboardingBilling(token, {
+          billingMode: "AUTO",
           cardholderName: values.cardholderName.trim(),
           billingEmail: values.billingEmail.trim(),
           cardLast4: cardDigits.slice(-4),

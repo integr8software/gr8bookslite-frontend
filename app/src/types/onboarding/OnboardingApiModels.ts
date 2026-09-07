@@ -86,6 +86,7 @@ export type OnboardingDraftCompanyDetails = {
 export type OnboardingDraft = {
   plan: OnboardingPlan | null;
   billingCycle: OnboardingApiBillingCycle | null;
+  billingMode?: "MANUAL" | "AUTO" | null;
   cardholderName: string | null;
   billingEmail: string | null;
   billingAddress: string | null;
@@ -103,6 +104,7 @@ export type OnboardingDraft = {
 export type OnboardingBilling = {
   planCode: string | null;
   billingCycle: OnboardingApiBillingCycle | null;
+  billingMode?: "MANUAL" | "AUTO" | null;
   cardholderName: string | null;
   billingEmail: string | null;
   billingAddress: string | null;

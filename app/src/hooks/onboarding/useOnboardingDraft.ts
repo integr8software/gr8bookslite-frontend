@@ -149,6 +149,9 @@ export function useOnboardingDraft({
             draftCompanyDetails.reportStartDate ?? current.reportStartDate,
           reportEndDate:
             draftCompanyDetails.reportEndDate ?? current.reportEndDate,
+          billingMode:
+            draft.billingMode ??
+            (draft.cardLast4 ? "AUTO" : current.billingMode),
           cardholderName: draft.cardholderName ?? "",
           billingEmail: draft.billingEmail ?? "",
           expiryMonth: draft.cardExpiryMonth

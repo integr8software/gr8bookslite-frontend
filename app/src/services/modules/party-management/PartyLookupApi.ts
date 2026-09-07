@@ -43,10 +43,12 @@ type PartyLookupBackendItem = {
   [key: string]: unknown;
 };
 
-export async function fetchPartyLookupOptions(query: PartyLookupQuery = { detail: "complete" }): Promise<PartyLookupOption[]> {
+const CompletePartyLookupDetail = "complete";
+
+export async function fetchPartyLookupOptions(query: PartyLookupQuery = { detail: CompletePartyLookupDetail }): Promise<PartyLookupOption[]> {
   const response = await ApiClient.get<{ parties: PartyLookupBackendItem[] }>("/maintenance/party-maintenance/options", {
     params: {
-      detail: query.detail ?? "complete",
+      detail: query.detail ?? CompletePartyLookupDetail,
       ...(query.partyType ? { partyType: query.partyType } : {}),
       ...(query.partyTypes ? { partyTypes: query.partyTypes } : {}),
       ...(query.search ? { search: query.search } : {}),
@@ -58,15 +60,15 @@ export async function fetchPartyLookupOptions(query: PartyLookupQuery = { detail
 }
 
 export async function fetchVendorLookupOptions(query: Omit<PartyLookupQuery, "partyType"> = {}): Promise<PartyLookupOption[]> {
-  return fetchPartyLookupOptions({ ...query, partyType: "VENDOR", detail: "complete" });
+  return fetchPartyLookupOptions({ ...query, partyType: "VENDOR", detail: CompletePartyLookupDetail });
 }
 
 export async function fetchCustomerLookupOptions(query: Omit<PartyLookupQuery, "partyType"> = {}): Promise<PartyLookupOption[]> {
-  return fetchPartyLookupOptions({ ...query, partyType: "CUSTOMER", detail: "complete" });
+  return fetchPartyLookupOptions({ ...query, partyType: "CUSTOMER", detail: CompletePartyLookupDetail });
 }
 
 export async function fetchEmployeeLookupOptions(query: Omit<PartyLookupQuery, "partyType"> = {}): Promise<PartyLookupOption[]> {
-  return fetchPartyLookupOptions({ ...query, partyType: "EMPLOYEE", detail: "complete" });
+  return fetchPartyLookupOptions({ ...query, partyType: "EMPLOYEE", detail: CompletePartyLookupDetail });
 }
 
 function mapPartyToLookupOption(party: PartyLookupBackendItem): PartyLookupOption {

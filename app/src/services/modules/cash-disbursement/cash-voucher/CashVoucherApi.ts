@@ -432,7 +432,6 @@ function mapCashVoucherStatusFromApi(status: string): CashVoucherStatus {
   const statusMap: Record<string, CashVoucherStatus> = {
     APPROVED: "Posted",
     CANCELLED: "Cancelled",
-    CLOSED: "Closed",
     DISAPPROVED: "Disapproved",
     DRAFT: "Draft",
     FOR_APPROVAL: "For Approval",
@@ -445,7 +444,6 @@ function mapCashVoucherStatusFromApi(status: string): CashVoucherStatus {
 function mapCashVoucherStatusToApi(status: string): ApiCashVoucherStatus {
   const statusMap: Record<string, ApiCashVoucherStatus> = {
     Cancelled: "CANCELLED",
-    Closed: "CLOSED",
     Disapproved: "DISAPPROVED",
     Draft: "DRAFT",
     "For Approval": "FOR_APPROVAL",

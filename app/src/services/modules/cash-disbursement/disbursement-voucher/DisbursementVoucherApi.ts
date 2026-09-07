@@ -408,7 +408,6 @@ function mapDisbursementVoucherStatusFromApi(status: string): DisbursementVouche
   const statusMap: Record<string, DisbursementVoucherStatus> = {
     APPROVED: "Posted",
     CANCELLED: "Cancelled",
-    CLOSED: "Closed",
     DISAPPROVED: "Disapproved",
     DRAFT: "Draft",
     FOR_APPROVAL: "For Approval",
@@ -421,7 +420,6 @@ function mapDisbursementVoucherStatusFromApi(status: string): DisbursementVouche
 function mapDisbursementVoucherStatusToApi(status: string): ApiDisbursementVoucherStatus {
   const statusMap: Record<string, ApiDisbursementVoucherStatus> = {
     Cancelled: "CANCELLED",
-    Closed: "CLOSED",
     Disapproved: "DISAPPROVED",
     Draft: "DRAFT",
     "For Approval": "FOR_APPROVAL",

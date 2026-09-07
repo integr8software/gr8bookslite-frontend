@@ -813,10 +813,6 @@ export function getCashVoucherDisplayStatus(status: string): CashVoucherDisplayS
     return CashVoucherStatuses.Cancelled;
   }
 
-  if (normalizedStatus === "CLOSED" || normalizedStatus === "COMPLETED") {
-    return CashVoucherStatuses.Closed;
-  }
-
   if (status === CashVoucherStatuses.Draft || status === CashVoucherStatuses.Open) {
     return CashVoucherStatuses.Draft;
   }
@@ -829,10 +825,6 @@ export function getCashVoucherDisplayStatus(status: string): CashVoucherDisplayS
     return CashVoucherStatuses.Disapproved;
   }
 
-  if (status === "Completed") {
-    return CashVoucherStatuses.Closed;
-  }
-
   if (status === "Approved") {
     return CashVoucherStatuses.Posted;
   }
@@ -842,8 +834,7 @@ export function getCashVoucherDisplayStatus(status: string): CashVoucherDisplayS
     status === CashVoucherStatuses.ForApproval ||
     status === CashVoucherStatuses.Posted ||
     status === CashVoucherStatuses.Disapproved ||
-    status === CashVoucherStatuses.Cancelled ||
-    status === CashVoucherStatuses.Closed
+    status === CashVoucherStatuses.Cancelled
   ) {
     return status;
   }
@@ -908,10 +899,6 @@ function getCashVoucherHistoryAction(status: CashVoucherStatus) {
     return CashVoucherStatuses.Cancelled;
   }
 
-  if (status === CashVoucherStatuses.Closed) {
-    return CashVoucherStatuses.Closed;
-  }
-
   if (status === CashVoucherStatuses.ForApproval) {
     return CashVoucherStatuses.ForApproval;
   }
@@ -930,10 +917,6 @@ function getCashVoucherHistoryDescription(status: CashVoucherStatus, voucherNo: 
 
   if (status === CashVoucherStatuses.Cancelled) {
     return `${voucherNo} was cancelled.`;
-  }
-
-  if (status === CashVoucherStatuses.Closed) {
-    return `${voucherNo} was closed.`;
   }
 
   if (status === CashVoucherStatuses.Draft) {

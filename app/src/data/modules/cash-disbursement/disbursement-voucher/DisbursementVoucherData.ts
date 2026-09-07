@@ -571,10 +571,6 @@ export function getDisbursementVoucherDisplayStatus(status: string): Disbursemen
     return DisbursementVoucherStatuses.Disapproved;
   }
 
-  if (status === "Completed") {
-    return DisbursementVoucherStatuses.Closed;
-  }
-
   if (status === "Approved") {
     return DisbursementVoucherStatuses.Posted;
   }
@@ -584,8 +580,7 @@ export function getDisbursementVoucherDisplayStatus(status: string): Disbursemen
     status === DisbursementVoucherStatuses.ForApproval ||
     status === DisbursementVoucherStatuses.Posted ||
     status === DisbursementVoucherStatuses.Disapproved ||
-    status === DisbursementVoucherStatuses.Cancelled ||
-    status === DisbursementVoucherStatuses.Closed
+    status === DisbursementVoucherStatuses.Cancelled
   ) {
     return status;
   }
@@ -749,7 +744,6 @@ function getDisbursementVoucherHistoryAction(status: DisbursementVoucherStatus) 
   if (status === DisbursementVoucherStatuses.Posted) return DisbursementVoucherStatuses.Posted;
   if (status === DisbursementVoucherStatuses.Disapproved) return DisbursementVoucherStatuses.Disapproved;
   if (status === DisbursementVoucherStatuses.Cancelled) return DisbursementVoucherStatuses.Cancelled;
-  if (status === DisbursementVoucherStatuses.Closed) return DisbursementVoucherStatuses.Closed;
   if (status === DisbursementVoucherStatuses.ForApproval) return DisbursementVoucherStatuses.ForApproval;
 
   return "Updated";
@@ -759,7 +753,6 @@ function getDisbursementVoucherHistoryDescription(status: DisbursementVoucherSta
   if (status === DisbursementVoucherStatuses.Posted) return `${voucherNo} was posted for disbursement processing.`;
   if (status === DisbursementVoucherStatuses.Disapproved) return `${voucherNo} was disapproved and returned for review.`;
   if (status === DisbursementVoucherStatuses.Cancelled) return `${voucherNo} was cancelled.`;
-  if (status === DisbursementVoucherStatuses.Closed) return `${voucherNo} was closed.`;
   if (status === DisbursementVoucherStatuses.Draft) return `${voucherNo} was restored to Draft.`;
 
   return `${voucherNo} was returned for approval.`;

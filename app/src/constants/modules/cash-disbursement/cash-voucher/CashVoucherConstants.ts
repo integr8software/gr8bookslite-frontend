@@ -79,7 +79,6 @@ export const CashVoucherActionTabs: {
 
 export const CashVoucherStatuses = {
   Cancelled: "Cancelled",
-  Closed: "Closed",
   Disapproved: "Disapproved",
   Draft: "Draft",
   ForApproval: "For Approval",
@@ -115,7 +114,6 @@ export const CashVoucherRecordStatuses = [
   CashVoucherStatuses.Posted,
   CashVoucherStatuses.Disapproved,
   CashVoucherStatuses.Cancelled,
-  CashVoucherStatuses.Closed,
 ] as const satisfies readonly CashVoucherStatus[];
 
 export const CashVoucherStatusFilters = [CashVoucherAllStatusFilter, ...CashVoucherRecordStatuses] as const;
@@ -141,10 +139,6 @@ export const CashVoucherStatusFilterOptions = [
   {
     label: "Cancelled",
     value: CashVoucherStatuses.Cancelled,
-  },
-  {
-    label: "Closed",
-    value: CashVoucherStatuses.Closed,
   },
 ] as const;
 

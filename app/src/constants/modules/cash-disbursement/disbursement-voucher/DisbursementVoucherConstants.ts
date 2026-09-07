@@ -97,7 +97,6 @@ export const DisbursementVoucherPaymentInformationErrorFields = [
 
 export const DisbursementVoucherStatuses = {
   Cancelled: "Cancelled",
-  Closed: "Closed",
   Disapproved: "Disapproved",
   Draft: "Draft",
   ForApproval: "For Approval",
@@ -133,7 +132,6 @@ export const DisbursementVoucherRecordStatuses = [
   DisbursementVoucherStatuses.Posted,
   DisbursementVoucherStatuses.Disapproved,
   DisbursementVoucherStatuses.Cancelled,
-  DisbursementVoucherStatuses.Closed,
 ] as const satisfies readonly DisbursementVoucherStatus[];
 
 export const DisbursementVoucherStatusFilters = [
@@ -162,10 +160,6 @@ export const DisbursementVoucherStatusFilterOptions = [
   {
     label: "Cancelled",
     value: DisbursementVoucherStatuses.Cancelled,
-  },
-  {
-    label: "Closed",
-    value: DisbursementVoucherStatuses.Closed,
   },
 ] as const;
 

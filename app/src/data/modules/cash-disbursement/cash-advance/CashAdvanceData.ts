@@ -40,7 +40,7 @@ export function createCashAdvanceFormValues(baseCurrency = "PHP"): CashAdvanceFo
       importationRefNo: "",
     },
     remarks: "",
-    status: CashAdvanceStatuses.draft,
+    status: CashAdvanceStatuses.Draft,
     taxValue: {
       taxDetails: createTaxDetails(0, "0%"),
       taxRate: "0%",
@@ -149,29 +149,29 @@ export function getCashAdvanceStatusLabel(status: CashAdvanceStatus) {
 }
 
 function normalizeCashAdvanceStatus(value: string): CashAdvanceStatus {
-  if (value === CashAdvanceStatuses.open) {
-    return CashAdvanceStatuses.draft;
+  if (value === CashAdvanceStatuses.Open) {
+    return CashAdvanceStatuses.Draft;
   }
 
   if (value === "Approved") {
-    return CashAdvanceStatuses.posted;
+    return CashAdvanceStatuses.Posted;
   }
 
   if (value === "Pending Review") {
-    return CashAdvanceStatuses.forApproval;
+    return CashAdvanceStatuses.ForApproval;
   }
 
   if (value === "Rejected") {
-    return CashAdvanceStatuses.disapproved;
+    return CashAdvanceStatuses.Disapproved;
   }
 
   const statuses: CashAdvanceStatus[] = [
-    CashAdvanceStatuses.cancelled,
-    CashAdvanceStatuses.disapproved,
-    CashAdvanceStatuses.draft,
-    CashAdvanceStatuses.forApproval,
-    CashAdvanceStatuses.posted,
+    CashAdvanceStatuses.Cancelled,
+    CashAdvanceStatuses.Disapproved,
+    CashAdvanceStatuses.Draft,
+    CashAdvanceStatuses.ForApproval,
+    CashAdvanceStatuses.Posted,
   ];
 
-  return statuses.includes(value as CashAdvanceStatus) ? (value as CashAdvanceStatus) : CashAdvanceStatuses.draft;
+  return statuses.includes(value as CashAdvanceStatus) ? (value as CashAdvanceStatus) : CashAdvanceStatuses.Draft;
 }

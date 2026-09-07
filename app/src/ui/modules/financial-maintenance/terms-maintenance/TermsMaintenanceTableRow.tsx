@@ -3,6 +3,8 @@ import type {
   TermsMaintenancePermissions,
   TermsMaintenanceTableRowProps,
 } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
+import { TermsMaintenanceStatuses } from "@/app/src/constants/modules/financial-maintenance/terms-maintenance/TermsMaintenanceConstants";
+import { formatDateTime } from "@/app/src/utils/date.util";
 import { ModuleTableActionButton, ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
@@ -41,8 +43,8 @@ function TermsMaintenanceCellContent({
   onToggleStatus: (term: TermsMaintenance) => void;
   onViewTerm: (term: TermsMaintenance) => void;
 }) {
-  const nextStatus = term.status === "Active" ? "Inactive" : "Active";
-  const statusActionLabel = term.status === "Active" ? "Deactivate" : "Activate";
+  const nextStatus = term.status === TermsMaintenanceStatuses.Active ? TermsMaintenanceStatuses.Inactive : TermsMaintenanceStatuses.Active;
+  const statusActionLabel = term.status === TermsMaintenanceStatuses.Active ? "Deactivate" : "Activate";
 
   switch (columnId) {
     case "name":
@@ -85,7 +87,7 @@ function TermsMaintenanceCellContent({
                 label={`Edit ${term.name}`}
               />
               <ModuleTableActionButton
-                variant={nextStatus === "Inactive" ? "inactive" : "active"}
+                variant={nextStatus === TermsMaintenanceStatuses.Inactive ? "inactive" : "active"}
                 onClick={() => onToggleStatus(term)}
                 data-spotlight-id="maintenance-record-status"
                 label={`${statusActionLabel} ${term.name}`}
@@ -102,5 +104,3 @@ function TermsMaintenanceCellContent({
 function TermsMaintenanceTableCell({ className = "text-left", children }: { className?: string; children: React.ReactNode }) {
   return <td className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}>{children}</td>;
 }
-
-import { formatDateTime } from "@/app/src/utils/date.util";

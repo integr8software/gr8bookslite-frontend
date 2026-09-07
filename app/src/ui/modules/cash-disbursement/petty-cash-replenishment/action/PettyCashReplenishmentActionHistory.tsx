@@ -40,10 +40,10 @@ function createHistory(record?: PettyCashReplenishmentRecord): ModuleHistoryEntr
       createdAt: record.createdAt,
       description: `${record.transactionNo} was created.`,
       id: `pcfr-history-${record.id}-created`,
-      status: PettyCashReplenishmentStatuses.draft,
+      status: PettyCashReplenishmentStatuses.Draft,
     },
   ];
-  if (record.updatedAt !== record.createdAt || record.status !== PettyCashReplenishmentStatuses.draft)
+  if (record.updatedAt !== record.createdAt || record.status !== PettyCashReplenishmentStatuses.Draft)
     history.push({
       action: "Updated",
       actor: record.updatedBy,

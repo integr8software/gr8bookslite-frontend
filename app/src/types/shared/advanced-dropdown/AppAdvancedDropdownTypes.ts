@@ -1,4 +1,5 @@
 export type AppAdvancedDropdownOption = {
+	[key: string]: unknown;
 	children?: AppAdvancedDropdownOption[];
 	description?: string;
 	disabled?: boolean;
@@ -6,7 +7,7 @@ export type AppAdvancedDropdownOption = {
 	label?: string;
 	name: string;
 	selectedDetails?: string;
-	/** Stable record ID or business code. Never use the display name. */
+	showTooltip?: boolean;
 	value: string;
 };
 
@@ -44,6 +45,7 @@ export type AppAdvancedDropdownProps = {
 	removeSelectionOnSelectedOptionClick?: boolean;
 	searchPlaceholder?: string;
 	selectionMode?: AppAdvancedDropdownSelectionMode;
+	showDescriptionTooltip?: boolean;
 	showSelectionIndicator?: boolean;
 	showSelectedDetails?: boolean;
 	showSelectionRemoveButton?: boolean;
@@ -63,5 +65,6 @@ export type AppLookupDropdownProps = {
 	placeholder: string;
 	readOnly?: boolean;
 	searchPlaceholder: string;
+	showDescriptionTooltip?: boolean;
 	value: string;
 };

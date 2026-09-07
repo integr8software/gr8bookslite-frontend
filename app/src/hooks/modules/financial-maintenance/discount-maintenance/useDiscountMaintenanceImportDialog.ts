@@ -3,12 +3,14 @@
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import {
-  DefaultColumnWidths,
-  ImportBatchSize,
-  ImportFieldOrder,
-  PreviewPageSize,
-  SelectionColumnWidth,
+  DiscountImportDefaultColumnWidths,
+  DiscountImportFieldOrder,
+  DiscountImportSelectionColumnWidth,
 } from "@/app/src/constants/modules/financial-maintenance/discount-maintenance/DiscountMaintenanceConstants";
+import {
+  ModuleImportDefaultBatchSize,
+  ModuleImportDefaultPreviewPageSize,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import {
   createBlankDiscountImportRow,
   createExistingDiscountNameMap,
@@ -51,7 +53,7 @@ export function useDiscountMaintenanceImportDialog({
   const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(false);
   const [isImportMenuOpen, setIsImportMenuOpen] = useState(false);
   const [importMode, setImportMode] = useState<DiscountImportMode>("all-rows");
-  const [columnWidths, setColumnWidths] = useState<DiscountImportColumnWidths>(DefaultColumnWidths);
+  const [columnWidths, setColumnWidths] = useState<DiscountImportColumnWidths>(DiscountImportDefaultColumnWidths);
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(() => new Set());
   const existingDiscountNames = useMemo(() => createExistingDiscountNameMap(existingDiscounts), [existingDiscounts]);
   const validatedRows = useMemo(() => validateDiscountImportRows(previewRows, existingDiscountNames), [existingDiscountNames, previewRows]);
@@ -69,10 +71,10 @@ export function useDiscountMaintenanceImportDialog({
   const canImportAllRows = validatedRows.length > 0 && !progress;
   const canImportAllValid = validRows.length > 0 && !progress;
   const canImportSelectedValid = validSelectedRows.length > 0 && !progress;
-  const totalPages = Math.max(1, Math.ceil(displayedRows.length / PreviewPageSize));
+  const totalPages = Math.max(1, Math.ceil(displayedRows.length / ModuleImportDefaultPreviewPageSize));
   const safePreviewPage = Math.min(previewPage, totalPages);
-  const visibleRows = displayedRows.slice((safePreviewPage - 1) * PreviewPageSize, safePreviewPage * PreviewPageSize);
-  const importTableWidth = SelectionColumnWidth + ImportFieldOrder.reduce((total, field) => total + columnWidths[field], 0);
+  const visibleRows = displayedRows.slice((safePreviewPage - 1) * ModuleImportDefaultPreviewPageSize, safePreviewPage * ModuleImportDefaultPreviewPageSize);
+  const importTableWidth = DiscountImportSelectionColumnWidth + DiscountImportFieldOrder.reduce((total, field) => total + columnWidths[field], 0);
 
   function updateColumnWidth(field: DiscountImportColumnId, width: number) {
     setColumnWidths((current) => ({ ...current, [field]: width }));
@@ -112,7 +114,7 @@ export function useDiscountMaintenanceImportDialog({
           return next;
         });
         setSelectedRowIds(new Set());
-        setPreviewPage(Math.max(1, Math.ceil(nextRows.length / PreviewPageSize)));
+        setPreviewPage(Math.max(1, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize)));
       } else {
         const parsedRows = parseDiscountImportText(text);
         const filteredRows = removeDuplicateDiscountImportRows(parsedRows, []);
@@ -157,7 +159,7 @@ export function useDiscountMaintenanceImportDialog({
       return next;
     });
     setSelectedRowIds(new Set());
-    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / PreviewPageSize))));
+    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize))));
   }
 
   function movePreviewRow(sourceRowId: string, targetRowId: string, position: "before" | "after") {
@@ -256,7 +258,7 @@ export function useDiscountMaintenanceImportDialog({
 
     if (pastedRows.length === 0) return;
 
-    const startColumnIndex = ImportFieldOrder.indexOf(field);
+    const startColumnIndex = DiscountImportFieldOrder.indexOf(field);
     const isSingleCellPaste = pastedRows.length === 1 && pastedRows[0]?.length === 1;
 
     if (isSingleCellPaste) {
@@ -280,7 +282,7 @@ export function useDiscountMaintenanceImportDialog({
         let nextDiscount = { ...targetRow.discount };
 
         pastedRow.forEach((cellValue, cellIndex) => {
-          const targetField = ImportFieldOrder[startColumnIndex + cellIndex];
+          const targetField = DiscountImportFieldOrder[startColumnIndex + cellIndex];
 
           if (!targetField) return;
 
@@ -364,8 +366,8 @@ export function useDiscountMaintenanceImportDialog({
 
     setProgress({ imported: 0, total: discountsToImport.length });
 
-    for (let index = 0; index < discountsToImport.length; index += ImportBatchSize) {
-      const batch = discountsToImport.slice(index, index + ImportBatchSize);
+    for (let index = 0; index < discountsToImport.length; index += ModuleImportDefaultBatchSize) {
+      const batch = discountsToImport.slice(index, index + ModuleImportDefaultBatchSize);
 
       try {
         await onImportDiscounts(batch);
@@ -399,7 +401,7 @@ export function useDiscountMaintenanceImportDialog({
       return nextSelected;
     });
     setImportMode("all-rows");
-    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / PreviewPageSize))));
+    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize))));
     setImportError(null);
 
     if (nextRows.length === 0) {

@@ -23,13 +23,13 @@ const AdvancesToSuppliersSchema = z.object({
 
 export function validateAdvancesToSuppliersForm(values: AdvancesToSuppliersFormValues): AdvancesToSuppliersFormErrors {
   const errors: AdvancesToSuppliersFormErrors = {};
-  const result = (values.status === AdvancesToSuppliersStatuses.draft ? AdvancesToSuppliersDraftSchema : AdvancesToSuppliersSchema).safeParse(values);
+  const result = (values.status === AdvancesToSuppliersStatuses.Draft ? AdvancesToSuppliersDraftSchema : AdvancesToSuppliersSchema).safeParse(values);
   if (!result.success) {
     for (const issue of result.error.issues) {
       errors[issue.path[0] as keyof AdvancesToSuppliersFormValues] ??= issue.message;
     }
   }
-  if (values.status === AdvancesToSuppliersStatuses.draft) return errors;
+  if (values.status === AdvancesToSuppliersStatuses.Draft) return errors;
   const totalPoAmount = parseMoneyNumberInput(values.totalPoAmount);
   const percentage = parseMoneyNumberInput(values.advancePaymentPercentage);
   const advanceAmount = parseMoneyNumberInput(values.advancePaymentAmount);

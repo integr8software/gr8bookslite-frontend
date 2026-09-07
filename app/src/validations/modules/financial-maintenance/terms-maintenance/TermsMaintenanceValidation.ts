@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  TermsMaintenanceDatemodeOptions,
+  TermsMaintenanceStatusOptions,
+} from "@/app/src/constants/modules/financial-maintenance/terms-maintenance/TermsMaintenanceConstants";
 import type {
   TermsMaintenanceFormErrors,
   TermsMaintenanceFormValues,
@@ -7,7 +11,7 @@ import type {
 const TermsMaintenanceFormSchema = z.object({
   name: z.string().trim().min(1, "Enter a name.").max(150, "Name must be 150 characters or fewer."),
   description: z.string().trim().max(500, "Description must be 500 characters or fewer."),
-  datemode: z.enum(["Day", "Month", "Year"], {
+  datemode: z.enum(TermsMaintenanceDatemodeOptions, {
     message: "Select a datemode.",
   }),
   period: z
@@ -17,7 +21,7 @@ const TermsMaintenanceFormSchema = z.object({
     .refine((value) => /^\d+$/.test(value), {
       message: "Enter a whole-number period of 0 or greater.",
     }),
-  status: z.enum(["Active", "Inactive"], {
+  status: z.enum(TermsMaintenanceStatusOptions, {
     message: "Select a status.",
   }),
 });

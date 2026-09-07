@@ -1,4 +1,4 @@
-import type { ChangeEventHandler, ReactNode } from "react";
+import type { ChangeEventHandler } from "react";
 import type { Row, Table } from "@tanstack/react-table";
 
 export type BankMasterfileStatus = "Active" | "Inactive";
@@ -22,6 +22,10 @@ export type BankMasterfile = {
   createdAt?: string;
   updatedBy?: string | null;
   updatedAt?: string;
+};
+
+export type CreateBankResult = BankMasterfile & {
+  message?: string;
 };
 
 export type BankMasterfileFormValues = {
@@ -138,14 +142,9 @@ export type BankMasterfileFieldsProps = {
   onStatusChange: (value: BankMasterfileFormValues["status"]) => void;
 };
 
-export type BankMasterfileFormFieldProps = {
-  children: ReactNode;
-  className?: string;
-  error?: string;
-  helper?: string;
-  label: string;
-  required?: boolean;
-};
+import type { ModuleFormFieldProps } from "@/app/src/ui/shared/field-management/ModuleFormField";
+
+export type BankMasterfileFormFieldProps = ModuleFormFieldProps;
 
 export type BankMasterfileTableProps = {
   banks: BankMasterfile[];

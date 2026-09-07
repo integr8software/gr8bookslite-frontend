@@ -59,6 +59,36 @@ export function CashAdvanceMultipleEntryDetailsFields({
                 const selectedParty = partyOptions.find((option) => option.value === code);
                 onUpdateField("partyCode", selectedParty?.partyCode ?? code);
                 onUpdateField("partyName", selectedParty?.partyName ?? name);
+
+                const matchingAccount = accountOptions.find(
+                  (account) =>
+                    (selectedParty?.employeeAdvanceAccountId &&
+                      (account.accountId === selectedParty.employeeAdvanceAccountId ||
+                        account.value === selectedParty.employeeAdvanceAccountId)) ||
+                    (selectedParty?.employeeAdvanceAccountCode &&
+                      (account.accountCode === selectedParty.employeeAdvanceAccountCode ||
+                        account.label === selectedParty.employeeAdvanceAccountCode ||
+                        account.value === selectedParty.employeeAdvanceAccountCode)) ||
+                    (selectedParty?.employeeAdvanceAccountTitle &&
+                      (account.accountTitle === selectedParty.employeeAdvanceAccountTitle ||
+                        account.name === selectedParty.employeeAdvanceAccountTitle)),
+                );
+
+                const accountCode =
+                  matchingAccount?.accountCode ||
+                  matchingAccount?.label ||
+                  selectedParty?.employeeAdvanceAccountCode ||
+                  "";
+                const accountTitle =
+                  matchingAccount?.accountTitle ||
+                  matchingAccount?.name ||
+                  selectedParty?.employeeAdvanceAccountTitle ||
+                  "";
+
+                if (accountCode || accountTitle) {
+                  onUpdateField("accountCode", accountCode);
+                  onUpdateField("accountTitle", accountTitle);
+                }
               }}
             />
           </TransactionField>

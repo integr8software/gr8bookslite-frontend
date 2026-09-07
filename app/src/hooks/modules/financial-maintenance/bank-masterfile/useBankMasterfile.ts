@@ -98,11 +98,20 @@ export function useBankMasterfileStore<TSelected = BankMasterfileStoreState>(
   }, [companyId, queryClient]);
   const addBankMutation = useMutation({
     mutationFn: createBank,
-    onSuccess: () => {
+    onSuccess: (savedBank) => {
       void queryClient.invalidateQueries({
         queryKey: BankMasterfileQueryKeys.all(companyId),
       });
-      toast.success("Bank account created successfully.");
+
+      const savedCode = savedBank.accountCode?.trim();
+      const savedTitle = (savedBank.accountTitle || savedBank.accountName)?.trim();
+
+      toast.success(
+        savedBank.message ||
+          (savedCode
+            ? `Bank account created successfully. Saved with Account Code - Account Title: ${savedCode} - ${savedTitle}.`
+            : "Bank account created successfully."),
+      );
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Could not create bank account. Please try again.");

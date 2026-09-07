@@ -16,8 +16,8 @@ import {
   DefaultAccountTableColumns,
   DefaultAccountTablePreferencesModuleKey,
   DefaultAccountTablePreferencesStorageKey,
-  getDefaultAccountTypeLabel,
 } from "@/app/src/constants/modules/financial-maintenance/default-account/DefaultAccountConstants";
+import { getDefaultAccountTypeLabel } from "@/app/src/data/modules/financial-maintenance/default-account/DefaultAccountData";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type {
   DefaultAccount,

@@ -28,7 +28,7 @@ import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 export function AdvancesToSuppliersActionHeader({ onPreview, page }: { onPreview: () => void; page: AdvancesToSuppliersActionPageState }) {
   const [confirmation, setConfirmation] = useState<AdvancesToSuppliersConfirmationAction | null>(null);
   const transactionNo = page.record?.transactionNo ?? page.values.transactionNo;
-  const isDraftEdit = page.mode === "edit" && page.record?.status === AdvancesToSuppliersStatuses.draft;
+  const isDraftEdit = page.mode === "edit" && page.record?.status === AdvancesToSuppliersStatuses.Draft;
   const isSaveAction = page.mode === "add" || isDraftEdit;
   const title =
     page.mode === "add" ? (
@@ -92,7 +92,7 @@ export function AdvancesToSuppliersActionHeader({ onPreview, page }: { onPreview
                 disabled={page.isSubmitting}
                 label={isSaveAction ? "Save" : "Update"}
                 onAction={() => {
-                  if (page.validate(AdvancesToSuppliersStatuses.forApproval)) {
+                  if (page.validate(AdvancesToSuppliersStatuses.ForApproval)) {
                     setConfirmation("save");
                   }
                 }}
@@ -102,7 +102,7 @@ export function AdvancesToSuppliersActionHeader({ onPreview, page }: { onPreview
                         {
                           label: "Save As Draft",
                           onSelect: () => {
-                            if (page.validate(AdvancesToSuppliersStatuses.draft)) {
+                            if (page.validate(AdvancesToSuppliersStatuses.Draft)) {
                               setConfirmation("draft");
                             }
                           },
@@ -155,19 +155,19 @@ export function AdvancesToSuppliersActionHeader({ onPreview, page }: { onPreview
           onCancel={() => setConfirmation(null)}
           onConfirm={async () => {
             if (confirmation === "save") {
-              const ok = await page.save(AdvancesToSuppliersStatuses.forApproval);
+              const ok = await page.save(AdvancesToSuppliersStatuses.ForApproval);
               if (ok) setConfirmation(null);
             } else if (confirmation === "draft") {
-              const ok = await page.save(AdvancesToSuppliersStatuses.draft);
+              const ok = await page.save(AdvancesToSuppliersStatuses.Draft);
               if (ok) setConfirmation(null);
             } else if (confirmation === "approve") {
-              const ok = await page.updateStatus(AdvancesToSuppliersStatuses.posted);
+              const ok = await page.updateStatus(AdvancesToSuppliersStatuses.Posted);
               if (ok) setConfirmation(null);
             } else if (confirmation === "disapprove") {
-              const ok = await page.updateStatus(AdvancesToSuppliersStatuses.disapproved);
+              const ok = await page.updateStatus(AdvancesToSuppliersStatuses.Disapproved);
               if (ok) setConfirmation(null);
             } else {
-              const ok = await page.updateStatus(AdvancesToSuppliersStatuses.cancelled);
+              const ok = await page.updateStatus(AdvancesToSuppliersStatuses.Cancelled);
               if (ok) setConfirmation(null);
             }
           }}

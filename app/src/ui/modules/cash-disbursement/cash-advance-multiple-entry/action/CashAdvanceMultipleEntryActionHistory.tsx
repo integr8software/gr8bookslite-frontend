@@ -48,11 +48,11 @@ function createCashAdvanceMultipleEntryHistory(record?: CashAdvanceMultipleEntry
       createdAt,
       description: `${record.transNo} was created.`,
       id: `came-history-${record.id}-created`,
-      status: CashAdvanceStatuses.draft,
+      status: CashAdvanceStatuses.Draft,
     },
   ];
 
-  if (updatedAt !== createdAt || record.status !== CashAdvanceStatuses.draft) {
+  if (updatedAt !== createdAt || record.status !== CashAdvanceStatuses.Draft) {
     history.push({
       action: "Updated",
       actor: record.updatedBy ?? record.createdBy ?? "System",

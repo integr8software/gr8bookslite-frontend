@@ -14,7 +14,10 @@ import {
 	Trash2,
 	Upload,
 } from "lucide-react";
+import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import {
+	ModuleImportDefaultAcceptedFileExtensions,
+	ModuleImportDefaultAcceptedFileLabel,
 	ModuleImportRowNumberColumnWidth,
 	ModuleImportSelectionColumnWidth,
 } from "@/app/src/constants/shared/module/ModuleImportConstants";
@@ -33,13 +36,13 @@ export type ModuleImportProgress = {
 };
 
 export function ModuleImportHeaderActions({
-	accept,
+	accept = ModuleImportDefaultAcceptedFileExtensions,
 	disabled,
 	isParsing,
 	onDownloadTemplate,
 	onFileSelect,
 }: {
-	accept: string;
+	accept?: string;
 	disabled?: boolean;
 	isParsing?: boolean;
 	onDownloadTemplate: () => void;
@@ -70,18 +73,18 @@ export function ModuleImportHeaderActions({
 }
 
 export function ModuleImportEmptyDropzone({
-	accept,
-	acceptedFileLabel,
+	accept = ModuleImportDefaultAcceptedFileExtensions,
+	acceptedFileLabel = ModuleImportDefaultAcceptedFileLabel,
 	disabled,
 	isParsing,
-	maxFileSizeLabel,
+	maxFileSizeLabel = AppMaxFileUploadSizeLabel,
 	onFileSelect,
 }: {
-	accept: string;
-	acceptedFileLabel: string;
+	accept?: string;
+	acceptedFileLabel?: string;
 	disabled?: boolean;
 	isParsing?: boolean;
-	maxFileSizeLabel: string;
+	maxFileSizeLabel?: string;
 	onFileSelect: (file: File | undefined) => void;
 }) {
 	return (

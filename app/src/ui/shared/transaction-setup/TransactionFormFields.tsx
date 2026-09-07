@@ -3,10 +3,14 @@ import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
 
 export const TransactionFieldClassName = [
-  "app-data-entry-field h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3",
-  "text-sm font-medium text-darknavy outline-none transition focus:border-skyblue",
-  "placeholder:text-darknavy/35 focus:ring-2 focus:ring-skyblue/20",
+  "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3",
+  "text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35",
+  "focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15",
+  "read-only:bg-white read-only:text-darknavy disabled:bg-white disabled:text-darknavy",
 ].join(" ");
+
+export const TransactionReadOnlyFieldClassName =
+  "app-data-entry-field transaction-readonly-placeholder h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-darknavy/5 px-3 text-sm font-medium text-darknavy/60 outline-none placeholder:text-darknavy/35";
 
 export type TransactionFieldProps = {
   children: ReactNode;

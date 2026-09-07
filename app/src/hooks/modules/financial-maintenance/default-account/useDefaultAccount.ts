@@ -12,6 +12,7 @@ import {
   updateDefaultAccountStatus,
 } from "@/app/src/services/modules/financial-maintenance/default-account/DefaultAccountApi";
 import { DefaultAccountQueryKeys } from "@/app/src/services/modules/financial-maintenance/default-account/DefaultAccountQueryKeys";
+import { DefaultAccountStatuses } from "@/app/src/constants/modules/financial-maintenance/default-account/DefaultAccountConstants";
 import type {
   DefaultAccount,
   DefaultAccountFormValues,
@@ -74,9 +75,14 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
   }, [companyId, queryClient]);
   const addDefaultAccountMutation = useMutation({
     mutationFn: createDefaultAccount,
-    onSuccess: () => {
+    onSuccess: (savedAccount) => {
       refreshDefaultAccounts();
-      toast.success("Default account created successfully.");
+      const firstGenerated = savedAccount.generatedAccounts?.[0];
+      toast.success(
+        firstGenerated
+          ? `Default account created successfully. Saved with Account Code - Account Title: ${firstGenerated.accountCode} - ${firstGenerated.accountTitle}.`
+          : "Default account created successfully.",
+      );
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Could not create default account. Please try again.");
@@ -96,7 +102,7 @@ export function useDefaultAccountStore<TSelected = DefaultAccountStoreState>(
     mutationFn: updateDefaultAccountStatus,
     onSuccess: (_, account) => {
       refreshDefaultAccounts();
-      toast.success(`Default account ${account.status === "Active" ? "activated" : "inactivated"} successfully.`);
+      toast.success(`Default account ${account.status === DefaultAccountStatuses.Active ? "activated" : "inactivated"} successfully.`);
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Could not update default account status. Please try again.");

@@ -36,10 +36,15 @@ export async function fetchDiscounts(): Promise<DiscountMaintenanceListResult> {
   };
 }
 
-export async function createDiscount(values: DiscountMaintenanceFormValues | Discount): Promise<Discount> {
+export async function createDiscount(
+  values: DiscountMaintenanceFormValues | Discount,
+): Promise<Discount & { message?: string }> {
   const response = await discountMaintenanceControllerCreateV1(toApiDiscountPayload(values));
 
-  return mapApiDiscount(response.discount);
+  return {
+    ...mapApiDiscount(response.discount),
+    message: response.message,
+  };
 }
 
 export async function updateDiscount(discount: Discount): Promise<Discount> {

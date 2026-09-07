@@ -28,7 +28,7 @@ import { PettyCashVoucherStatusActions } from "@/app/src/ui/modules/cash-disburs
 export function PettyCashVoucherActionHeader({ page }: { page: PettyCashVoucherActionPageState }) {
   const [confirmation, setConfirmation] = useState<PettyCashVoucherConfirmation | null>(null);
   const recordLabel = page.values.transactionNo || "this petty cash voucher";
-  const isDraftEdit = page.mode === "edit" && page.existingVoucher?.status === PettyCashVoucherStatuses.draft;
+  const isDraftEdit = page.mode === "edit" && page.existingVoucher?.status === PettyCashVoucherStatuses.Draft;
   const isSaveAction = page.mode === "add" || isDraftEdit;
   const dialogCopy = confirmation
     ? confirmation.action === "status"
@@ -129,7 +129,7 @@ function PettyCashVoucherHeaderActions({
           disabled={page.isSubmitting}
           label={isSaveAction ? "Save" : "Update"}
           onAction={() => {
-            if (page.validate(PettyCashVoucherStatuses.forApproval)) {
+            if (page.validate(PettyCashVoucherStatuses.ForApproval)) {
               onRequestConfirmation({ action: "submit" });
             }
           }}
@@ -139,7 +139,7 @@ function PettyCashVoucherHeaderActions({
                   {
                     label: "Save As Draft",
                     onSelect: () => {
-                      if (page.validate(PettyCashVoucherStatuses.draft)) {
+                      if (page.validate(PettyCashVoucherStatuses.Draft)) {
                         onRequestConfirmation({ action: "draft" });
                       }
                     },

@@ -48,7 +48,7 @@ export function DisbursementVoucherActionHeader({
   const transactionLabel = transaction?.transactionNo ?? "Disbursement voucher";
   const recordLabel = voucher?.voucherNo ?? transaction?.transactionNo ?? "this disbursement voucher";
   const isDraftEdit =
-    mode === "edit" && (voucher?.status ?? transaction?.status) === DisbursementVoucherStatuses.draft;
+    mode === "edit" && (voucher?.status ?? transaction?.status) === DisbursementVoucherStatuses.Draft;
   const isSaveAction = mode === "add" || isDraftEdit;
   const title =
     mode === "add" ? (

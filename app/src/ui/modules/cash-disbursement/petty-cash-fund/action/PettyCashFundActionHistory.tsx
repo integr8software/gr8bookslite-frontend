@@ -40,10 +40,10 @@ function createPettyCashFundHistory(record?: PettyCashFundRecord): ModuleHistory
       createdAt: record.createdAt,
       description: `${record.transactionNo} was created.`,
       id: `pcf-history-${record.id}-created`,
-      status: PettyCashFundStatuses.draft,
+      status: PettyCashFundStatuses.Draft,
     },
   ];
-  if (record.updatedAt !== record.createdAt || record.status !== PettyCashFundStatuses.draft) {
+  if (record.updatedAt !== record.createdAt || record.status !== PettyCashFundStatuses.Draft) {
     history.push({
       action: "Updated",
       actor: record.updatedBy,

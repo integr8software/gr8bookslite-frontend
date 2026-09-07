@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { ListTree, Network } from "lucide-react";
 import {
-  AccountStatuses,
+  AccountStatusOptions,
   AccountTypeLabels,
   AccountTypes,
   ChartsOfAccountsExportColumns,
@@ -130,7 +130,7 @@ export function ChartsOfAccountsFilters({
             value={statusFilter}
             options={[
               { label: "All", value: "All" },
-              ...AccountStatuses.map((status) => ({
+              ...AccountStatusOptions.map((status) => ({
                 label: status,
                 value: status,
               })),

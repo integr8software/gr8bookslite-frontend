@@ -26,6 +26,8 @@ export function DisbursementVoucherAccountingEntryTable({
   accountingColumns,
   accountingRows,
   errors,
+  isDebitMemo,
+  isMultiCheckNumber,
   isReadonly,
   title,
   onAddEntries,
@@ -38,6 +40,16 @@ export function DisbursementVoucherAccountingEntryTable({
   totalDebit = 0,
   variance = 0,
 }: DisbursementVoucherAccountingEntryTableProps) {
+  const defaultAccountingColumnLabels = useMemo(() => {
+    if (!isDebitMemo) return DisbursementEntryColumnLabels;
+    return {
+      ...DisbursementEntryColumnLabels,
+      checkNo: "Debit Memo No.",
+      checkDate: "Debit Memo Date",
+      checkStatus: "Debit Memo Status",
+    };
+  }, [isDebitMemo]);
+
   const {
     columnOrder: accountingColumnOrder,
     visibleColumnIds: visibleAccountingColumnIds,
@@ -54,11 +66,11 @@ export function DisbursementVoucherAccountingEntryTable({
     defaultColumnOrder: DefaultDisbursementEntryColumnOrder,
     defaultVisibleColumnIds: DefaultVisibleDisbursementEntryColumnOrder,
     defaultColumnWidths: DefaultDisbursementEntryColumnWidths,
-    defaultColumnLabels: DisbursementEntryColumnLabels,
+    defaultColumnLabels: defaultAccountingColumnLabels,
     protectedColumnIds: ProtectedDisbursementEntryColumnIds,
   });
 
-  const hasMultiCheckNumberColumn = false;
+  const hasMultiCheckNumberColumn = Boolean(isMultiCheckNumber);
   const visibleAccountingColumnOrder = accountingColumnOrder.filter((columnId) =>
     MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : visibleAccountingColumnIds.includes(columnId),
   );
@@ -86,7 +98,7 @@ export function DisbursementVoucherAccountingEntryTable({
         .map((columnId) => ({
           id: columnId,
           isHideable: !ProtectedDisbursementEntryColumnIds.has(columnId),
-          isVisible: visibleAccountingColumnIds.includes(columnId),
+          isVisible: MultiCheckColumnIds.has(columnId) ? hasMultiCheckNumberColumn : visibleAccountingColumnIds.includes(columnId),
           label: accountingColumnLabels[columnId],
           width: accountingColumnWidths[columnId],
         })),

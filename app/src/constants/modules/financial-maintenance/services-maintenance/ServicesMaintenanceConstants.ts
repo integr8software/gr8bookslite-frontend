@@ -8,7 +8,6 @@ import type {
   ServicesMaintenanceImportColumnWidths,
   ServicesMaintenanceStatus,
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
-import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
 import { ModuleImportFixedColumnsWidth } from "@/app/src/constants/shared/module/ModuleImportConstants";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
@@ -18,14 +17,19 @@ export const ServicesMaintenanceParentLabel = "Accounting master data";
 export const ServicesMaintenanceTitle = "Services Maintenance";
 export const ServicesMaintenanceDescription = "Maintain sellable services and their revenue account setup.";
 export const ServicesMaintenanceDrawerFormId = "services-maintenance-drawer-form";
-export const ServicesMaintenanceFieldClassName =
-  "h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.03] disabled:text-darknavy/70 disabled:placeholder:text-darknavy/32 read-only:bg-darknavy/[0.03] read-only:text-darknavy/70";
-export const ServicesMaintenanceReadOnlyFieldClassName = `${ServicesMaintenanceFieldClassName} bg-darknavy/[0.03] font-semibold text-darknavy/80`;
 
-export const ServicesMaintenanceStatusOptions = ["Active", "Inactive"] as const satisfies readonly ServicesMaintenanceStatus[];
+export const ServicesMaintenanceStatuses = {
+  Active: "Active",
+  Inactive: "Inactive",
+} as const satisfies Record<string, ServicesMaintenanceStatus>;
+
+export const ServicesMaintenanceStatusOptions = [
+  ServicesMaintenanceStatuses.Active,
+  ServicesMaintenanceStatuses.Inactive,
+] as const satisfies readonly ServicesMaintenanceStatus[];
 export const ServicesMaintenanceAccountSetupModeOptions = [
-  "Auto",
   "Existing",
+  "Auto",
 ] as const satisfies readonly ServicesMaintenanceAccountSetupMode[];
 
 export const ServicesMaintenanceTablePaginationStorageKey = "maintenance:financial-management:services-maintenance";
@@ -34,7 +38,7 @@ export const ServicesMaintenanceTablePreferencesModuleKey = "maintenance:service
 
 export const ServicesMaintenanceTableColumns = [
   { key: "serviceName", label: "Service Name", className: "w-[18%]" },
-  { key: "serviceType", label: "Service Type", className: "w-[14%]" },
+  { key: "serviceType", label: "Type of Service", className: "w-[14%]" },
   { key: "description", label: "Description", className: "w-[20%]" },
   { key: "revenueAccountCode", label: "Account Code", className: "w-[12%]" },
   { key: "revenueAccountTitle", label: "Account Title", className: "w-[20%]" },
@@ -78,10 +82,13 @@ export const ServicesMaintenanceActionCopy = {
   },
 } as const;
 
-export const ServicesMaintenanceImportTemplateHeaders = ["Service Name", "Service Type", "Description", "Account Setup", "Revenue Account ID"];
-
-export const ServicesMaintenanceImportAcceptedFileExtensions = ".xlsx,.csv,.tsv,.txt";
-export const ServicesMaintenanceImportAcceptedFileLabel = ".xlsx, .csv, .tsv, .txt";
+export const ServicesMaintenanceImportTemplateHeaders = [
+  "Service Name",
+  "Type of Service",
+  "Description",
+  "Account Setup",
+  "Revenue Account ID",
+];
 
 export const ServicesMaintenanceImportDefaultColumnIndexes: Record<ServicesMaintenanceImportColumnId, number> = {
   serviceName: 0,
@@ -116,16 +123,11 @@ export const ServicesMaintenanceImportColumnHeaders: ServicesMaintenanceImportCo
     label: "Service Name",
     stickyLeft: ServicesMaintenanceImportSelectionColumnWidth,
   },
-  { className: "px-3", id: "serviceType", label: "Service Type" },
+  { className: "px-3", id: "serviceType", label: "Type of Service" },
   { className: "px-3", id: "description", label: "Description" },
   { className: "px-3", id: "accountSetupMode", label: "Account Setup" },
   { className: "px-3", id: "revenueCoaId", label: "Revenue Account ID" },
 ];
 
-export const ServicesMaintenanceServiceTypeOptions = ["Purchases", "Sales"] as const;
+export const ServicesMaintenanceServiceTypeOptions = ["Purchase of Service", "Sale of Service"] as const;
 export const ServicesMaintenanceImportPreviewColumnCount = ServicesMaintenanceImportFieldOrder.length + 1;
-export const ServicesMaintenanceImportPreviewGridLabel = "Services maintenance import preview grid. Paste copied Excel rows here.";
-export const ServicesMaintenanceImportPreviewPageSize = 20;
-export const ServicesMaintenanceImportBatchSize = 25;
-export const ServicesMaintenanceImportMinFileSizeBytes = 1;
-export const ServicesMaintenanceImportMaxFileSizeBytes = AppMaxFileUploadSizeBytes;

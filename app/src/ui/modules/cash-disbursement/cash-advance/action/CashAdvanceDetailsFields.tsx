@@ -56,6 +56,39 @@ export function CashAdvanceFormPanel({
   return <CashAdvanceDetailsForm form={form} mode={mode} />;
 }
 
+function applyPartyDefaultAccount(
+  form: CashAdvanceFormController,
+  accountOptions: CashAdvanceAccountDropdownOption[],
+  party?: {
+    employeeAdvanceAccountId?: string;
+    employeeAdvanceAccountCode?: string;
+    employeeAdvanceAccountTitle?: string;
+  },
+) {
+  if (!party) return;
+
+  const matchingAccount = accountOptions.find(
+    (account) =>
+      (party.employeeAdvanceAccountId &&
+        (account.accountId === party.employeeAdvanceAccountId || account.value === party.employeeAdvanceAccountId)) ||
+      (party.employeeAdvanceAccountCode &&
+        (account.accountCode === party.employeeAdvanceAccountCode || account.label === party.employeeAdvanceAccountCode)) ||
+      (party.employeeAdvanceAccountTitle &&
+        (account.accountTitle === party.employeeAdvanceAccountTitle || account.name === party.employeeAdvanceAccountTitle)),
+  );
+
+  const accountId = matchingAccount?.accountId || matchingAccount?.value || party.employeeAdvanceAccountId || "";
+  const accountCode = matchingAccount?.accountCode || matchingAccount?.label || party.employeeAdvanceAccountCode || "";
+  const accountTitle = matchingAccount?.accountTitle || matchingAccount?.name || party.employeeAdvanceAccountTitle || "";
+
+  if (accountCode || accountTitle) {
+    form.updateField("accountId", accountId);
+    form.updateField("accountCode", accountCode);
+    form.updateField("accountTitle", accountTitle);
+    form.updateReferenceField("accountCode", accountCode);
+  }
+}
+
 export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormController; mode: CashAdvanceActionMode }) {
   const [activeTab, setActiveTab] = useState<CashAdvanceDetailsSection>("advance");
   const [isCostCenterDrawerOpen, setIsCostCenterDrawerOpen] = useState(false);
@@ -96,7 +129,15 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
     if (!form.values.cashAdvanceLimit && selectedParty.cashAdvanceLimit) {
       form.updateField("cashAdvanceLimit", selectedParty.cashAdvanceLimit);
     }
-  }, [form, selectedParty]);
+    if (
+      !form.values.accountCode &&
+      (selectedParty.employeeAdvanceAccountId ||
+        selectedParty.employeeAdvanceAccountCode ||
+        selectedParty.employeeAdvanceAccountTitle)
+    ) {
+      applyPartyDefaultAccount(form, accountOptions, selectedParty);
+    }
+  }, [accountOptions, form, selectedParty]);
 
   const isReadonly = mode === "view";
 
@@ -159,6 +200,13 @@ export function CashAdvanceDetailsForm({ form, mode }: { form: CashAdvanceFormCo
             form.updateField("availableCashAdvance", record.cashAdvanceLimit ?? "");
             form.updateField("cashAdvanceLimit", record.cashAdvanceLimit ?? "");
             form.updateReferenceField("partyCode", record.partyCodeNo);
+
+            if (record.employeeAdvanceAccount) {
+              applyPartyDefaultAccount(form, accountOptions, {
+                employeeAdvanceAccountId: record.employeeAdvanceAccount,
+              });
+            }
+
             setIsPartyDrawerOpen(false);
           }}
         />
@@ -263,6 +311,8 @@ function CashAdvancePrimaryFields({
               form.updateField("availableCashAdvance", party?.availableCashAdvance ?? "");
               form.updateField("cashAdvanceLimit", party?.cashAdvanceLimit ?? "");
               form.updateReferenceField("partyCode", party?.partyCode || party?.label || "");
+
+              applyPartyDefaultAccount(form, accountOptions, party);
             }}
           />
         </TransactionField>

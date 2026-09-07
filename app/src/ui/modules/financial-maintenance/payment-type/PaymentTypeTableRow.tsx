@@ -1,5 +1,7 @@
 import { useState, type DragEvent } from "react";
 import { GripVertical } from "lucide-react";
+import { PaymentTypeStatuses } from "@/app/src/constants/modules/financial-maintenance/payment-type/PaymentTypeConstants";
+import { formatDateTime } from "@/app/src/utils/date.util";
 import type {
   PaymentTypePermissions,
   PaymentTypeRecord,
@@ -130,8 +132,8 @@ function PaymentTypeCellContent({
   onToggleStatus: (paymentType: PaymentTypeRecord) => void;
   onView: (paymentType: PaymentTypeRecord) => void;
 }) {
-  const nextStatus = paymentType.status === "Active" ? "Inactive" : "Active";
-  const statusActionLabel = paymentType.status === "Active" ? "Deactivate" : "Activate";
+  const nextStatus = paymentType.status === PaymentTypeStatuses.Active ? PaymentTypeStatuses.Inactive : PaymentTypeStatuses.Active;
+  const statusActionLabel = paymentType.status === PaymentTypeStatuses.Active ? "Deactivate" : "Activate";
 
   switch (columnId) {
     case "paymentType":
@@ -195,7 +197,7 @@ function PaymentTypeCellContent({
                 label={`Edit ${paymentType.paymentType}`}
               />
               <ModuleTableActionButton
-                variant={nextStatus === "Inactive" ? "inactive" : "active"}
+                variant={nextStatus === PaymentTypeStatuses.Inactive ? "inactive" : "active"}
                 onClick={() => onToggleStatus(paymentType)}
                 data-spotlight-id="maintenance-record-status"
                 label={`${statusActionLabel} ${paymentType.paymentType}`}
@@ -223,5 +225,3 @@ function DropPlacementIndicator({ mode, paymentType }: { mode: "before" | "after
 function PaymentTypeTableCell({ className = "text-left", children }: { className?: string; children: React.ReactNode }) {
   return <td className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}>{children}</td>;
 }
-
-import { formatDateTime } from "@/app/src/utils/date.util";

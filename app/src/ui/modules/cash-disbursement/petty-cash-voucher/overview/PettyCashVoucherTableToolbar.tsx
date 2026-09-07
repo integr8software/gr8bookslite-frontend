@@ -1,4 +1,4 @@
-import { PettyCashVoucherStatusOptions } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
+import { PettyCashVoucherAllStatusFilter, PettyCashVoucherStatusFilterOptions } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import type {
   PettyCashVoucherOverviewPageState,
   PettyCashVoucherStatus,
@@ -44,11 +44,8 @@ export function PettyCashVoucherTableToolbar({
         <ModuleTableFilterSelect
           label="Status"
           value={page.statusFilter}
-          options={PettyCashVoucherStatusOptions.map((status) => ({
-            label: status,
-            value: status,
-          }))}
-          onChange={(value) => page.setStatusFilter(value as "All" | PettyCashVoucherStatus)}
+          options={PettyCashVoucherStatusFilterOptions}
+          onChange={(value) => page.setStatusFilter(value as typeof PettyCashVoucherAllStatusFilter | PettyCashVoucherStatus)}
         />
         <ModuleTableColumnVisibilityButton table={page.table} />
         <ModuleTableResetButton className="px-2" onClick={onRefresh} />

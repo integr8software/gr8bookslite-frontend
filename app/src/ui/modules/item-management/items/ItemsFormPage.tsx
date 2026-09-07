@@ -51,6 +51,8 @@ export function ItemsFormPage() {
     onDialogOpenChange: setIsSaveDialogOpen,
   });
 
+  if (page.needsRecord && page.isLoading) return <p role="status">Loading item…</p>;
+
   if (page.needsRecord && !page.existingItem) {
     return <ItemNotFound />;
   }
@@ -166,6 +168,7 @@ export function ItemsFormPage() {
 
   return (
     <>
+      <p className="text-sm text-darknavy/60">Save applies to Basic Information and Pricing. Other tabs are not saved yet.</p>
       <form id={ItemsFormId} onSubmit={page.handleSubmit} className="grid gap-5">
         <ModuleHeader
           variant="panel"

@@ -122,15 +122,15 @@ export function useItemsListPage() {
     table.setPageIndex(0);
   }
 
-  function handleConfirmStatusChange() {
+  async function handleConfirmStatusChange() {
     if (!pendingStatusItem) {
       return;
     }
 
-    updateItem({
+    try { await updateItem({
       ...pendingStatusItem,
       status: pendingStatusItem.status === "Active" ? "Inactive" : "Active",
-    });
+    }); } catch { return; }
     setPendingStatusItem(null);
   }
 

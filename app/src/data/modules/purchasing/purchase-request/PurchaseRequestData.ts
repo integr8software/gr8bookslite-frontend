@@ -29,6 +29,7 @@ export const emptyPurchaseRequestItem: PurchaseRequestItem = {
   lotNo: "",
   expiryDate: "",
   cost: 0,
+  responsibilityCenterId: "",
   responsibilityCenter: "",
 };
 

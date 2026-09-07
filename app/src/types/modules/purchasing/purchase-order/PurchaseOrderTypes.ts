@@ -43,6 +43,7 @@ export type PurchaseOrderItem = {
 
 export type PurchaseOrderRecord = {
   id: string;
+  partyId?: string;
   vceCode: string;
   vceName: string;
   purchaseType: string;
@@ -58,6 +59,7 @@ export type PurchaseOrderRecord = {
   contactNo: string;
   emailAddress: string;
   deliveryDate: string;
+  termId?: string;
   termsOfPayment: string;
   remarks: string;
   discountAmount: number;

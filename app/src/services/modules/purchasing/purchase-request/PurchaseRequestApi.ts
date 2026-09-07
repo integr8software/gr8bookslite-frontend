@@ -56,6 +56,7 @@ export function mapPurchaseRequestResponse(response: PurchaseRequestResponseDto)
         lotNo: item.lotNo ?? "",
         expiryDate: "",
         cost: item.cost,
+        responsibilityCenterId: item.responsibilityCenterId ?? "",
         responsibilityCenter: item.responsibilityCenter ?? "",
       })),
     },
@@ -116,6 +117,7 @@ function toPurchaseRequestPayload(values: PurchaseRequestFormValues, branchUnitI
       qty: Number(item.quantity) || 0,
       lotNo: item.lotNo.trim() || null,
       cost: Number(item.cost) || 0,
+      responsibilityCenterId: item.responsibilityCenterId || null,
       responsibilityCenter: item.responsibilityCenter.trim() || null,
     })),
   };

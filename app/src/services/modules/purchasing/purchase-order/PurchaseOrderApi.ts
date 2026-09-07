@@ -42,7 +42,8 @@ export function mapPurchaseOrderResponse(response: PurchaseOrderResponseDto): Pu
       ? "Canvass"
       : response.purchaseRequestId || response.items.some((item) => Boolean(item.prNo))
         ? "Purchase Request"
-        : "",
+      : "",
+      partyId: response.partyId,
       vceCode: response.partyCode,
       vceName: response.partyName,
       purchaseType: response.purchaseType,
@@ -58,6 +59,7 @@ export function mapPurchaseOrderResponse(response: PurchaseOrderResponseDto): Pu
       contactNo: response.contactNo ?? "",
       projectCode: response.projectCode ?? "",
       projectName: response.projectName ?? "",
+      termId: response.termId ?? "",
       termsOfPayment: response.termsOfPayment ?? "",
       remarks: response.remarks ?? "",
       items: response.items.map((item) => ({
@@ -100,6 +102,7 @@ function toPayload(values: PurchaseOrderFormValues, branchUnitId?: number | null
     transNo: values.transNo.trim(),
     poDate: values.documentDate,
     dateNeeded: values.deliveryDate || null,
+    partyId: values.partyId || null,
     partyCode: values.vceCode.trim(),
     purchaseType: values.purchaseType,
     address: values.address || null,
@@ -107,6 +110,7 @@ function toPayload(values: PurchaseOrderFormValues, branchUnitId?: number | null
     contactNo: values.contactNo || null,
     projectCode: values.projectCode || null,
     projectName: values.projectName || null,
+    termId: values.termId || null,
     termsOfPayment: values.termsOfPayment || null,
     prNo: values.prNo || null,
     currency: values.currency,

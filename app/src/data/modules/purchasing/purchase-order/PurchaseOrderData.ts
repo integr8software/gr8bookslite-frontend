@@ -10,6 +10,7 @@ import type {
 export const purchaseOrderSeedRecords: PurchaseOrderRecord[] = [
   {
     id: "po-0001",
+    partyId: "",
     vceCode: "VCE-001",
     vceName: "North Harbor Office Depot",
     purchaseType: "Goods",
@@ -120,6 +121,7 @@ export function createPurchaseOrderFormValues(record?: PurchaseOrderRecord): Pur
   }
 
   return {
+    partyId: "",
     vceCode: "",
     vceName: "",
     purchaseType: "Goods",
@@ -135,6 +137,7 @@ export function createPurchaseOrderFormValues(record?: PurchaseOrderRecord): Pur
     contactNo: "",
     emailAddress: "",
     deliveryDate: new Date().toISOString().slice(0, 10),
+    termId: "",
     termsOfPayment: "",
     remarks: "",
     discountAmount: 0,
@@ -271,6 +274,7 @@ function normalizePurchaseOrderRecordDefaults(record: Partial<PurchaseOrderRecor
 
   return {
     id: record.id ?? createPurchaseOrderId("po"),
+    partyId: record.partyId ?? "",
     vceCode: record.vceCode ?? "",
     vceName: record.vceName ?? "",
     purchaseType: record.purchaseType ?? "Goods",
@@ -286,6 +290,7 @@ function normalizePurchaseOrderRecordDefaults(record: Partial<PurchaseOrderRecor
     contactNo: record.contactNo ?? "",
     emailAddress: record.emailAddress ?? "",
     deliveryDate: record.deliveryDate ?? new Date().toISOString().slice(0, 10),
+    termId: record.termId ?? "",
     termsOfPayment: record.termsOfPayment ?? "",
     remarks: record.remarks ?? "",
     discountAmount: Number(record.discountAmount) || 0,

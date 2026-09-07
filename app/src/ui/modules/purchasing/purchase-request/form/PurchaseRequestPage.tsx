@@ -109,6 +109,7 @@ function PurchaseRequestActionPageInner() {
           itemDescriptionOptions={page.itemDescriptionOptions}
           isReadonly={page.isReadonly}
           purchaseType={page.values.purchaseType}
+          responsibilityCenters={responsibilityCenterStore.centers}
           rows={page.values.items}
           serviceDescriptionOptions={page.serviceDescriptionOptions}
           onAccountingRowsChange={page.updateAccountingEntries}

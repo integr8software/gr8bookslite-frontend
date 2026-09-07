@@ -2,7 +2,10 @@
 
 import { Package } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import { ItemsFormPageCopy } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
+import {
+  ItemInactiveStatus,
+  ItemsFormPageCopy,
+} from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 import { useItemsFormPage } from "@/app/src/hooks/modules/item-management/items/useItemsFormPage";
 import type {
   ItemFormErrors,
@@ -50,6 +53,8 @@ export function ItemsFormPage() {
     isSubmitting: page.isMutating,
     onDialogOpenChange: setIsSaveDialogOpen,
   });
+
+  if (page.needsRecord && page.isLoading) return <p role="status">Loading item…</p>;
 
   if (page.needsRecord && !page.existingItem) {
     return <ItemNotFound />;
@@ -166,6 +171,7 @@ export function ItemsFormPage() {
 
   return (
     <>
+      <p className="text-sm text-darknavy/60">Save applies to Basic Information and Pricing. Other tabs are not saved yet.</p>
       <form id={ItemsFormId} onSubmit={page.handleSubmit} className="grid gap-5">
         <ModuleHeader
           variant="panel"
@@ -225,10 +231,10 @@ export function ItemsFormPage() {
       <AppDialog
         isOpen={page.isStatusDialogOpen}
         isPending={page.isMutating}
-        title={page.nextStatus === "Inactive" ? "Set item inactive?" : "Reactivate item?"}
+        title={page.nextStatus === ItemInactiveStatus ? "Set item inactive?" : "Reactivate item?"}
         description={`This will mark ${page.existingItem?.name ?? "the selected item"} as ${page.nextStatus.toLowerCase()}.`}
-        confirmLabel={page.nextStatus === "Inactive" ? "Set Inactive" : "Reactivate"}
-        tone={page.nextStatus === "Inactive" ? "deactivate" : "activate"}
+        confirmLabel={page.nextStatus === ItemInactiveStatus ? "Set Inactive" : "Reactivate"}
+        tone={page.nextStatus === ItemInactiveStatus ? "deactivate" : "activate"}
         onCancel={() => page.setIsStatusDialogOpen(false)}
         onConfirm={page.handleConfirmStatusChange}
       />

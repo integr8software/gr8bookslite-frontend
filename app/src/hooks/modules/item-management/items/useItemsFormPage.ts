@@ -1,10 +1,15 @@
 "use client";
 
+import { fetchItemReferenceOptions } from "@/app/src/services/modules/item-management/items/ItemManagementApi";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
+  ItemActiveStatus,
+  ItemInactiveStatus,
   ItemsHref,
   LegacyItemTaxNameAliases,
 } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
@@ -12,7 +17,6 @@ import {
   ItemInitialFormValues,
   MockItemVariations,
   MockItemSuppliers,
-  MockItemSetupRecords,
   createItemFormValues,
   createItemRecord,
   updateItemRecord,
@@ -29,18 +33,14 @@ import type {
   ItemPriceListAssignment,
   ItemSupplierAssignment,
 } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
-import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { WarehouseRecord } from "@/app/src/types/modules/warehouse-management/warehouses/WarehouseTypes";
-import { validateItemForm } from "@/app/src/validations/modules/item-management/items/ItemManagementValidation";
-import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
+import { validateItemBasicInfo } from "@/app/src/validations/modules/item-management/items/ItemBasicInfoValidation";
 import { useWarehousesStore } from "@/app/src/hooks/modules/warehouse-management/warehouses/useWarehouses";
 import { useItemManagementStore } from "@/app/src/hooks/modules/item-management/items/useItemManagement";
 import { fetchItemVariationOptions } from "@/app/src/services/modules/item-management/item-variations/ItemVariationsApi";
 import { fetchItemCategoryOptions } from "@/app/src/services/modules/item-management/item-category/ItemCategoryApi";
 import { ItemManagementQueryKeys } from "@/app/src/services/modules/item-management/items/ItemManagementQueryKeys";
 import { fetchPartyOptions } from "@/app/src/services/modules/party-management/PartyManagementApi";
-import { fetchUnitsOfMeasurement } from "@/app/src/services/modules/item-management/unit-of-measurement/UnitOfMeasurementApi";
-import { UnitOfMeasurementQueryKeys } from "@/app/src/services/modules/item-management/unit-of-measurement/UnitOfMeasurementQueryKeys";
 import { useTaxDefinitionOptions } from "@/app/src/hooks/shared/tax/useTaxDefinitionOptions";
 import { formatTaxDefinitionPercentage } from "@/app/src/data/shared/tax/TaxDefinitionData";
 import { normalizeLowercaseWhitespace } from "@/app/src/utils/string.util";
@@ -58,7 +58,7 @@ export function useItemsFormPage() {
   const pathname = usePathname();
   const router = useRouter();
   const store = useItemManagementStore();
-  const responsibilityCenters = useResponsibilityCenterStore((state) => state.centers);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
   const { warehouses } = useWarehousesStore();
   const { addItem, isMutating, items, updateItem } = store;
   const taxMaintenance = useTaxDefinitionOptions();
@@ -69,9 +69,10 @@ export function useItemsFormPage() {
     retry: false,
   });
   const itemCategoryOptionsQuery = useQuery({
-    queryKey: ItemManagementQueryKeys.itemCategoryOptions(),
+    queryKey: [...ItemManagementQueryKeys.itemCategoryOptions(), activeCompanyId],
+    enabled: activeCompanyId !== null,
     queryFn: fetchItemCategoryOptions,
-    initialData: MockItemSetupRecords.category,
+    initialData: [] as ItemSetupRecord[],
     retry: false,
   });
   const vendorOptionsQuery = useQuery({
@@ -96,33 +97,26 @@ export function useItemsFormPage() {
   const [values, setValues] = useState<ItemFormValues>(() =>
     existingItem ? createInitialItemFormValues(existingItem) : ItemInitialFormValues,
   );
+  const initializedRecord = useRef(existingItem?.id);
+  useEffect(() => {
+    if (!existingItem || initializedRecord.current === existingItem.id) return;
+    initializedRecord.current = existingItem.id;
+    setValues(createInitialItemFormValues(existingItem));
+  }, [existingItem]);
   const [errors, setErrors] = useState<ItemFormErrors>({});
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
-  const unitsOfMeasurementQuery = useQuery({
-    queryKey: UnitOfMeasurementQueryKeys.list(),
-    queryFn: fetchUnitsOfMeasurement,
-    retry: false,
+  const referenceOptionsQuery = useQuery({
+    queryKey: [...ItemManagementQueryKeys.items(activeCompanyId), "references"],
+    queryFn: fetchItemReferenceOptions,
+    enabled: activeCompanyId !== null,
   });
-  const nextStatus: ItemStatus = existingItem?.status === "Active" ? "Inactive" : "Active";
-  const uomOptions = useMemo(
-    () =>
-      (unitsOfMeasurementQuery.data?.records ?? [])
-        .filter(
-          (unit) =>
-            unit.status === "Active" ||
-            (values.uom.trim().length > 0 && unit.symbol === values.uom),
-        )
-        .map((unit) => ({
-          description: `${unit.symbol} | ${unit.quantityMode}`,
-          name: unit.name,
-          value: unit.symbol,
-        })),
-    [unitsOfMeasurementQuery.data?.records, values.uom],
-  );
+  const nextStatus: ItemStatus =
+    existingItem?.status === ItemActiveStatus ? ItemInactiveStatus : ItemActiveStatus;
+  const uomOptions = withSavedOption(referenceOptionsQuery.data?.units ?? [], existingItem?.unitOfMeasurementId, existingItem?.uom);
   const taxTreatmentOptions = useMemo(
     () =>
       taxMaintenance.taxes
-        .filter((tax) => tax.status === "Active")
+        .filter((tax) => tax.status === ItemActiveStatus)
         .map((tax) => ({
           label: `${tax.name} (${formatTaxDefinitionPercentage(tax.percentage, tax.treatment)})`,
           value: tax.id,
@@ -133,7 +127,7 @@ export function useItemsFormPage() {
 
   useEffect(() => {
     const activeTaxes = taxMaintenance.taxes.filter(
-      (tax) => tax.status === "Active",
+      (tax) => tax.status === ItemActiveStatus,
     );
 
     if (activeTaxes.length === 0) {
@@ -441,14 +435,7 @@ export function useItemsFormPage() {
   }
 
   function validateBeforeSubmit() {
-    const nextErrors = validateItemForm(values, {
-      taxDefinitionIds: new Set(
-        taxMaintenance.taxes
-          .filter((tax) => tax.status === "Active")
-          .map((tax) => tax.id),
-      ),
-      variations: itemVariationOptionsQuery.data,
-    });
+    const nextErrors = validateItemBasicInfo(values);
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
@@ -459,15 +446,15 @@ export function useItemsFormPage() {
     return true;
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!validateBeforeSubmit()) {
+    if (isReadonly || isMutating || !validateBeforeSubmit()) {
       return;
     }
 
     if (mode === "edit" && existingItem) {
-      updateItem(updateItemRecord(existingItem, values));
+      try { await updateItem(updateItemRecord(existingItem, values)); } catch { return; }
       router.push(`${ItemsHref}/view/${existingItem.id}`);
       return;
     }
@@ -477,20 +464,20 @@ export function useItemsFormPage() {
       return;
     }
 
-    addItem(createItemRecord(values));
+    try { await addItem(createItemRecord(values)); } catch { return; }
     router.push(ItemsHref);
   }
 
-  function handleConfirmStatusChange() {
+  async function handleConfirmStatusChange() {
     if (!existingItem) {
       toast.error("Could not find the item to update.");
       return;
     }
 
-    updateItem({
+    try { await updateItem({
       ...existingItem,
       status: nextStatus,
-    });
+    }); } catch { return; }
     setValues((current) => ({ ...current, status: nextStatus }));
     setIsStatusDialogOpen(false);
   }
@@ -500,13 +487,14 @@ export function useItemsFormPage() {
     addTag,
     addSupplier,
     variationRecords: itemVariationOptionsQuery.data,
-    categoryOptions: createCategorySetupOptions(setupRecords.category),
+    categoryOptions: withSavedOption(createCategorySetupOptions(setupRecords.category), existingItem?.primaryCategory, existingItem?.category),
     errors,
     existingItem,
     handleConfirmStatusChange,
     handleInputChange,
     handleSubmit,
     isMutating,
+    isLoading: store.isLoading,
     isReadonly,
     isStatusDialogOpen,
     mode,
@@ -517,12 +505,12 @@ export function useItemsFormPage() {
     removeTag,
     removeSupplier,
     reorderVariationAssignment,
-    responsibilityCenterOptions: createResponsibilityCenterOptions(responsibilityCenters),
+    responsibilityCenterOptions: withSavedOption(referenceOptionsQuery.data?.centers ?? [], existingItem?.responsibilityCenterId, existingItem?.responsibilityCenter),
     setIsStatusDialogOpen,
     taxTreatmentOptions,
     supplierOptions: createSimpleOptions(
       vendorOptionsQuery.data
-        .filter((supplier) => supplier.status === "Active")
+        .filter((supplier) => supplier.status === ItemActiveStatus)
         .map((supplier) => supplier.name),
     ),
     uomOptions,
@@ -780,7 +768,7 @@ type ItemSetupOption = {
 };
 
 function createCategorySetupOptions(records: ItemSetupRecord[]): ItemSetupOption[] {
-  const activeRecords = records.filter((record) => record.status === "Active");
+  const activeRecords = records.filter((record) => record.status === ItemActiveStatus);
   const activeRecordIds = new Set(activeRecords.map((record) => record.id));
   const recordsByParentId = new Map<string, ItemSetupRecord[]>();
 
@@ -837,7 +825,7 @@ function createSetupOption(
     children: options.children?.length ? options.children : undefined,
     description: options.description ?? record.description,
     name: record.name,
-    value: record.name,
+    value: record.id,
   };
 }
 
@@ -848,19 +836,10 @@ function createSimpleOptions(options: string[]) {
   }));
 }
 
-function createResponsibilityCenterOptions(centers: ResponsibilityCenter[]): ItemSetupOption[] {
-  return centers
-    .filter((center) => center.status === "Active" && center.financialType === "Cost Center")
-    .map((center) => ({
-      description: `${center.code} | ${center.category}`,
-      name: center.name,
-      value: center.name,
-    }));
-}
 
 function createWarehouseOptions(warehouses: WarehouseRecord[]) {
   return warehouses
-    .filter((warehouse) => warehouse.status === "Active")
+    .filter((warehouse) => warehouse.status === ItemActiveStatus)
     .map((warehouse) => ({
       description: createWarehouseDescription(warehouse),
       name: warehouse.name,
@@ -886,4 +865,9 @@ function createWarehouseDescription(warehouse: WarehouseRecord) {
   }
 
   return `Available to ${warehouse.branchName}`;
+}
+
+function withSavedOption(options: ItemSetupOption[], id?: string, name?: string): ItemSetupOption[] {
+  const contains = (records: ItemSetupOption[]): boolean => records.some((option) => option.value === id || contains(option.children ?? []));
+  return id && !contains(options) ? [...options, { value: id, name: name || id }] : options;
 }

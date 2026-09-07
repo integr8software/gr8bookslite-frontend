@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { CheckCircle2, CirclePause, Layers, Package, Plus } from "lucide-react";
 import {
+  ItemActiveStatus,
+  ItemInactiveStatus,
   ItemsHref,
   ItemsExportColumns,
   ItemStatusOptions,
@@ -27,7 +29,7 @@ import { ItemsTable } from "@/app/src/ui/modules/item-management/items/ItemsTabl
 export function ItemsListPage() {
   const page = useItemsListPage();
   const hasActiveFilters =
-    page.query.trim().length > 0 || page.categoryFilter !== "All" || page.statusFilter !== "Active";
+    page.query.trim().length > 0 || page.categoryFilter !== "All" || page.statusFilter !== ItemActiveStatus;
 
   return (
     <section className="grid gap-5">
@@ -65,14 +67,14 @@ export function ItemsListPage() {
             icon: CheckCircle2,
             label: "Active Items",
             tone: "emerald",
-            value: page.items.filter((item) => item.status === "Active").length,
+            value: page.items.filter((item) => item.status === ItemActiveStatus).length,
           },
           {
             helper: "Currently inactive",
             icon: CirclePause,
             label: "Inactive Items",
             tone: "amber",
-            value: page.items.filter((item) => item.status === "Inactive").length,
+            value: page.items.filter((item) => item.status === ItemInactiveStatus).length,
           },
           {
             helper: "Items tracked in inventory",
@@ -146,15 +148,15 @@ export function ItemsListPage() {
         isOpen={Boolean(page.pendingStatusItem)}
         isPending={page.isMutating}
         title={
-          page.pendingStatusItem?.status === "Active" ? "Set item inactive?" : "Reactivate item?"
+          page.pendingStatusItem?.status === ItemActiveStatus ? "Set item inactive?" : "Reactivate item?"
         }
         description={
-          page.pendingStatusItem?.status === "Active"
+          page.pendingStatusItem?.status === ItemActiveStatus
             ? `${page.pendingStatusItem.name} will remain in history and references, but will no longer be active for normal selection.`
             : `${page.pendingStatusItem?.name ?? "This item"} will be available for selection again.`
         }
-        confirmLabel={page.pendingStatusItem?.status === "Active" ? "Set Inactive" : "Reactivate"}
-        tone={page.pendingStatusItem?.status === "Active" ? "deactivate" : "activate"}
+        confirmLabel={page.pendingStatusItem?.status === ItemActiveStatus ? "Set Inactive" : "Reactivate"}
+        tone={page.pendingStatusItem?.status === ItemActiveStatus ? "deactivate" : "activate"}
         onCancel={() => page.setPendingStatusItem(null)}
         onConfirm={page.handleConfirmStatusChange}
       />

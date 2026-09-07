@@ -11,7 +11,12 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ItemsTableColumns } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
+import {
+  ItemActiveStatus,
+  ItemDefaultStatus,
+  ItemInactiveStatus,
+  ItemsTableColumns,
+} from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 import type {
   ItemRecord,
   ItemStatus,
@@ -21,7 +26,7 @@ import { useItemManagementStore } from "@/app/src/hooks/modules/item-management/
 
 const AllItemCategoriesFilter = "All";
 const AllItemStatusesFilter = "All";
-const DefaultItemStatusFilter = "Active";
+const DefaultItemStatusFilter = ItemDefaultStatus;
 
 export function useItemsListPage() {
   const { isLoading, isMutating, items, lastSyncedAt, updateItem } = useItemManagementStore();
@@ -122,15 +127,15 @@ export function useItemsListPage() {
     table.setPageIndex(0);
   }
 
-  function handleConfirmStatusChange() {
+  async function handleConfirmStatusChange() {
     if (!pendingStatusItem) {
       return;
     }
 
-    updateItem({
+    try { await updateItem({
       ...pendingStatusItem,
-      status: pendingStatusItem.status === "Active" ? "Inactive" : "Active",
-    });
+      status: pendingStatusItem.status === ItemActiveStatus ? ItemInactiveStatus : ItemActiveStatus,
+    }); } catch { return; }
     setPendingStatusItem(null);
   }
 

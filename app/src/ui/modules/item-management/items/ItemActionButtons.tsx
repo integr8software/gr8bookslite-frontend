@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, CircleOff, Edit3, Save, X } from "lucide-react";
-import { ItemsHref } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
+import {
+  ItemInactiveStatus,
+  ItemsHref,
+} from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 import type {
   ItemActionMode,
   ItemRecord,
@@ -26,8 +29,8 @@ export function ItemActionButtons({
   onSave,
   onStatusChange,
 }: ItemActionButtonsProps) {
-  const StatusIcon = nextStatus === "Inactive" ? CircleOff : CheckCircle2;
-  const statusLabel = nextStatus === "Inactive" ? "Set Inactive" : "Reactivate";
+  const StatusIcon = nextStatus === ItemInactiveStatus ? CircleOff : CheckCircle2;
+  const statusLabel = nextStatus === ItemInactiveStatus ? "Set Inactive" : "Reactivate";
 
   return (
     <>
@@ -52,7 +55,7 @@ export function ItemActionButtons({
           type="button"
           onClick={onStatusChange}
           className={
-            nextStatus === "Inactive"
+            nextStatus === ItemInactiveStatus
               ? joinClasses(responsiveActionClassName, moduleHeaderActionClassNames.danger)
               : joinClasses(responsiveActionClassName, moduleHeaderActionClassNames.secondary)
           }

@@ -10,6 +10,7 @@ import {
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
+import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type AccountsPayableVoucherHeaderPageProps = {
   onPreview?: () => void;
@@ -64,6 +65,12 @@ export function AccountsPayableVoucherHeaderPage({
           ) : null}
           {!page.isReadonly && page.mode !== "view" ? (
             <>
+              <AppCopyFromDropdown
+                records={page.purchaseOrderCopyRecords}
+                selectionMode="single"
+                sources={["Purchase Order"]}
+                onApply={page.copyFromPurchaseOrder}
+              />
               {page.mode === "edit" ? (
                 <button
                   type="button"

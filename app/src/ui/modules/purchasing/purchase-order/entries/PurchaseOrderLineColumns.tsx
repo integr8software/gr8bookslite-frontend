@@ -4,8 +4,7 @@ import {
 } from "@/app/src/constants/modules/purchasing/purchase-order/PurchaseOrderConstants";
 import {
   formatPurchaseOrderAmount,
-  getPurchaseOrderItemGrossAmount,
-  getPurchaseOrderItemNetAmount,
+  getPurchaseOrderItemAmounts,
 } from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
 import type { PurchaseOrderItem } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 import type { ItemRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
@@ -86,10 +85,44 @@ function PurchaseOrderLineCell({
   serviceDescriptionOptions: ServiceMaintenanceOptionResponseDto[];
   usesItemMaintenance: boolean;
 }) {
+  const amounts = getPurchaseOrderItemAmounts(row);
+
   if (column.id === "grossAmount") {
     return (
       <div className={entryCellDisplayClassName("justify-end tabular-nums")}>
-        {formatPurchaseOrderAmount(getPurchaseOrderItemGrossAmount(row))}
+        {formatPurchaseOrderAmount(amounts.grossAmount)}
+      </div>
+    );
+  }
+
+  if (column.id === "discountAmount") {
+    return (
+      <div className={entryCellDisplayClassName("justify-end tabular-nums")}>
+        {formatPurchaseOrderAmount(amounts.discountAmount)}
+      </div>
+    );
+  }
+
+  if (column.id === "grossAfterDiscount") {
+    return (
+      <div className={entryCellDisplayClassName("justify-end tabular-nums")}>
+        {formatPurchaseOrderAmount(amounts.grossAfterDiscount)}
+      </div>
+    );
+  }
+
+  if (column.id === "vatAmount") {
+    return (
+      <div className={entryCellDisplayClassName("justify-end tabular-nums")}>
+        {formatPurchaseOrderAmount(amounts.vatAmount)}
+      </div>
+    );
+  }
+
+  if (column.id === "netOfVatAmount") {
+    return (
+      <div className={entryCellDisplayClassName("justify-end tabular-nums")}>
+        {formatPurchaseOrderAmount(amounts.netOfVatAmount)}
       </div>
     );
   }
@@ -97,22 +130,12 @@ function PurchaseOrderLineCell({
   if (column.id === "netAmount") {
     return (
       <div className={entryCellDisplayClassName("justify-end tabular-nums")}>
-        {formatPurchaseOrderAmount(getPurchaseOrderItemNetAmount(row))}
+        {formatPurchaseOrderAmount(amounts.netAmount)}
       </div>
     );
   }
 
-  if (column.id === "grossAfterDiscount") {
-    return (
-      <div className={entryCellDisplayClassName("justify-end tabular-nums")}>{formatPurchaseOrderAmount(getGrossAfterDiscount(row))}</div>
-    );
-  }
-
-  if (column.id === "netOfVatAmount") {
-    return <div className={entryCellDisplayClassName("justify-end tabular-nums")}>{formatPurchaseOrderAmount(getNetOfVatAmount(row))}</div>;
-  }
-
-  const value = String(row[column.id] ?? "");
+  const value = String(row[column.id as keyof PurchaseOrderItem] ?? "");
 
   if (usesItemMaintenance && column.id === "itemName") {
     return (
@@ -162,23 +185,39 @@ function PurchaseOrderLineCell({
   }
 
   if (column.kind === "select") {
+    const isVatInclusive = column.id === "vatInclusive";
+    const isVatInclusiveDisabled = isVatInclusive && String(row.vatable ?? "").toLowerCase() !== "true";
+
     return (
       <AppAdvancedDropdown
         id={fieldId}
         name={fieldName}
         value={value}
-        readOnly={isReadonly}
+        readOnly={isReadonly || isVatInclusiveDisabled}
         options={(column.options ?? []).map((option) => ({
           name: option,
           value: option,
         }))}
         placeholder=""
+        isClearable={false}
+        isSearchable={false}
         className={EntryDropdownClassName}
-        onChange={(nextValue) => onUpdateEntry(row.id, { [column.id]: String(nextValue) })}
+        onChange={(nextValue) => {
+          const selectedValue = String(nextValue);
+
+          if (column.id === "vatable") {
+            onUpdateEntry(row.id, {
+              vatable: selectedValue,
+              ...(selectedValue.toLowerCase() !== "true" ? { vatInclusive: "False" } : {}),
+            });
+            return;
+          }
+
+          onUpdateEntry(row.id, { [column.id]: selectedValue });
+        }}
       />
     );
   }
-
   if (column.kind === "amount") {
     return (
       <MoneyNumberField
@@ -204,7 +243,6 @@ function PurchaseOrderLineCell({
     />
   );
 }
-
 const EntryDropdownClassName =
   "[&_.app-advanced-dropdown-control]:h-10 [&_.app-advanced-dropdown-control]:rounded-none [&_.app-advanced-dropdown-control]:border-0 [&_.app-advanced-dropdown-control]:bg-transparent [&_.app-advanced-dropdown-control]:px-3 [&_.app-advanced-dropdown-control]:shadow-none [&_.app-advanced-dropdown-control]:focus:ring-2 [&_.app-advanced-dropdown-control]:focus:ring-inset [&_.app-advanced-dropdown-control]:focus:ring-skyblue/35";
 
@@ -331,15 +369,6 @@ export function getPurchaseOrderDefaultVisibleColumnIds(purchaseType: string) {
         : new Set<PurchaseOrderLineColumnConfig["id"]>();
 
   return PurchaseOrderLineColumnConfigs.map((column) => column.id).filter((columnId) => !hiddenColumns.has(columnId));
-}
-
-function getGrossAfterDiscount(item: PurchaseOrderItem) {
-  return Math.max(getPurchaseOrderItemGrossAmount(item) - (Number(item.discountAmount) || 0), 0);
-}
-
-function getNetOfVatAmount(item: PurchaseOrderItem) {
-  const grossAfterDiscount = getGrossAfterDiscount(item);
-  return item.vatInclusive.toLowerCase() === "true" ? Math.max(grossAfterDiscount - (Number(item.vatAmount) || 0), 0) : grossAfterDiscount;
 }
 
 function column(

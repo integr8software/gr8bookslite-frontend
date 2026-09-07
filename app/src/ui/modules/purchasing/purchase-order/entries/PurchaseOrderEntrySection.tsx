@@ -5,6 +5,7 @@ import {
   createPurchaseOrderId,
   formatPurchaseOrderAmount,
   getPurchaseOrderTotals,
+  recalculatePurchaseOrderItem,
 } from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
 import type { PurchaseOrderAccountingEntry, PurchaseOrderCopySource, PurchaseOrderItem } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 import type { PurchasingAccountingColumnId, PurchasingEntryTab } from "@/app/src/types/modules/purchasing/PurchasingAccountingTypes";
@@ -77,16 +78,7 @@ export function PurchaseOrderEntrySection({
         rows.map((row) => {
           if (row.id !== rowId) return row;
 
-          const nextRow = normalizeEntry({ ...row, ...updates });
-
-          if ("discountRate" in updates || "quantity" in updates || "cost" in updates) {
-            nextRow.discountAmount = (nextRow.quantity * nextRow.cost * nextRow.discountRate) / 100;
-          } else if ("discountAmount" in updates) {
-            const grossAmount = nextRow.quantity * nextRow.cost;
-            nextRow.discountRate = grossAmount > 0 ? (nextRow.discountAmount / grossAmount) * 100 : 0;
-          }
-
-          return nextRow;
+          return recalculatePurchaseOrderItem(normalizeEntry({ ...row, ...updates }));
         }),
       );
     },

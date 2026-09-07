@@ -8,6 +8,7 @@ import {
   AppAdvancedDropdown,
   type AppAdvancedDropdownOption,
 } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { ItemActiveStatus } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTableActionButton } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
@@ -44,7 +45,7 @@ export function ItemVariationsTable({
   onReorderAssignment,
   onUpdateAssignment,
 }: ItemVariationsTableProps) {
-  const activeVariations = variations.filter((variation) => variation.status === "Active");
+  const activeVariations = variations.filter((variation) => variation.status === ItemActiveStatus);
   const isAtLimit = assignments.length >= MaxItemVariationAssignments;
   const hasPendingVariation = assignments.some((assignment) => !assignment.variationId);
   const [draggedAssignmentId, setDraggedAssignmentId] = useState<string | null>(null);

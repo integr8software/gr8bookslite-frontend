@@ -21,6 +21,7 @@ export const LegacyItemTaxNameAliases: Readonly<Record<string, string>> = {
 
 export const ItemActiveStatus = "Active" as const;
 export const ItemInactiveStatus = "Inactive" as const;
+export const ItemDefaultStatus = ItemActiveStatus;
 
 export const ItemStatusOptions = [
   ItemActiveStatus,

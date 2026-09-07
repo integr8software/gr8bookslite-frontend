@@ -10,6 +10,9 @@ import {
   MockItemSetupRecords,
   MockPriceLists,
 } from "@/app/src/data/modules/item-management/items/ItemManagementData";
+import {
+  ItemInactiveStatus,
+} from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { ItemManagementQueryKeys } from "@/app/src/services/modules/item-management/items/ItemManagementQueryKeys";
 import type {
@@ -190,7 +193,7 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
     onError: (error) => toast.error(itemSaveError(error)),
     onSuccess: (itemId) => {
       updateCachedItems((items) =>
-        items.map((item) => (item.id === itemId ? { ...item, status: "Inactive" } : item)),
+        items.map((item) => (item.id === itemId ? { ...item, status: ItemInactiveStatus } : item)),
       );
       toast.success("Item set inactive.");
     },
@@ -333,7 +336,7 @@ export function useItemManagementStore<TSelected = ItemManagementStoreState>(
     onSuccess: ({ kind, recordId }) => {
       updateCachedSetupRecords(kind, (records) =>
         records.map((record) =>
-          record.id === recordId ? { ...record, status: "Inactive" } : record,
+          record.id === recordId ? { ...record, status: ItemInactiveStatus } : record,
         ),
       );
       toast.success("Setup record set inactive.");

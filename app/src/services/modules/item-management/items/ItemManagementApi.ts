@@ -10,6 +10,10 @@ import {
 } from "@/app/src/generated/api/items/items";
 import type { CreateItemBasicInfoDto, ItemBasicInfoResponseDto, UpsertItemPricingDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import { ItemInitialFormValues } from "@/app/src/data/modules/item-management/items/ItemManagementData";
+import {
+  ItemActiveStatus,
+  ItemInactiveStatus,
+} from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 import type { ItemRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
 
 export async function fetchItems(): Promise<ItemRecord[]> {
@@ -73,7 +77,7 @@ function toPayload(item: ItemRecord): CreateItemBasicInfoDto {
     responsibilityCenterId: (item.responsibilityCenterId ?? item.responsibilityCenter) || null,
     brand: item.brand.trim(), model: item.model.trim(),
     externalReferenceCode: item.externalReferenceCode.trim(), description: item.description.trim(),
-    tags: item.tags.map((tag) => tag.trim()), status: item.status === "Active" ? "ACTIVE" : "INACTIVE",
+    tags: item.tags.map((tag) => tag.trim()), status: item.status === ItemActiveStatus ? "ACTIVE" : "INACTIVE",
   };
 }
 
@@ -85,7 +89,7 @@ function mapItem(item: ItemBasicInfoResponseDto): ItemRecord {
     unitOfMeasurementId: item.unitOfMeasurementId,
     responsibilityCenter: item.responsibilityCenterName, responsibilityCenterId: item.responsibilityCenterId ?? "",
     brand: item.brand ?? "", model: item.model ?? "", externalReferenceCode: item.externalReferenceCode ?? "",
-    description: item.description ?? "", tags: item.tags ?? [], status: item.status === "INACTIVE" ? "Inactive" : "Active",
+    description: item.description ?? "", tags: item.tags ?? [], status: item.status === "INACTIVE" ? ItemInactiveStatus : ItemActiveStatus,
     costPrice: item.costPrice ?? 0,
     sellingPrice: item.sellingPrice ?? 0,
     suggestedPrice: item.suggestedPrice ?? 0,

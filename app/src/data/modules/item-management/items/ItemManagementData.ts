@@ -12,8 +12,13 @@ import type {
   ItemSupplierAssignment,
   ItemSupplierRecord,
 } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
-import { ItemRecordsStorageKey } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
-import { ItemCategorySystemDefaultAccountingSetup } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
+import {
+  ItemActiveStatus,
+  ItemDefaultStatus,
+  ItemInactiveStatus,
+  ItemRecordsStorageKey,
+  ItemCategorySystemDefaultAccountingSetup,
+} from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 
 type ItemCategoryTreeNode = {
   name: string;
@@ -322,7 +327,7 @@ function createItemCategorySampleRecords(
       accountingSetupMode: parentId ? "inherit" : "own",
       parentIds: parentId ? [parentId] : [],
       allowSubCategory: true,
-      status: "Active",
+      status: ItemActiveStatus,
       ...ItemCategorySeedAudit,
     };
 
@@ -378,7 +383,7 @@ export const MockItems: ItemRecord[] = [
     costPrice: 190,
     sellingPrice: 250,
     taxTreatment: "VAT Exclusive",
-    status: "Active",
+    status: ItemActiveStatus,
     defaultWarehouse: "Main Warehouse",
     defaultLocation: "WH-A-Z1-R01-S02-B03",
     defaultZone: "Zone A",
@@ -461,7 +466,7 @@ export const MockItems: ItemRecord[] = [
     costPrice: 35,
     sellingPrice: 50,
     taxTreatment: "VAT Exclusive",
-    status: "Active",
+    status: ItemActiveStatus,
     defaultWarehouse: "North Warehouse",
     defaultLocation: "WH-N-Z1-R01-S01-B02",
     defaultZone: "Zone 1",
@@ -539,7 +544,7 @@ export const MockItems: ItemRecord[] = [
     costPrice: 1850,
     sellingPrice: 2450,
     taxTreatment: "VAT Inclusive",
-    status: "Active",
+    status: ItemActiveStatus,
     defaultWarehouse: "Main Warehouse",
     defaultLocation: "WH-A-Z1-R02-S01-B01",
     defaultZone: "Zone A",
@@ -628,7 +633,7 @@ export const MockItemBundles: ItemBundleRecord[] = [
     code: "BND-2001",
     name: "Starter Office Bundle",
     bundlePrice: 1750,
-    status: "Active",
+    status: ItemActiveStatus,
     lines: [
       { id: "line-paper", itemId: "item-paper-a4", quantity: 5 },
       { id: "line-roll", itemId: "item-thermal-roll", quantity: 10 },
@@ -639,7 +644,7 @@ export const MockItemBundles: ItemBundleRecord[] = [
     code: "BND-2002",
     name: "POS Counter Kit",
     bundlePrice: 1850,
-    status: "Active",
+    status: ItemActiveStatus,
     lines: [
       { id: "line-pos-roll", itemId: "item-thermal-roll", quantity: 20 },
       { id: "line-pos-bundle", itemId: "item-starter-bundle", quantity: 1 },
@@ -656,7 +661,7 @@ export const MockItemVariations: ItemVariationRecord[] = [
     values: ["Red", "Blue", "Black", "White"],
     requiredOnItem: false,
     affectsStock: true,
-    status: "Active",
+    status: ItemActiveStatus,
   },
   {
     id: "attr-size",
@@ -666,7 +671,7 @@ export const MockItemVariations: ItemVariationRecord[] = [
     values: ["Small", "Medium", "Large", "XL"],
     requiredOnItem: false,
     affectsStock: true,
-    status: "Active",
+    status: ItemActiveStatus,
   },
   {
     id: "attr-storage",
@@ -676,7 +681,7 @@ export const MockItemVariations: ItemVariationRecord[] = [
     values: ["128GB", "256GB", "512GB", "1TB"],
     requiredOnItem: false,
     affectsStock: true,
-    status: "Active",
+    status: ItemActiveStatus,
   },
   {
     id: "attr-material",
@@ -686,7 +691,7 @@ export const MockItemVariations: ItemVariationRecord[] = [
     values: ["Cotton", "Steel", "Plastic", "Wood", "Paper", "Mixed"],
     requiredOnItem: false,
     affectsStock: false,
-    status: "Active",
+    status: ItemActiveStatus,
   },
   {
     id: "attr-lot-grade",
@@ -696,7 +701,7 @@ export const MockItemVariations: ItemVariationRecord[] = [
     values: ["A", "B", "C", "Return"],
     requiredOnItem: false,
     affectsStock: true,
-    status: "Active",
+    status: ItemActiveStatus,
   },
 ];
 
@@ -707,7 +712,7 @@ export const MockItemSuppliers: ItemSupplierRecord[] = [
     name: "TechSource Inc.",
     contactPerson: "Procurement Desk",
     contactDetails: "procurement@techsource.example",
-    status: "Active",
+    status: ItemActiveStatus,
   },
   {
     id: "supplier-global-supply",
@@ -715,7 +720,7 @@ export const MockItemSuppliers: ItemSupplierRecord[] = [
     name: "Global Supply Co.",
     contactPerson: "Customer Service",
     contactDetails: "orders@globalsupply.example",
-    status: "Active",
+    status: ItemActiveStatus,
   },
   {
     id: "supplier-prime-distributors",
@@ -723,7 +728,7 @@ export const MockItemSuppliers: ItemSupplierRecord[] = [
     name: "Prime Distributors",
     contactPerson: "Sales Team",
     contactDetails: "sales@primedistributors.example",
-    status: "Active",
+    status: ItemActiveStatus,
   },
   {
     id: "supplier-northline",
@@ -731,7 +736,7 @@ export const MockItemSuppliers: ItemSupplierRecord[] = [
     name: "Northline Trading",
     contactPerson: "Accounts Desk",
     contactDetails: "accounts@northline.example",
-    status: "Active",
+    status: ItemActiveStatus,
   },
 ];
 
@@ -744,7 +749,7 @@ export const MockPriceLists: ItemPriceListRecord[] = [
     customerType: "Walk-in and regular customers",
     pricingMode: "Manual",
     markupPercent: 0,
-    status: "Active",
+    status: ItemActiveStatus,
   },
   {
     id: "price-wholesale",
@@ -754,7 +759,7 @@ export const MockPriceLists: ItemPriceListRecord[] = [
     customerType: "Volume buyers",
     pricingMode: "Discount From Retail",
     markupPercent: 8,
-    status: "Active",
+    status: ItemActiveStatus,
   },
   {
     id: "price-dealer",
@@ -764,7 +769,7 @@ export const MockPriceLists: ItemPriceListRecord[] = [
     customerType: "Resellers and dealers",
     pricingMode: "Discount From Retail",
     markupPercent: 12,
-    status: "Active",
+    status: ItemActiveStatus,
   },
   {
     id: "price-vip",
@@ -774,7 +779,7 @@ export const MockPriceLists: ItemPriceListRecord[] = [
     customerType: "Preferred accounts",
     pricingMode: "Discount From Retail",
     markupPercent: 5,
-    status: "Inactive",
+    status: ItemInactiveStatus,
   },
 ];
 
@@ -794,7 +799,7 @@ export const ItemInitialFormValues: ItemFormValues = {
   sellingPrice: 0,
   suggestedPrice: 0,
   taxTreatment: "",
-  status: "Active",
+  status: ItemDefaultStatus,
   defaultWarehouse: "Main Warehouse",
   defaultLocation: "",
   defaultZone: "",
@@ -835,7 +840,7 @@ export const ItemCategoryInitialFormValues: ItemCategoryFormValues = {
   requiresExpenseAccount: true,
   behaviors: ["Sellable Item", "Purchasable Item", "Issuable Item", "Returnable Item"],
   allowSubCategory: true,
-  status: "Active",
+  status: ItemActiveStatus,
 };
 
 export function createItemFormValues(item: ItemRecord): ItemFormValues {

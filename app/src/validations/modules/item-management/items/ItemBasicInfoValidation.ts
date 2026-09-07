@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ItemStatusOptions } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 import type { ItemFormErrors, ItemFormValues } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
 
 const referenceId = z.string().regex(/^[1-9][0-9]*$/, "Select a valid record.");
@@ -18,7 +19,7 @@ export const ItemBasicInfoValidationSchema = z.object({
     (tags) => new Set(tags.map((tag) => tag.toLowerCase())).size === tags.length,
     "Remove duplicate tags.",
   ),
-  status: z.enum(["Active", "Inactive"]),
+  status: z.enum(ItemStatusOptions),
   costPrice: z.number().nonnegative("Cost must not be negative.").optional(),
   sellingPrice: z.number().nonnegative("Selling price must not be negative.").optional(),
   taxTreatment: z.string().trim().max(100).optional(),

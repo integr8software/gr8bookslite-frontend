@@ -2,7 +2,10 @@
 
 import { Package } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import { ItemsFormPageCopy } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
+import {
+  ItemInactiveStatus,
+  ItemsFormPageCopy,
+} from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 import { useItemsFormPage } from "@/app/src/hooks/modules/item-management/items/useItemsFormPage";
 import type {
   ItemFormErrors,
@@ -228,10 +231,10 @@ export function ItemsFormPage() {
       <AppDialog
         isOpen={page.isStatusDialogOpen}
         isPending={page.isMutating}
-        title={page.nextStatus === "Inactive" ? "Set item inactive?" : "Reactivate item?"}
+        title={page.nextStatus === ItemInactiveStatus ? "Set item inactive?" : "Reactivate item?"}
         description={`This will mark ${page.existingItem?.name ?? "the selected item"} as ${page.nextStatus.toLowerCase()}.`}
-        confirmLabel={page.nextStatus === "Inactive" ? "Set Inactive" : "Reactivate"}
-        tone={page.nextStatus === "Inactive" ? "deactivate" : "activate"}
+        confirmLabel={page.nextStatus === ItemInactiveStatus ? "Set Inactive" : "Reactivate"}
+        tone={page.nextStatus === ItemInactiveStatus ? "deactivate" : "activate"}
         onCancel={() => page.setIsStatusDialogOpen(false)}
         onConfirm={page.handleConfirmStatusChange}
       />

@@ -101,7 +101,6 @@ export function useItemsFormPage() {
   useEffect(() => {
     if (!existingItem || initializedRecord.current === existingItem.id) return;
     initializedRecord.current = existingItem.id;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydrate the form once when its saved record arrives.
     setValues(createInitialItemFormValues(existingItem));
   }, [existingItem]);
   const [errors, setErrors] = useState<ItemFormErrors>({});

@@ -154,6 +154,8 @@ export type ItemPriceListAssignment = {
 };
 
 export type ItemRecord = {
+  unitOfMeasurementId?: string;
+  responsibilityCenterId?: string;
   id: string;
   code: string;
   skuCode: string;
@@ -174,6 +176,7 @@ export type ItemRecord = {
   responsibilityCenter: string;
   costPrice: number;
   sellingPrice: number;
+  suggestedPrice?: number;
   taxTreatment: ItemTaxTreatment;
   status: ItemStatus;
   defaultWarehouse: string;
@@ -218,6 +221,7 @@ export type ItemFormValues = {
   responsibilityCenter: string;
   costPrice: number;
   sellingPrice: number;
+  suggestedPrice?: number;
   taxTreatment: ItemTaxTreatment;
   status: ItemStatus;
   defaultWarehouse: string;

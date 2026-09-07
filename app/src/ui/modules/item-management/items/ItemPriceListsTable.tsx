@@ -1,5 +1,6 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
 import { formatCurrency } from "@/app/src/utils/currency.util";
+import { ItemActiveStatus } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 import type {
   ItemFormValues,
   ItemPriceListRecord,
@@ -18,7 +19,7 @@ export function ItemPriceListsTable({
   priceLists,
   values,
 }: ItemPriceListsTableProps) {
-  const activePriceLists = priceLists.filter((priceList) => priceList.status === "Active");
+  const activePriceLists = priceLists.filter((priceList) => priceList.status === ItemActiveStatus);
 
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm sm:p-5">

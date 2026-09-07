@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  ItemActiveStatus,
   ItemBehaviorOptions,
   ItemPerishabilityOptions,
   ItemStatusOptions,
@@ -162,7 +163,7 @@ export function validateItemForm(
   const assignedVariationIdSet = new Set(assignedVariationIds);
   const missingRequiredVariations = (options.variations ?? []).filter(
     (variation) =>
-      variation.status === "Active" &&
+      variation.status === ItemActiveStatus &&
       variation.requiredOnItem &&
       !assignedVariationIdSet.has(variation.id),
   );

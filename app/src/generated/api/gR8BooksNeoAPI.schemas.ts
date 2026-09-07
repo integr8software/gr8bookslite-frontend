@@ -5,6 +5,174 @@
  * Versioned REST API for GR8Books Neo frontend clients.
  * OpenAPI spec version: 1.0
  */
+export type ItemBasicInfoResponseDtoStatus = typeof ItemBasicInfoResponseDtoStatus[keyof typeof ItemBasicInfoResponseDtoStatus];
+
+
+export const ItemBasicInfoResponseDtoStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export interface ItemBasicInfoResponseDto {
+  /** @maxLength 50 */
+  code: string;
+  /** @maxLength 100 */
+  skuCode?: string;
+  /** @maxLength 150 */
+  name: string;
+  /** @maxLength 100 */
+  barcode?: string;
+  /** @pattern ^[1-9][0-9]*$ */
+  categoryId: string;
+  /** @pattern ^[1-9][0-9]*$ */
+  unitOfMeasurementId: string;
+  /** @maxLength 150 */
+  brand?: string;
+  /** @maxLength 150 */
+  model?: string;
+  /** @maxLength 100 */
+  externalReferenceCode?: string;
+  /**
+     * @nullable
+     * @pattern ^[1-9][0-9]*$
+     */
+  responsibilityCenterId?: string | null;
+  /** @maxLength 500 */
+  description?: string;
+  /**
+     * JSON array of unique tag strings.
+     * @maxItems 50
+     * @items.maxLength 50
+     */
+  tags?: string[];
+  status?: ItemBasicInfoResponseDtoStatus;
+  id: string;
+  categoryName: string;
+  unitOfMeasurementSymbol: string;
+  responsibilityCenterName: string;
+  costPrice?: number;
+  sellingPrice?: number;
+  suggestedPrice?: number;
+  /** @nullable */
+  taxTreatment?: string | null;
+}
+
+export interface ItemBasicInfoListResponseDto {
+  items: ItemBasicInfoResponseDto[];
+}
+
+export type CreateItemBasicInfoDtoStatus = typeof CreateItemBasicInfoDtoStatus[keyof typeof CreateItemBasicInfoDtoStatus];
+
+
+export const CreateItemBasicInfoDtoStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export interface CreateItemBasicInfoDto {
+  /** @maxLength 50 */
+  code: string;
+  /** @maxLength 100 */
+  skuCode?: string;
+  /** @maxLength 150 */
+  name: string;
+  /** @maxLength 100 */
+  barcode?: string;
+  /** @pattern ^[1-9][0-9]*$ */
+  categoryId: string;
+  /** @pattern ^[1-9][0-9]*$ */
+  unitOfMeasurementId: string;
+  /** @maxLength 150 */
+  brand?: string;
+  /** @maxLength 150 */
+  model?: string;
+  /** @maxLength 100 */
+  externalReferenceCode?: string;
+  /**
+     * @nullable
+     * @pattern ^[1-9][0-9]*$
+     */
+  responsibilityCenterId?: string | null;
+  /** @maxLength 500 */
+  description?: string;
+  /**
+     * JSON array of unique tag strings.
+     * @maxItems 50
+     * @items.maxLength 50
+     */
+  tags?: string[];
+  status?: CreateItemBasicInfoDtoStatus;
+}
+
+export type UpdateItemBasicInfoDtoStatus = typeof UpdateItemBasicInfoDtoStatus[keyof typeof UpdateItemBasicInfoDtoStatus];
+
+
+export const UpdateItemBasicInfoDtoStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export interface UpdateItemBasicInfoDto {
+  /** @maxLength 50 */
+  code?: string;
+  /** @maxLength 100 */
+  skuCode?: string;
+  /** @maxLength 150 */
+  name?: string;
+  /** @maxLength 100 */
+  barcode?: string;
+  /** @pattern ^[1-9][0-9]*$ */
+  categoryId?: string;
+  /** @pattern ^[1-9][0-9]*$ */
+  unitOfMeasurementId?: string;
+  /** @maxLength 150 */
+  brand?: string;
+  /** @maxLength 150 */
+  model?: string;
+  /** @maxLength 100 */
+  externalReferenceCode?: string;
+  /**
+     * @nullable
+     * @pattern ^[1-9][0-9]*$
+     */
+  responsibilityCenterId?: string | null;
+  /** @maxLength 500 */
+  description?: string;
+  /**
+     * JSON array of unique tag strings.
+     * @maxItems 50
+     * @items.maxLength 50
+     */
+  tags?: string[];
+  status?: UpdateItemBasicInfoDtoStatus;
+}
+
+export interface ItemPricingResponseDto {
+  id: string;
+  itemId: string;
+  cost: number;
+  sellingPrice: number;
+  suggestedPrice: number;
+  /** @nullable */
+  taxTreatment?: string | null;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface UpsertItemPricingDto {
+  /** @minimum 0 */
+  cost?: number;
+  /** @minimum 0 */
+  sellingPrice?: number;
+  /** @minimum 0 */
+  suggestedPrice?: number;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  taxTreatment?: string | null;
+}
+
 export interface RegisterDto {
   fullName: string;
   email: string;

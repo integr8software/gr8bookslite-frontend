@@ -95,7 +95,7 @@ export function OnboardingBillingSummaryCard({
 
 				<p className="mt-6 rounded-xl bg-skyblue/10 p-4 text-xs leading-5 text-darknavy/60">
 					{isManualBilling
-						? "No payment method is saved. Manual checkout is confirmed by backend webhook in Phase 2."
+						? "No charge today. When your free trial ends, you will renew manually through hosted checkout."
 						: "No charge today. Your card is charged only after the free trial ends."}
 				</p>
 			</div>

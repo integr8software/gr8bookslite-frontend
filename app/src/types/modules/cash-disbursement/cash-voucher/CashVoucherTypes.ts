@@ -378,3 +378,14 @@ export type CashVoucherGeneratedAccountOptions = {
   inputVatAccount?: CashVoucherGeneratedAccount | null;
   withholdingTaxAccount?: CashVoucherGeneratedAccount | null;
 };
+
+export type CashVoucherDefaultAccount = {
+  accountId: string;
+  accountCode: string;
+  accountTitle: string;
+};
+
+export type CashVoucherDefaultAccounts = {
+  defaultCashAccount: CashVoucherDefaultAccount;
+  creditAccount?: CashVoucherDefaultAccount;
+};

@@ -18,6 +18,8 @@ export const CashVoucherQueryKeys = {
 		[...CashVoucherQueryKeys.all, QueryLookupScope, "responsibility-centers", companyId] as const,
 	terms: (companyId?: number | null) =>
 		[...CashVoucherQueryKeys.all, QueryLookupScope, "terms", companyId] as const,
+	defaultAccounts: (companyId?: number | null) =>
+		[...CashVoucherQueryKeys.all, QueryLookupScope, "default-accounts", companyId] as const,
 	expenseTypes: (companyId?: number | null) =>
 		[...CashVoucherQueryKeys.all, QueryLookupScope, "expense-types", companyId] as const,
 };

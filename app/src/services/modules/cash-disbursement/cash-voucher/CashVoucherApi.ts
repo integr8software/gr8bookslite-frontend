@@ -2,6 +2,7 @@ import {
   cashVoucherControllerCreateV1,
   cashVoucherControllerFindAllV1,
   cashVoucherControllerFindOneV1,
+  cashVoucherControllerGetDefaultAccountsV1,
   cashVoucherControllerRemoveV1,
   cashVoucherControllerSuggestTransactionNumberV1,
   cashVoucherControllerUpdatePutV1,
@@ -9,6 +10,7 @@ import {
 } from "@/app/src/generated/api/cash-voucher/cash-voucher";
 import type {
   CashVoucherControllerFindAllV1Params,
+  CashVoucherDefaultAccountsResponseDto,
   CashVoucherListResponseDto,
   CashVoucherRecordResponseDto,
   CashVoucherSingleResponseDto,
@@ -71,6 +73,10 @@ export async function fetchCashVoucherPartyOptions(): Promise<AppAdvancedDropdow
 
 export async function fetchCashVoucherAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
   return fetchPostingAccountLookupOptions();
+}
+
+export async function fetchCashVoucherDefaultAccounts(): Promise<CashVoucherDefaultAccountsResponseDto> {
+  return cashVoucherControllerGetDefaultAccountsV1();
 }
 
 export async function fetchCashVoucherResponsibilityCenters(): Promise<{

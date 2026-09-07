@@ -11812,6 +11812,22 @@ export interface CashVoucherListResponseDto {
   statistics?: CashVoucherStatisticsDto;
 }
 
+export interface CashVoucherDefaultAccountDto {
+  /** Chart Account ID */
+  accountId: string;
+  /** Account Code */
+  accountCode: string;
+  /** Account Title */
+  accountTitle: string;
+}
+
+export interface CashVoucherDefaultAccountsResponseDto {
+  /** Default Cash on Hand Account for Cash Voucher */
+  defaultCashAccount: CashVoucherDefaultAccountDto;
+  /** Default settlement credit account (synonym for defaultCashAccount in CV) */
+  creditAccount?: CashVoucherDefaultAccountDto;
+}
+
 export interface CashVoucherSingleResponseDto {
   /** Cash Voucher Record */
   data: CashVoucherRecordResponseDto;
@@ -20956,4 +20972,3 @@ page?: number;
  */
 limit?: number;
 };
-

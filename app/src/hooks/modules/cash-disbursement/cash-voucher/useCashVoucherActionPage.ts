@@ -18,6 +18,7 @@ import {
   createAutomaticAccountingEntries,
   hasNonZeroAccountingAmount,
   isGeneratedAccountingEntry,
+  isPaymentCreditEntry,
   normalizeCashVoucherLineEntryFields,
   shouldSyncCashVoucherEntryParty,
   syncCashVoucherLineEntryTaxDetails,
@@ -38,6 +39,7 @@ import {
   validateCashVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/cash-voucher/CashVoucherValidation";
 import { useDefaultAccountStore } from "@/app/src/hooks/modules/financial-maintenance/default-account/useDefaultAccount";
+import { useCashVoucherDefaultAccounts } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherDefaultAccounts";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
@@ -143,6 +145,16 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       ),
     [taxDefaultAccountOptionsQuery.data],
   );
+  const defaultAccountsQuery = useCashVoucherDefaultAccounts();
+  const cashOnHandAccount = useMemo<GeneratedAccountingAccount | undefined>(() => {
+    const account = defaultAccountsQuery.data?.defaultCashAccount;
+    if (!account) return undefined;
+
+    return {
+      accountCode: account.accountCode,
+      accountName: account.accountTitle,
+    };
+  }, [defaultAccountsQuery.data]);
   const partyOptions = useMemo<CashVoucherPartyDropdownOption[]>(() => {
     const optionsByCode = new Map<string, CashVoucherPartyDropdownOption>();
 
@@ -320,6 +332,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         lineEntries: createAutomaticAccountingEntries(hydrated.entries, {
           bankAccount: null,
           blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
+          cashAccount: cashOnHandAccount,
           generatedRemarksOverrides: generatedRemarksOverridesRef.current,
           inputVatAccountsByTaxCode,
           isCashPayment: true,
@@ -334,7 +347,35 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       setInitialValues(applyDefaults);
       hydratedPartyTaxDefaultsRecordIdRef.current = recordKey;
     });
-  }, [existingVoucher, inputVatAccountsByTaxCode, mode, partyOptions, taxCodes, withholdingTaxAccountsByCode]);
+  }, [cashOnHandAccount, existingVoucher, inputVatAccountsByTaxCode, mode, partyOptions, taxCodes, withholdingTaxAccountsByCode]);
+
+  useEffect(() => {
+    if (!cashOnHandAccount) {
+      return;
+    }
+
+    setValues((current) => {
+      const needsUpdate = current.lineEntries.some(
+        (entry) => isPaymentCreditEntry(entry) && (!entry.accountCode || !entry.accountName),
+      );
+      if (!needsUpdate) {
+        return current;
+      }
+
+      return {
+        ...current,
+        lineEntries: current.lineEntries.map((entry) =>
+          isPaymentCreditEntry(entry) && (!entry.accountCode || !entry.accountName)
+            ? {
+                ...entry,
+                accountCode: cashOnHandAccount.accountCode,
+                accountName: cashOnHandAccount.accountName,
+              }
+            : entry,
+        ),
+      };
+    });
+  }, [cashOnHandAccount]);
 
   // Load next transaction number on create mode
   useEffect(() => {
@@ -459,6 +500,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         lineEntries: createAutomaticAccountingEntries(editableEntries, {
           bankAccount: null,
           blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
+          cashAccount: cashOnHandAccount,
           generatedRemarksOverrides: generatedRemarksOverridesRef.current,
           inputVatAccountsByTaxCode,
           isCashPayment: true,
@@ -502,6 +544,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     return createAutomaticAccountingEntries(entries, {
       bankAccount: null,
       blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
+      cashAccount: cashOnHandAccount,
       generatedRemarksOverrides: generatedRemarksOverridesRef.current,
       inputVatAccountsByTaxCode,
       isCashPayment: true,
@@ -540,6 +583,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         lineEntries: createAutomaticAccountingEntries(nextEntries, {
           bankAccount: null,
           blankRemarksEntryIds: Array.from(blankRemarksEntryIdsRef.current),
+          cashAccount: cashOnHandAccount,
           generatedRemarksOverrides: generatedRemarksOverridesRef.current,
           inputVatAccountsByTaxCode,
           isCashPayment: true,

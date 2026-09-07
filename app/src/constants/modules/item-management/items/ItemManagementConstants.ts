@@ -19,7 +19,13 @@ export const LegacyItemTaxNameAliases: Readonly<Record<string, string>> = {
   "VAT Inclusive": "VAT 12% Inclusive",
 };
 
-export const ItemStatusOptions = ["Active", "Inactive"] as const satisfies readonly ItemStatus[];
+export const ItemActiveStatus = "Active" as const;
+export const ItemInactiveStatus = "Inactive" as const;
+
+export const ItemStatusOptions = [
+  ItemActiveStatus,
+  ItemInactiveStatus,
+] as const satisfies readonly ItemStatus[];
 
 export const ItemPerishabilityOptions = [
   "Non Perishable",

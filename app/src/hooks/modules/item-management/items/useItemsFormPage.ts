@@ -8,6 +8,8 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent 
 import { useParams, usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
+  ItemActiveStatus,
+  ItemInactiveStatus,
   ItemsHref,
   LegacyItemTaxNameAliases,
 } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
@@ -109,12 +111,13 @@ export function useItemsFormPage() {
     queryFn: fetchItemReferenceOptions,
     enabled: activeCompanyId !== null,
   });
-  const nextStatus: ItemStatus = existingItem?.status === "Active" ? "Inactive" : "Active";
+  const nextStatus: ItemStatus =
+    existingItem?.status === ItemActiveStatus ? ItemInactiveStatus : ItemActiveStatus;
   const uomOptions = withSavedOption(referenceOptionsQuery.data?.units ?? [], existingItem?.unitOfMeasurementId, existingItem?.uom);
   const taxTreatmentOptions = useMemo(
     () =>
       taxMaintenance.taxes
-        .filter((tax) => tax.status === "Active")
+        .filter((tax) => tax.status === ItemActiveStatus)
         .map((tax) => ({
           label: `${tax.name} (${formatTaxDefinitionPercentage(tax.percentage, tax.treatment)})`,
           value: tax.id,
@@ -125,7 +128,7 @@ export function useItemsFormPage() {
 
   useEffect(() => {
     const activeTaxes = taxMaintenance.taxes.filter(
-      (tax) => tax.status === "Active",
+      (tax) => tax.status === ItemActiveStatus,
     );
 
     if (activeTaxes.length === 0) {
@@ -508,7 +511,7 @@ export function useItemsFormPage() {
     taxTreatmentOptions,
     supplierOptions: createSimpleOptions(
       vendorOptionsQuery.data
-        .filter((supplier) => supplier.status === "Active")
+        .filter((supplier) => supplier.status === ItemActiveStatus)
         .map((supplier) => supplier.name),
     ),
     uomOptions,
@@ -766,7 +769,7 @@ type ItemSetupOption = {
 };
 
 function createCategorySetupOptions(records: ItemSetupRecord[]): ItemSetupOption[] {
-  const activeRecords = records.filter((record) => record.status === "Active");
+  const activeRecords = records.filter((record) => record.status === ItemActiveStatus);
   const activeRecordIds = new Set(activeRecords.map((record) => record.id));
   const recordsByParentId = new Map<string, ItemSetupRecord[]>();
 
@@ -837,7 +840,7 @@ function createSimpleOptions(options: string[]) {
 
 function createWarehouseOptions(warehouses: WarehouseRecord[]) {
   return warehouses
-    .filter((warehouse) => warehouse.status === "Active")
+    .filter((warehouse) => warehouse.status === ItemActiveStatus)
     .map((warehouse) => ({
       description: createWarehouseDescription(warehouse),
       name: warehouse.name,

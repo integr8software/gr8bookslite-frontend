@@ -248,7 +248,7 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
 
   async function submit(status?: PettyCashVoucherStatus) {
     const nextValues = status ? { ...values, status } : values;
-    const nextErrors = validatePettyCashVoucherForm(nextValues);
+    const nextErrors = nextValues.status === "Draft" ? {} : validatePettyCashVoucherForm(nextValues);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
@@ -361,7 +361,7 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
     updateStatus: handleUpdateStatus,
     validate: (status?: PettyCashVoucherStatus) => {
       const nextValues = status ? { ...values, status } : values;
-      const errs = validatePettyCashVoucherForm(nextValues);
+      const errs = nextValues.status === "Draft" ? {} : validatePettyCashVoucherForm(nextValues);
       setErrors(errs);
       return Object.keys(errs).length === 0;
     },

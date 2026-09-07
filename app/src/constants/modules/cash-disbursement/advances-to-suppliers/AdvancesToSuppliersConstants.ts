@@ -86,9 +86,9 @@ export const AdvancesToSuppliersStatuses = {
 } as const satisfies Record<string, AdvancesToSuppliersFormStatus>;
 
 export const AdvancesToSuppliersRecordStatuses = [
-  AdvancesToSuppliersStatuses.Draft,
-  AdvancesToSuppliersStatuses.ForApproval,
   AdvancesToSuppliersStatuses.Posted,
+  AdvancesToSuppliersStatuses.ForApproval,
+  AdvancesToSuppliersStatuses.Draft,
   AdvancesToSuppliersStatuses.Disapproved,
   AdvancesToSuppliersStatuses.Cancelled,
 ] as const satisfies readonly AdvancesToSuppliersStatus[];

@@ -68,7 +68,7 @@ function createDisbursementVoucherStatusActionItems({
   transaction?: DisbursementTransactionRecord;
   voucher?: DisbursementVoucherRecord;
 }) {
-  const status = voucher?.status ?? transaction?.status ?? DisbursementVoucherStatuses.Draft;
+  const status = voucher?.status ?? transaction?.status ?? DisbursementVoucherStatuses.Open;
   const isPosted = status === DisbursementVoucherStatuses.Posted;
   const isDisapproved = status === DisbursementVoucherStatuses.Disapproved;
   const isCancelled = status === DisbursementVoucherStatuses.Cancelled;
@@ -99,7 +99,7 @@ function createDisbursementVoucherStatusActionItems({
       icon: isCancelled ? Undo2 : Ban,
       label: isCancelled ? "Undo Cancelled" : "Cancel",
       onSelect: () => onRequestStatusConfirmation(cancelStatus),
-      tone: isCancelled ? "default" : "danger",
+      tone: isCancelled ? "default" : "warning",
       type: "button",
     },
   ];

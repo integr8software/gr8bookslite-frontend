@@ -242,7 +242,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
   async function submit(status?: PettyCashFundStatus) {
     if (isReadonly) return false;
     const valuesToValidate = status ? { ...values, status } : values;
-    const validationErrors = validatePettyCashFundForm(valuesToValidate);
+    const validationErrors = valuesToValidate.status === "Draft" ? {} : validatePettyCashFundForm(valuesToValidate);
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
@@ -341,7 +341,7 @@ export function usePettyCashFundActionPage(options: { mode: PettyCashFundActionM
     updateStatus: handleUpdateStatus,
     validate: (status?: PettyCashFundStatus) => {
       const nextValues = status ? { ...values, status } : values;
-      const errs = validatePettyCashFundForm(nextValues);
+      const errs = nextValues.status === "Draft" ? {} : validatePettyCashFundForm(nextValues);
       setErrors(errs);
       return Object.keys(errs).length === 0;
     },

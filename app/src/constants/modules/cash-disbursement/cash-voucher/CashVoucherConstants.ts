@@ -109,9 +109,9 @@ export const CashVoucherWorkflowSteps = [
 ] as const;
 
 export const CashVoucherRecordStatuses = [
-  CashVoucherStatuses.Draft,
-  CashVoucherStatuses.ForApproval,
   CashVoucherStatuses.Posted,
+  CashVoucherStatuses.ForApproval,
+  CashVoucherStatuses.Draft,
   CashVoucherStatuses.Disapproved,
   CashVoucherStatuses.Cancelled,
 ] as const satisfies readonly CashVoucherStatus[];

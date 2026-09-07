@@ -127,9 +127,9 @@ export const DisbursementVoucherWorkflowSteps = [
 ] as const;
 
 export const DisbursementVoucherRecordStatuses = [
-  DisbursementVoucherStatuses.Draft,
-  DisbursementVoucherStatuses.ForApproval,
   DisbursementVoucherStatuses.Posted,
+  DisbursementVoucherStatuses.ForApproval,
+  DisbursementVoucherStatuses.Draft,
   DisbursementVoucherStatuses.Disapproved,
   DisbursementVoucherStatuses.Cancelled,
 ] as const satisfies readonly DisbursementVoucherStatus[];
@@ -267,7 +267,6 @@ export const DisbursementVoucherDefaultColumnVisibility: VisibilityState = {
   remarks: false,
   updatedBy: false,
   updatedAt: false,
-  disburseAmount: false,
 };
 
 export const DisbursementVoucherDefaultSorting: SortingState = [{ id: "documentDate", desc: true }];

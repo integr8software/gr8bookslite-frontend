@@ -41,9 +41,9 @@ export const PettyCashVoucherStatuses = {
 } as const satisfies Record<string, PettyCashVoucherFormStatus>;
 
 export const PettyCashVoucherRecordStatuses = [
-  PettyCashVoucherStatuses.Draft,
-  PettyCashVoucherStatuses.ForApproval,
   PettyCashVoucherStatuses.Posted,
+  PettyCashVoucherStatuses.ForApproval,
+  PettyCashVoucherStatuses.Draft,
   PettyCashVoucherStatuses.Disapproved,
   PettyCashVoucherStatuses.Cancelled,
 ] as const satisfies readonly PettyCashVoucherStatus[];

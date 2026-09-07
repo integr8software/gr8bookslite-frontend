@@ -239,7 +239,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
 
   async function submit(status?: RevolvingFundReplenishmentStatus) {
     const nextValues = status ? { ...values, status } : values;
-    const nextErrors = validateRevolvingFundReplenishmentForm(nextValues);
+    const nextErrors = nextValues.status === "Draft" ? {} : validateRevolvingFundReplenishmentForm(nextValues);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
@@ -338,7 +338,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
     updateStatus: handleUpdateStatus,
     validate: (status?: RevolvingFundReplenishmentStatus) => {
       const nextValues = status ? { ...values, status } : values;
-      const errs = validateRevolvingFundReplenishmentForm(nextValues);
+      const errs = nextValues.status === "Draft" ? {} : validateRevolvingFundReplenishmentForm(nextValues);
       setErrors(errs);
       return Object.keys(errs).length === 0;
     },

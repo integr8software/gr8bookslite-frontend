@@ -112,7 +112,7 @@ export function DisbursementVoucherPaymentFields({
   }
 
   return (
-    <div className="grid min-w-0 gap-4">
+    <div className="grid min-w-0 content-start gap-4">
       <TransactionField
         controlId="disbursement-voucher-payment-bank"
         error={errors.bankAccountCode}

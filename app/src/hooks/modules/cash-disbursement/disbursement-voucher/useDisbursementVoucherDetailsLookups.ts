@@ -64,7 +64,6 @@ export function useDisbursementVoucherDetailsLookups(values: DisbursementVoucher
       label: rc.code,
       name: rc.name,
       value: rc.name,
-      description: rc.code,
     }));
 
     const currentProject = values.projectName || values.projectCode || values.costCenter;
@@ -72,11 +71,11 @@ export function useDisbursementVoucherDetailsLookups(values: DisbursementVoucher
       currentProject &&
       !options.some((opt) => opt.value === currentProject || opt.name === currentProject || opt.label === currentProject)
     ) {
+      const code = values.projectCode || values.costCenter || "";
       options.unshift({
-        label: values.projectCode || values.costCenter || currentProject,
+        label: code && code !== currentProject ? code : undefined,
         name: values.projectName || currentProject,
         value: values.projectName || currentProject,
-        description: values.projectCode || values.costCenter,
       });
     }
 

@@ -396,7 +396,11 @@ function createDisbursementVoucherColumn(
     header,
     size,
     sortingFn:
-      key === "documentDate" || key === "createdAt" || key === "updatedAt" ? "datetime" : key === "amount" ? "basic" : "alphanumeric",
+      key === "documentDate" || key === "createdAt" || key === "updatedAt"
+        ? "datetime"
+        : key === "amount" || key === "disburseAmount"
+          ? "basic"
+          : "alphanumeric",
     meta: { className, label: header },
   };
 }
@@ -419,6 +423,8 @@ function getDisbursementVoucherColumnValue(row: DisbursementVoucherPreviewRow, k
       return row.voucher?.currency ?? row.transaction.currency;
     case "amount":
       return row.voucher?.amount ?? row.transaction.amount;
+    case "disburseAmount":
+      return row.voucher?.disburseAmount ?? row.voucher?.amount ?? row.transaction.amount;
     case "status":
       return getDisbursementVoucherDisplayStatus(row.voucher?.status ?? row.transaction.status);
     case "createdBy":

@@ -132,9 +132,7 @@ export function createDisbursementAccountingEntryColumns({
           id={context.fieldId}
           name={context.fieldName}
           value={entry.checkStatus ?? ""}
-          placeholder={`Enter ${columnLabels.checkStatus}`}
-          onChange={(value) => onUpdateEntry(entry.id, "checkStatus", value)}
-          readOnly={isReadonly}
+          readOnly
         />
       ),
     },

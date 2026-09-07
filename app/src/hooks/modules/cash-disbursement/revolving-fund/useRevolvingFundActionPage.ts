@@ -241,7 +241,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
 
   async function submit(status?: RevolvingFundStatus) {
     const nextValues = status ? { ...values, status } : values;
-    const nextErrors = validateRevolvingFundForm(nextValues);
+    const nextErrors = nextValues.status === "Draft" ? {} : validateRevolvingFundForm(nextValues);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
@@ -340,7 +340,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
     updateStatus: handleUpdateStatus,
     validate: (status?: RevolvingFundStatus) => {
       const nextValues = status ? { ...values, status } : values;
-      const errs = validateRevolvingFundForm(nextValues);
+      const errs = nextValues.status === "Draft" ? {} : validateRevolvingFundForm(nextValues);
       setErrors(errs);
       return Object.keys(errs).length === 0;
     },

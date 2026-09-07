@@ -40,6 +40,7 @@ export function canUpdateDisbursementVoucherStatus(currentStatus: DisbursementVo
 
   if (nextStatus === DisbursementVoucherStatuses.ForApproval) {
     return (
+      currentStatus === DisbursementVoucherStatuses.Draft ||
       currentStatus === DisbursementVoucherStatuses.Posted ||
       currentStatus === DisbursementVoucherStatuses.Disapproved ||
       currentStatus === DisbursementVoucherStatuses.Cancelled

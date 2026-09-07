@@ -30,6 +30,9 @@ export const DefaultExpenseEntryColumnOrder: ExpenseEntryColumnId[] = [
   "disburseAmount",
   "responsibilityCenterCode",
   "responsibilityCenter",
+  "checkNo",
+  "checkDate",
+  "checkStatus",
   "particulars",
   "refId",
 ];
@@ -131,6 +134,9 @@ export const DefaultDisbursementEntryColumnOrder: DisbursementEntryColumnId[] = 
   "ewtCode",
   "responsibilityCenterCode",
   "responsibilityCenter",
+  "checkNo",
+  "checkDate",
+  "checkStatus",
   "particulars",
   "refId",
 ];

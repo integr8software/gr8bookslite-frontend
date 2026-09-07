@@ -101,17 +101,19 @@ export const RevolvingFundReplenishmentStatuses = {
   Posted: "Posted",
 } as const satisfies Record<string, RevolvingFundReplenishmentFormStatus>;
 export const RevolvingFundReplenishmentRecordStatuses = [
-  RevolvingFundReplenishmentStatuses.Draft,
-  RevolvingFundReplenishmentStatuses.ForApproval,
   RevolvingFundReplenishmentStatuses.Posted,
+  RevolvingFundReplenishmentStatuses.ForApproval,
+  RevolvingFundReplenishmentStatuses.Draft,
   RevolvingFundReplenishmentStatuses.Disapproved,
   RevolvingFundReplenishmentStatuses.Cancelled,
 ] as const satisfies readonly RevolvingFundReplenishmentStatus[];
+
 export const EditableRevolvingFundReplenishmentStatuses: readonly RevolvingFundReplenishmentStatus[] = [
   RevolvingFundReplenishmentStatuses.Draft,
   RevolvingFundReplenishmentStatuses.Disapproved,
 ];
 export const RevolvingFundReplenishmentAllStatusFilter = "all";
+
 export const RevolvingFundReplenishmentStatusFilterOptions = [
   { label: "All statuses", value: RevolvingFundReplenishmentAllStatusFilter },
   { label: "Draft", value: RevolvingFundReplenishmentStatuses.Draft },

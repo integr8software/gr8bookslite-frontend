@@ -225,7 +225,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
 
   async function submit(status?: PettyCashReplenishmentStatus) {
     const nextValues = status ? { ...values, status } : values;
-    const nextErrors = validatePettyCashReplenishmentForm(nextValues);
+    const nextErrors = nextValues.status === "Draft" ? {} : validatePettyCashReplenishmentForm(nextValues);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
@@ -347,7 +347,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     updateStatus: handleUpdateStatus,
     validate: (status?: PettyCashReplenishmentStatus) => {
       const nextValues = status ? { ...values, status } : values;
-      const errs = validatePettyCashReplenishmentForm(nextValues);
+      const errs = nextValues.status === "Draft" ? {} : validatePettyCashReplenishmentForm(nextValues);
       setErrors(errs);
       return Object.keys(errs).length === 0;
     },

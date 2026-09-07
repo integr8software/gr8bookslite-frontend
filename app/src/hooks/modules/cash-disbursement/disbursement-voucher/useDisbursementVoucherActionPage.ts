@@ -804,9 +804,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       transactionId: values.transactionId.trim(),
     };
     const shouldValidate = status !== DisbursementVoucherStatuses.Draft;
-    const detailsErrors = shouldValidate
-      ? validateDisbursementVoucherDetails(valuesForSubmit, selectedPaymentTypeRecord, bankAccounts)
-      : {};
+    const detailsErrors = shouldValidate ? validateDisbursementVoucherDetails(valuesForSubmit, selectedPaymentTypeRecord, bankAccounts) : {};
     const entryErrors = shouldValidate ? validateDisbursementVoucherEntries(valuesForSubmit) : {};
     const nextErrors = { ...detailsErrors, ...entryErrors };
 
@@ -819,7 +817,6 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     }
 
     setErrors({});
-    setValues(valuesForSubmit);
     setPendingSubmitValues(valuesForSubmit);
   }
 

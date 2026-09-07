@@ -92,12 +92,16 @@ export function sanitizeDisbursementVoucherRecord(voucher: DisbursementVoucherRe
   const createdAt = voucher.createdAt ?? voucher.history?.[0]?.createdAt ?? "";
   const updatedAt = voucher.updatedAt ?? voucher.history?.[voucher.history.length - 1]?.createdAt ?? createdAt;
   const lineEntries = normalizeGeneratedDisbursementRemarks(voucher.lineEntries ?? []);
+  const sourceEntries = lineEntries.filter((entry) => !isGeneratedAccountingEntry(entry));
+  const computedDisburseAmount = sourceEntries.reduce((sum, entry) => sum + Number(entry.taxDetails?.amount || entry.debit || 0), 0);
+  const disburseAmount = voucher.disburseAmount ?? (computedDisburseAmount > 0 ? computedDisburseAmount : voucher.amount);
 
   return {
     ...voucher,
     attachments: voucher.attachments ?? [],
     createdAt,
     createdBy: voucher.createdBy ?? voucher.preparedBy ?? "",
+    disburseAmount,
     history:
       voucher.history?.length > 0
         ? voucher.history.map(normalizeDisbursementVoucherHistoryEntry)

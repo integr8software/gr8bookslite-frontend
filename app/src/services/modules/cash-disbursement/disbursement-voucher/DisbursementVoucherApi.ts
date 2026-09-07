@@ -30,12 +30,17 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 
 type ApiDisbursementVoucherStatus = CreateDisbursementVoucherDtoStatus | UpdateDisbursementVoucherDtoStatus | string;
-type ApiDisbursementVoucherLineAmountSource = DisbursementLineEntry & {
+type ApiDisbursementVoucherLineAmountSource = Partial<DisbursementLineEntry> & {
   accountTitle?: string;
   disburseAmount?: number;
   grossAmount?: number;
-  ewtPercent?: number;
+  netAmount?: number;
+  vatCode?: string;
   vatPercent?: number;
+  vatAmount?: number;
+  ewtCode?: string;
+  ewtPercent?: number;
+  ewtAmount?: number;
 };
 
 export type FetchDisbursementVoucherListParams = {
@@ -247,14 +252,31 @@ function mapDisbursementVoucherResponseFromApi(response: DisbursementVoucherSing
 }
 
 function mapDisbursementVoucherRecordFromApi(record: DisbursementVoucherRecordResponseDto): DisbursementVoucherRecord {
+  const rawRecord = record as DisbursementVoucherRecordResponseDto & {
+    disburseAmount?: number;
+    lineEntries?: ApiDisbursementVoucherLineAmountSource[];
+    details?: ApiDisbursementVoucherLineAmountSource[];
+  };
+  const rawDetails = (rawRecord.lineEntries ?? rawRecord.details ?? []) as ApiDisbursementVoucherLineAmountSource[];
   const displayAmount = getDisbursementVoucherDisplayGrossAmount(record);
+  const sourceDetails = rawDetails.filter((detail) => !isGeneratedDisbursementVoucherApiLine(detail));
+  const computedDisburseAmount = sourceDetails.reduce(
+    (sum, detail) => sum + getDisbursementVoucherApiLineDisburseAmount(detail),
+    0,
+  );
+  const disburseAmount =
+    rawRecord.disburseAmount != null && Number(rawRecord.disburseAmount) > 0
+      ? roundDisbursementVoucherApiAmount(Number(rawRecord.disburseAmount))
+      : computedDisburseAmount > 0
+        ? roundDisbursementVoucherApiAmount(computedDisburseAmount)
+        : (record.amount || displayAmount);
   return {
     ...record,
     transactionId: record.id,
-    lineEntries: record.details.map((detail) => ({
-      id: detail.id,
-      accountCode: detail.accountCode,
-      accountName: detail.accountTitle,
+    lineEntries: rawDetails.map((detail, index) => ({
+      id: detail.id ?? `line-${index + 1}`,
+      accountCode: detail.accountCode ?? "",
+      accountName: detail.accountName || detail.accountTitle || "",
       checkDate: detail.checkDate ?? undefined,
       checkNo: detail.checkNo ?? undefined,
       checkStatus: detail.checkStatus ?? undefined,
@@ -266,29 +288,30 @@ function mapDisbursementVoucherRecordFromApi(record: DisbursementVoucherRecordRe
       ewtCode: detail.ewtCode ?? undefined,
       particulars: detail.particulars ?? "",
       remarks: detail.remarks ?? undefined,
-      debit: detail.debit,
-      credit: detail.credit,
+      debit: Number(detail.debit || 0),
+      credit: Number(detail.credit || 0),
       taxRate: "",
       taxDetails: {
-        code: detail.vatCode ?? "",
-        name: detail.vatType ?? "",
-        responsibilityCenter: detail.responsibilityCenter ?? "",
-        refId: detail.refId ?? "",
-        vatType: detail.vatType ?? "",
-        grossAmount: detail.grossAmount,
-        netAmount: detail.netAmount,
-        vatCode: detail.vatCode ?? "",
-        vatPercent: detail.vatPercent,
-        vatAmount: detail.vatAmount,
-        ewtCode: detail.ewtCode ?? "",
-        ewtPercent: detail.ewtPercent,
-        ewtAmount: detail.ewtAmount,
-        amount: detail.disburseAmount || detail.debit,
+        code: detail.vatCode ?? detail.taxDetails?.code ?? "",
+        name: detail.vatType ?? detail.taxDetails?.name ?? "",
+        responsibilityCenter: detail.responsibilityCenter ?? detail.taxDetails?.responsibilityCenter ?? "",
+        refId: detail.refId ?? detail.taxDetails?.refId ?? "",
+        vatType: detail.vatType ?? detail.taxDetails?.vatType ?? "",
+        grossAmount: detail.grossAmount ?? detail.taxDetails?.grossAmount ?? Number(detail.debit || 0),
+        netAmount: detail.netAmount ?? detail.taxDetails?.netAmount ?? Number(detail.debit || 0),
+        vatCode: detail.vatCode ?? detail.taxDetails?.vatCode ?? "",
+        vatPercent: detail.vatPercent ?? detail.taxDetails?.vatPercent ?? 0,
+        vatAmount: detail.vatAmount ?? detail.taxDetails?.vatAmount ?? 0,
+        ewtCode: detail.ewtCode ?? detail.taxDetails?.ewtCode ?? "",
+        ewtPercent: detail.ewtPercent ?? detail.taxDetails?.ewtPercent ?? 0,
+        ewtAmount: detail.ewtAmount ?? detail.taxDetails?.ewtAmount ?? 0,
+        amount: getDisbursementVoucherApiLineDisburseAmount(detail),
       },
-      status: detail.debit === detail.credit ? "Balanced" : "Pending",
+      status: Number(detail.debit || 0) === Number(detail.credit || 0) ? "Balanced" : "Pending",
     })),
     fxRate: String(record.fxRate ?? "1.00"),
     amount: displayAmount,
+    disburseAmount,
     costCenter: record.costCenter ?? "",
     paymentMethod: record.paymentMethod ?? "",
     disbursementType: record.disbursementType ?? "",
@@ -374,6 +397,26 @@ function getDisbursementVoucherApiLineGrossAmount(entry: ApiDisbursementVoucherL
   }
 
   return storedGrossAmount || debitAmount;
+}
+
+function getDisbursementVoucherApiLineDisburseAmount(entry: ApiDisbursementVoucherLineAmountSource): number {
+  if (entry.disburseAmount != null && Number(entry.disburseAmount) > 0) {
+    return Number(entry.disburseAmount);
+  }
+
+  if (entry.taxDetails?.amount != null && Number(entry.taxDetails.amount) > 0) {
+    return Number(entry.taxDetails.amount);
+  }
+
+  const gross = getDisbursementVoucherApiLineGrossAmount(entry);
+  const ewt = Number(entry.taxDetails?.ewtAmount || entry.ewtAmount || 0);
+  const net = gross - ewt;
+
+  if (net > 0) {
+    return net;
+  }
+
+  return Number(entry.debit || 0);
 }
 
 function isGeneratedDisbursementVoucherApiLine(entry: ApiDisbursementVoucherLineAmountSource) {

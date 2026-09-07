@@ -99,17 +99,20 @@ export const PettyCashReplenishmentStatuses = {
   Posted: "Posted",
 } as const satisfies Record<string, PettyCashReplenishmentFormStatus>;
 export const PettyCashReplenishmentRecordStatuses = [
-  PettyCashReplenishmentStatuses.Draft,
-  PettyCashReplenishmentStatuses.ForApproval,
   PettyCashReplenishmentStatuses.Posted,
+  PettyCashReplenishmentStatuses.ForApproval,
+  PettyCashReplenishmentStatuses.Draft,
   PettyCashReplenishmentStatuses.Disapproved,
   PettyCashReplenishmentStatuses.Cancelled,
 ] as const satisfies readonly PettyCashReplenishmentStatus[];
+
 export const EditablePettyCashReplenishmentStatuses: readonly PettyCashReplenishmentStatus[] = [
   PettyCashReplenishmentStatuses.Draft,
   PettyCashReplenishmentStatuses.Disapproved,
 ];
+
 export const PettyCashReplenishmentAllStatusFilter = "all";
+
 export const PettyCashReplenishmentStatusFilterOptions = [
   { label: "All statuses", value: PettyCashReplenishmentAllStatusFilter },
   { label: "Draft", value: PettyCashReplenishmentStatuses.Draft },

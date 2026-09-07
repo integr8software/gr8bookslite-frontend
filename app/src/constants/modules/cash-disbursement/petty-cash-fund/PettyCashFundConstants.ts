@@ -80,17 +80,19 @@ export const PettyCashFundConfirmationDialogConfirmLabels: Record<PettyCashFundC
   cancel: "Cancel",
 };
 export const PettyCashFundRecordStatuses = [
-  PettyCashFundStatuses.Draft,
-  PettyCashFundStatuses.ForApproval,
   PettyCashFundStatuses.Posted,
+  PettyCashFundStatuses.ForApproval,
+  PettyCashFundStatuses.Draft,
   PettyCashFundStatuses.Disapproved,
   PettyCashFundStatuses.Cancelled,
 ] as const satisfies readonly PettyCashFundStatus[];
+
 export const EditablePettyCashFundStatuses: readonly PettyCashFundStatus[] = [
   PettyCashFundStatuses.Draft,
   PettyCashFundStatuses.Disapproved,
 ];
 export const PettyCashFundAllStatusFilter = "all";
+
 export const PettyCashFundStatusFilterOptions = [
   { label: "All statuses", value: PettyCashFundAllStatusFilter },
   { label: "Draft", value: PettyCashFundStatuses.Draft },

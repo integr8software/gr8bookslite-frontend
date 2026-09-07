@@ -80,17 +80,20 @@ export const RevolvingFundConfirmationDialogConfirmLabels: Record<RevolvingFundC
   cancel: "Cancel",
 };
 export const RevolvingFundRecordStatuses = [
-  RevolvingFundStatuses.Draft,
-  RevolvingFundStatuses.ForApproval,
   RevolvingFundStatuses.Posted,
+  RevolvingFundStatuses.ForApproval,
+  RevolvingFundStatuses.Draft,
   RevolvingFundStatuses.Disapproved,
   RevolvingFundStatuses.Cancelled,
 ] as const satisfies readonly RevolvingFundStatus[];
+
 export const EditableRevolvingFundStatuses: readonly RevolvingFundStatus[] = [
   RevolvingFundStatuses.Draft,
   RevolvingFundStatuses.Disapproved,
 ];
+
 export const RevolvingFundAllStatusFilter = "all";
+
 export const RevolvingFundStatusFilterOptions = [
   { label: "All statuses", value: RevolvingFundAllStatusFilter },
   { label: "Draft", value: RevolvingFundStatuses.Draft },

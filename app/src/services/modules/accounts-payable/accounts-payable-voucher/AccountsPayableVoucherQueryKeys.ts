@@ -51,4 +51,16 @@ export const AccountsPayableVoucherQueryKeys = {
     ] as const,
   records: (companyId?: number | null, branchUnitId?: number | null) =>
     AccountsPayableVoucherQueryKeys.list(companyId, branchUnitId),
+  copyFromCandidates: (
+    target: "cash-voucher" | "disbursement-voucher",
+    companyId?: number | null,
+    branchUnitId?: number | null,
+    partyCode?: string | null,
+  ) =>
+    [
+      ...AccountsPayableVoucherQueryKeys.all(companyId, branchUnitId),
+      "copy-from",
+      target,
+      partyCode?.trim() || "all-parties",
+    ] as const,
 };

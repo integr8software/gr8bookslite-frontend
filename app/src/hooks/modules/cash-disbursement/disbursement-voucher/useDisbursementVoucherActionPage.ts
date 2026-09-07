@@ -7,7 +7,6 @@ import toast from "react-hot-toast";
 import {
   applyMissingPartyTaxDefaultsToEntries,
   applyPartyTaxDefaults,
-  createDisbursementVoucherPaymentTypeRecords,
   createBlankDisbursementLineEntry,
   createTaxDetails,
   findPartyTaxCode,
@@ -44,8 +43,6 @@ import {
   validateDisbursementVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
 import { BankMasterfileStatuses } from "@/app/src/constants/modules/financial-maintenance/bank-masterfile/BankMasterfileConstants";
-import { ResponsibilityCenterStatuses } from "@/app/src/constants/modules/financial-maintenance/responsibility-center/ResponsibilityCenterConstants";
-import { PartyInformationActiveStatus } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import { useBankMasterfileStore } from "@/app/src/hooks/modules/financial-maintenance/bank-masterfile/useBankMasterfile";
 import { useDefaultAccountStore } from "@/app/src/hooks/modules/financial-maintenance/default-account/useDefaultAccount";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType";
@@ -62,10 +59,12 @@ import type {
   DisbursementVoucherBankAccount,
   DisbursementVoucherFormErrors,
   DisbursementVoucherFormValues,
-  DisbursementVoucherPartyDropdownOption,
   DisbursementVoucherStatus,
   DisbursementVoucherRecord,
+  VoucherCurrency,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
+import { mergeUniqueTextValues } from "@/app/src/utils/string.util";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import type { GeneratedAccountingAccount } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherDataEntryTypes";
@@ -77,6 +76,11 @@ import { FetchChartAccountsTree } from "@/app/src/services/modules/financial-mai
 import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsQueryKeys";
 import { usePostingAccountLookup } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartOfAccountsLookup";
 import { useDisbursementVoucherDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucherDetailsLookups";
+import {
+  fetchAccountsPayableVoucherCopyFromCandidates,
+  type AccountsPayableVoucherCopyFromCandidate,
+} from "@/app/src/services/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherApi";
+import { AccountsPayableVoucherQueryKeys } from "@/app/src/services/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherQueryKeys";
 import {
   createDisbursementVoucherApi,
   fetchDisbursementVoucherById,
@@ -125,7 +129,6 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const routeVoucher = recordQuery.data ?? listVoucher;
   const returnLink = createVoucherActionReturnLink(searchParams.get("from"), routeTransactionId);
   const transactionCurrency = useTransactionCurrency();
-  const copyFromRecords = useMemo(() => [], []);
   const [values, setValues] = useState<DisbursementVoucherFormValues>(() =>
     createInitialDisbursementVoucherFormValues({
       mode,
@@ -173,6 +176,30 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         taxDefaultAccountOptionsQuery.data?.find((group) => group.classification === "purchase-ewt")?.options ?? [],
       ),
     [taxDefaultAccountOptionsQuery.data],
+  );
+  const copyFromCandidatesQuery = useQuery({
+    queryKey: AccountsPayableVoucherQueryKeys.copyFromCandidates("disbursement-voucher", activeCompanyId, activeBranchId, values.partyCode),
+    queryFn: () =>
+      fetchAccountsPayableVoucherCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        partyCode: values.partyCode,
+        target: "disbursement-voucher",
+      }),
+    enabled: activeCompanyId !== null,
+  });
+  const apvCopyFromCandidates = useMemo(() => copyFromCandidatesQuery.data ?? [], [copyFromCandidatesQuery.data]);
+  const copyFromRecords = useMemo<AppCopyFromRecord[]>(
+    () =>
+      apvCopyFromCandidates.map((apv) => ({
+        amount: String(apv.availableAmount || 0),
+        documentDate: apv.documentDate,
+        id: apv.id,
+        partyName: apv.partyName,
+        remarks: apv.remarks || apv.referenceNo || "",
+        source: "Accounts Payable Voucher",
+        sourceNo: apv.transactionNo,
+      })),
+    [apvCopyFromCandidates],
   );
   const {
     partyOptions,
@@ -836,6 +863,9 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         paymentDueDate: pendingSubmitValues.paymentDueDate,
         partyCode: pendingSubmitValues.partyCode,
         partyName: pendingSubmitValues.partyName,
+        referenceModule: pendingSubmitValues.referenceModule,
+        voucherReferenceNo: pendingSubmitValues.voucherReferenceNo,
+        invoiceReferenceNo: pendingSubmitValues.invoiceReferenceNo,
         paymentMethod: pendingSubmitValues.paymentMethod,
         paymentDetails: pendingSubmitValues.paymentDetails,
         costCenter: pendingSubmitValues.projectCode || pendingSubmitValues.costCenter,
@@ -978,8 +1008,121 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     handleCloseResponsibilityCenterDrawer();
   }
 
-  function handleCopyFrom() {
-    toast.error("Copy From records are not available yet.");
+  function handleCopyFrom(recordIds: string[]) {
+    if (isReadonly || recordIds.length === 0) {
+      return;
+    }
+
+    const selectedApvs = apvCopyFromCandidates.filter((record) => recordIds.includes(record.id));
+    if (selectedApvs.length === 0) {
+      toast.error("No valid Accounts Payable Voucher records selected.");
+      return;
+    }
+
+    const firstPartyCode = selectedApvs[0].partyCode?.trim() || selectedApvs[0].partyName?.trim();
+    const hasMixedParties = selectedApvs.some(
+      (apv) => (apv.partyCode?.trim() || apv.partyName?.trim()) !== firstPartyCode,
+    );
+    if (hasMixedParties) {
+      toast.error(`All selected Accounts Payable Vouchers must belong to the same Party ("${selectedApvs[0].partyName}").`);
+      return;
+    }
+
+    const firstCurrency = (selectedApvs[0].currency || "PHP").trim().toUpperCase();
+    const hasMixedCurrencies = selectedApvs.some(
+      (apv) => (apv.currency || "PHP").trim().toUpperCase() !== firstCurrency,
+    );
+    if (hasMixedCurrencies) {
+      toast.error(`All selected Accounts Payable Vouchers must have the same Currency ("${firstCurrency}").`);
+      return;
+    }
+
+    const firstApv = selectedApvs[0];
+    const apvNos = selectedApvs.map((a) => a.transactionNo);
+    const totalAmount = selectedApvs.reduce((sum, a) => sum + (Number(a.availableAmount) || 0), 0);
+
+    const copiedEntries: DisbursementLineEntry[] = selectedApvs.map((apv: AccountsPayableVoucherCopyFromCandidate) => {
+      const entryAmount = Number(apv.availableAmount) || 0;
+      const refId = apv.id;
+      const responsibilityCenter = apv.projectCode || apv.projectName || "";
+      const particulars = `Payment for APV ${apv.transactionNo}`;
+
+      return createBlankDisbursementLineEntry({
+        accountCode: apv.creditAccountCode || "20101010",
+        accountName: apv.creditAccountTitle || "Accounts Payable",
+        credit: 0,
+        debit: entryAmount,
+        ewtCode: "",
+        particulars,
+        partyCode: apv.partyCode,
+        partyName: apv.partyName,
+        refId,
+        remarks: particulars,
+        responsibilityCenter,
+        status: "Balanced",
+        taxDetails: {
+          ...createTaxDetails(entryAmount, "0%"),
+          refId,
+          responsibilityCenter,
+        },
+        taxRate: "0%",
+        vatType: "",
+      });
+    });
+
+    const nextRemarks =
+      values.remarks ||
+      selectedApvs.map((a) => a.remarks).filter(Boolean).join("; ") ||
+      `Payment for APV ${apvNos.join(", ")}`;
+
+    setValues((current) => {
+      const nextPartyCode = current.partyCode || firstApv.partyCode || "";
+      const nextPartyName = current.partyName || firstApv.partyName || "";
+      const nextProjectCode = current.projectCode || firstApv.projectCode || "";
+      const nextProjectName = current.projectName || firstApv.projectName || "";
+      const nextCurrency = (firstApv.currency as VoucherCurrency) || current.currency || "PHP";
+      const nextFxRate = String(firstApv.exchangeRate || current.fxRate || "1.00");
+      const nextVoucherRefNo = mergeUniqueTextValues(current.voucherReferenceNo, apvNos);
+
+      const existingEditableEntries = current.lineEntries.filter(
+        (entry) => !isGeneratedAccountingEntry(entry) && (entry.accountCode || entry.debit > 0 || entry.credit > 0),
+      );
+      const mergedEntries = existingEditableEntries.length > 0 ? [...existingEditableEntries, ...copiedEntries] : copiedEntries;
+      const automaticEntries = createAutomaticEntriesForPayment(mergedEntries);
+
+      return {
+        ...current,
+        amount: totalAmount.toFixed(2),
+        costCenter: nextProjectCode || current.costCenter,
+        currency: nextCurrency,
+        fxRate: nextFxRate,
+        lineEntries: automaticEntries,
+        partyCode: nextPartyCode,
+        partyName: nextPartyName,
+        paymentDetails: {
+          ...current.paymentDetails,
+          payee: current.paymentDetails.payee || nextPartyName,
+        },
+        projectCode: nextProjectCode,
+        projectName: nextProjectName,
+        referenceModule: "Accounts Payable Voucher",
+        remarks: nextRemarks,
+        taxDetails: createTaxDetails(totalAmount, "0%"),
+        taxRate: "0%",
+        voucherReferenceNo: nextVoucherRefNo,
+      };
+    });
+
+    setErrors((current) => ({
+      ...current,
+      amount: undefined,
+      lineEntries: undefined,
+      partyCode: undefined,
+      partyName: undefined,
+      voucherReferenceNo: undefined,
+    }));
+
+    toast.success(`Copied ${selectedApvs.length} Accounts Payable Voucher${selectedApvs.length > 1 ? "s" : ""}.`);
   }
 
   return {

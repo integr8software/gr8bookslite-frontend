@@ -6633,6 +6633,80 @@ export interface AiAssistantTranscriptionUploadDto {
   audio: Blob;
 }
 
+export interface AccountsPayableVoucherCopyFromCandidateDto {
+  /** Accounts Payable Voucher ID */
+  id: string;
+  /** Accounts Payable Voucher transaction number */
+  transactionNo: string;
+  /** Document date in YYYY-MM-DD format */
+  documentDate: string;
+  /** Party code snapshot */
+  partyCode: string;
+  /**
+     * Party primary key ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /** Party name snapshot */
+  partyName: string;
+  /** Currency code */
+  currency: string;
+  /** Exchange rate */
+  exchangeRate: number;
+  /** Original APV amount */
+  amount: number;
+  /** Amount already copied to active Cash/Disbursement Vouchers */
+  consumedAmount: number;
+  /** Remaining amount available to copy */
+  availableAmount: number;
+  /**
+     * Reference number
+     * @nullable
+     */
+  referenceNo?: string | null;
+  /**
+     * Payable account ID
+     * @nullable
+     */
+  creditAccountId?: string | null;
+  /** Payable account code */
+  creditAccountCode: string;
+  /** Payable account title */
+  creditAccountTitle: string;
+  /**
+     * Project code
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project name
+     * @nullable
+     */
+  projectName?: string | null;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Source module display name */
+  source: string;
+  /** Source transaction number */
+  sourceNo: string;
+}
+
+export type AccountsPayableVoucherCopyFromCandidatesResponseDtoPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export interface AccountsPayableVoucherCopyFromCandidatesResponseDto {
+  /** Available APV records */
+  records: AccountsPayableVoucherCopyFromCandidateDto[];
+  pagination: AccountsPayableVoucherCopyFromCandidatesResponseDtoPagination;
+}
+
 export interface AccountsPayableVoucherDetailsDto {
   /** @minimum 1 */
   lineNumber: number;
@@ -17369,30 +17443,58 @@ export const DefaultAccountControllerFindOptionsByTypeV1Status = {
 
 export type ServicesMaintenanceControllerFindAllV1Params = {
 /**
+ * Search term for service name, description, or account
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * Filter by status
+ */
+status?: ServicesMaintenanceControllerFindAllV1Status;
+/**
+ * Filter by account setup mode
+ */
+accountSetupMode?: ServicesMaintenanceControllerFindAllV1AccountSetupMode;
+/**
  * Filter by service type
  */
 serviceType?: ServicesMaintenanceControllerFindAllV1ServiceType;
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Number of items per page
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
 /**
  * Sort by field
  */
 sortBy?: ServicesMaintenanceControllerFindAllV1SortBy;
 /**
- * @maxLength 120
+ * Sort direction
  */
-search?: string;
-status?: ServicesMaintenanceControllerFindAllV1Status;
-accountSetupMode?: ServicesMaintenanceControllerFindAllV1AccountSetupMode;
-/**
- * @minimum 1
- */
-page?: number;
-/**
- * @minimum 1
- * @maximum 500
- */
-limit?: number;
 sortDirection?: ServicesMaintenanceControllerFindAllV1SortDirection;
 };
+
+export type ServicesMaintenanceControllerFindAllV1Status = typeof ServicesMaintenanceControllerFindAllV1Status[keyof typeof ServicesMaintenanceControllerFindAllV1Status];
+
+
+export const ServicesMaintenanceControllerFindAllV1Status = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export type ServicesMaintenanceControllerFindAllV1AccountSetupMode = typeof ServicesMaintenanceControllerFindAllV1AccountSetupMode[keyof typeof ServicesMaintenanceControllerFindAllV1AccountSetupMode];
+
+
+export const ServicesMaintenanceControllerFindAllV1AccountSetupMode = {
+  AUTO: 'AUTO',
+  EXISTING: 'EXISTING',
+} as const;
 
 export type ServicesMaintenanceControllerFindAllV1ServiceType = typeof ServicesMaintenanceControllerFindAllV1ServiceType[keyof typeof ServicesMaintenanceControllerFindAllV1ServiceType];
 
@@ -17414,22 +17516,6 @@ export const ServicesMaintenanceControllerFindAllV1SortBy = {
   updatedAt: 'updatedAt',
 } as const;
 
-export type ServicesMaintenanceControllerFindAllV1Status = typeof ServicesMaintenanceControllerFindAllV1Status[keyof typeof ServicesMaintenanceControllerFindAllV1Status];
-
-
-export const ServicesMaintenanceControllerFindAllV1Status = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
-} as const;
-
-export type ServicesMaintenanceControllerFindAllV1AccountSetupMode = typeof ServicesMaintenanceControllerFindAllV1AccountSetupMode[keyof typeof ServicesMaintenanceControllerFindAllV1AccountSetupMode];
-
-
-export const ServicesMaintenanceControllerFindAllV1AccountSetupMode = {
-  AUTO: 'AUTO',
-  EXISTING: 'EXISTING',
-} as const;
-
 export type ServicesMaintenanceControllerFindAllV1SortDirection = typeof ServicesMaintenanceControllerFindAllV1SortDirection[keyof typeof ServicesMaintenanceControllerFindAllV1SortDirection];
 
 
@@ -17440,30 +17526,58 @@ export const ServicesMaintenanceControllerFindAllV1SortDirection = {
 
 export type ServicesMaintenanceControllerFindOptionsV1Params = {
 /**
+ * Search term for service name, description, or account
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * Filter by status
+ */
+status?: ServicesMaintenanceControllerFindOptionsV1Status;
+/**
+ * Filter by account setup mode
+ */
+accountSetupMode?: ServicesMaintenanceControllerFindOptionsV1AccountSetupMode;
+/**
  * Filter by service type
  */
 serviceType?: ServicesMaintenanceControllerFindOptionsV1ServiceType;
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Number of items per page
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
 /**
  * Sort by field
  */
 sortBy?: ServicesMaintenanceControllerFindOptionsV1SortBy;
 /**
- * @maxLength 120
+ * Sort direction
  */
-search?: string;
-status?: ServicesMaintenanceControllerFindOptionsV1Status;
-accountSetupMode?: ServicesMaintenanceControllerFindOptionsV1AccountSetupMode;
-/**
- * @minimum 1
- */
-page?: number;
-/**
- * @minimum 1
- * @maximum 500
- */
-limit?: number;
 sortDirection?: ServicesMaintenanceControllerFindOptionsV1SortDirection;
 };
+
+export type ServicesMaintenanceControllerFindOptionsV1Status = typeof ServicesMaintenanceControllerFindOptionsV1Status[keyof typeof ServicesMaintenanceControllerFindOptionsV1Status];
+
+
+export const ServicesMaintenanceControllerFindOptionsV1Status = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export type ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = typeof ServicesMaintenanceControllerFindOptionsV1AccountSetupMode[keyof typeof ServicesMaintenanceControllerFindOptionsV1AccountSetupMode];
+
+
+export const ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = {
+  AUTO: 'AUTO',
+  EXISTING: 'EXISTING',
+} as const;
 
 export type ServicesMaintenanceControllerFindOptionsV1ServiceType = typeof ServicesMaintenanceControllerFindOptionsV1ServiceType[keyof typeof ServicesMaintenanceControllerFindOptionsV1ServiceType];
 
@@ -17485,22 +17599,6 @@ export const ServicesMaintenanceControllerFindOptionsV1SortBy = {
   updatedAt: 'updatedAt',
 } as const;
 
-export type ServicesMaintenanceControllerFindOptionsV1Status = typeof ServicesMaintenanceControllerFindOptionsV1Status[keyof typeof ServicesMaintenanceControllerFindOptionsV1Status];
-
-
-export const ServicesMaintenanceControllerFindOptionsV1Status = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
-} as const;
-
-export type ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = typeof ServicesMaintenanceControllerFindOptionsV1AccountSetupMode[keyof typeof ServicesMaintenanceControllerFindOptionsV1AccountSetupMode];
-
-
-export const ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = {
-  AUTO: 'AUTO',
-  EXISTING: 'EXISTING',
-} as const;
-
 export type ServicesMaintenanceControllerFindOptionsV1SortDirection = typeof ServicesMaintenanceControllerFindOptionsV1SortDirection[keyof typeof ServicesMaintenanceControllerFindOptionsV1SortDirection];
 
 
@@ -17511,30 +17609,58 @@ export const ServicesMaintenanceControllerFindOptionsV1SortDirection = {
 
 export type ServicesMaintenanceControllerFindOptionsByTypeV1Params = {
 /**
+ * Search term for service name, description, or account
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * Filter by status
+ */
+status?: ServicesMaintenanceControllerFindOptionsByTypeV1Status;
+/**
+ * Filter by account setup mode
+ */
+accountSetupMode?: ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode;
+/**
  * Filter by service type
  */
 serviceType?: ServicesMaintenanceControllerFindOptionsByTypeV1ServiceType;
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Number of items per page
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
 /**
  * Sort by field
  */
 sortBy?: ServicesMaintenanceControllerFindOptionsByTypeV1SortBy;
 /**
- * @maxLength 120
+ * Sort direction
  */
-search?: string;
-status?: ServicesMaintenanceControllerFindOptionsByTypeV1Status;
-accountSetupMode?: ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode;
-/**
- * @minimum 1
- */
-page?: number;
-/**
- * @minimum 1
- * @maximum 500
- */
-limit?: number;
 sortDirection?: ServicesMaintenanceControllerFindOptionsByTypeV1SortDirection;
 };
+
+export type ServicesMaintenanceControllerFindOptionsByTypeV1Status = typeof ServicesMaintenanceControllerFindOptionsByTypeV1Status[keyof typeof ServicesMaintenanceControllerFindOptionsByTypeV1Status];
+
+
+export const ServicesMaintenanceControllerFindOptionsByTypeV1Status = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export type ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode = typeof ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode[keyof typeof ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode];
+
+
+export const ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode = {
+  AUTO: 'AUTO',
+  EXISTING: 'EXISTING',
+} as const;
 
 export type ServicesMaintenanceControllerFindOptionsByTypeV1ServiceType = typeof ServicesMaintenanceControllerFindOptionsByTypeV1ServiceType[keyof typeof ServicesMaintenanceControllerFindOptionsByTypeV1ServiceType];
 
@@ -17554,22 +17680,6 @@ export const ServicesMaintenanceControllerFindOptionsByTypeV1SortBy = {
   accountSetupMode: 'accountSetupMode',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-} as const;
-
-export type ServicesMaintenanceControllerFindOptionsByTypeV1Status = typeof ServicesMaintenanceControllerFindOptionsByTypeV1Status[keyof typeof ServicesMaintenanceControllerFindOptionsByTypeV1Status];
-
-
-export const ServicesMaintenanceControllerFindOptionsByTypeV1Status = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
-} as const;
-
-export type ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode = typeof ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode[keyof typeof ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode];
-
-
-export const ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode = {
-  AUTO: 'AUTO',
-  EXISTING: 'EXISTING',
 } as const;
 
 export type ServicesMaintenanceControllerFindOptionsByTypeV1SortDirection = typeof ServicesMaintenanceControllerFindOptionsByTypeV1SortDirection[keyof typeof ServicesMaintenanceControllerFindOptionsByTypeV1SortDirection];
@@ -18033,6 +18143,9 @@ export const TaxControllerListAutocompleteV1SortDirection = {
 } as const;
 
 export type TaxControllerListTaxDefaultAccountOptionsV1Params = {
+/**
+ * Tax classification filter for default accounts
+ */
 classification?: TaxControllerListTaxDefaultAccountOptionsV1Classification;
 };
 
@@ -18399,6 +18512,43 @@ export type AccountsPayableVoucherControllerSuggestTransactionNumberV1SortDirect
 export const AccountsPayableVoucherControllerSuggestTransactionNumberV1SortDirection = {
   asc: 'asc',
   desc: 'desc',
+} as const;
+
+export type AccountsPayableVoucherControllerFindCopyFromCandidatesV1Params = {
+target: AccountsPayableVoucherControllerFindCopyFromCandidatesV1Target;
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @maxLength 40
+ */
+partyId?: string;
+/**
+ * @maxLength 80
+ */
+partyCode?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+};
+
+export type AccountsPayableVoucherControllerFindCopyFromCandidatesV1Target = typeof AccountsPayableVoucherControllerFindCopyFromCandidatesV1Target[keyof typeof AccountsPayableVoucherControllerFindCopyFromCandidatesV1Target];
+
+
+export const AccountsPayableVoucherControllerFindCopyFromCandidatesV1Target = {
+  'cash-voucher': 'cash-voucher',
+  'disbursement-voucher': 'disbursement-voucher',
 } as const;
 
 export type AccountsPayableVoucherControllerFindOneV1Params = {
@@ -21141,3 +21291,4 @@ page?: number;
  */
 limit?: number;
 };
+

@@ -37,3 +37,18 @@ export function joinClasses(...classes: Array<false | null | string | undefined 
 	return classes.filter(Boolean).join(" ");
 }
 
+export function mergeUniqueTextValues(
+	currentValue: string | undefined | null,
+	nextValues: Array<string | undefined | null>,
+) {
+	return Array.from(
+		new Set([
+			...(currentValue ?? "")
+				.split(",")
+				.map((value) => value.trim())
+				.filter(Boolean),
+			...nextValues.map((value) => String(value ?? "").trim()).filter(Boolean),
+		]),
+	).join(", ");
+}
+

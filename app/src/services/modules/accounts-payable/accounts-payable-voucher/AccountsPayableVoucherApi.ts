@@ -1,8 +1,13 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
-import type { CreateAccountsPayableVoucherDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type {
+  AccountsPayableVoucherControllerFindCopyFromCandidatesV1Params,
+  AccountsPayableVoucherCopyFromCandidateDto,
+  CreateAccountsPayableVoucherDto,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import {
   accountsPayableVoucherControllerCreateV1,
   accountsPayableVoucherControllerFindAllV1,
+  accountsPayableVoucherControllerFindCopyFromCandidatesV1,
   accountsPayableVoucherControllerFindOneV1,
   accountsPayableVoucherControllerFindPartyOptionsV1,
   accountsPayableVoucherControllerFindPayableAccountOptionsV1,
@@ -280,6 +285,28 @@ export async function fetchAccountsPayableVoucherPayableAccountOptions() {
   const response = await accountsPayableVoucherControllerFindPayableAccountOptionsV1() as unknown as ApiApvPayableAccountOptionsResponse;
 
   return response;
+}
+
+export type AccountsPayableVoucherCopyFromCandidate = AccountsPayableVoucherCopyFromCandidateDto;
+
+export async function fetchAccountsPayableVoucherCopyFromCandidates(query: {
+  branchUnitId?: number | null;
+  limit?: number;
+  page?: number;
+  partyCode?: string | null;
+  target: "cash-voucher" | "disbursement-voucher";
+}) {
+  const response = await accountsPayableVoucherControllerFindCopyFromCandidatesV1(
+    cleanQueryParams({
+      branchUnitId: query.branchUnitId,
+      limit: query.limit ?? 100,
+      page: query.page ?? 1,
+      partyCode: query.partyCode,
+      target: query.target,
+    }) as AccountsPayableVoucherControllerFindCopyFromCandidatesV1Params,
+  );
+
+  return response.records;
 }
 
 async function fetchAccountsPayableVoucherSharedPartyOptions() {

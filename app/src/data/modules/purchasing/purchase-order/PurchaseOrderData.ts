@@ -170,23 +170,23 @@ export function createPurchaseOrderRecord(values: PurchaseOrderFormValues, id = 
         credit: Number(entry.credit) || 0,
       }),
     ),
-    items: values.items.map((item) => ({
-      ...normalizePurchaseOrderItemDefaults(item),
-      id: item.id || createPurchaseOrderId("item"),
-      quantity: Number(item.quantity) || 0,
-      freightCost: Number(item.freightCost) || 0,
-      rateDelivery: Number(item.rateDelivery) || 0,
-      cost: Number(item.cost) || 0,
-      vatAmount: Number(item.vatAmount) || 0,
-      discountAmount: Number(item.discountAmount) || 0,
-      discountRate: Number(item.discountRate) || 0,
-      prQuantity: Number(item.prQuantity) || 0,
-    })),
+    items: values.items.map((item) =>
+      recalculatePurchaseOrderItem({
+        ...normalizePurchaseOrderItemDefaults(item),
+        id: item.id || createPurchaseOrderId("item"),
+        quantity: Number(item.quantity) || 0,
+        freightCost: Number(item.freightCost) || 0,
+        rateDelivery: Number(item.rateDelivery) || 0,
+        cost: Number(item.cost) || 0,
+        discountRate: Number(item.discountRate) || 0,
+        prQuantity: Number(item.prQuantity) || 0,
+      }),
+    ),
   };
 }
 
 function normalizePurchaseOrderItemDefaults(item: Partial<PurchaseOrderItem>): PurchaseOrderItem {
-  return {
+  return recalculatePurchaseOrderItem({
     ...emptyPurchaseOrderItem,
     ...item,
     color: item.color ?? "",
@@ -198,7 +198,7 @@ function normalizePurchaseOrderItemDefaults(item: Partial<PurchaseOrderItem>): P
     rateDelivery: item.rateDelivery ?? 0,
     linePrNo: item.linePrNo ?? "",
     canvassNo: item.canvassNo ?? "",
-  };
+  });
 }
 
 export function createBlankPurchaseOrderItem(): PurchaseOrderItem {
@@ -209,26 +209,70 @@ export function createBlankPurchaseOrderItem(): PurchaseOrderItem {
 }
 
 export function getPurchaseOrderItemGrossAmount(item: PurchaseOrderItem) {
-  return (Number(item.quantity) || 0) * (Number(item.cost) || 0);
+  return getPurchaseOrderItemAmounts(item).grossAmount;
 }
 
 export function getPurchaseOrderItemNetAmount(item: PurchaseOrderItem) {
-  const grossAfterDiscount = Math.max(getPurchaseOrderItemGrossAmount(item) - (Number(item.discountAmount) || 0), 0);
+  return getPurchaseOrderItemAmounts(item).netAmount;
+}
 
-  return item.vatInclusive.toLowerCase() === "true" ? grossAfterDiscount : grossAfterDiscount + (Number(item.vatAmount) || 0);
+export function recalculatePurchaseOrderItem(item: PurchaseOrderItem): PurchaseOrderItem {
+  const amounts = getPurchaseOrderItemAmounts(item);
+
+  return {
+    ...item,
+    discountAmount: amounts.discountAmount,
+    vatAmount: amounts.vatAmount,
+    ...(String(item.vatable ?? "").toLowerCase() !== "true" ? { vatInclusive: "False" } : {}),
+  };
+}
+
+export function getPurchaseOrderItemAmounts(item: PurchaseOrderItem) {
+  const price = Number(item.cost) || 0;
+  const quantity = Math.max(Number(item.quantity) || 0, 0);
+  const grossAmount = roundPurchaseOrderMoney(price * quantity);
+  const discountRate = Math.max(Number(item.discountRate) || 0, 0);
+  const discountAmount = roundPurchaseOrderMoney(grossAmount * (discountRate / 100));
+  const grossAfterDiscount = roundPurchaseOrderMoney(Math.max(grossAmount - discountAmount, 0));
+  const isVatable = String(item.vatable ?? "").toLowerCase() === "true";
+  const isVatInclusive = isVatable && String(item.vatInclusive ?? "").toLowerCase() === "true";
+  const vatAmount = roundPurchaseOrderMoney(
+    !isVatable ? 0 : isVatInclusive ? (grossAfterDiscount / 1.12) * 0.12 : grossAfterDiscount * 0.12,
+  );
+  const netOfVatAmount = roundPurchaseOrderMoney(
+    isVatInclusive ? Math.max(grossAfterDiscount - vatAmount, 0) : grossAfterDiscount,
+  );
+  const netAmount = roundPurchaseOrderMoney(
+    isVatable && !isVatInclusive ? grossAfterDiscount + vatAmount : grossAfterDiscount,
+  );
+
+  return { discountAmount, grossAfterDiscount, grossAmount, netAmount, netOfVatAmount, vatAmount };
 }
 
 export function getPurchaseOrderTotals(record: Pick<PurchaseOrderRecord, "items">) {
-  const grossAmount = record.items.reduce((total, item) => total + getPurchaseOrderItemGrossAmount(item), 0);
-  const discountAmount = record.items.reduce((total, item) => total + (Number(item.discountAmount) || 0), 0);
-  const vatAmount = record.items.reduce((total, item) => total + (Number(item.vatAmount) || 0), 0);
+  const totals = record.items.reduce(
+    (summary, item) => {
+      const amounts = getPurchaseOrderItemAmounts(item);
+      return {
+        discountAmount: summary.discountAmount + amounts.discountAmount,
+        grossAmount: summary.grossAmount + amounts.grossAmount,
+        netAmount: summary.netAmount + amounts.netAmount,
+        vatAmount: summary.vatAmount + amounts.vatAmount,
+      };
+    },
+    { discountAmount: 0, grossAmount: 0, netAmount: 0, vatAmount: 0 },
+  );
 
   return {
-    discountAmount,
-    grossAmount,
-    netAmount: record.items.reduce((total, item) => total + getPurchaseOrderItemNetAmount(item), 0),
-    vatAmount,
+    discountAmount: roundPurchaseOrderMoney(totals.discountAmount),
+    grossAmount: roundPurchaseOrderMoney(totals.grossAmount),
+    netAmount: roundPurchaseOrderMoney(totals.netAmount),
+    vatAmount: roundPurchaseOrderMoney(totals.vatAmount),
   };
+}
+
+function roundPurchaseOrderMoney(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
 export function getPurchaseOrderParty(record: Pick<PurchaseOrderRecord, "vceCode" | "vceName">) {

@@ -8,6 +8,7 @@ import type { CreatePurchaseOrderDto, PurchaseOrderResponseDto } from "@/app/src
 import {
   createPurchaseOrderFormValues,
   createPurchaseOrderRecord,
+  getPurchaseOrderItemAmounts,
 } from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
 import type {
   PurchaseOrderFormValues,
@@ -116,32 +117,36 @@ function toPayload(values: PurchaseOrderFormValues, branchUnitId?: number | null
     currency: values.currency,
     exchangeRate: Number(values.exchangeRate) || 1,
     remarks: values.remarks || null,
-    items: values.items.map((item) => ({
-      purchaseRequestEntryId: item.purchaseRequestEntryId || null,
-      responsibilityCenterId: item.responsibilityCenterId || null,
-      serviceMaintenanceId: item.serviceMaintenanceId || null,
-      itemId: item.itemId || null,
-      itemCode: item.itemCode || null,
-      barcode: item.barcode || null,
-      description: item.itemName.trim(),
-      color: item.color || null,
-      brand: item.brand || null,
-      size: item.size || null,
-      model: item.model || null,
-      uom: item.uom || null,
-      lotNo: item.lotNo || null,
-      prQty: Number(item.prQuantity) || 0,
-      poQty: Number(item.quantity) || 0,
-      price: Number(item.cost) || 0,
-      discountRate: Number(item.discountRate) || 0,
-      discountAmount: Number(item.discountAmount) || 0,
-      vatAmount: Number(item.vatAmount) || 0,
-      vatable: item.vatable === "True",
-      vatInclusive: item.vatInclusive === "True",
-      prNo: item.linePrNo || null,
-      canvassNo: item.canvassNo || null,
-      responsibilityCenter: item.responsibilityCenter || null,
-    })),
+    items: values.items.map((item) => {
+      const amounts = getPurchaseOrderItemAmounts(item);
+
+      return {
+        purchaseRequestEntryId: item.purchaseRequestEntryId || null,
+        responsibilityCenterId: item.responsibilityCenterId || null,
+        serviceMaintenanceId: item.serviceMaintenanceId || null,
+        itemId: item.itemId || null,
+        itemCode: item.itemCode || null,
+        barcode: item.barcode || null,
+        description: item.itemName.trim(),
+        color: item.color || null,
+        brand: item.brand || null,
+        size: item.size || null,
+        model: item.model || null,
+        uom: item.uom || null,
+        lotNo: item.lotNo || null,
+        prQty: Number(item.prQuantity) || 0,
+        poQty: Number(item.quantity) || 0,
+        price: Number(item.cost) || 0,
+        discountRate: Number(item.discountRate) || 0,
+        discountAmount: amounts.discountAmount,
+        vatAmount: amounts.vatAmount,
+        vatable: item.vatable === "True",
+        vatInclusive: item.vatInclusive === "True",
+        prNo: item.linePrNo || null,
+        canvassNo: item.canvassNo || null,
+        responsibilityCenter: item.responsibilityCenter || null,
+      };
+    }),
   };
 }
 

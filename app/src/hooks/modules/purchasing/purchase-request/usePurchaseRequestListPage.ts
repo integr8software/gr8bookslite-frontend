@@ -38,23 +38,23 @@ export function usePurchaseRequestListPage() {
   }, [query, requests]);
   const columns = useMemo<ColumnDef<PurchaseRequestRecord>[]>(
     () => [
-      createColumn("transNo", "PR No.", "w-[9rem]"),
-      createColumn("vceName", "Supplier", "w-[18rem]"),
-      createColumn("prDate", "Date", "w-[10rem]"),
-      createColumn("purchaseType", "Type", "w-[9rem]"),
-      createColumn("status", "Status", "w-[9rem]"),
+      createColumn("transNo", "PR No.", "w-[14%]"),
+      createColumn("vceName", "Supplier", "w-[16%]"),
+      createColumn("prDate", "Date", "w-[14%]"),
+      createColumn("purchaseType", "Type", "w-[14%]"),
+      createColumn("status", "Status", "w-[14%]"),
       {
         id: "grossAmount",
         header: "Gross Amount",
         accessorFn: (request) => request.items.reduce((total, item) => total + item.quantity * item.cost, 0),
         sortingFn: "basic",
-        meta: { className: "w-[12rem] text-right" },
+        meta: { className: "w-[14%] text-left" },
       },
       {
         id: "actions",
         header: "Actions",
         enableSorting: false,
-        meta: { className: "w-[13rem]" },
+        meta: { className: "w-[14%]" },
       },
     ],
     [],

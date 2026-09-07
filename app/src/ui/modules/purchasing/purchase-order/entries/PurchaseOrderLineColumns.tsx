@@ -2,10 +2,7 @@ import {
   PurchaseOrderBooleanOptions,
   PurchaseOrderUomOptions,
 } from "@/app/src/constants/modules/purchasing/purchase-order/PurchaseOrderConstants";
-import {
-  formatPurchaseOrderAmount,
-  getPurchaseOrderItemAmounts,
-} from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
+import { formatPurchaseOrderAmount, getPurchaseOrderItemAmounts } from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
 import type { PurchaseOrderItem } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 import type { ItemRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
 import type { ServiceMaintenanceOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
@@ -88,51 +85,29 @@ function PurchaseOrderLineCell({
   const amounts = getPurchaseOrderItemAmounts(row);
 
   if (column.id === "grossAmount") {
-    return (
-      <div className={entryCellDisplayClassName("justify-end tabular-nums")}>
-        {formatPurchaseOrderAmount(amounts.grossAmount)}
-      </div>
-    );
+    return <div className={entryCellDisplayClassName("justify-end tabular-nums")}>{formatPurchaseOrderAmount(amounts.grossAmount)}</div>;
   }
 
   if (column.id === "discountAmount") {
-    return (
-      <div className={entryCellDisplayClassName("justify-end tabular-nums")}>
-        {formatPurchaseOrderAmount(amounts.discountAmount)}
-      </div>
-    );
+    return <div className={entryCellDisplayClassName("justify-end tabular-nums")}>{formatPurchaseOrderAmount(amounts.discountAmount)}</div>;
   }
 
   if (column.id === "grossAfterDiscount") {
     return (
-      <div className={entryCellDisplayClassName("justify-end tabular-nums")}>
-        {formatPurchaseOrderAmount(amounts.grossAfterDiscount)}
-      </div>
+      <div className={entryCellDisplayClassName("justify-end tabular-nums")}>{formatPurchaseOrderAmount(amounts.grossAfterDiscount)}</div>
     );
   }
 
   if (column.id === "vatAmount") {
-    return (
-      <div className={entryCellDisplayClassName("justify-end tabular-nums")}>
-        {formatPurchaseOrderAmount(amounts.vatAmount)}
-      </div>
-    );
+    return <div className={entryCellDisplayClassName("justify-end tabular-nums")}>{formatPurchaseOrderAmount(amounts.vatAmount)}</div>;
   }
 
   if (column.id === "netOfVatAmount") {
-    return (
-      <div className={entryCellDisplayClassName("justify-end tabular-nums")}>
-        {formatPurchaseOrderAmount(amounts.netOfVatAmount)}
-      </div>
-    );
+    return <div className={entryCellDisplayClassName("justify-end tabular-nums")}>{formatPurchaseOrderAmount(amounts.netOfVatAmount)}</div>;
   }
 
   if (column.id === "netAmount") {
-    return (
-      <div className={entryCellDisplayClassName("justify-end tabular-nums")}>
-        {formatPurchaseOrderAmount(amounts.netAmount)}
-      </div>
-    );
+    return <div className={entryCellDisplayClassName("justify-end tabular-nums")}>{formatPurchaseOrderAmount(amounts.netAmount)}</div>;
   }
 
   const value = String(row[column.id as keyof PurchaseOrderItem] ?? "");
@@ -147,9 +122,7 @@ function PurchaseOrderLineCell({
         options={createItemDescriptionDropdownOptions(itemDescriptionOptions, value)}
         placeholder=""
         className={EntryDropdownClassName}
-        onChange={(nextValue) =>
-          onUpdateEntry(row.id, getPurchaseOrderItemAutoFillUpdates(itemDescriptionOptions, String(nextValue)))
-        }
+        onChange={(nextValue) => onUpdateEntry(row.id, getPurchaseOrderItemAutoFillUpdates(itemDescriptionOptions, String(nextValue)))}
       />
     );
   }
@@ -164,23 +137,14 @@ function PurchaseOrderLineCell({
         options={createServiceDescriptionDropdownOptions(serviceDescriptionOptions, value)}
         placeholder=""
         className={EntryDropdownClassName}
-        onChange={(nextValue) =>
-          onUpdateEntry(row.id, getPurchaseOrderServiceUpdates(serviceDescriptionOptions, String(nextValue)))
-        }
+        onChange={(nextValue) => onUpdateEntry(row.id, getPurchaseOrderServiceUpdates(serviceDescriptionOptions, String(nextValue)))}
       />
     );
   }
 
   if (usesItemMaintenance && ["itemCode", "barcode", "uom"].includes(column.id)) {
     return (
-      <input
-        id={fieldId}
-        name={fieldName}
-        type="text"
-        value={value}
-        readOnly
-        className={entryCellControlClassName("bg-offwhite/35")}
-      />
+      <input id={fieldId} name={fieldName} type="text" value={value} readOnly className={entryCellControlClassName("bg-offwhite/35")} />
     );
   }
 
@@ -224,7 +188,7 @@ function PurchaseOrderLineCell({
         id={fieldId}
         name={fieldName}
         value={value}
-        readOnly={isReadonly}
+        readOnly={isReadonly || column.id === "prQuantity"}
         onValueChange={(nextValue) => onUpdateEntry(row.id, { [column.id]: parseMoneyNumberInput(nextValue) })}
         className={entryCellControlClassName("text-right tabular-nums")}
       />
@@ -256,30 +220,30 @@ function createItemDescriptionDropdownOptions(itemOptions: ItemRecord[], value: 
   return dropdownOptions;
 }
 
-function getPurchaseOrderItemAutoFillUpdates(
-  itemOptions: ItemRecord[],
-  description: string,
-): Partial<PurchaseOrderItem> {
-  const selectedItem = itemOptions.find(
-    (item) => item.name.trim().toLowerCase() === description.trim().toLowerCase(),
-  );
+function getPurchaseOrderItemAutoFillUpdates(itemOptions: ItemRecord[], description: string): Partial<PurchaseOrderItem> {
+  const selectedItem = itemOptions.find((item) => item.name.trim().toLowerCase() === description.trim().toLowerCase());
 
   if (!selectedItem) return { itemName: description };
 
+  const price = Number(selectedItem.sellingPrice) || Number(selectedItem.costPrice) || Number(selectedItem.suggestedPrice) || 0;
+
   return {
     barcode: selectedItem.barcode,
-    itemId: selectedItem.id,
+    brand: selectedItem.brand ?? "",
+    cost: price,
+    itemCategory: selectedItem.category ?? "",
     itemCode: selectedItem.code,
+    itemId: selectedItem.id,
     itemName: selectedItem.name,
+    model: selectedItem.model ?? "",
+    responsibilityCenter: selectedItem.responsibilityCenter ?? "",
+    responsibilityCenterId: selectedItem.responsibilityCenterId ?? "",
     serviceMaintenanceId: "",
     uom: selectedItem.uom,
   };
 }
 
-function createServiceDescriptionDropdownOptions(
-  serviceOptions: ServiceMaintenanceOptionResponseDto[],
-  value: string,
-) {
+function createServiceDescriptionDropdownOptions(serviceOptions: ServiceMaintenanceOptionResponseDto[], value: string) {
   const dropdownOptions = serviceOptions.map((service) => {
     const serviceName = service.serviceName || service.name;
     return { name: serviceName, value: serviceName };

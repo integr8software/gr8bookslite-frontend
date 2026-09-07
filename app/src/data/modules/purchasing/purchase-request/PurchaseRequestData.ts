@@ -43,7 +43,7 @@ export const PurchaseRequestMaterialPlanRecords: Array<
   }
 > = [];
 
-export function createPurchaseRequestFormValues(record?: PurchaseRequestRecord): PurchaseRequestFormValues {
+export function createPurchaseRequestFormValues(record?: PurchaseRequestRecord, existingRecords?: PurchaseRequestRecord[]): PurchaseRequestFormValues {
   if (record) {
     const normalizedRecord = normalizePurchaseRequestRecordDefaults(record);
 
@@ -54,12 +54,14 @@ export function createPurchaseRequestFormValues(record?: PurchaseRequestRecord):
     };
   }
 
+  const transNo = createNextTransNo(existingRecords ?? []);
+
   return {
     ...DefaultPurchaseRequestPrintHeader,
     vceCode: "",
     vceName: "",
     purchaseType: "Goods",
-    transNo: createNextTransNo([]),
+    transNo,
     prDate: new Date().toISOString().slice(0, 10),
     status: "Draft",
     currency: "PHP",
@@ -79,7 +81,7 @@ export function createPurchaseRequestFormValues(record?: PurchaseRequestRecord):
     approvedBySignatureFileName: "",
     approvedBySignatureImageUrl: "",
     accountingEntries: createPurchaseRequestAccountingEntries({
-      refNo: createNextTransNo([]),
+      refNo: transNo,
     }),
     items: [{ ...emptyPurchaseRequestItem, id: createPurchaseRequestId("item") }],
   };

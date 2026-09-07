@@ -6,4 +6,6 @@ export type AppCopyFromRecord = {
   remarks?: string;
   source: string;
   sourceNo: string;
+  disabled?: boolean;
+  disabledReason?: string;
 };

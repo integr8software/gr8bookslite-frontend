@@ -1,5 +1,7 @@
 "use client";
 
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { cleanCopyFromQueryParams } from "@/app/src/utils/query.util";
 import {
   pettyCashReplenishmentControllerCreateV1,
   pettyCashReplenishmentControllerFindAllV1,
@@ -24,7 +26,6 @@ import type {
   PettyCashReplenishmentRecord,
   PettyCashReplenishmentStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { calculatePettyCashReplenishmentTotals } from "@/app/src/data/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentData";
 
@@ -40,6 +41,49 @@ type PettyCashReplenishmentResponseExtras = {
 };
 
 type PettyCashReplenishmentQueryParams = NonNullable<Parameters<typeof pettyCashReplenishmentControllerFindAllV1>[0]>;
+export type PettyCashReplenishmentCopyFromCandidate = {
+  amount: number;
+  availableAmount: number;
+  availableGrossAmount: number;
+  consumedAmount: number;
+  consumedGrossAmount: number;
+  creditAccountCode: string;
+  creditAccountId?: string | null;
+  creditAccountTitle: string;
+  currency: string;
+  details: Array<{
+    amount: number;
+    disburseAmount: number;
+    ewtAmount: number;
+    ewtCode?: string | null;
+    ewtPercent: number;
+    id: string;
+    lineNumber: number;
+    netAmount: number;
+    particulars?: string | null;
+    pettyCashDate?: string | null;
+    pettyCashNo?: string | null;
+    responsibilityCenter?: string | null;
+    responsibilityCenterId?: string | null;
+    supplierCode?: string | null;
+    supplierName?: string | null;
+    vatAmount: number;
+    vatPercent: number;
+    vatType?: string | null;
+  }>;
+  documentDate: string;
+  exchangeRate: number;
+  id: string;
+  partyCode: string;
+  partyId?: string | null;
+  partyName: string;
+  projectCode?: string | null;
+  projectName?: string | null;
+  remarks?: string | null;
+  source: "Petty Cash Replenishment";
+  sourceNo: string;
+  transactionNo: string;
+};
 
 export type FetchPettyCashReplenishmentListParams = {
   page?: number;
@@ -196,11 +240,11 @@ export function mapPettyCashReplenishmentFormValuesToCreateDto(values: PettyCash
 function isPettyCashReplenishmentEntryPopulated(item: PettyCashReplenishmentEntry) {
   return Boolean(
     item.pettyCashNo.trim() ||
-      item.supplierCode.trim() ||
-      item.supplierName.trim() ||
-      item.particulars.trim() ||
-      item.amount.trim() ||
-      item.disburseAmount.trim(),
+    item.supplierCode.trim() ||
+    item.supplierName.trim() ||
+    item.particulars.trim() ||
+    item.amount.trim() ||
+    item.disburseAmount.trim(),
   );
 }
 
@@ -237,6 +281,29 @@ export async function fetchPettyCashReplenishmentList(
   };
 }
 
+export async function fetchPettyCashReplenishmentCopyFromCandidates(params: {
+  branchUnitId?: number | null;
+  limit?: number;
+  page?: number;
+  partyCode?: string | null;
+  target: "cash-voucher" | "disbursement-voucher";
+}) {
+  const response = await ApiClient.get<{ records: PettyCashReplenishmentCopyFromCandidate[] }>(
+    "/cash-disbursement/petty-cash-replenishment/copy-from/candidates",
+    {
+      params: cleanCopyFromQueryParams({
+        branchUnitId: params.branchUnitId,
+        limit: params.limit ?? 100,
+        page: params.page ?? 1,
+        partyCode: params.partyCode,
+        target: params.target,
+      }),
+    },
+  );
+
+  return response.data.records;
+}
+
 export async function fetchPettyCashReplenishmentById(id: string): Promise<PettyCashReplenishmentRecord> {
   const response = (await pettyCashReplenishmentControllerFindOneV1(id)) as PettyCashReplenishmentResponseDto;
   return mapPettyCashReplenishmentRecordFromDto(response);
@@ -252,13 +319,19 @@ export async function createPettyCashReplenishmentApi(values: PettyCashReplenish
   return mapPettyCashReplenishmentRecordFromDto(response);
 }
 
-export async function updatePettyCashReplenishmentApi(id: string, values: PettyCashReplenishmentFormValues): Promise<PettyCashReplenishmentRecord> {
+export async function updatePettyCashReplenishmentApi(
+  id: string,
+  values: PettyCashReplenishmentFormValues,
+): Promise<PettyCashReplenishmentRecord> {
   const payload = mapPettyCashReplenishmentFormValuesToUpdateDto(values);
   const response = (await pettyCashReplenishmentControllerUpdateV1(id, payload)) as PettyCashReplenishmentResponseDto;
   return mapPettyCashReplenishmentRecordFromDto(response);
 }
 
-export async function updatePettyCashReplenishmentStatusApi(id: string, status: PettyCashReplenishmentStatus): Promise<PettyCashReplenishmentRecord> {
+export async function updatePettyCashReplenishmentStatusApi(
+  id: string,
+  status: PettyCashReplenishmentStatus,
+): Promise<PettyCashReplenishmentRecord> {
   const apiStatus = StatusToApi[status];
   const response = (await pettyCashReplenishmentControllerUpdateStatusV1(id, { status: apiStatus })) as PettyCashReplenishmentResponseDto;
   return mapPettyCashReplenishmentRecordFromDto(response);

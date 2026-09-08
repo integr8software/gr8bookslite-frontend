@@ -1,5 +1,7 @@
 "use client";
 
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { cleanCopyFromQueryParams } from "@/app/src/utils/query.util";
 import {
   pettyCashVoucherControllerCreateV1,
   pettyCashVoucherControllerFindAllV1,
@@ -22,7 +24,6 @@ import type {
   PettyCashVoucherRecord,
   PettyCashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 
 type AuditUserSnapshot = {
@@ -36,6 +37,32 @@ type PettyCashVoucherResponseExtras = {
 };
 
 type PettyCashVoucherQueryParams = NonNullable<Parameters<typeof pettyCashVoucherControllerFindAllV1>[0]>;
+export type PettyCashVoucherCopyFromCandidate = {
+  accountCode?: string | null;
+  accountTitle?: string | null;
+  amount: number;
+  availableAmount: number;
+  availableGrossAmount: number;
+  consumedAmount: number;
+  consumedGrossAmount: number;
+  currency: string;
+  disburseAmount: number;
+  documentDate: string;
+  exchangeRate: number;
+  id: string;
+  partyCode: string;
+  partyId?: string | null;
+  partyName: string;
+  projectCode?: string | null;
+  projectName?: string | null;
+  remarks?: string | null;
+  responsibilityCenter?: string | null;
+  responsibilityCenterCode?: string | null;
+  responsibilityCenterId?: string | null;
+  source: "Petty Cash Voucher";
+  sourceNo: string;
+  transactionNo: string;
+};
 
 export type FetchPettyCashVoucherListParams = {
   page?: number;
@@ -163,6 +190,27 @@ export async function fetchPettyCashVoucherList(params?: FetchPettyCashVoucherLi
     data: (response?.items ?? []).map(mapPettyCashVoucherRecordFromDto),
     meta: response?.meta ?? { page: 1, limit: 50, total: 0, totalPages: 1 },
   };
+}
+
+export async function fetchPettyCashVoucherCopyFromCandidates(params?: {
+  branchUnitId?: number | null;
+  limit?: number;
+  page?: number;
+  partyCode?: string | null;
+}) {
+  const response = await ApiClient.get<{ records: PettyCashVoucherCopyFromCandidate[] }>(
+    "/cash-disbursement/petty-cash-voucher/copy-from/candidates",
+    {
+      params: cleanCopyFromQueryParams({
+        branchUnitId: params?.branchUnitId,
+        limit: params?.limit ?? 100,
+        page: params?.page ?? 1,
+        partyCode: params?.partyCode,
+      }),
+    },
+  );
+
+  return response.data.records;
 }
 
 export async function fetchPettyCashVoucherById(id: string): Promise<PettyCashVoucherRecord> {

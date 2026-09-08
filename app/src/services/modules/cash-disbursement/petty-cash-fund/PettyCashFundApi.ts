@@ -1,5 +1,7 @@
 "use client";
 
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { cleanCopyFromQueryParams } from "@/app/src/utils/query.util";
 import {
   pettyCashFundControllerCreateV1,
   pettyCashFundControllerFindAllV1,
@@ -25,7 +27,6 @@ import type {
   PettyCashFundRecord,
   PettyCashFundStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { calculatePettyCashFundTotals } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund/PettyCashFundData";
 
@@ -45,6 +46,53 @@ type PettyCashFundDetailExtras = {
 };
 
 type PettyCashFundQueryParams = NonNullable<Parameters<typeof pettyCashFundControllerFindAllV1>[0]>;
+export type PettyCashFundCopyFromCandidate = {
+  accountCode?: string | null;
+  accountTitle?: string | null;
+  amount: number;
+  availableAmount: number;
+  availableGrossAmount: number;
+  consumedAmount: number;
+  consumedGrossAmount: number;
+  currency: string;
+  details: Array<{
+    date?: string | null;
+    disburseAmount: number;
+    ewtAmount: number;
+    ewtCode?: string | null;
+    ewtPercent: number;
+    grossAmount: number;
+    id: string;
+    lineNumber: number;
+    netAmount: number;
+    particulars?: string | null;
+    remarks?: string | null;
+    responsibilityCenter?: string | null;
+    responsibilityCenterCode?: string | null;
+    responsibilityCenterId?: string | null;
+    supplierCode?: string | null;
+    supplierName?: string | null;
+    vatAmount: number;
+    vatPercent: number;
+    vatType?: string | null;
+  }>;
+  disburseAmount: number;
+  documentDate: string;
+  exchangeRate: number;
+  id: string;
+  partyCode: string;
+  partyId?: string | null;
+  partyName: string;
+  projectCode?: string | null;
+  projectName?: string | null;
+  remarks?: string | null;
+  responsibilityCenter?: string | null;
+  responsibilityCenterCode?: string | null;
+  responsibilityCenterId?: string | null;
+  source: "Petty Cash Fund";
+  sourceNo: string;
+  transactionNo: string;
+};
 
 export type FetchPettyCashFundListParams = {
   page?: number;
@@ -86,7 +134,7 @@ export function mapPettyCashFundRecordFromDto(dto: PettyCashFundResponseDto): Pe
   const dtoExtras = dto as PettyCashFundResponseDto & PettyCashFundResponseExtras;
   const items: PettyCashFundItem[] = (dto.details ?? []).map((d: PettyCashFundDetailDto & PettyCashFundDetailExtras, index: number) => ({
     id: d.id ? String(d.id) : `item-${index + 1}`,
-    date: (d.itemDate || d.date) ? String(d.itemDate || d.date).split("T")[0] : "",
+    date: d.itemDate || d.date ? String(d.itemDate || d.date).split("T")[0] : "",
     supplierCode: d.supplierCodeSnapshot ?? "",
     supplierName: d.supplierNameSnapshot ?? "",
     orNo: d.orNo ?? "",
@@ -200,11 +248,11 @@ export function mapPettyCashFundFormValuesToCreateDto(values: PettyCashFundFormV
 function isPettyCashFundItemPopulated(item: PettyCashFundItem) {
   return Boolean(
     item.supplierCode.trim() ||
-      item.supplierName.trim() ||
-      item.particulars.trim() ||
-      item.amount.trim() ||
-      item.grossAmount.trim() ||
-      item.disburseAmount.trim(),
+    item.supplierName.trim() ||
+    item.particulars.trim() ||
+    item.amount.trim() ||
+    item.grossAmount.trim() ||
+    item.disburseAmount.trim(),
   );
 }
 
@@ -236,6 +284,27 @@ export async function fetchPettyCashFundList(params?: FetchPettyCashFundListPara
     data: (response?.items ?? []).map(mapPettyCashFundRecordFromDto),
     meta: response?.meta ?? { page: 1, limit: 50, total: 0, totalPages: 1 },
   };
+}
+
+export async function fetchPettyCashFundCopyFromCandidates(params?: {
+  branchUnitId?: number | null;
+  limit?: number;
+  page?: number;
+  partyCode?: string | null;
+}) {
+  const response = await ApiClient.get<{ records: PettyCashFundCopyFromCandidate[] }>(
+    "/cash-disbursement/petty-cash-fund/copy-from/candidates",
+    {
+      params: cleanCopyFromQueryParams({
+        branchUnitId: params?.branchUnitId,
+        limit: params?.limit ?? 100,
+        page: params?.page ?? 1,
+        partyCode: params?.partyCode,
+      }),
+    },
+  );
+
+  return response.data.records;
 }
 
 export async function fetchPettyCashFundById(id: string): Promise<PettyCashFundRecord> {

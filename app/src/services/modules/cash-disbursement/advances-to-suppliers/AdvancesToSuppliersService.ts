@@ -22,6 +22,8 @@ import type {
   UpdateAdvanceToSupplierStatusDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { cleanQueryParams } from "@/app/src/utils/query.util";
 import type {
   AdvancesToSuppliersFormValues,
   AdvancesToSuppliersPaymentType,
@@ -30,6 +32,41 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 
 type FetchAdvancesToSuppliersListParams = AdvancesToSuppliersControllerFindAllV1Params;
+export type AdvanceToSupplierCopyFromCandidate = {
+  amount: number;
+  availableAmount: number;
+  availableGrossAmount: number;
+  branchUnitId?: number | null;
+  consumedAmount: number;
+  consumedGrossAmount: number;
+  currency: string;
+  details: Array<{
+    accountCode?: string | null;
+    accountTitle?: string | null;
+    amount: number;
+    consumptionAmount: number;
+    grossAmount: number;
+    id: string;
+    lineNumber: number;
+    particulars?: string | null;
+    referenceNo?: string | null;
+    responsibilityCenter?: string | null;
+  }>;
+  documentDate: string;
+  exchangeRate: number;
+  grossAmount: number;
+  id: string;
+  partyCode: string;
+  partyId?: string | null;
+  partyName: string;
+  poReference?: string | null;
+  projectCode?: string | null;
+  projectName?: string | null;
+  remarks?: string | null;
+  source: "Advances to Suppliers";
+  sourceNo: string;
+  transactionNo: string;
+};
 type MappedAdvancesToSuppliersListResponse = Omit<AdvanceToSupplierListResponseDto, "items"> & {
   data: AdvancesToSuppliersRecord[];
 };
@@ -40,9 +77,11 @@ type AdvancesToSuppliersListApiResponse = {
   meta?: MappedAdvancesToSuppliersListResponse["meta"];
 };
 
-type AdvancesToSuppliersApiResponse = AdvanceToSupplierResponseDto | {
-  data?: AdvanceToSupplierResponseDto;
-};
+type AdvancesToSuppliersApiResponse =
+  | AdvanceToSupplierResponseDto
+  | {
+      data?: AdvanceToSupplierResponseDto;
+    };
 
 const StatusFromApi: Record<string, AdvancesToSuppliersStatus> = {
   APPROVED: "Posted",
@@ -94,6 +133,33 @@ export async function fetchNextAdvancesToSuppliersNumber(): Promise<string> {
   return fetchTransactionNumber(advancesToSuppliersControllerSuggestTransactionNumberV1);
 }
 
+export async function fetchAdvanceToSupplierCopyFromCandidates(query: {
+  branchUnitId?: number | null;
+  limit?: number;
+  page?: number;
+  partyCode?: string | null;
+  partyId?: string | null;
+  search?: string | null;
+  target: "cash-voucher" | "disbursement-voucher";
+}): Promise<AdvanceToSupplierCopyFromCandidate[]> {
+  const response = await ApiClient.get<{ records: AdvanceToSupplierCopyFromCandidate[] }>(
+    "/cash-disbursement/advances-to-suppliers/copy-from/candidates",
+    {
+      params: cleanQueryParams({
+        branchUnitId: query.branchUnitId,
+        limit: query.limit ?? 100,
+        page: query.page ?? 1,
+        partyCode: query.partyCode,
+        partyId: query.partyId,
+        search: query.search,
+        target: query.target,
+      }),
+    },
+  );
+
+  return response.data.records;
+}
+
 export async function createAdvancesToSuppliersApi(values: AdvancesToSuppliersFormValues): Promise<AdvancesToSuppliersRecord> {
   const response = (await advancesToSuppliersControllerCreateV1(mapFormValuesToCreateDto(values))) as AdvancesToSuppliersApiResponse;
   return mapAdvancesToSuppliersRecordFromDto(unwrapAdvancesToSuppliersResponse(response));
@@ -116,7 +182,9 @@ export async function updateAdvancesToSuppliersStatusApi(
   id: string,
   status: AdvancesToSuppliersStatus,
 ): Promise<AdvancesToSuppliersRecord> {
-  const response = (await advancesToSuppliersControllerUpdateStatusV1(id, { status: StatusToApi[status] })) as AdvancesToSuppliersApiResponse;
+  const response = (await advancesToSuppliersControllerUpdateStatusV1(id, {
+    status: StatusToApi[status],
+  })) as AdvancesToSuppliersApiResponse;
   return mapAdvancesToSuppliersRecordFromDto(unwrapAdvancesToSuppliersResponse(response));
 }
 

@@ -29,25 +29,21 @@ export function validatePettyCashReplenishmentForm(values: PettyCashReplenishmen
     }
   }
   if (values.status === PettyCashReplenishmentStatuses.Draft) return errors;
-  if (
-    values.entries.length === 0 ||
-    values.entries.every((entry) => !entry.pettyCashNo.trim() && (parseAmount(entry.amount) ?? 0) <= 0)
-  ) {
+  if (values.entries.length === 0 || values.entries.every((entry) => !entry.pettyCashNo.trim() && (parseAmount(entry.amount) ?? 0) <= 0)) {
     errors.entries = "Add at least one petty cash voucher entry.";
   } else if (
     values.entries.some(
       (entry) =>
-        !entry.pettyCashNo.trim() ||
-        !entry.supplierCode.trim() ||
-        !entry.supplierName.trim() ||
-        (parseAmount(entry.amount) ?? 0) <= 0,
+        !entry.pettyCashNo.trim() || !entry.supplierCode.trim() || !entry.supplierName.trim() || (parseAmount(entry.amount) ?? 0) <= 0,
     )
   ) {
     errors.entries = "Each entry needs a Petty Cash Voucher, Supplier, and Amount greater than zero.";
   }
-  const voucherNumbers = values.entries.map((entry) => entry.pettyCashNo.trim().toLowerCase()).filter(Boolean);
+  const voucherNumbers = values.entries
+    .map((entry) => entry.pettyCashNo.trim().toLowerCase())
+    .filter((pettyCashNo) => pettyCashNo.startsWith("pcv:"));
   if (new Set(voucherNumbers).size !== voucherNumbers.length) {
-    errors.entries = "Petty Cash Numbers must be unique.";
+    errors.entries = "Petty Cash Voucher Numbers must be unique.";
   }
   return errors;
 }

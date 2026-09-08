@@ -27,7 +27,9 @@ import type {
 import type {
   CreateRevolvingFundDto,
   RevolvingFundControllerFindAllV1Params,
+  RevolvingFundControllerFindCopyFromCandidatesV1Params,
   RevolvingFundControllerSuggestTransactionNumberV1Params,
+  RevolvingFundCopyFromCandidatesResponseDto,
   RevolvingFundListResponseDto,
   RevolvingFundResponseDto,
   TransactionNumberSuggestionResponseDto,
@@ -307,6 +309,99 @@ export const useRevolvingFundControllerCreateV1 = <TError = unknown,
       return useMutation(getRevolvingFundControllerCreateV1MutationOptions(options), queryClient);
     }
     /**
+ * @summary List available Revolving Funds for replenishment Copy From
+ */
+export const revolvingFundControllerFindCopyFromCandidatesV1 = (
+    params?: RevolvingFundControllerFindCopyFromCandidatesV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<RevolvingFundCopyFromCandidatesResponseDto>(
+      {url: `/api/v1/cash-disbursement/revolving-fund/copy-from/candidates`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getRevolvingFundControllerFindCopyFromCandidatesV1QueryKey = (params?: RevolvingFundControllerFindCopyFromCandidatesV1Params,) => {
+    return [
+    `/api/v1/cash-disbursement/revolving-fund/copy-from/candidates`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getRevolvingFundControllerFindCopyFromCandidatesV1QueryOptions = <TData = Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>, TError = unknown>(params?: RevolvingFundControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getRevolvingFundControllerFindCopyFromCandidatesV1QueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>> = ({ signal }) => revolvingFundControllerFindCopyFromCandidatesV1(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type RevolvingFundControllerFindCopyFromCandidatesV1QueryResult = NonNullable<Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>>
+export type RevolvingFundControllerFindCopyFromCandidatesV1QueryError = unknown
+
+
+export function useRevolvingFundControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: undefined |  RevolvingFundControllerFindCopyFromCandidatesV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRevolvingFundControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params?: RevolvingFundControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRevolvingFundControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params?: RevolvingFundControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List available Revolving Funds for replenishment Copy From
+ */
+
+export function useRevolvingFundControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params?: RevolvingFundControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof revolvingFundControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getRevolvingFundControllerFindCopyFromCandidatesV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
  * @summary Get Revolving Fund details by ID
  */
 export const revolvingFundControllerFindOneV1 = (

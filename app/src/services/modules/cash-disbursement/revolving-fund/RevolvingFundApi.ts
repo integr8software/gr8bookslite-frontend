@@ -1,5 +1,7 @@
 "use client";
 
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { cleanCopyFromQueryParams } from "@/app/src/utils/query.util";
 import {
   revolvingFundControllerCreateV1,
   revolvingFundControllerFindAllV1,
@@ -25,7 +27,6 @@ import type {
   RevolvingFundRecord,
   RevolvingFundStatus,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { calculateRevolvingFundTotals } from "@/app/src/data/modules/cash-disbursement/revolving-fund/RevolvingFundData";
 
@@ -45,6 +46,53 @@ type RevolvingFundDetailExtras = {
 };
 
 type RevolvingFundQueryParams = NonNullable<Parameters<typeof revolvingFundControllerFindAllV1>[0]>;
+export type RevolvingFundCopyFromCandidate = {
+  accountCode?: string | null;
+  accountTitle?: string | null;
+  amount: number;
+  availableAmount: number;
+  availableGrossAmount: number;
+  consumedAmount: number;
+  consumedGrossAmount: number;
+  currency: string;
+  details: Array<{
+    date?: string | null;
+    disburseAmount: number;
+    ewtAmount: number;
+    ewtCode?: string | null;
+    ewtPercent: number;
+    grossAmount: number;
+    id: string;
+    lineNumber: number;
+    netAmount: number;
+    particulars?: string | null;
+    remarks?: string | null;
+    responsibilityCenter?: string | null;
+    responsibilityCenterCode?: string | null;
+    responsibilityCenterId?: string | null;
+    supplierCode?: string | null;
+    supplierName?: string | null;
+    vatAmount: number;
+    vatPercent: number;
+    vatType?: string | null;
+  }>;
+  disburseAmount: number;
+  documentDate: string;
+  exchangeRate: number;
+  id: string;
+  partyCode: string;
+  partyId?: string | null;
+  partyName: string;
+  projectCode?: string | null;
+  projectName?: string | null;
+  remarks?: string | null;
+  responsibilityCenter?: string | null;
+  responsibilityCenterCode?: string | null;
+  responsibilityCenterId?: string | null;
+  source: "Revolving Fund";
+  sourceNo: string;
+  transactionNo: string;
+};
 
 export type FetchRevolvingFundListParams = {
   page?: number;
@@ -200,11 +248,11 @@ export function mapRevolvingFundFormValuesToCreateDto(values: RevolvingFundFormV
 function isRevolvingFundItemPopulated(item: RevolvingFundItem) {
   return Boolean(
     item.supplierCode.trim() ||
-      item.supplierName.trim() ||
-      item.particulars.trim() ||
-      item.amount.trim() ||
-      item.grossAmount.trim() ||
-      item.disburseAmount.trim(),
+    item.supplierName.trim() ||
+    item.particulars.trim() ||
+    item.amount.trim() ||
+    item.grossAmount.trim() ||
+    item.disburseAmount.trim(),
   );
 }
 
@@ -236,6 +284,27 @@ export async function fetchRevolvingFundList(params?: FetchRevolvingFundListPara
     data: (response?.items ?? []).map(mapRevolvingFundRecordFromDto),
     meta: response?.meta ?? { page: 1, limit: 50, total: 0, totalPages: 1 },
   };
+}
+
+export async function fetchRevolvingFundCopyFromCandidates(params?: {
+  branchUnitId?: number | null;
+  limit?: number;
+  page?: number;
+  partyCode?: string | null;
+}) {
+  const response = await ApiClient.get<{ records: RevolvingFundCopyFromCandidate[] }>(
+    "/cash-disbursement/revolving-fund/copy-from/candidates",
+    {
+      params: cleanCopyFromQueryParams({
+        branchUnitId: params?.branchUnitId,
+        limit: params?.limit ?? 100,
+        page: params?.page ?? 1,
+        partyCode: params?.partyCode,
+      }),
+    },
+  );
+
+  return response.data.records;
 }
 
 export async function fetchRevolvingFundById(id: string): Promise<RevolvingFundRecord> {

@@ -18,6 +18,7 @@ import type {
 import { RevolvingFundReplenishmentActionHistory } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentActionHistory";
 import { RevolvingFundReplenishmentStatusActions } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentStatusActions";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
 import { ModuleDraftDiscardAction } from "@/app/src/ui/shared/module/ModuleDraftDiscardAction";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
@@ -74,6 +75,15 @@ export function RevolvingFundReplenishmentActionHeader({
               />
             ) : null}
             <ReportPreviewAction onPreview={onPreview} />
+            {page.mode === "add" ? (
+              <AppCopyFromDropdown
+                enableSourceSearch
+                records={page.copyFromRecords}
+                selectionMode="multiple"
+                sources={["Revolving Fund"]}
+                onApply={page.copyFromRevolvingFund}
+              />
+            ) : null}
             {page.mode !== "add" ? <RevolvingFundReplenishmentActionHistory record={page.record} /> : null}
             {page.mode === "view" && page.record ? (
               <>
@@ -136,9 +146,7 @@ export function RevolvingFundReplenishmentActionHeader({
                     : `This will mark ${transactionNo} as cancelled.`
           }
           confirmLabel={
-            confirmation === "save" && !isSaveAction
-              ? "Update"
-              : RevolvingFundReplenishmentConfirmationDialogConfirmLabels[confirmation]
+            confirmation === "save" && !isSaveAction ? "Update" : RevolvingFundReplenishmentConfirmationDialogConfirmLabels[confirmation]
           }
           cancelLabel="Cancel"
           iconTone={confirmation === "save" ? (isSaveAction ? "save" : "update") : confirmation === "draft" ? "save" : undefined}

@@ -11486,6 +11486,67 @@ export interface AdvanceToSupplierListResponseDto {
   meta: NavigablePaginationMetaDto;
 }
 
+export interface AdvanceToSupplierCopyFromCandidateDetailDto {
+  id: string;
+  lineNumber: number;
+  /** @nullable */
+  accountCode?: string | null;
+  /** @nullable */
+  accountTitle?: string | null;
+  grossAmount: number;
+  amount: number;
+  consumptionAmount: number;
+  /** @nullable */
+  particulars?: string | null;
+  /** @nullable */
+  responsibilityCenter?: string | null;
+  /** @nullable */
+  referenceNo?: string | null;
+}
+
+export interface AdvanceToSupplierCopyFromCandidateDto {
+  id: string;
+  source: string;
+  sourceNo: string;
+  transactionNo: string;
+  documentDate: string;
+  /** @nullable */
+  branchUnitId?: number | null;
+  /** @nullable */
+  partyId?: string | null;
+  partyCode: string;
+  partyName: string;
+  currency: string;
+  exchangeRate: number;
+  grossAmount: number;
+  consumedGrossAmount: number;
+  availableGrossAmount: number;
+  amount: number;
+  consumedAmount: number;
+  availableAmount: number;
+  /** @nullable */
+  poReference?: string | null;
+  /** @nullable */
+  projectCode?: string | null;
+  /** @nullable */
+  projectName?: string | null;
+  /** @nullable */
+  remarks?: string | null;
+  details: AdvanceToSupplierCopyFromCandidateDetailDto[];
+}
+
+export type AdvanceToSupplierCopyFromCandidatesResponseDtoPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export interface AdvanceToSupplierCopyFromCandidatesResponseDto {
+  records: AdvanceToSupplierCopyFromCandidateDto[];
+  pagination: AdvanceToSupplierCopyFromCandidatesResponseDtoPagination;
+}
+
 export type CreateAdvanceToSupplierDtoAdvancePaymentType = typeof CreateAdvanceToSupplierDtoAdvancePaymentType[keyof typeof CreateAdvanceToSupplierDtoAdvancePaymentType];
 
 
@@ -13747,6 +13808,97 @@ export interface PettyCashVoucherListResponseDto {
   meta: PettyCashVoucherPaginationMetaDto;
 }
 
+export interface PettyCashVoucherCopyFromCandidateDto {
+  /** Petty Cash Voucher ID */
+  id: string;
+  /** Petty Cash Voucher transaction number */
+  transactionNo: string;
+  /** Document date in YYYY-MM-DD format */
+  documentDate: string;
+  /**
+     * Party primary key ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /** Party code snapshot */
+  partyCode: string;
+  /** Party name snapshot */
+  partyName: string;
+  /** Currency code */
+  currency: string;
+  /** Exchange rate */
+  exchangeRate: number;
+  /** Original gross amount */
+  amount: number;
+  /** Gross amount already copied to active Petty Cash Replenishments */
+  consumedGrossAmount: number;
+  /** Remaining gross amount available to copy */
+  availableGrossAmount: number;
+  /** Original disburse amount */
+  disburseAmount: number;
+  /** Disburse amount already copied to active Petty Cash Replenishments */
+  consumedAmount: number;
+  /** Remaining disburse amount available to copy */
+  availableAmount: number;
+  /**
+     * Default account code
+     * @nullable
+     */
+  accountCode?: string | null;
+  /**
+     * Default account title
+     * @nullable
+     */
+  accountTitle?: string | null;
+  /**
+     * Responsibility center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility center code
+     * @nullable
+     */
+  responsibilityCenterCode?: string | null;
+  /**
+     * Responsibility center name
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+  /**
+     * Project code
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project name
+     * @nullable
+     */
+  projectName?: string | null;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** Source module display name */
+  source: string;
+  /** Source transaction number */
+  sourceNo: string;
+}
+
+export type PettyCashVoucherCopyFromCandidatesResponseDtoPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export interface PettyCashVoucherCopyFromCandidatesResponseDto {
+  /** Available PCV records */
+  records: PettyCashVoucherCopyFromCandidateDto[];
+  pagination: PettyCashVoucherCopyFromCandidatesResponseDtoPagination;
+}
+
 /**
  * Initial Status
  */
@@ -14302,6 +14454,170 @@ export interface PettyCashFundListResponseDto {
   meta: PettyCashFundPaginationMetaDto;
 }
 
+export interface PettyCashFundCopyFromCandidateDetailDto {
+  /** Petty Cash Fund detail line ID */
+  id: string;
+  /** Source line number */
+  lineNumber: number;
+  /**
+     * Petty cash line date
+     * @nullable
+     */
+  date?: string | null;
+  /**
+     * Supplier code snapshot
+     * @nullable
+     */
+  supplierCode?: string | null;
+  /**
+     * Supplier name snapshot
+     * @nullable
+     */
+  supplierName?: string | null;
+  /** Gross amount */
+  grossAmount: number;
+  /** Net amount */
+  netAmount: number;
+  /**
+     * VAT type/code
+     * @nullable
+     */
+  vatType?: string | null;
+  /** VAT percent */
+  vatPercent: number;
+  /** VAT amount */
+  vatAmount: number;
+  /**
+     * EWT code
+     * @nullable
+     */
+  ewtCode?: string | null;
+  /** EWT percent */
+  ewtPercent: number;
+  /** EWT amount */
+  ewtAmount: number;
+  /** Disburse amount */
+  disburseAmount: number;
+  /**
+     * Particulars
+     * @nullable
+     */
+  particulars?: string | null;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /**
+     * Responsibility center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility center code
+     * @nullable
+     */
+  responsibilityCenterCode?: string | null;
+  /**
+     * Responsibility center name
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+}
+
+export interface PettyCashFundCopyFromCandidateDto {
+  /** Petty Cash Fund ID */
+  id: string;
+  /** Petty Cash Fund transaction number */
+  transactionNo: string;
+  /** Document date in YYYY-MM-DD format */
+  documentDate: string;
+  /**
+     * Party primary key ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /** Party code snapshot */
+  partyCode: string;
+  /** Party name snapshot */
+  partyName: string;
+  /** Currency code */
+  currency: string;
+  /** Exchange rate */
+  exchangeRate: number;
+  /** Original gross amount */
+  amount: number;
+  /** Gross amount already copied to active Petty Cash Replenishments */
+  consumedGrossAmount: number;
+  /** Remaining gross amount available to copy */
+  availableGrossAmount: number;
+  /** Original disburse amount */
+  disburseAmount: number;
+  /** Disburse amount already copied to active Petty Cash Replenishments */
+  consumedAmount: number;
+  /** Remaining disburse amount available to copy */
+  availableAmount: number;
+  /**
+     * Default account code
+     * @nullable
+     */
+  accountCode?: string | null;
+  /**
+     * Default account title
+     * @nullable
+     */
+  accountTitle?: string | null;
+  /**
+     * Responsibility center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility center code
+     * @nullable
+     */
+  responsibilityCenterCode?: string | null;
+  /**
+     * Responsibility center name
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+  /**
+     * Project code
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project name
+     * @nullable
+     */
+  projectName?: string | null;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** PCF detail lines to copy into Petty Cash Replenishment */
+  details: PettyCashFundCopyFromCandidateDetailDto[];
+  /** Source module display name */
+  source: string;
+  /** Source transaction number */
+  sourceNo: string;
+}
+
+export type PettyCashFundCopyFromCandidatesResponseDtoPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export interface PettyCashFundCopyFromCandidatesResponseDto {
+  /** Available PCF records */
+  records: PettyCashFundCopyFromCandidateDto[];
+  pagination: PettyCashFundCopyFromCandidatesResponseDtoPagination;
+}
+
 /**
  * Initial Status
  */
@@ -14768,6 +15084,147 @@ export interface PettyCashReplenishmentPaginationMetaDto {
 export interface PettyCashReplenishmentListResponseDto {
   items: PettyCashReplenishmentResponseDto[];
   meta: PettyCashReplenishmentPaginationMetaDto;
+}
+
+export interface PettyCashReplenishmentCopyFromCandidateDetailDto {
+  /** Petty Cash Replenishment detail line ID */
+  id: string;
+  /** Source line number */
+  lineNumber: number;
+  /**
+     * Petty cash source date
+     * @nullable
+     */
+  pettyCashDate?: string | null;
+  /**
+     * Petty cash source number
+     * @nullable
+     */
+  pettyCashNo?: string | null;
+  /**
+     * Supplier code snapshot
+     * @nullable
+     */
+  supplierCode?: string | null;
+  /**
+     * Supplier name snapshot
+     * @nullable
+     */
+  supplierName?: string | null;
+  /** Gross amount */
+  amount: number;
+  /** Net amount */
+  netAmount: number;
+  /**
+     * VAT type/code
+     * @nullable
+     */
+  vatType?: string | null;
+  /** VAT percent */
+  vatPercent: number;
+  /** VAT amount */
+  vatAmount: number;
+  /**
+     * EWT code
+     * @nullable
+     */
+  ewtCode?: string | null;
+  /** EWT percent */
+  ewtPercent: number;
+  /** EWT amount */
+  ewtAmount: number;
+  /** Disburse amount for this line */
+  disburseAmount: number;
+  /**
+     * Detail particulars
+     * @nullable
+     */
+  particulars?: string | null;
+  /**
+     * Responsibility center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility center snapshot
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+}
+
+export interface PettyCashReplenishmentCopyFromCandidateDto {
+  /** Petty Cash Replenishment ID */
+  id: string;
+  /** Petty Cash Replenishment transaction number */
+  transactionNo: string;
+  /** Document date in YYYY-MM-DD format */
+  documentDate: string;
+  /**
+     * Party primary key ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /** Party code snapshot */
+  partyCode: string;
+  /** Party name snapshot */
+  partyName: string;
+  /** Currency code */
+  currency: string;
+  /** Exchange rate */
+  exchangeRate: number;
+  /** Original gross amount */
+  amount: number;
+  /** Disburse amount already copied to active Cash/Disbursement Vouchers */
+  consumedAmount: number;
+  /** Remaining disburse amount available to copy */
+  availableAmount: number;
+  /** Gross amount already copied to active Cash/Disbursement Vouchers */
+  consumedGrossAmount: number;
+  /** Remaining gross amount available to copy */
+  availableGrossAmount: number;
+  /**
+     * Default account ID
+     * @nullable
+     */
+  creditAccountId?: string | null;
+  /** Default account code */
+  creditAccountCode: string;
+  /** Default account title */
+  creditAccountTitle: string;
+  /**
+     * Project code
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project name
+     * @nullable
+     */
+  projectName?: string | null;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** PCR detail lines to copy into the target voucher */
+  details: PettyCashReplenishmentCopyFromCandidateDetailDto[];
+  /** Source module display name */
+  source: string;
+  /** Source transaction number */
+  sourceNo: string;
+}
+
+export type PettyCashReplenishmentCopyFromCandidatesResponseDtoPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export interface PettyCashReplenishmentCopyFromCandidatesResponseDto {
+  /** Available PCR records */
+  records: PettyCashReplenishmentCopyFromCandidateDto[];
+  pagination: PettyCashReplenishmentCopyFromCandidatesResponseDtoPagination;
 }
 
 /**
@@ -15245,6 +15702,170 @@ export interface RevolvingFundListResponseDto {
   meta: RevolvingFundPaginationMetaDto;
 }
 
+export interface RevolvingFundCopyFromCandidateDetailDto {
+  /** Revolving Fund detail line ID */
+  id: string;
+  /** Source line number */
+  lineNumber: number;
+  /**
+     * Revolving fund line date
+     * @nullable
+     */
+  date?: string | null;
+  /**
+     * Supplier code snapshot
+     * @nullable
+     */
+  supplierCode?: string | null;
+  /**
+     * Supplier name snapshot
+     * @nullable
+     */
+  supplierName?: string | null;
+  /** Gross amount */
+  grossAmount: number;
+  /** Net amount */
+  netAmount: number;
+  /**
+     * VAT type/code
+     * @nullable
+     */
+  vatType?: string | null;
+  /** VAT percent */
+  vatPercent: number;
+  /** VAT amount */
+  vatAmount: number;
+  /**
+     * EWT code
+     * @nullable
+     */
+  ewtCode?: string | null;
+  /** EWT percent */
+  ewtPercent: number;
+  /** EWT amount */
+  ewtAmount: number;
+  /** Disburse amount */
+  disburseAmount: number;
+  /**
+     * Particulars
+     * @nullable
+     */
+  particulars?: string | null;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /**
+     * Responsibility center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility center code
+     * @nullable
+     */
+  responsibilityCenterCode?: string | null;
+  /**
+     * Responsibility center name
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+}
+
+export interface RevolvingFundCopyFromCandidateDto {
+  /** Revolving Fund ID */
+  id: string;
+  /** Revolving Fund transaction number */
+  transactionNo: string;
+  /** Document date in YYYY-MM-DD format */
+  documentDate: string;
+  /**
+     * Party primary key ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /** Party code snapshot */
+  partyCode: string;
+  /** Party name snapshot */
+  partyName: string;
+  /** Currency code */
+  currency: string;
+  /** Exchange rate */
+  exchangeRate: number;
+  /** Original gross amount */
+  amount: number;
+  /** Gross amount already copied to active Revolving Fund Replenishments */
+  consumedGrossAmount: number;
+  /** Remaining gross amount available to copy */
+  availableGrossAmount: number;
+  /** Original disburse amount */
+  disburseAmount: number;
+  /** Disburse amount already copied to active Revolving Fund Replenishments */
+  consumedAmount: number;
+  /** Remaining disburse amount available to copy */
+  availableAmount: number;
+  /**
+     * Default account code
+     * @nullable
+     */
+  accountCode?: string | null;
+  /**
+     * Default account title
+     * @nullable
+     */
+  accountTitle?: string | null;
+  /**
+     * Responsibility center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility center code
+     * @nullable
+     */
+  responsibilityCenterCode?: string | null;
+  /**
+     * Responsibility center name
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+  /**
+     * Project code
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project name
+     * @nullable
+     */
+  projectName?: string | null;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** RF detail lines to copy into Revolving Fund Replenishment */
+  details: RevolvingFundCopyFromCandidateDetailDto[];
+  /** Source module display name */
+  source: string;
+  /** Source transaction number */
+  sourceNo: string;
+}
+
+export type RevolvingFundCopyFromCandidatesResponseDtoPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export interface RevolvingFundCopyFromCandidatesResponseDto {
+  /** Available RF records */
+  records: RevolvingFundCopyFromCandidateDto[];
+  pagination: RevolvingFundCopyFromCandidatesResponseDtoPagination;
+}
+
 /**
  * Initial Status
  */
@@ -15711,6 +16332,147 @@ export interface RevolvingFundReplenishmentPaginationMetaDto {
 export interface RevolvingFundReplenishmentListResponseDto {
   items: RevolvingFundReplenishmentResponseDto[];
   meta: RevolvingFundReplenishmentPaginationMetaDto;
+}
+
+export interface RevolvingFundReplenishmentCopyFromCandidateDetailDto {
+  /** Revolving Fund Replenishment detail line ID */
+  id: string;
+  /** Source line number */
+  lineNumber: number;
+  /**
+     * Revolving fund source date
+     * @nullable
+     */
+  revolvingFundDate?: string | null;
+  /**
+     * Revolving fund source number
+     * @nullable
+     */
+  revolvingFundNo?: string | null;
+  /**
+     * Supplier code snapshot
+     * @nullable
+     */
+  supplierCode?: string | null;
+  /**
+     * Supplier name snapshot
+     * @nullable
+     */
+  supplierName?: string | null;
+  /** Gross amount */
+  amount: number;
+  /** Net amount */
+  netAmount: number;
+  /**
+     * VAT type/code
+     * @nullable
+     */
+  vatType?: string | null;
+  /** VAT percent */
+  vatPercent: number;
+  /** VAT amount */
+  vatAmount: number;
+  /**
+     * EWT code
+     * @nullable
+     */
+  ewtCode?: string | null;
+  /** EWT percent */
+  ewtPercent: number;
+  /** EWT amount */
+  ewtAmount: number;
+  /** Disburse amount for this line */
+  disburseAmount: number;
+  /**
+     * Detail particulars
+     * @nullable
+     */
+  particulars?: string | null;
+  /**
+     * Responsibility center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility center snapshot
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+}
+
+export interface RevolvingFundReplenishmentCopyFromCandidateDto {
+  /** Revolving Fund Replenishment ID */
+  id: string;
+  /** Revolving Fund Replenishment transaction number */
+  transactionNo: string;
+  /** Document date in YYYY-MM-DD format */
+  documentDate: string;
+  /**
+     * Party primary key ID
+     * @nullable
+     */
+  partyId?: string | null;
+  /** Party code snapshot */
+  partyCode: string;
+  /** Party name snapshot */
+  partyName: string;
+  /** Currency code */
+  currency: string;
+  /** Exchange rate */
+  exchangeRate: number;
+  /** Original gross amount */
+  amount: number;
+  /** Disburse amount already copied to active Cash/Disbursement Vouchers */
+  consumedAmount: number;
+  /** Remaining disburse amount available to copy */
+  availableAmount: number;
+  /** Gross amount already copied to active Cash/Disbursement Vouchers */
+  consumedGrossAmount: number;
+  /** Remaining gross amount available to copy */
+  availableGrossAmount: number;
+  /**
+     * Default account ID
+     * @nullable
+     */
+  creditAccountId?: string | null;
+  /** Default account code */
+  creditAccountCode: string;
+  /** Default account title */
+  creditAccountTitle: string;
+  /**
+     * Project code
+     * @nullable
+     */
+  projectCode?: string | null;
+  /**
+     * Project name
+     * @nullable
+     */
+  projectName?: string | null;
+  /**
+     * Remarks
+     * @nullable
+     */
+  remarks?: string | null;
+  /** RFR detail lines to copy into the target voucher */
+  details: RevolvingFundReplenishmentCopyFromCandidateDetailDto[];
+  /** Source module display name */
+  source: string;
+  /** Source transaction number */
+  sourceNo: string;
+}
+
+export type RevolvingFundReplenishmentCopyFromCandidatesResponseDtoPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export interface RevolvingFundReplenishmentCopyFromCandidatesResponseDto {
+  /** Available RFR records */
+  records: RevolvingFundReplenishmentCopyFromCandidateDto[];
+  pagination: RevolvingFundReplenishmentCopyFromCandidatesResponseDtoPagination;
 }
 
 /**
@@ -16218,6 +16980,66 @@ export const UpdatePurchaseRequestStatusDtoStatus = {
 
 export interface UpdatePurchaseRequestStatusDto {
   status: UpdatePurchaseRequestStatusDtoStatus;
+}
+
+export interface PurchaseOrderCopyFromCandidateDetailDto {
+  id: string;
+  lineNumber: number;
+  /** @nullable */
+  itemId?: string | null;
+  /** @nullable */
+  itemCode?: string | null;
+  description: string;
+  /** @nullable */
+  uom?: string | null;
+  quantity: number;
+  price: number;
+  grossAmount: number;
+  amount: number;
+  /** @nullable */
+  responsibilityCenter?: string | null;
+  /** @nullable */
+  responsibilityCenterId?: string | null;
+}
+
+export interface PurchaseOrderCopyFromCandidateDto {
+  id: string;
+  source: string;
+  sourceNo: string;
+  transactionNo: string;
+  documentDate: string;
+  branchUnitId: number;
+  /** @nullable */
+  partyId?: string | null;
+  partyCode: string;
+  partyName: string;
+  currency: string;
+  exchangeRate: number;
+  grossAmount: number;
+  consumedGrossAmount: number;
+  availableGrossAmount: number;
+  amount: number;
+  consumedAmount: number;
+  availableAmount: number;
+  /** @nullable */
+  projectCode?: string | null;
+  /** @nullable */
+  projectName?: string | null;
+  /** @nullable */
+  remarks?: string | null;
+  details: PurchaseOrderCopyFromCandidateDetailDto[];
+}
+
+export type PurchaseOrderCopyFromCandidatesResponseDtoPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export interface PurchaseOrderCopyFromCandidatesResponseDto {
+  records: PurchaseOrderCopyFromCandidateDto[];
+  pagination: PurchaseOrderCopyFromCandidatesResponseDtoPagination;
 }
 
 export interface PurchaseOrderEntryResponseDto {
@@ -20330,6 +21152,43 @@ export const AdvancesToSuppliersControllerFindAllV1SortOrder = {
   desc: 'desc',
 } as const;
 
+export type AdvancesToSuppliersControllerFindCopyFromCandidatesV1Params = {
+target: AdvancesToSuppliersControllerFindCopyFromCandidatesV1Target;
+/**
+ * Branch Unit ID
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * Supplier party primary key ID
+ */
+partyId?: string;
+/**
+ * Supplier party code
+ */
+partyCode?: string;
+/**
+ * Search by ATS number, PO reference, supplier, project, or remarks
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
+};
+
+export type AdvancesToSuppliersControllerFindCopyFromCandidatesV1Target = typeof AdvancesToSuppliersControllerFindCopyFromCandidatesV1Target[keyof typeof AdvancesToSuppliersControllerFindCopyFromCandidatesV1Target];
+
+
+export const AdvancesToSuppliersControllerFindCopyFromCandidatesV1Target = {
+  'cash-voucher': 'cash-voucher',
+  'disbursement-voucher': 'disbursement-voucher',
+} as const;
+
 export type CashAdvanceControllerFindAllV1Params = {
 /**
  * Page number
@@ -21085,6 +21944,34 @@ export const PettyCashVoucherControllerFindAllV1SortOrder = {
   desc: 'desc',
 } as const;
 
+export type PettyCashVoucherControllerFindCopyFromCandidatesV1Params = {
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @maxLength 40
+ */
+partyId?: string;
+/**
+ * @maxLength 80
+ */
+partyCode?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+};
+
 export type PettyCashFundControllerSuggestTransactionNumberV1Params = {
 branchUnitId?: number;
 };
@@ -21162,6 +22049,34 @@ export const PettyCashFundControllerFindAllV1SortOrder = {
   desc: 'desc',
 } as const;
 
+export type PettyCashFundControllerFindCopyFromCandidatesV1Params = {
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @maxLength 40
+ */
+partyId?: string;
+/**
+ * @maxLength 80
+ */
+partyCode?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+};
+
 export type PettyCashReplenishmentControllerSuggestTransactionNumberV1Params = {
 branchUnitId?: number;
 };
@@ -21237,6 +22152,43 @@ export type PettyCashReplenishmentControllerFindAllV1SortOrder = typeof PettyCas
 export const PettyCashReplenishmentControllerFindAllV1SortOrder = {
   asc: 'asc',
   desc: 'desc',
+} as const;
+
+export type PettyCashReplenishmentControllerFindCopyFromCandidatesV1Params = {
+target: PettyCashReplenishmentControllerFindCopyFromCandidatesV1Target;
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @maxLength 40
+ */
+partyId?: string;
+/**
+ * @maxLength 80
+ */
+partyCode?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+};
+
+export type PettyCashReplenishmentControllerFindCopyFromCandidatesV1Target = typeof PettyCashReplenishmentControllerFindCopyFromCandidatesV1Target[keyof typeof PettyCashReplenishmentControllerFindCopyFromCandidatesV1Target];
+
+
+export const PettyCashReplenishmentControllerFindCopyFromCandidatesV1Target = {
+  'cash-voucher': 'cash-voucher',
+  'disbursement-voucher': 'disbursement-voucher',
 } as const;
 
 export type RevolvingFundControllerSuggestTransactionNumberV1Params = {
@@ -21316,6 +22268,34 @@ export const RevolvingFundControllerFindAllV1SortOrder = {
   desc: 'desc',
 } as const;
 
+export type RevolvingFundControllerFindCopyFromCandidatesV1Params = {
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @maxLength 40
+ */
+partyId?: string;
+/**
+ * @maxLength 80
+ */
+partyCode?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+};
+
 export type RevolvingFundReplenishmentControllerSuggestTransactionNumberV1Params = {
 branchUnitId?: number;
 };
@@ -21393,6 +22373,43 @@ export const RevolvingFundReplenishmentControllerFindAllV1SortOrder = {
   desc: 'desc',
 } as const;
 
+export type RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Params = {
+target: RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Target;
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @maxLength 40
+ */
+partyId?: string;
+/**
+ * @maxLength 80
+ */
+partyCode?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+};
+
+export type RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Target = typeof RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Target[keyof typeof RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Target];
+
+
+export const RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Target = {
+  'cash-voucher': 'cash-voucher',
+  'disbursement-voucher': 'disbursement-voucher',
+} as const;
+
 export type PurchaseRequestControllerFindAllV1Params = {
 /**
  * @minimum 1
@@ -21407,6 +22424,34 @@ limit?: number;
  */
 branchUnitId?: number;
 search?: string;
+};
+
+export type PurchaseOrderControllerFindCopyFromCandidatesV1Params = {
+/**
+ * Branch Unit ID
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * Supplier party primary key ID
+ */
+partyId?: string;
+/**
+ * Supplier party code
+ */
+partyCode?: string;
+/**
+ * Search by PO number, supplier, project, or remarks
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+limit?: number;
 };
 
 export type PurchaseOrderControllerFindAllV1Params = {

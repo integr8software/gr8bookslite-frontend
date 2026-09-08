@@ -27,7 +27,9 @@ import type {
 import type {
   CreatePettyCashFundDto,
   PettyCashFundControllerFindAllV1Params,
+  PettyCashFundControllerFindCopyFromCandidatesV1Params,
   PettyCashFundControllerSuggestTransactionNumberV1Params,
+  PettyCashFundCopyFromCandidatesResponseDto,
   PettyCashFundListResponseDto,
   PettyCashFundResponseDto,
   TransactionNumberSuggestionResponseDto,
@@ -307,6 +309,99 @@ export const usePettyCashFundControllerCreateV1 = <TError = unknown,
       return useMutation(getPettyCashFundControllerCreateV1MutationOptions(options), queryClient);
     }
     /**
+ * @summary List available Petty Cash Funds for Petty Cash Replenishment Copy From
+ */
+export const pettyCashFundControllerFindCopyFromCandidatesV1 = (
+    params?: PettyCashFundControllerFindCopyFromCandidatesV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<PettyCashFundCopyFromCandidatesResponseDto>(
+      {url: `/api/v1/cash-disbursement/petty-cash-fund/copy-from/candidates`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getPettyCashFundControllerFindCopyFromCandidatesV1QueryKey = (params?: PettyCashFundControllerFindCopyFromCandidatesV1Params,) => {
+    return [
+    `/api/v1/cash-disbursement/petty-cash-fund/copy-from/candidates`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getPettyCashFundControllerFindCopyFromCandidatesV1QueryOptions = <TData = Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>, TError = unknown>(params?: PettyCashFundControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPettyCashFundControllerFindCopyFromCandidatesV1QueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>> = ({ signal }) => pettyCashFundControllerFindCopyFromCandidatesV1(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PettyCashFundControllerFindCopyFromCandidatesV1QueryResult = NonNullable<Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>>
+export type PettyCashFundControllerFindCopyFromCandidatesV1QueryError = unknown
+
+
+export function usePettyCashFundControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: undefined |  PettyCashFundControllerFindCopyFromCandidatesV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePettyCashFundControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params?: PettyCashFundControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePettyCashFundControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params?: PettyCashFundControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List available Petty Cash Funds for Petty Cash Replenishment Copy From
+ */
+
+export function usePettyCashFundControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params?: PettyCashFundControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashFundControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPettyCashFundControllerFindCopyFromCandidatesV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
  * @summary Get Petty Cash Fund details by ID
  */
 export const pettyCashFundControllerFindOneV1 = (

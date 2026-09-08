@@ -4,6 +4,8 @@ import {
   purchaseOrderControllerRemoveV1,
   purchaseOrderControllerUpdateV1,
 } from "@/app/src/generated/api/purchase-order/purchase-order";
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { cleanQueryParams } from "@/app/src/utils/query.util";
 import type { CreatePurchaseOrderDto, PurchaseOrderResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import {
   createPurchaseOrderFormValues,
@@ -16,9 +18,56 @@ import type {
   PurchaseOrderStatus,
 } from "@/app/src/types/modules/purchasing/purchase-order/PurchaseOrderTypes";
 
+export type PurchaseOrderCopyFromCandidate = {
+  amount: number;
+  availableAmount: number;
+  availableGrossAmount: number;
+  branchUnitId: number;
+  consumedAmount: number;
+  consumedGrossAmount: number;
+  currency: string;
+  documentDate: string;
+  exchangeRate: number;
+  grossAmount: number;
+  id: string;
+  partyCode: string;
+  partyId?: string | null;
+  partyName: string;
+  projectCode?: string | null;
+  projectName?: string | null;
+  remarks?: string | null;
+  source: "Purchase Order";
+  sourceNo: string;
+  transactionNo: string;
+};
+
 export async function fetchPurchaseOrders(): Promise<PurchaseOrderRecord[]> {
   const response = await purchaseOrderControllerFindAllV1({ page: 1, limit: 100 });
   return response.purchaseOrders.map(mapPurchaseOrderResponse);
+}
+
+export async function fetchPurchaseOrderCopyFromCandidates(
+  query: {
+    branchUnitId?: number | null;
+    limit?: number;
+    page?: number;
+    partyCode?: string | null;
+    partyId?: string | null;
+    search?: string | null;
+  } = {},
+): Promise<PurchaseOrderCopyFromCandidate[]> {
+  const response = await ApiClient.get<{ records: PurchaseOrderCopyFromCandidate[] }>("/purchasing/purchase-order/copy-from/candidates", {
+    params: cleanQueryParams({
+      branchUnitId: query.branchUnitId,
+      limit: query.limit ?? 100,
+      page: query.page ?? 1,
+      partyCode: query.partyCode,
+      partyId: query.partyId,
+      search: query.search,
+    }),
+  });
+
+  return response.data.records;
 }
 
 export async function createPurchaseOrder(values: PurchaseOrderFormValues, branchUnitId?: number | null) {
@@ -37,13 +86,13 @@ export function mapPurchaseOrderResponse(response: PurchaseOrderResponseDto): Pu
   const defaults = createPurchaseOrderFormValues();
   return createPurchaseOrderRecord(
     {
-    ...defaults,
-    purchaseRequestId: response.purchaseRequestId ?? "",
-    copyFromSource: response.items.some((item) => Boolean(item.canvassNo))
-      ? "Canvass"
-      : response.purchaseRequestId || response.items.some((item) => Boolean(item.prNo))
-        ? "Purchase Request"
-      : "",
+      ...defaults,
+      purchaseRequestId: response.purchaseRequestId ?? "",
+      copyFromSource: response.items.some((item) => Boolean(item.canvassNo))
+        ? "Canvass"
+        : response.purchaseRequestId || response.items.some((item) => Boolean(item.prNo))
+          ? "Purchase Request"
+          : "",
       partyId: response.partyId,
       vceCode: response.partyCode,
       vceName: response.partyName,

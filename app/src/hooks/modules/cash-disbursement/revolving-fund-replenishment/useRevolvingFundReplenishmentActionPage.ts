@@ -11,6 +11,7 @@ import {
   createRevolvingFundReplenishmentFormValues,
   formatRevolvingFundReplenishmentAmount,
 } from "@/app/src/data/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentData";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { hasModuleDraftChanges } from "@/app/src/hooks/shared/module/useModuleDraftChanges";
@@ -31,12 +32,24 @@ import {
   updateRevolvingFundReplenishmentStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentApi";
 import { RevolvingFundReplenishmentQueryKeys } from "@/app/src/services/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentQueryKeys";
+import { fetchRevolvingFundCopyFromCandidates } from "@/app/src/services/modules/cash-disbursement/revolving-fund/RevolvingFundApi";
+import { RevolvingFundQueryKeys } from "@/app/src/services/modules/cash-disbursement/revolving-fund/RevolvingFundQueryKeys";
+import {
+  buildCashDisbursementCopyRecordSet,
+  findPaymentVoucherCopyCandidates,
+  getPaymentVoucherCopyRatio,
+  PaymentVoucherCopyPrefixes,
+  scalePaymentVoucherCopyAmount,
+  validatePaymentVoucherCopySelection,
+} from "@/app/src/data/modules/cash-disbursement/shared/PaymentVoucherCopyFromData";
 
 export function useRevolvingFundReplenishmentActionPage(options: { mode: RevolvingFundReplenishmentActionMode; onSaved?: () => void }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const transactionCurrency = useTransactionCurrency();
   const params = useParams<{ recordId?: string }>();
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
   const { mode } = options;
   const isReadonly = mode === RevolvingFundReplenishmentActionModes.View;
 
@@ -99,6 +112,37 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
   });
 
   const totals = useMemo(() => calculateRevolvingFundReplenishmentTotals(values.entries), [values.entries]);
+  const revolvingFundCandidatesQuery = useQuery({
+    queryKey: [
+      ...RevolvingFundQueryKeys.all,
+      "copy-from",
+      "revolving-fund-replenishment",
+      activeCompanyId,
+      activeBranchId,
+      values.partyCode,
+    ],
+    queryFn: () =>
+      fetchRevolvingFundCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        partyCode: values.partyCode,
+      }),
+    enabled: activeCompanyId !== null && mode === RevolvingFundReplenishmentActionModes.Add,
+  });
+  const revolvingFundCandidates = useMemo(() => revolvingFundCandidatesQuery.data ?? [], [revolvingFundCandidatesQuery.data]);
+  const copiedRevolvingFundReferences = useMemo(
+    () => new Set(values.entries.map((entry) => entry.revolvingFundNo.trim()).filter(Boolean)),
+    [values.entries],
+  );
+  const copyFromRecords = useMemo(
+    () =>
+      buildCashDisbursementCopyRecordSet({
+        candidates: revolvingFundCandidates,
+        copiedReferences: copiedRevolvingFundReferences,
+        prefix: PaymentVoucherCopyPrefixes.RevolvingFund,
+        source: "Revolving Fund",
+      }),
+    [copiedRevolvingFundReferences, revolvingFundCandidates],
+  );
 
   useEffect(() => {
     if (mode !== RevolvingFundReplenishmentActionModes.Add || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current)
@@ -292,6 +336,84 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
     draft.discardDraft();
   }
 
+  function copyFromRevolvingFund(recordIds: string[]) {
+    if (isReadonly || recordIds.length === 0) {
+      return;
+    }
+
+    const selectedFunds = findPaymentVoucherCopyCandidates(revolvingFundCandidates, PaymentVoucherCopyPrefixes.RevolvingFund, recordIds);
+    if (selectedFunds.length === 0) {
+      toast.error("No valid Revolving Fund records selected.");
+      return;
+    }
+
+    const selectionError = validatePaymentVoucherCopySelection({
+      copiedReferences: copiedRevolvingFundReferences,
+      duplicateMessage: "The selected Revolving Fund record has already been added.",
+      mixedCurrencyMessage: (currency) => `All selected Revolving Fund records must have the same Currency ("${currency}").`,
+      mixedPartyMessage: (partyName) => `All selected Revolving Fund records must belong to the same Party ("${partyName}").`,
+      prefix: PaymentVoucherCopyPrefixes.RevolvingFund,
+      records: selectedFunds,
+    });
+    if (selectionError) {
+      toast.error(selectionError);
+      return;
+    }
+
+    const copiedEntries = selectedFunds.flatMap((record) => {
+      const ratio = getPaymentVoucherCopyRatio(record);
+
+      return record.details.map((detail) =>
+        createCopiedRevolvingFundReplenishmentEntry({
+          amount: String(scalePaymentVoucherCopyAmount(detail.grossAmount, ratio)),
+          disburseAmount: String(scalePaymentVoucherCopyAmount(detail.disburseAmount, ratio)),
+          ewtAmount: String(scalePaymentVoucherCopyAmount(detail.ewtAmount, ratio)),
+          ewtCode: detail.ewtCode || "",
+          ewtPercent: String(detail.ewtPercent || 0),
+          netAmount: String(scalePaymentVoucherCopyAmount(detail.netAmount, ratio)),
+          particulars: detail.particulars || detail.remarks || record.remarks || `Replenishment for ${record.transactionNo}`,
+          remarks: detail.remarks || "",
+          responsibilityCenterCode: detail.responsibilityCenterCode || record.responsibilityCenterCode || "",
+          responsibilityCenterName: detail.responsibilityCenter || record.responsibilityCenter || "",
+          revolvingFundDate: detail.date || record.documentDate,
+          revolvingFundNo: `RF:${record.transactionNo}`,
+          supplierCode: detail.supplierCode || record.partyCode || "",
+          supplierName: detail.supplierName || record.partyName || "",
+          vatAmount: String(scalePaymentVoucherCopyAmount(detail.vatAmount, ratio)),
+          vatPercent: String(detail.vatPercent || 0),
+          vatType: detail.vatType || "",
+        }),
+      );
+    });
+    const firstSource = selectedFunds[0];
+
+    setValues((current) => {
+      const existingEntries = current.entries.filter((entry) => isRevolvingFundReplenishmentEntryPopulated(entry));
+      return {
+        ...current,
+        accountCode: current.accountCode || firstSource.accountCode || "",
+        accountTitle: current.accountTitle || firstSource.accountTitle || "",
+        currency: firstSource.currency || current.currency || "PHP",
+        entries: existingEntries.length > 0 ? [...existingEntries, ...copiedEntries] : copiedEntries,
+        exchangeRate: String(firstSource.exchangeRate || current.exchangeRate || "1.00"),
+        partyCode: current.partyCode || firstSource.partyCode || "",
+        partyName: current.partyName || firstSource.partyName || "",
+        projectCode: current.projectCode || firstSource.projectCode || "",
+        projectName: current.projectName || firstSource.projectName || "",
+        remarks:
+          current.remarks ||
+          selectedFunds
+            .map((record) => record.remarks)
+            .filter(Boolean)
+            .join("; "),
+        responsibilityCenter: current.responsibilityCenter || firstSource.responsibilityCenter || "",
+        responsibilityCenterCode: current.responsibilityCenterCode || firstSource.responsibilityCenterCode || "",
+      };
+    });
+    setErrors((current) => ({ ...current, entries: undefined, partyCode: undefined, partyName: undefined }));
+    toast.success(`Copied ${selectedFunds.length} Revolving Fund record${selectedFunds.length > 1 ? "s" : ""}.`);
+  }
+
   return {
     activeTab,
     duplicateEntry,
@@ -301,6 +423,8 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
     addEntry,
     applyFundRecord: () => {},
     closePreview: () => setIsPreviewOpen(false),
+    copyFromRecords,
+    copyFromRevolvingFund,
     currencyOptions: transactionCurrency.currencyOptions,
     discardDraft,
     draft,
@@ -343,5 +467,23 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
       return Object.keys(errs).length === 0;
     },
     values,
+  };
+}
+
+function isRevolvingFundReplenishmentEntryPopulated(entry: RevolvingFundReplenishmentEntry) {
+  return Boolean(
+    entry.revolvingFundNo.trim() ||
+    entry.supplierCode.trim() ||
+    entry.supplierName.trim() ||
+    entry.particulars.trim() ||
+    entry.amount.trim() ||
+    entry.disburseAmount.trim(),
+  );
+}
+
+function createCopiedRevolvingFundReplenishmentEntry(overrides: Partial<RevolvingFundReplenishmentEntry>) {
+  return {
+    ...createBlankRevolvingFundReplenishmentEntry(),
+    ...overrides,
   };
 }

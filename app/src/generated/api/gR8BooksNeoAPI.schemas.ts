@@ -427,11 +427,24 @@ export const OnboardingDraftResponseDtoBillingCycle = {
   YEARLY: 'YEARLY',
 } as const;
 
+/**
+ * @nullable
+ */
+export type OnboardingDraftResponseDtoBillingMode = typeof OnboardingDraftResponseDtoBillingMode[keyof typeof OnboardingDraftResponseDtoBillingMode] | null;
+
+
+export const OnboardingDraftResponseDtoBillingMode = {
+  MANUAL: 'MANUAL',
+  AUTO: 'AUTO',
+} as const;
+
 export interface OnboardingDraftResponseDto {
   /** @nullable */
   plan: OnboardingPlanResponseDto | null;
   /** @nullable */
   billingCycle: OnboardingDraftResponseDtoBillingCycle;
+  /** @nullable */
+  billingMode?: OnboardingDraftResponseDtoBillingMode;
   /** @nullable */
   cardholderName: string | null;
   /** @nullable */
@@ -480,28 +493,58 @@ export interface SelectOnboardingPlanResponseDto {
   draft: OnboardingDraftResponseDto;
 }
 
+/**
+ * Billing mode for onboarding (MANUAL or AUTO)
+ */
+export type SaveOnboardingBillingDtoBillingMode = typeof SaveOnboardingBillingDtoBillingMode[keyof typeof SaveOnboardingBillingDtoBillingMode];
+
+
+export const SaveOnboardingBillingDtoBillingMode = {
+  MANUAL: 'MANUAL',
+  AUTO: 'AUTO',
+} as const;
+
 export interface SaveOnboardingBillingDto {
-  billingMode?: "MANUAL" | "AUTO";
-  /** @minLength 2 */
+  /** Billing mode for onboarding (MANUAL or AUTO) */
+  billingMode?: SaveOnboardingBillingDtoBillingMode;
+  /**
+     * Cardholder name (required for AUTO mode)
+     * @minLength 2
+     */
   cardholderName?: string;
+  /** Billing email */
   billingEmail?: string;
-  /** @pattern ^\d{4}$ */
+  /**
+     * Card last 4 digits (required for AUTO mode)
+     * @pattern ^\d{4}$
+     */
   cardLast4?: string;
-  /** @minLength 2 */
+  /**
+     * Card brand (required for AUTO mode)
+     * @minLength 2
+     */
   cardBrand?: string;
   /**
+     * Card expiry month (1-12, required for AUTO mode)
      * @minimum 1
      * @maximum 12
      */
   expiryMonth?: number;
   /**
+     * Card expiry year (required for AUTO mode)
      * @minimum 2000
      * @maximum 9999
      */
   expiryYear?: number;
-  /** @minLength 5 */
+  /**
+     * Billing address (required for AUTO mode)
+     * @minLength 5
+     */
   billingAddress?: string;
-  /** @pattern ^pm_[A-Za-z0-9]+$ */
+  /**
+     * PayMongo payment method reference (required for AUTO mode)
+     * @pattern ^pm_[A-Za-z0-9]+$
+     */
   paymentMethodId?: string;
 }
 
@@ -517,11 +560,24 @@ export const OnboardingBillingResponseDtoBillingCycle = {
   YEARLY: 'YEARLY',
 } as const;
 
+/**
+ * @nullable
+ */
+export type OnboardingBillingResponseDtoBillingMode = typeof OnboardingBillingResponseDtoBillingMode[keyof typeof OnboardingBillingResponseDtoBillingMode] | null;
+
+
+export const OnboardingBillingResponseDtoBillingMode = {
+  MANUAL: 'MANUAL',
+  AUTO: 'AUTO',
+} as const;
+
 export interface OnboardingBillingResponseDto {
   /** @nullable */
   planCode: string | null;
   /** @nullable */
   billingCycle: OnboardingBillingResponseDtoBillingCycle;
+  /** @nullable */
+  billingMode?: OnboardingBillingResponseDtoBillingMode;
   /** @nullable */
   cardholderName: string | null;
   /** @nullable */
@@ -6633,6 +6689,76 @@ export interface AiAssistantTranscriptionUploadDto {
   audio: Blob;
 }
 
+export interface AccountsPayableVoucherCopyFromCandidateDetailDto {
+  /** Accounts Payable Voucher detail line ID */
+  id: string;
+  /** Source line number */
+  lineNumber: number;
+  /**
+     * Expense account ID
+     * @nullable
+     */
+  expenseAccountId?: string | null;
+  /** Expense account code */
+  expenseAccountCode: string;
+  /** Expense account title / expense type */
+  expenseType: string;
+  /** Original APV detail amount */
+  amount: number;
+  /** Net expense amount */
+  netAmount: number;
+  /**
+     * VAT type/code copied from APV detail
+     * @nullable
+     */
+  vat?: string | null;
+  /** VAT percent */
+  vatPercent: number;
+  /** VAT amount */
+  vatAmount: number;
+  /**
+     * EWT code copied from APV detail
+     * @nullable
+     */
+  ewt?: string | null;
+  /** EWT percent */
+  ewtPercent: number;
+  /** EWT amount */
+  ewtAmount: number;
+  /** Payable/disburse amount for this APV detail line */
+  totalAmountDue: number;
+  /**
+     * Detail party code snapshot
+     * @nullable
+     */
+  partyCode?: string | null;
+  /**
+     * Detail party name snapshot
+     * @nullable
+     */
+  partyName?: string | null;
+  /**
+     * Detail particulars
+     * @nullable
+     */
+  particulars?: string | null;
+  /**
+     * Responsibility center ID
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * Responsibility center snapshot
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+  /**
+     * Detail reference number
+     * @nullable
+     */
+  referenceNo?: string | null;
+}
+
 export interface AccountsPayableVoucherCopyFromCandidateDto {
   /** Accounts Payable Voucher ID */
   id: string;
@@ -6653,12 +6779,18 @@ export interface AccountsPayableVoucherCopyFromCandidateDto {
   currency: string;
   /** Exchange rate */
   exchangeRate: number;
-  /** Original APV amount */
+  /** Original APV gross amount before VAT/EWT deductions */
   amount: number;
-  /** Amount already copied to active Cash/Disbursement Vouchers */
+  /** Payable amount already copied to active Cash/Disbursement Vouchers */
   consumedAmount: number;
-  /** Remaining amount available to copy */
+  /** Remaining payable/disburse amount available to copy */
   availableAmount: number;
+  /** Gross amount already copied to active Cash/Disbursement Vouchers */
+  consumedGrossAmount: number;
+  /** Remaining gross amount available to copy */
+  availableGrossAmount: number;
+  /** Original APV total payable after VAT/EWT deductions */
+  totalPayable: number;
   /**
      * Reference number
      * @nullable
@@ -6688,6 +6820,8 @@ export interface AccountsPayableVoucherCopyFromCandidateDto {
      * @nullable
      */
   remarks?: string | null;
+  /** APV detail lines to copy into the target voucher */
+  details: AccountsPayableVoucherCopyFromCandidateDetailDto[];
   /** Source module display name */
   source: string;
   /** Source transaction number */

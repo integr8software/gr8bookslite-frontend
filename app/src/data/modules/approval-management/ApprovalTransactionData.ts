@@ -40,6 +40,7 @@ export function mapApprovalTransactionRow(transaction: ApprovalTransactionApiRec
     id: transaction.id,
     moduleName: transaction.moduleName || transaction.moduleScope,
     moduleScope: transaction.moduleScope,
+    referenceId: transaction.referenceId ? String(transaction.referenceId) : undefined,
     referenceNo: transaction.referenceNo,
     remarks: transaction.remarks?.trim() || "-",
     requestedAt: formatTransactionDate(transaction.requestedAt),

@@ -1,9 +1,10 @@
-import { Eye, UserCheck } from "lucide-react";
+import Link from "next/link";
+import { Eye, FileText, UserCheck } from "lucide-react";
 import { DoneStatus } from "@/app/src/constants/modules/approval-management/ApprovalTransactionConstants";
 import type { ApprovalTransactionRow } from "@/app/src/types/modules/approval-management/ApprovalTransactionTypes";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
-import { ModuleTableActionButton, ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { ModuleTableActionButton, ModuleTableActionLink, ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import { joinClasses, moduleAccentClassNames } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ApprovalTransactionTableRow({
@@ -13,10 +14,24 @@ export function ApprovalTransactionTableRow({
   onPreview: (record: ApprovalTransactionRow) => void;
   record: ApprovalTransactionRow;
 }) {
+  const isApv = record.moduleScope === "APV";
+  const voucherHref = isApv
+    ? `/accounts-payable/accounts-payable-voucher/view/${record.referenceId ?? record.id}`
+    : null;
+
   return (
     <tr className="module-table-row">
       <td className="align-middle">
-        <div className="font-semibold text-darknavy">{record.referenceNo}</div>
+        {voucherHref ? (
+          <Link
+            href={voucherHref}
+            className="font-semibold text-skyblue transition hover:underline hover:text-skyblue/80"
+          >
+            {record.referenceNo}
+          </Link>
+        ) : (
+          <div className="font-semibold text-darknavy">{record.referenceNo}</div>
+        )}
         <div className="mt-1 text-xs font-medium text-darknavy/45">{record.requestedAt}</div>
       </td>
       <td className="align-middle">
@@ -49,6 +64,16 @@ export function ApprovalTransactionTableRow({
       </td>
       <td className="align-middle">
         <ModuleTableActions className="justify-center">
+          {voucherHref ? (
+            <ModuleTooltip align="end" position="top" title="View Accounts Payable Voucher">
+              <ModuleTableActionLink
+                href={voucherHref}
+                icon={FileText}
+                label={`View voucher ${record.referenceNo}`}
+                variant="view"
+              />
+            </ModuleTooltip>
+          ) : null}
           <ModuleTooltip align="end" position="top" title="Preview">
             <ModuleTableActionButton icon={Eye} label={`Preview ${record.referenceNo}`} variant="view" onClick={() => onPreview(record)} />
           </ModuleTooltip>

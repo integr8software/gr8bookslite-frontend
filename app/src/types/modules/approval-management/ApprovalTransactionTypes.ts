@@ -1,6 +1,8 @@
 import type { ApprovalTransactionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 
-export type ApprovalTransactionApiRecord = ApprovalTransactionResponseDto;
+export type ApprovalTransactionApiRecord = ApprovalTransactionResponseDto & {
+  referenceId?: string;
+};
 
 export type ApprovalTransactionApprover = ApprovalTransactionApiRecord["approvers"][number];
 
@@ -12,6 +14,7 @@ export type ApprovalTransactionRow = {
   id: string;
   moduleName: string;
   moduleScope: string;
+  referenceId?: string;
   referenceNo: string;
   remarks: string;
   requestedAt: string;

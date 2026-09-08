@@ -94,6 +94,9 @@ export function createAccountsPayableVoucherFormValues(
   const remarks = record.remarks.trim();
 
   return syncAccountsPayableVoucherExpenseLinesAndAmount({
+    branchUnitId: record.branchUnitId,
+    partyId: record.partyId,
+    creditAccountId: record.creditAccountId,
     transactionNo: record.transactionNo,
     documentDate: record.documentDate,
     partyCode: record.partyCode,

@@ -1,6 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
 import {
   formatAccountsPayableVoucherAmountInWords,
   formatAccountsPayableVoucherReportAccount,
@@ -11,6 +10,7 @@ import {
 } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherReportData";
 import type { AccountsPayableVoucherFormValues } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
+import type { ReactNode } from "react";
 
 type AccountsPayableVoucherReportPreviewProps = {
   isOpen: boolean;
@@ -19,12 +19,7 @@ type AccountsPayableVoucherReportPreviewProps = {
   values: AccountsPayableVoucherFormValues;
 };
 
-export function AccountsPayableVoucherReportPreview({
-  isOpen,
-  onClose,
-  onGeneratePdf,
-  values,
-}: AccountsPayableVoucherReportPreviewProps) {
+export function AccountsPayableVoucherReportPreview({ isOpen, onClose, onGeneratePdf, values }: AccountsPayableVoucherReportPreviewProps) {
   return (
     <ReportPreviewDrawer
       className="accounts-payable-voucher-report-preview-drawer"
@@ -78,16 +73,9 @@ export function AccountsPayableVoucherReportPreview({
   );
 }
 
-function AccountsPayableVoucherReportDocument({
-  values,
-}: {
-  values: AccountsPayableVoucherFormValues;
-}) {
+function AccountsPayableVoucherReportDocument({ values }: { values: AccountsPayableVoucherFormValues }) {
   const totals = getAccountsPayableVoucherReportTotals(values);
-  const amountInWords = formatAccountsPayableVoucherAmountInWords(
-    totals.voucherAmount,
-    values.currency,
-  );
+  const amountInWords = formatAccountsPayableVoucherAmountInWords(totals.voucherAmount, values.currency);
 
   return (
     <div className="accounts-payable-voucher-report-page mx-auto min-w-[62rem] max-w-[62rem] bg-[#fff] text-[10px] leading-tight text-[#000] shadow-sm print:min-w-0 print:max-w-none print:shadow-none">
@@ -99,9 +87,7 @@ function AccountsPayableVoucherReportDocument({
           <div className="px-2 text-center font-bold">
             <p className="text-base">Your Company Name Here</p>
             <p className="mt-2 text-[11px]">VAT REG TIN : 000-000-000-000</p>
-            <p className="mt-2 text-[11px]">
-              Abc, 123, Sample, Malamig, City Of Mandaluyong, Ncr, Second District
-            </p>
+            <p className="mt-2 text-[11px]">Abc, 123, Sample, Malamig, City Of Mandaluyong, Ncr, Second District</p>
             <p className="mt-2 text-[11px]">Telephone No: 0967-237-4514</p>
           </div>
           <div />
@@ -109,14 +95,9 @@ function AccountsPayableVoucherReportDocument({
 
         <div className="grid grid-cols-[1fr_20.25rem] border-t-2 border-black">
           <div className="px-3 py-2">
-            <h2 className="text-3xl font-black leading-none tracking-tight">
-              ACCOUNTS PAYABLE VOUCHER
-            </h2>
+            <h2 className="text-3xl font-black leading-none tracking-tight">ACCOUNTS PAYABLE VOUCHER</h2>
           </div>
-          <MetaCell
-            label="Document Date:"
-            value={formatAccountsPayableVoucherReportDate(values.documentDate)}
-          />
+          <MetaCell label="Document Date:" value={formatAccountsPayableVoucherReportDate(values.documentDate)} />
         </div>
 
         <div className="grid grid-cols-[1fr_20.25rem] border-t-2 border-black">
@@ -129,14 +110,10 @@ function AccountsPayableVoucherReportDocument({
         </div>
         <div className="grid grid-cols-[1fr_20.25rem] border-t-2 border-black">
           <LabeledLine label="PAYABLE TYPE:" value={values.payableType || "-"} />
-          <MetaCell
-            label="Due Date:"
-            value={formatAccountsPayableVoucherReportDate(values.dueDate)}
-          />
+          <MetaCell label="Due Date:" value={formatAccountsPayableVoucherReportDate(values.dueDate)} />
         </div>
         <div className="border-t-2 border-black px-2 py-2">
-          <span className="font-bold">FOR:</span>{" "}
-          <span>{values.remarks || values.terms || "-"}</span>
+          <span className="font-bold">FOR:</span> <span>{values.remarks || values.terms || "-"}</span>
         </div>
 
         <ReportSectionTitle>Expense Details</ReportSectionTitle>
@@ -164,47 +141,25 @@ function AccountsPayableVoucherReportDocument({
           <tbody>
             {values.expenseLines.map((line) => (
               <tr key={line.id} className="align-top">
-                <ReportTableCell>
-                  {formatAccountsPayableVoucherReportAccount(
-                    line.expenseAccountCode,
-                    line.expenseType,
-                  )}
-                </ReportTableCell>
-                <ReportTableCell>
-                  {line.partyName || line.partyCode || values.partyName || "-"}
-                </ReportTableCell>
+                <ReportTableCell>{formatAccountsPayableVoucherReportAccount(line.expenseAccountCode, line.expenseType)}</ReportTableCell>
+                <ReportTableCell>{line.partyName || line.partyCode || values.partyName || "-"}</ReportTableCell>
                 <ReportTableCell>{line.particulars || "-"}</ReportTableCell>
-                <ReportTableCell>
-                  {line.responsibilityCenter || "-"}
-                </ReportTableCell>
+                <ReportTableCell>{line.responsibilityCenter || "-"}</ReportTableCell>
+                <ReportTableCell align="right">{formatAccountsPayableVoucherReportAmount(line.amount)}</ReportTableCell>
                 <ReportTableCell align="right">
-                  {formatAccountsPayableVoucherReportAmount(line.amount)}
+                  {line.ewtAmount ? formatAccountsPayableVoucherReportAmount(line.ewtAmount) : ""}
                 </ReportTableCell>
-                <ReportTableCell align="right">
-                  {line.ewtAmount
-                    ? formatAccountsPayableVoucherReportAmount(line.ewtAmount)
-                    : ""}
-                </ReportTableCell>
-                <ReportTableCell align="right">
-                  {formatAccountsPayableVoucherReportAmount(line.totalAmountDue)}
-                </ReportTableCell>
+                <ReportTableCell align="right">{formatAccountsPayableVoucherReportAmount(line.totalAmountDue)}</ReportTableCell>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr className="font-bold">
-              <td
-                className="border-2 border-l-0 border-black px-2 py-1 text-right"
-                colSpan={4}
-              >
+              <td className="border-2 border-l-0 border-black px-2 py-1 text-right" colSpan={4}>
                 Total:
               </td>
-              <td className="border-2 border-black px-2 py-1 text-right">
-                {formatAccountsPayableVoucherReportAmount(totals.grossAmount)}
-              </td>
-              <td className="border-2 border-black px-2 py-1 text-right">
-                {formatAccountsPayableVoucherReportAmount(totals.ewtAmount)}
-              </td>
+              <td className="border-2 border-black px-2 py-1 text-right">{formatAccountsPayableVoucherReportAmount(totals.grossAmount)}</td>
+              <td className="border-2 border-black px-2 py-1 text-right">{formatAccountsPayableVoucherReportAmount(totals.ewtAmount)}</td>
               <td className="border-2 border-r-0 border-black px-2 py-1 text-right">
                 {formatAccountsPayableVoucherReportAmount(totals.totalAmountDue)}
               </td>
@@ -235,43 +190,23 @@ function AccountsPayableVoucherReportDocument({
           <tbody>
             {values.accountingEntries.map((entry) => (
               <tr key={entry.id} className="align-top">
-                <ReportTableCell>
-                  {formatAccountsPayableVoucherReportAccount(
-                    entry.accountCode,
-                    entry.accountTitle,
-                  )}
-                </ReportTableCell>
-                <ReportTableCell>
-                  {getAccountsPayableVoucherEntryPartyLabel(entry, values)}
-                </ReportTableCell>
+                <ReportTableCell>{formatAccountsPayableVoucherReportAccount(entry.accountCode, entry.accountTitle)}</ReportTableCell>
+                <ReportTableCell>{getAccountsPayableVoucherEntryPartyLabel(entry, values)}</ReportTableCell>
                 <ReportTableCell>{entry.particulars || "-"}</ReportTableCell>
-                <ReportTableCell>
-                  {entry.responsibilityCenter || "-"}
-                </ReportTableCell>
+                <ReportTableCell>{entry.responsibilityCenter || "-"}</ReportTableCell>
+                <ReportTableCell align="right">{entry.debit ? formatAccountsPayableVoucherReportAmount(entry.debit) : ""}</ReportTableCell>
                 <ReportTableCell align="right">
-                  {entry.debit
-                    ? formatAccountsPayableVoucherReportAmount(entry.debit)
-                    : ""}
-                </ReportTableCell>
-                <ReportTableCell align="right">
-                  {entry.credit
-                    ? formatAccountsPayableVoucherReportAmount(entry.credit)
-                    : ""}
+                  {entry.credit ? formatAccountsPayableVoucherReportAmount(entry.credit) : ""}
                 </ReportTableCell>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr className="font-bold">
-              <td
-                className="border-2 border-l-0 border-black px-2 py-1 text-right"
-                colSpan={4}
-              >
+              <td className="border-2 border-l-0 border-black px-2 py-1 text-right" colSpan={4}>
                 Total:
               </td>
-              <td className="border-2 border-black px-2 py-1 text-right">
-                {formatAccountsPayableVoucherReportAmount(totals.totalDebit)}
-              </td>
+              <td className="border-2 border-black px-2 py-1 text-right">{formatAccountsPayableVoucherReportAmount(totals.totalDebit)}</td>
               <td className="border-2 border-r-0 border-black px-2 py-1 text-right">
                 {formatAccountsPayableVoucherReportAmount(totals.totalCredit)}
               </td>
@@ -285,9 +220,7 @@ function AccountsPayableVoucherReportDocument({
           <SignatureBox label="Approved by:" name="-" />
           <div className="border-l-2 border-black px-3 py-2">
             <p className="font-bold">APV NO.:</p>
-            <p className="mt-3 text-right text-2xl font-black leading-none">
-              {values.transactionNo || "-"}
-            </p>
+            <p className="mt-3 text-right text-2xl font-black leading-none">{values.transactionNo || "-"}</p>
           </div>
         </div>
       </div>
@@ -312,28 +245,14 @@ function MetaCell({ label, value }: { label: string; value: string }) {
 }
 
 function ReportSectionTitle({ children }: { children: ReactNode }) {
-  return (
-    <div className="border-t-2 border-black bg-[#f5f5f5] px-2 py-1 text-[10px] font-bold uppercase">
-      {children}
-    </div>
-  );
+  return <div className="border-t-2 border-black bg-[#f5f5f5] px-2 py-1 text-[10px] font-bold uppercase">{children}</div>;
 }
 
 function ReportTableHeader({ children }: { children: ReactNode }) {
-  return (
-    <th className="border-2 border-black px-2 py-1 text-center font-bold first:border-l-0 last:border-r-0">
-      {children}
-    </th>
-  );
+  return <th className="border-2 border-black px-2 py-1 text-center font-bold first:border-l-0 last:border-r-0">{children}</th>;
 }
 
-function ReportTableCell({
-  align = "left",
-  children,
-}: {
-  align?: "left" | "right";
-  children: ReactNode;
-}) {
+function ReportTableCell({ align = "left", children }: { align?: "left" | "right"; children: ReactNode }) {
   return (
     <td
       className={`h-10 border-x-2 border-black px-1 py-1 align-top first:border-l-0 last:border-r-0 ${

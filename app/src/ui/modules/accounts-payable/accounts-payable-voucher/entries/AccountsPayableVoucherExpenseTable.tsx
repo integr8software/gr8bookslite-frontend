@@ -1,33 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import {
-  AccountsPayableVoucherExpenseDefaultVisibleColumnIds,
   AccountsPayableVoucherExpenseColumnIds,
   AccountsPayableVoucherExpenseColumnLabels,
   AccountsPayableVoucherExpenseColumnWidths,
+  AccountsPayableVoucherExpenseDefaultVisibleColumnIds,
   AccountsPayableVoucherExpenseProtectedColumnIds,
+  AccountsPayableVoucherPurchaseTransactionType,
 } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
-import {
-  calculateExpenseColumnFitWidth,
-  applyExpenseLinePartyTaxDefaults,
-  createPartyOptions,
-  createResponsibilityCenterOptions,
-  entryDropdownClassName,
-  findPartyRecordByCode,
-  ExpenseDetailValue,
-  getExpenseColumnTotal,
-  isExpenseColumnId,
-  LineAmountInput,
-  LineInput,
-  moveColumnId,
-  ParticularsEditorDialog,
-  PartyDropdown,
-  ParticularsCell,
-  ResponsibilityCenterDropdown,
-  updateVisibleColumnIds,
-} from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableHelpers";
 import { formatAccountsPayableVoucherAmount } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
+import {
+  createExpenseLineLookupAccount,
+  getLookupAccountEmptyMessage,
+  getSelectableLookupAccountId,
+  mergeLookupAccountOptions,
+} from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableLookups";
 import {
   useAccountsPayableVoucherExpenseTypeOptions,
   useAccountsPayableVoucherPartyOptions,
@@ -35,6 +22,7 @@ import {
 } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
 import type { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
 import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
+import type { AccountsPayableVoucherDataEntryPanelProps } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableTypes";
 import type {
   AccountsPayableVoucherExpenseColumnId,
   AccountsPayableVoucherExpenseLine,
@@ -42,15 +30,27 @@ import type {
   AccountsPayableVoucherLookupAccount,
   AccountsPayableVoucherLookupParty,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
+import {
+  applyExpenseLinePartyTaxDefaults,
+  calculateExpenseColumnFitWidth,
+  createPartyOptions,
+  createResponsibilityCenterOptions,
+  entryDropdownClassName,
+  ExpenseDetailValue,
+  findPartyRecordByCode,
+  getExpenseColumnTotal,
+  isExpenseColumnId,
+  LineAmountInput,
+  LineInput,
+  moveColumnId,
+  ParticularsCell,
+  ParticularsEditorDialog,
+  PartyDropdown,
+  ResponsibilityCenterDropdown,
+  updateVisibleColumnIds,
+} from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/entries/AccountsPayableVoucherDataEntryTableHelpers";
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
-import {
-  createEwtOptions,
-  createVatOptions,
-  getEwtPercentFromCode,
-  getVatPercentFromRate,
-  getVatRateFromCode,
-} from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
 import {
   ModuleDataEntry,
   type ModuleDataEntryColumn,
@@ -58,13 +58,13 @@ import {
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
 import {
-  createExpenseLineLookupAccount,
-  getLookupAccountEmptyMessage,
-  getSelectableLookupAccountId,
-  mergeLookupAccountOptions,
-} from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableLookups";
-import { AccountsPayableVoucherPurchaseTransactionType } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
-import type { AccountsPayableVoucherDataEntryPanelProps } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableTypes";
+  createEwtOptions,
+  createVatOptions,
+  getEwtPercentFromCode,
+  getVatPercentFromRate,
+  getVatRateFromCode,
+} from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
+import { useMemo, useState } from "react";
 
 const PurchaseTaxCodeQuery = {
   transactionType: AccountsPayableVoucherPurchaseTransactionType,
@@ -308,8 +308,8 @@ function renderExpenseCell(
           valueField="accountName"
           readOnly={isReadonly}
           isClearable
-          className={entryDropdownClassName(lineErrors.expenseType)}
-          ariaInvalid={Boolean(lineErrors.expenseType)}
+          className={entryDropdownClassName(lineErrors.expenseType || lineErrors.expenseAccountCode)}
+          ariaInvalid={Boolean(lineErrors.expenseType || lineErrors.expenseAccountCode)}
           placeholder="Select payable type"
           searchPlaceholder="Search payable type"
           onChange={() => undefined}

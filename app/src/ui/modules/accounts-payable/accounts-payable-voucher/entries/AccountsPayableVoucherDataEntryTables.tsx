@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { AccountsPayableVoucherAccountingTable } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherAccountingTable";
-import { AccountsPayableVoucherExpenseTable } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherExpenseTable";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
 import type {
   AccountsPayableVoucherDataEntryTablesProps,
   AccountsPayableVoucherEntryView,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableTypes";
+import { AccountsPayableVoucherAccountingTable } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/entries/AccountsPayableVoucherAccountingTable";
+import { AccountsPayableVoucherExpenseTable } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/entries/AccountsPayableVoucherExpenseTable";
+import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { useState } from "react";
 
 export type { AccountsPayableVoucherPartyAddTarget } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableTypes";
 

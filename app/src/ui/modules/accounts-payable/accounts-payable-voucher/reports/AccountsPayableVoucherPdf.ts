@@ -1,6 +1,3 @@
-import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts";
-import type { TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 import {
   formatAccountsPayableVoucherAmountInWords,
   formatAccountsPayableVoucherReportAccount,
@@ -14,20 +11,19 @@ import type {
   AccountsPayableVoucherExpenseLine,
   AccountsPayableVoucherFormValues,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+import type { TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
 
 type PdfText = string | Array<string | { text: string; bold?: boolean }>;
 
-export function openAccountsPayableVoucherPdf(
-  values: AccountsPayableVoucherFormValues,
-) {
+export function openAccountsPayableVoucherPdf(values: AccountsPayableVoucherFormValues) {
   pdfMake.createPdf(createAccountsPayableVoucherPdfDefinition(values)).open();
 }
 
-function createAccountsPayableVoucherPdfDefinition(
-  values: AccountsPayableVoucherFormValues,
-): TDocumentDefinitions {
+function createAccountsPayableVoucherPdfDefinition(values: AccountsPayableVoucherFormValues): TDocumentDefinitions {
   return {
     pageSize: "A4",
     pageOrientation: "portrait",
@@ -109,9 +105,7 @@ function createHeaderTable(): TableCell {
   };
 }
 
-function createTitleAndDateRow(
-  values: AccountsPayableVoucherFormValues,
-): TableCell {
+function createTitleAndDateRow(values: AccountsPayableVoucherFormValues): TableCell {
   return {
     table: {
       widths: ["*", 180],
@@ -124,10 +118,7 @@ function createTitleAndDateRow(
             margin: [6, 7, 0, 6],
           },
           {
-            text: [
-              { text: "Document Date: ", bold: true },
-              formatAccountsPayableVoucherReportDate(values.documentDate),
-            ],
+            text: [{ text: "Document Date: ", bold: true }, formatAccountsPayableVoucherReportDate(values.documentDate)],
             margin: [4, 8, 4, 4],
           },
         ],
@@ -148,33 +139,19 @@ function createAmountRow(values: AccountsPayableVoucherFormValues): TableCell {
   const totals = getAccountsPayableVoucherReportTotals(values);
 
   return createTwoColumnInfoRow(
-    [
-      { text: "AMOUNT: ", bold: true },
-      formatAccountsPayableVoucherAmountInWords(
-        totals.voucherAmount,
-        values.currency,
-      ),
-    ],
+    [{ text: "AMOUNT: ", bold: true }, formatAccountsPayableVoucherAmountInWords(totals.voucherAmount, values.currency)],
     [{ text: "Ref No: ", bold: true }, values.referenceNo || "-"],
   );
 }
 
-function createPayableTypeRow(
-  values: AccountsPayableVoucherFormValues,
-): TableCell {
+function createPayableTypeRow(values: AccountsPayableVoucherFormValues): TableCell {
   return createTwoColumnInfoRow(
     [{ text: "PAYABLE TYPE: ", bold: true }, values.payableType || "-"],
-    [
-      { text: "Due Date: ", bold: true },
-      formatAccountsPayableVoucherReportDate(values.dueDate),
-    ],
+    [{ text: "Due Date: ", bold: true }, formatAccountsPayableVoucherReportDate(values.dueDate)],
   );
 }
 
-function createTwoColumnInfoRow(
-  leftText: PdfText,
-  rightText: PdfText,
-): TableCell {
+function createTwoColumnInfoRow(leftText: PdfText, rightText: PdfText): TableCell {
   return {
     table: {
       widths: ["*", 180],
@@ -197,10 +174,7 @@ function createTwoColumnInfoRow(
 
 function createForRow(values: AccountsPayableVoucherFormValues): TableCell {
   return {
-    text: [
-      { text: "FOR: ", bold: true },
-      values.remarks || values.terms || "-",
-    ],
+    text: [{ text: "FOR: ", bold: true }, values.remarks || values.terms || "-"],
     margin: [3, 3, 3, 3],
   };
 }
@@ -240,36 +214,19 @@ function createDetailsTable(values: AccountsPayableVoucherFormValues): TableCell
   };
 }
 
-function createDetailRow(
-  line: AccountsPayableVoucherExpenseLine,
-): TableCell[] {
+function createDetailRow(line: AccountsPayableVoucherExpenseLine): TableCell[] {
   return [
-    bodyCell(
-      formatAccountsPayableVoucherReportAccount(
-        line.expenseAccountCode,
-        line.expenseType,
-      ),
-    ),
+    bodyCell(formatAccountsPayableVoucherReportAccount(line.expenseAccountCode, line.expenseType)),
     bodyCell(line.partyName || line.partyCode || "-"),
     bodyCell(line.particulars || "-"),
     bodyCell(line.responsibilityCenter || "-"),
     bodyCell(formatAccountsPayableVoucherReportAmount(line.amount), "right"),
-    bodyCell(
-      line.ewtAmount
-        ? formatAccountsPayableVoucherReportAmount(line.ewtAmount)
-        : "",
-      "right",
-    ),
-    bodyCell(
-      formatAccountsPayableVoucherReportAmount(line.totalAmountDue),
-      "right",
-    ),
+    bodyCell(line.ewtAmount ? formatAccountsPayableVoucherReportAmount(line.ewtAmount) : "", "right"),
+    bodyCell(formatAccountsPayableVoucherReportAmount(line.totalAmountDue), "right"),
   ];
 }
 
-function createJournalEntriesTable(
-  values: AccountsPayableVoucherFormValues,
-): TableCell {
+function createJournalEntriesTable(values: AccountsPayableVoucherFormValues): TableCell {
   const totals = getAccountsPayableVoucherReportTotals(values);
   const body: TableCell[][] = [
     [sectionHeaderCell("Accounting Entries", 6), {}, {}, {}, {}, {}],
@@ -282,14 +239,7 @@ function createJournalEntriesTable(
       headerCell("Credit", "right"),
     ],
     ...values.accountingEntries.map((entry) => createJournalEntryRow(entry, values)),
-    [
-      totalLabelCell(4),
-      {},
-      {},
-      {},
-      totalAmountCell(totals.totalDebit),
-      totalAmountCell(totals.totalCredit),
-    ],
+    [totalLabelCell(4), {}, {}, {}, totalAmountCell(totals.totalDebit), totalAmountCell(totals.totalCredit)],
   ];
 
   return {
@@ -302,30 +252,14 @@ function createJournalEntriesTable(
   };
 }
 
-function createJournalEntryRow(
-  entry: AccountsPayableVoucherAccountingEntry,
-  values: AccountsPayableVoucherFormValues,
-): TableCell[] {
+function createJournalEntryRow(entry: AccountsPayableVoucherAccountingEntry, values: AccountsPayableVoucherFormValues): TableCell[] {
   return [
-    bodyCell(
-      formatAccountsPayableVoucherReportAccount(
-        entry.accountCode,
-        entry.accountTitle,
-      ),
-    ),
+    bodyCell(formatAccountsPayableVoucherReportAccount(entry.accountCode, entry.accountTitle)),
     bodyCell(getAccountsPayableVoucherEntryPartyLabel(entry, values)),
     bodyCell(entry.particulars || "-"),
     bodyCell(entry.responsibilityCenter || "-"),
-    bodyCell(
-      entry.debit ? formatAccountsPayableVoucherReportAmount(entry.debit) : "",
-      "right",
-    ),
-    bodyCell(
-      entry.credit
-        ? formatAccountsPayableVoucherReportAmount(entry.credit)
-        : "",
-      "right",
-    ),
+    bodyCell(entry.debit ? formatAccountsPayableVoucherReportAmount(entry.debit) : "", "right"),
+    bodyCell(entry.credit ? formatAccountsPayableVoucherReportAmount(entry.credit) : "", "right"),
   ];
 }
 
@@ -383,10 +317,7 @@ function sectionHeaderCell(text: string, colSpan: number): TableCell {
   };
 }
 
-function headerCell(
-  text: string,
-  alignment: "left" | "right" = "left",
-): TableCell {
+function headerCell(text: string, alignment: "left" | "right" = "left"): TableCell {
   return {
     text,
     bold: true,
@@ -395,10 +326,7 @@ function headerCell(
   };
 }
 
-function bodyCell(
-  text: string,
-  alignment: "left" | "right" = "left",
-): TableCell {
+function bodyCell(text: string, alignment: "left" | "right" = "left"): TableCell {
   return {
     text,
     alignment,

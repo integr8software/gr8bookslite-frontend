@@ -110,6 +110,7 @@ export function ApproverSetupPage() {
 			/>
 
 			<ApproverSetupDrawer
+				editingRecordId={page.drawerState?.record?.id}
 				formValues={page.formValues}
 				isOpen={Boolean(page.drawerState)}
 				moduleOptions={page.moduleOptions}
@@ -117,6 +118,7 @@ export function ApproverSetupPage() {
 				onChange={page.setFormValues}
 				onClose={page.closeDrawer}
 				onSave={page.saveAssignment}
+				records={page.records}
 				selectedModuleScopes={page.selectedModuleScopes}
 				onSelectedModuleScopesChange={page.setSelectedModuleScopes}
 				users={page.approverUsers}

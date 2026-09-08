@@ -289,6 +289,51 @@ export function useApproverSetupPage() {
 			return;
 		}
 
+		const targetType = formValues.assignmentType.trim().toLowerCase();
+
+		if (drawerState?.mode === "edit" && drawerState.record) {
+			const targetScope = formValues.moduleScope.trim().toLowerCase();
+			const hasDuplicate = records.some(
+				(item) =>
+					item.id !== drawerState.record!.id &&
+					item.moduleScope.trim().toLowerCase() === targetScope &&
+					item.assignmentType.trim().toLowerCase() === targetType,
+			);
+
+			if (hasDuplicate) {
+				const moduleName =
+					moduleOptions.find(
+						(m) => m.code.trim().toLowerCase() === targetScope,
+					)?.name || formValues.moduleScope;
+				setDrawerError(
+					`Approver setup for module "${moduleName}" with type "${formValues.assignmentType}" already exists.`,
+				);
+				return;
+			}
+		} else {
+			const conflictingScopes = moduleScopes.filter((scope) =>
+				records.some(
+					(item) =>
+						item.moduleScope.trim().toLowerCase() ===
+							scope.trim().toLowerCase() &&
+						item.assignmentType.trim().toLowerCase() === targetType,
+				),
+			);
+
+			if (conflictingScopes.length > 0) {
+				const conflictNames = conflictingScopes.map(
+					(scope) =>
+						moduleOptions.find(
+							(m) => m.code.trim().toLowerCase() === scope.trim().toLowerCase(),
+						)?.name || scope,
+				);
+				setDrawerError(
+					`Approver setup for module "${conflictNames.join(", ")}" with type "${formValues.assignmentType}" already exists.`,
+				);
+				return;
+			}
+		}
+
 		if (!formValues.levelName.trim()) {
 			setDrawerError("Enter a level name.");
 			return;

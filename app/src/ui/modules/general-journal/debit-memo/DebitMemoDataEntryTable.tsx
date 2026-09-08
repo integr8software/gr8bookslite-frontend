@@ -40,7 +40,7 @@ import {
   PartyDropdown,
   ResponsibilityCenterDropdown,
   updateVisibleColumnIds,
-} from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableHelpers";
+} from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/entries/AccountsPayableVoucherDataEntryTableHelpers";
 import {
   ModuleDataEntry,
   type ModuleDataEntryColumn,

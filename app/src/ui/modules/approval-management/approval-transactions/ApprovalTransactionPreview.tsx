@@ -1,4 +1,5 @@
-import { CheckCircle2, Route, ThumbsDown, XCircle } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2, ExternalLink, FileText, Route, ThumbsDown, XCircle } from "lucide-react";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { joinClasses, moduleAccentClassNames } from "@/app/src/ui/shared/module/module-table/utils";
 import { ApprovedStatus } from "@/app/src/constants/modules/approval-management/ApprovalTransactionConstants";
@@ -17,6 +18,10 @@ type Props = {
 export function ApprovalTransactionPreview({ isApproving, isDisapproving, onApprove, onClose, onDisapprove, record }: Props) {
   const isPending = isApproving || isDisapproving;
   const canAct = Boolean(record?.canAct && !isPending);
+  const isApv = record?.moduleScope === "APV";
+  const voucherHref = isApv
+    ? `/accounts-payable/accounts-payable-voucher/view/${record?.referenceId ?? record?.id}`
+    : null;
 
   return (
     <ModuleDrawer
@@ -71,6 +76,25 @@ export function ApprovalTransactionPreview({ isApproving, isDisapproving, onAppr
     >
       {record ? (
         <div className="grid gap-5 p-6">
+          {voucherHref ? (
+            <div className="flex items-center justify-between rounded-lg border border-skyblue/25 bg-skyblue/5 p-3.5">
+              <div className="flex items-center gap-2.5">
+                <FileText className="h-5 w-5 text-skyblue" aria-hidden="true" />
+                <div>
+                  <div className="text-xs font-bold text-darknavy">Accounts Payable Voucher</div>
+                  <div className="text-xs text-darknavy/60">View complete voucher entries and details</div>
+                </div>
+              </div>
+              <Link
+                href={voucherHref}
+                className="inline-flex h-8 items-center gap-1.5 rounded-md bg-skyblue px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-skyblue/90"
+              >
+                <span>View Voucher</span>
+                <ExternalLink className="h-3 w-3" aria-hidden="true" />
+              </Link>
+            </div>
+          ) : null}
+
           <div className="grid gap-3 rounded-lg border border-darknavy/10 bg-offwhite/35 p-4 sm:grid-cols-2">
             <PreviewField label="Reference" value={record.referenceNo} />
             <PreviewField label="Status" value={record.statusLabel} />

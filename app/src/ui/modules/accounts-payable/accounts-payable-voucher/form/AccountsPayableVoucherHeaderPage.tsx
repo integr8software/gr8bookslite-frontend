@@ -1,31 +1,22 @@
-import Link from "next/link";
-import { ArrowLeft, Ban, Save } from "lucide-react";
 import {
   AccountsPayableVoucherActionCopy,
   AccountsPayableVoucherHref,
 } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import type { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import { ArrowLeft, Ban, Save } from "lucide-react";
+import Link from "next/link";
 
 type AccountsPayableVoucherHeaderPageProps = {
   onPreview?: () => void;
   page: ReturnType<typeof useAccountsPayableVoucherFormPage>;
 };
 
-export function AccountsPayableVoucherHeaderPage({
-  onPreview,
-  page,
-}: AccountsPayableVoucherHeaderPageProps) {
+export function AccountsPayableVoucherHeaderPage({ onPreview, page }: AccountsPayableVoucherHeaderPageProps) {
   const copy = AccountsPayableVoucherActionCopy[page.mode];
-  const transactionLabel =
-    page.existingRecord?.transactionNo ||
-    page.values.transactionNo ||
-    "Accounts payable voucher";
+  const transactionLabel = page.existingRecord?.transactionNo || page.values.transactionNo || "Accounts payable voucher";
   const title =
     page.mode === "view"
       ? page.existingRecord?.transactionNo
@@ -47,19 +38,13 @@ export function AccountsPayableVoucherHeaderPage({
       actionsClassName="items-center gap-1"
       actions={
         <>
-          <Link
-            href={AccountsPayableVoucherHref}
-            className={moduleHeaderActionClassNames.secondary}
-          >
+          <Link href={AccountsPayableVoucherHref} className={moduleHeaderActionClassNames.secondary}>
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back
           </Link>
           {onPreview ? <ReportPreviewAction onPreview={onPreview} /> : null}
           {page.mode === "view" && page.existingRecord ? (
-            <Link
-              href={`${AccountsPayableVoucherHref}/edit/${page.existingRecord.id}`}
-              className={moduleHeaderActionClassNames.primary}
-            >
+            <Link href={`${AccountsPayableVoucherHref}/edit/${page.existingRecord.id}`} className={moduleHeaderActionClassNames.primary}>
               Edit
             </Link>
           ) : null}
@@ -72,20 +57,12 @@ export function AccountsPayableVoucherHeaderPage({
                 onApply={page.copyFromPurchaseOrder}
               />
               {page.mode === "edit" ? (
-                <button
-                  type="button"
-                  className={moduleHeaderActionClassNames.danger}
-                  onClick={() => page.setIsCancelDialogOpen(true)}
-                >
+                <button type="button" className={moduleHeaderActionClassNames.danger} onClick={() => page.setIsCancelDialogOpen(true)}>
                   <Ban className="h-4 w-4" aria-hidden="true" />
                   Cancel
                 </button>
               ) : null}
-              <button
-                type="submit"
-                className={moduleHeaderActionClassNames.primary}
-                disabled={page.isMutating}
-              >
+              <button type="submit" className={moduleHeaderActionClassNames.primary} disabled={page.isMutating}>
                 <Save className="h-4 w-4" aria-hidden="true" />
                 Save
               </button>

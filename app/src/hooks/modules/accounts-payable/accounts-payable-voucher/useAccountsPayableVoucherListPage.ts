@@ -27,16 +27,8 @@ import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/A
 import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
 
 export function useAccountsPayableVoucherListPage() {
-  const {
-    isLoading,
-    isMutating,
-    isRefreshing,
-    lastSyncedAt,
-    records,
-    refreshRecords,
-    statistics,
-    updateStatus,
-  } = useAccountsPayableVoucherStore();
+  const { isLoading, isMutating, isRefreshing, lastSyncedAt, records, refreshRecords, statistics, updateStatus } =
+    useAccountsPayableVoucherStore();
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 5,
@@ -50,27 +42,15 @@ export function useAccountsPayableVoucherListPage() {
     from: "",
     to: "",
   });
-  const [statusFilter, setStatusFilterState] = useState<
-    (typeof AccountsPayableVoucherStatusFilters)[number]
-  >("all");
-  const {
-    columnOrder,
-    columnVisibility,
-    sorting,
-    setColumnOrder,
-    setColumnVisibility,
-    setSorting,
-  } = useTablePreferences({
+  const [statusFilter, setStatusFilterState] = useState<(typeof AccountsPayableVoucherStatusFilters)[number]>("all");
+  const { columnOrder, columnVisibility, sorting, setColumnOrder, setColumnVisibility, setSorting } = useTablePreferences({
     defaultColumnOrder: AccountsPayableVoucherDefaultColumnOrder,
     defaultColumnVisibility: AccountsPayableVoucherDefaultColumnVisibility,
     defaultSorting: AccountsPayableVoucherDefaultSorting,
     moduleKey: AccountsPayableVoucherTablePreferencesModuleKey,
     storageKey: AccountsPayableVoucherTablePreferencesStorageKey,
   });
-  const listColumnOrder = useMemo(
-    () => normalizeAccountsPayableVoucherListColumnOrder(columnOrder),
-    [columnOrder],
-  );
+  const listColumnOrder = useMemo(() => normalizeAccountsPayableVoucherListColumnOrder(columnOrder), [columnOrder]);
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
@@ -85,13 +65,7 @@ export function useAccountsPayableVoucherListPage() {
     const normalizedQuery = deferredQuery.trim().toLowerCase();
 
     return records.filter((record) => {
-      const searchable = [
-        record.transactionNo,
-        record.partyCode,
-        record.partyName,
-        record.payableType,
-        record.remarks,
-      ]
+      const searchable = [record.transactionNo, record.partyCode, record.partyName, record.payableType, record.remarks]
         .join(" ")
         .toLowerCase();
 
@@ -150,9 +124,7 @@ export function useAccountsPayableVoucherListPage() {
     table.setPageIndex(0);
   }
 
-  function setStatusFilter(
-    value: (typeof AccountsPayableVoucherStatusFilters)[number],
-  ) {
+  function setStatusFilter(value: (typeof AccountsPayableVoucherStatusFilters)[number]) {
     setStatusFilterState(value);
     table.setPageIndex(0);
   }
@@ -175,10 +147,7 @@ export function useAccountsPayableVoucherListPage() {
     table.setPageIndex(0);
   }
 
-  function handleUpdateStatus(
-    record: AccountsPayableVoucherRecord,
-    status: AccountsPayableVoucherRecord["status"],
-  ) {
+  function handleUpdateStatus(record: AccountsPayableVoucherRecord, status: AccountsPayableVoucherRecord["status"]) {
     void updateStatus(record.id, status);
   }
 
@@ -204,61 +173,38 @@ export function useAccountsPayableVoucherListPage() {
   };
 }
 
-function normalizeAccountsPayableVoucherListColumnOrder(
-  columnOrder: ColumnOrderState,
-) {
+function normalizeAccountsPayableVoucherListColumnOrder(columnOrder: ColumnOrderState) {
   if (!columnOrder.includes("partyName") || !columnOrder.includes("remarks")) {
     return columnOrder;
   }
 
-  const columnOrderWithoutRemarks = columnOrder.filter(
-    (columnId) => columnId !== "remarks",
-  );
+  const columnOrderWithoutRemarks = columnOrder.filter((columnId) => columnId !== "remarks");
   const partyNameIndex = columnOrderWithoutRemarks.indexOf("partyName");
   const nextColumnOrder = [...columnOrderWithoutRemarks];
 
   nextColumnOrder.splice(partyNameIndex + 1, 0, "remarks");
 
-  return areColumnOrdersEqual(columnOrder, nextColumnOrder)
-    ? columnOrder
-    : nextColumnOrder;
+  return areColumnOrdersEqual(columnOrder, nextColumnOrder) ? columnOrder : nextColumnOrder;
 }
 
-function areColumnOrdersEqual(
-  leftColumnOrder: ColumnOrderState,
-  rightColumnOrder: ColumnOrderState,
-) {
+function areColumnOrdersEqual(leftColumnOrder: ColumnOrderState, rightColumnOrder: ColumnOrderState) {
   return (
-    leftColumnOrder.length === rightColumnOrder.length &&
-    leftColumnOrder.every(
-      (columnId, index) => columnId === rightColumnOrder[index],
-    )
+    leftColumnOrder.length === rightColumnOrder.length && leftColumnOrder.every((columnId, index) => columnId === rightColumnOrder[index])
   );
 }
 
-function createColumn(
-  key: keyof AccountsPayableVoucherRecord,
-  header: string,
-  className: string,
-): ColumnDef<AccountsPayableVoucherRecord> {
+function createColumn(key: keyof AccountsPayableVoucherRecord, header: string, className: string): ColumnDef<AccountsPayableVoucherRecord> {
   return {
     accessorKey: key,
     header,
-    sortingFn:
-      key === "documentDate"
-        ? "datetime"
-        : key === "amount"
-          ? "basic"
-          : "alphanumeric",
+    sortingFn: key === "documentDate" ? "datetime" : key === "amount" ? "basic" : "alphanumeric",
     meta: { className, label: header },
   };
 }
 
 function isAmountInRange(value: number, range: AmountRangeValue) {
   const fromAmount = range.from.trim() ? parseMoneyNumberInput(range.from) : 0;
-  const toAmount = range.to.trim()
-    ? parseMoneyNumberInput(range.to)
-    : Number.MAX_SAFE_INTEGER;
+  const toAmount = range.to.trim() ? parseMoneyNumberInput(range.to) : Number.MAX_SAFE_INTEGER;
 
   return value >= fromAmount && value <= toAmount;
 }

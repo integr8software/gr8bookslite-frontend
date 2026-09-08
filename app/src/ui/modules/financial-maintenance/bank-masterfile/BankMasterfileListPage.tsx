@@ -6,6 +6,7 @@ import { useMaintenanceAddDrawerSpotlight } from "@/app/src/hooks/modules/useMai
 import type { BankMasterfileDrawerState } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { BankMasterfileDrawer } from "@/app/src/ui/modules/financial-maintenance/bank-masterfile/BankMasterfileDrawer";
+import { BankCheckTemplateDrawer } from "@/app/src/ui/modules/financial-maintenance/bank-masterfile/BankCheckTemplateDrawer";
 import { BankMasterfileHeader } from "@/app/src/ui/modules/financial-maintenance/bank-masterfile/BankMasterfileHeader";
 import { BankMasterfileImportDialog } from "@/app/src/ui/modules/financial-maintenance/bank-masterfile/BankMasterfileImportDialog";
 import { BankMasterfileStatisticCards } from "@/app/src/ui/modules/financial-maintenance/bank-masterfile/BankMasterfileStatisticCards";
@@ -16,6 +17,7 @@ export function BankMasterfileListPage() {
   const [drawerState, setDrawerState] = useState<BankMasterfileDrawerState>(null);
   const [drawerVersion, setDrawerVersion] = useState(0);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [templateBank, setTemplateBank] = useState<NonNullable<BankMasterfileDrawerState>["bank"]>();
   const closeDrawer = useCallback(() => setDrawerState(null), []);
   const openAddDrawer = useCallback(() => {
     setDrawerVersion((version) => version + 1);
@@ -44,6 +46,7 @@ export function BankMasterfileListPage() {
         query={page.query}
         statusFilter={page.statusFilter}
         onEditBank={(bank) => setDrawerState({ mode: "edit", bank })}
+        onManageCheckTemplates={setTemplateBank}
         onQueryChange={page.setQuery}
         onRefresh={page.refreshBanks}
         onStatusFilterChange={page.setStatusFilter}
@@ -56,6 +59,12 @@ export function BankMasterfileListPage() {
         isOpen={Boolean(drawerState)}
         mode={drawerState?.mode ?? "add"}
         onClose={closeDrawer}
+      />
+      <BankCheckTemplateDrawer
+        key={templateBank?.id ?? "closed"}
+        bank={templateBank}
+        isOpen={Boolean(templateBank)}
+        onClose={() => setTemplateBank(undefined)}
       />
       {page.permissions.canImport ? (
         <BankMasterfileImportDialog

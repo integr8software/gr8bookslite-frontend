@@ -1,5 +1,6 @@
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import type {
+  BankCheckTemplateFormValues,
   BankImportColumnId,
   BankMasterfile,
   BankMasterfileStatus,
@@ -20,6 +21,21 @@ export const BankMasterfileCashInBankAccountTitle = "Cash in Bank";
 export const BankMasterfileDescription = "Maintain company bank accounts and their linked Cash in Bank chart accounts.";
 
 export const BankMasterfileDrawerFormId = "bank-masterfile-drawer-form";
+
+export const BankCheckTemplateDrawerFormId = "bank-check-template-drawer-form";
+
+export const BankCheckTemplateStorageKey = "gr8booksneo:bank-masterfile:check-templates:v1";
+
+export const BankCheckTemplateOrientationOptions = ["Landscape", "Portrait"] as const;
+
+export const BankCheckTemplateInitialValues: BankCheckTemplateFormValues = {
+  name: "",
+  description: "",
+  paperWidth: "8.5",
+  paperHeight: "3.5",
+  orientation: "Landscape",
+  isDefault: false,
+};
 
 export const BankMasterfileTablePaginationStorageKey = "maintenance:financial-management:bank-masterfile";
 

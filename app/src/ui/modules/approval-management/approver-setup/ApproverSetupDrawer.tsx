@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
 	ApproverAssignmentTypeOptions,
 	ApproverConditionLabels,
@@ -12,6 +13,7 @@ import type {
 	ApproverSetupDrawerMode,
 	ApproverSetupFormValues,
 	ApproverSetupModuleOption,
+	ApproverSetupRecord,
 	ApproverSetupUser,
 } from "@/app/src/types/modules/system-administration/user-management/approver-setup/ApproverSetupTypes";
 import {
@@ -29,6 +31,7 @@ import { ApproverSetupUserSelectList } from "./ApproverSetupUserSelectList";
 const SelectAllModulesValue = "__all_modules__";
 
 type ApproverSetupDrawerProps = {
+	editingRecordId?: string | null;
 	formValues: ApproverSetupFormValues;
 	isOpen: boolean;
 	moduleOptions: ApproverSetupModuleOption[];
@@ -36,6 +39,7 @@ type ApproverSetupDrawerProps = {
 	onChange: (values: ApproverSetupFormValues) => void;
 	onClose: () => void;
 	onSave: () => void;
+	records?: ApproverSetupRecord[];
 	selectedModuleScopes: string[];
 	onSelectedModuleScopesChange: (moduleScopes: string[]) => void;
 	users: ApproverSetupUser[];
@@ -43,6 +47,7 @@ type ApproverSetupDrawerProps = {
 };
 
 export function ApproverSetupDrawer({
+	editingRecordId,
 	formValues,
 	isOpen,
 	moduleOptions,
@@ -51,22 +56,52 @@ export function ApproverSetupDrawer({
 	onClose,
 	onSave,
 	onSelectedModuleScopesChange,
+	records = [],
 	selectedModuleScopes,
 	users,
 	validationMessage,
 }: ApproverSetupDrawerProps) {
 	const title =
 		mode === "edit" ? "Edit Approver Assignment" : "Assign Approver";
-	const moduleSelectOptions = [
-		...(mode === "add"
-			? [{ name: "Select all modules", value: SelectAllModulesValue }]
-			: []),
-		...moduleOptions.map<AppAdvancedDropdownOption>((module) => ({
-			description: module.code,
-			name: module.name,
-			value: module.code,
-		})),
-	];
+
+	const configuredModuleCodesForType = useMemo(() => {
+		const targetType = formValues.assignmentType.trim().toLowerCase();
+		return new Set(
+			records
+				.filter(
+					(r) =>
+						(mode === "edit" ? r.id !== editingRecordId : true) &&
+						r.assignmentType.trim().toLowerCase() === targetType,
+				)
+				.map((r) => r.moduleScope.trim().toLowerCase()),
+		);
+	}, [records, mode, editingRecordId, formValues.assignmentType]);
+
+	const moduleSelectOptions = useMemo(() => {
+		const availableModules = moduleOptions.filter(
+			(module) => !configuredModuleCodesForType.has(module.code.trim().toLowerCase()),
+		);
+
+		return [
+			...(mode === "add" && availableModules.length > 0
+				? [{ name: "Select all modules", value: SelectAllModulesValue }]
+				: []),
+			...moduleOptions.map<AppAdvancedDropdownOption>((module) => {
+				const isConfigured = configuredModuleCodesForType.has(
+					module.code.trim().toLowerCase(),
+				);
+
+				return {
+					description: isConfigured
+						? `${module.code} (Already configured for ${formValues.assignmentType})`
+						: module.code,
+					disabled: isConfigured,
+					name: module.name,
+					value: module.code,
+				};
+			}),
+		];
+	}, [configuredModuleCodesForType, formValues.assignmentType, mode, moduleOptions]);
 
 	function updateField<TKey extends keyof ApproverSetupFormValues>(
 		key: TKey,
@@ -81,6 +116,29 @@ export function ApproverSetupDrawer({
 					formValues.userIds,
 					users,
 				),
+			});
+			return;
+		}
+
+		if (key === "assignmentType") {
+			const newType = (value as ApproverAssignmentType).trim().toLowerCase();
+			const duplicateCodes = new Set(
+				records
+					.filter(
+						(r) =>
+							(mode === "edit" ? r.id !== editingRecordId : true) &&
+							r.assignmentType.trim().toLowerCase() === newType,
+					)
+					.map((r) => r.moduleScope.trim().toLowerCase()),
+			);
+			const filteredScopes = selectedModuleScopes.filter(
+				(code) => !duplicateCodes.has(code.trim().toLowerCase()),
+			);
+			onSelectedModuleScopesChange(filteredScopes);
+			onChange({
+				...formValues,
+				assignmentType: value as ApproverAssignmentType,
+				moduleScope: filteredScopes[0] ?? "",
 			});
 			return;
 		}

@@ -1,18 +1,4 @@
 import {
-  Ban,
-  CalendarDays,
-  CheckCircle2,
-  Clock3,
-  Edit3,
-  Eye,
-  PackageCheck,
-  ThumbsDown,
-  Undo2,
-  XCircle,
-} from "lucide-react";
-import type { ReactNode } from "react";
-import type { Row } from "@tanstack/react-table";
-import {
   AccountsPayableVoucherHref,
   canApproveAccountsPayableVoucherStatus,
   canCancelAccountsPayableVoucherStatus,
@@ -24,39 +10,26 @@ import type {
   AccountsPayableVoucherRecord,
   AccountsPayableVoucherStatus,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
-import {
-  ModuleTableActions,
-} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
-import {
-  ModuleActionMenu,
-  type ModuleActionMenuItem,
-} from "@/app/src/ui/shared/module/ModuleActionMenu";
+import { ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
 import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
-import {
-  getColumnMetaClassName,
-  joinClasses,
-} from "@/app/src/ui/shared/module/module-table/utils";
+import type { Row } from "@tanstack/react-table";
+import { Ban, CalendarDays, CheckCircle2, Clock3, Edit3, Eye, PackageCheck, ThumbsDown, Undo2, XCircle } from "lucide-react";
+import type { ReactNode } from "react";
 
 type AccountsPayableVoucherTableRowProps = {
   row: Row<AccountsPayableVoucherRecord>;
-  onUpdateStatus: (
-    record: AccountsPayableVoucherRecord,
-    status: AccountsPayableVoucherStatus,
-  ) => void;
+  onUpdateStatus: (record: AccountsPayableVoucherRecord, status: AccountsPayableVoucherStatus) => void;
 };
 
-export function AccountsPayableVoucherTableRow({
-  row,
-  onUpdateStatus,
-}: AccountsPayableVoucherTableRowProps) {
+export function AccountsPayableVoucherTableRow({ row, onUpdateStatus }: AccountsPayableVoucherTableRowProps) {
   const record = row.original;
   const isPosted = record.status === "Posted";
   const isDisapproved = record.status === "Disapproved";
   const isCancelled = record.status === "Cancelled";
   const approvalUndoStatus: AccountsPayableVoucherStatus = "For Approval";
-  const cancelStatus: AccountsPayableVoucherStatus = isCancelled
-    ? "For Approval"
-    : "Cancelled";
+  const cancelStatus: AccountsPayableVoucherStatus = isCancelled ? "For Approval" : "Cancelled";
   const actionItems: ModuleActionMenuItem[] = [
     {
       href: `${AccountsPayableVoucherHref}/view/${record.id}`,
@@ -78,19 +51,14 @@ export function AccountsPayableVoucherTableRow({
       disabled: !canApproveAccountsPayableVoucherStatus(record.status),
       icon: isPosted ? Undo2 : PackageCheck,
       label: isPosted ? "Undo Posted" : "Approve",
-      onSelect: () =>
-        onUpdateStatus(record, isPosted ? approvalUndoStatus : "Posted"),
+      onSelect: () => onUpdateStatus(record, isPosted ? approvalUndoStatus : "Posted"),
       type: "button",
     },
     {
       disabled: !canDisapproveAccountsPayableVoucherStatus(record.status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () =>
-        onUpdateStatus(
-          record,
-          isDisapproved ? approvalUndoStatus : "Disapproved",
-        ),
+      onSelect: () => onUpdateStatus(record, isDisapproved ? approvalUndoStatus : "Disapproved"),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
@@ -107,15 +75,8 @@ export function AccountsPayableVoucherTableRow({
   return (
     <tr className="module-table-row border-b border-darknavy/8 last:border-b-0">
       {row.getVisibleCells().map((cell) => (
-        <AccountsPayableVoucherTableCell
-          key={cell.id}
-          className={getColumnMetaClassName(cell.column.columnDef.meta)}
-        >
-          <AccountsPayableVoucherCellContent
-            actionItems={actionItems}
-            columnId={cell.column.id}
-            record={record}
-          />
+        <AccountsPayableVoucherTableCell key={cell.id} className={getColumnMetaClassName(cell.column.columnDef.meta)}>
+          <AccountsPayableVoucherCellContent actionItems={actionItems} columnId={cell.column.id} record={record} />
         </AccountsPayableVoucherTableCell>
       ))}
     </tr>
@@ -145,26 +106,18 @@ function AccountsPayableVoucherCellContent({
       return (
         <>
           <div className="font-medium">{record.partyName || "No party"}</div>
-          <div className="text-xs text-darknavy/55">
-            {record.partyCode || "No party code"}
-          </div>
+          <div className="text-xs text-darknavy/55">{record.partyCode || "No party code"}</div>
         </>
       );
     case "amount":
-      return (
-        <span className="font-semibold tabular-nums">
-          {formatAccountsPayableVoucherAmount(record.amount)}
-        </span>
-      );
+      return <span className="font-semibold tabular-nums">{formatAccountsPayableVoucherAmount(record.amount)}</span>;
     case "remarks":
       return <AccountsPayableVoucherRemarksCell remarks={record.remarks} />;
     case "currency":
       return (
         <>
           <div className="font-medium">{record.currency}</div>
-          <div className="text-xs text-darknavy/55">
-            Exchange Rate {formatAccountsPayableVoucherAmount(record.exchangeRate)}
-          </div>
+          <div className="text-xs text-darknavy/55">Exchange Rate {formatAccountsPayableVoucherAmount(record.exchangeRate)}</div>
         </>
       );
     case "status":
@@ -172,10 +125,7 @@ function AccountsPayableVoucherCellContent({
     case "actions":
       return (
         <ModuleTableActions className="w-full !justify-center">
-          <ModuleActionMenu
-            items={actionItems}
-            label={`Actions for accounts payable voucher ${record.transactionNo}`}
-          />
+          <ModuleActionMenu items={actionItems} label={`Actions for accounts payable voucher ${record.transactionNo}`} />
         </ModuleTableActions>
       );
     default:
@@ -186,11 +136,7 @@ function AccountsPayableVoucherCellContent({
 function AccountsPayableVoucherRemarksCell({ remarks }: { remarks: string }) {
   const normalizedRemarks = remarks.trim();
   const displayRemarks = normalizedRemarks || "-";
-  const remarksContent = (
-    <span className="line-clamp-3 whitespace-pre-line leading-5">
-      {displayRemarks}
-    </span>
-  );
+  const remarksContent = <span className="line-clamp-3 whitespace-pre-line leading-5">{displayRemarks}</span>;
 
   if (!normalizedRemarks) {
     return remarksContent;
@@ -210,25 +156,11 @@ function AccountsPayableVoucherRemarksCell({ remarks }: { remarks: string }) {
   );
 }
 
-function AccountsPayableVoucherTableCell({
-  className = "text-left",
-  children,
-}: {
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <td className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}>
-      {children}
-    </td>
-  );
+function AccountsPayableVoucherTableCell({ className = "text-left", children }: { className?: string; children: ReactNode }) {
+  return <td className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}>{children}</td>;
 }
 
-function AccountsPayableVoucherStatusBadge({
-  status,
-}: {
-  status: AccountsPayableVoucherStatus;
-}) {
+function AccountsPayableVoucherStatusBadge({ status }: { status: AccountsPayableVoucherStatus }) {
   const Icon = statusIconByStatus[status];
 
   return (

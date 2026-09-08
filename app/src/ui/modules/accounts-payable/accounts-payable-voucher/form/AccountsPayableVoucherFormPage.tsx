@@ -1,56 +1,47 @@
 "use client";
 
-import { useMemo, useState, type ChangeEventHandler, type ReactNode } from "react";
 import { AccountsPayableVoucherPurchaseTransactionType } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import { calculateAccountsPayableVoucherDueDate } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
 import { createProjectResponsibilityCenterInitialValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
-import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
-import { findModuleChartAccount, getModuleChartAccounts } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
+import { useMemo, useState, type ChangeEventHandler, type ReactNode } from "react";
+
 import {
   useAccountsPayableVoucherPartyOptions,
   useAccountsPayableVoucherPayableAccountOptions,
   useAccountsPayableVoucherResponsibilityCenterOptions,
   useAccountsPayableVoucherTermOptions,
 } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
+import { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import { useTermsMaintenanceStore } from "@/app/src/hooks/modules/financial-maintenance/terms-maintenance/useTermsMaintenance";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import { useModuleFieldVisibility } from "@/app/src/hooks/shared/field-management/useCurrentModuleFieldManagement";
 import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
-import type {
-  AccountsPayableVoucherLookupAccount,
-  AccountsPayableVoucherLookupParty,
-  AccountsPayableVoucherLookupResponsibilityCenter,
-  AccountsPayableVoucherLookupTerm,
-} from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
+import type { AccountsPayableVoucherLookupParty } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { TermsMaintenance } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
-import type { Tax } from "@/app/src/types/shared/tax/TaxTypes";
-import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
-import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
-import {
-  AccountsPayableVoucherDataEntryTables,
-  type AccountsPayableVoucherPartyAddTarget,
-} from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTables";
 import {
   applyAccountingEntryPartyTaxDefaults,
   applyExpenseLinePartyTaxDefaults,
-} from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherDataEntryTableHelpers";
-import { AccountsPayableVoucherHeaderPage } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherHeaderPage";
-import { AccountsPayableVoucherNotFound } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherNotFound";
-import { openAccountsPayableVoucherPdf } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherPdf";
-import { AccountsPayableVoucherReportPreview } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherReportPreview";
+} from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/entries/AccountsPayableVoucherDataEntryTableHelpers";
+import {
+  AccountsPayableVoucherDataEntryTables,
+  type AccountsPayableVoucherPartyAddTarget,
+} from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/entries/AccountsPayableVoucherDataEntryTables";
+import { AccountsPayableVoucherHeaderPage } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/form/AccountsPayableVoucherHeaderPage";
+import { AccountsPayableVoucherNotFound } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/overview/AccountsPayableVoucherNotFound";
+import { openAccountsPayableVoucherPdf } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/reports/AccountsPayableVoucherPdf";
+import { AccountsPayableVoucherReportPreview } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/reports/AccountsPayableVoucherReportPreview";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { TermsMaintenanceQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/terms-maintenance/TermsMaintenanceQuickAddDialog";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
-import { getEwtPercentFromCode, getVatPercentFromRate, getVatRateFromCode } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
-import { isActiveStatus } from "@/app/src/utils/status.util";
+import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
-import { useModuleFieldVisibility } from "@/app/src/hooks/shared/field-management/useCurrentModuleFieldManagement";
 
 const fieldClassName =
   "app-data-entry-field h-11 min-w-0 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm font-medium text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/45 focus:bg-white focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-white disabled:text-darknavy disabled:opacity-60";
@@ -63,6 +54,24 @@ const RemarksMaxLength = 500;
 const PurchaseTaxCodeQuery = {
   transactionType: AccountsPayableVoucherPurchaseTransactionType,
 } as const;
+
+import {
+  createLookupTermOptions,
+  createPartyOptions,
+  createProjectOptions,
+  createTermOptions,
+  findPayableAccount,
+  formatPartyAddress,
+  getPartyDropdownEmptyMessage,
+  getPartyPurchaseTaxDefaults,
+  getProjectDropdownEmptyMessage,
+  getTermDropdownEmptyMessage,
+  isIndividualParty,
+  mapLookupTermToMaintenanceTerm,
+  mapPartyRecordToLookupParty,
+  mergePayableAccountOptions,
+  shouldApplyPartyDefaultsToLineParty,
+} from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherFormData";
 
 export function AccountsPayableVoucherFormPage() {
   const page = useAccountsPayableVoucherFormPage();
@@ -78,7 +87,7 @@ export function AccountsPayableVoucherFormPage() {
   const [isProjectNameDialogOpen, setIsProjectNameDialogOpen] = useState(false);
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
   const [isTermsDialogOpen, setIsTermsDialogOpen] = useState(false);
-  const chartAccounts = useMemo(() => getModuleChartAccounts(), []);
+
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const partyRecords = useMemo(() => partyOptionsQuery.data ?? [], [partyOptionsQuery.data]);
   const projectRecords = useMemo(() => projectOptionsQuery.data ?? [], [projectOptionsQuery.data]);
@@ -126,6 +135,7 @@ export function AccountsPayableVoucherFormPage() {
 
     page.updateHeaderField("partyCode", partyCode);
     page.updateHeaderField("partyName", partyName);
+    page.updateHeaderField("partyId", record?.id);
     page.updateHeaderField("address", record ? formatPartyAddress(record) : "");
     page.updateHeaderField("contactPerson", record?.contactPerson || (isIndividualParty(record) ? partyName : ""));
     page.updateHeaderField("contactNo", record?.contactNo ?? "");
@@ -133,13 +143,12 @@ export function AccountsPayableVoucherFormPage() {
     applyPartyPurchaseTaxDefaults(record, previousPartyCode, partyCode);
 
     if (record?.defaultPayableAccount) {
-      const account =
-        findPayableAccount(record.defaultPayableAccount, defaultPayableAccounts) ??
-        findModuleChartAccount(record.defaultPayableAccount, chartAccounts);
+      const account = findPayableAccount(record.defaultPayableAccount, defaultPayableAccounts);
 
       if (account) {
         page.updateHeaderField("creditAccountCode", account.accountNumber);
         page.updateHeaderField("creditAccountTitle", account.accountName);
+        page.updateHeaderField("creditAccountId", account.id);
       }
     }
 
@@ -438,6 +447,7 @@ export function AccountsPayableVoucherFormPage() {
                   onSelectAccount={(account) => {
                     page.updateHeaderField("creditAccountCode", account?.accountNumber ?? "");
                     page.updateHeaderField("creditAccountTitle", account?.accountName ?? "");
+                    page.updateHeaderField("creditAccountId", account?.id);
                   }}
                 />
               </FieldShell>
@@ -677,236 +687,4 @@ function FieldShell({
       </div>
     </div>
   );
-}
-
-function findPayableAccount(value: string, accounts: AccountsPayableVoucherLookupAccount[]) {
-  return accounts.find((account) => account.id === value || account.accountNumber === value || account.accountName === value);
-}
-
-function getPartyPurchaseTaxDefaults(record: AccountsPayableVoucherLookupParty, taxCodes: Tax[]) {
-  const inputVatCode = getTaxCodeBySourceKey(taxCodes, record.defaultPurchaseInputVatTaxSourceKey, "INPUT VAT");
-  const ewtCode = getTaxCodeBySourceKey(taxCodes, record.defaultPurchaseEwtTaxSourceKey, "EWT");
-  const inputVatRate = getVatRateFromCode(inputVatCode, taxCodes);
-
-  return {
-    ewtCode,
-    ewtPercent: getEwtPercentFromCode(ewtCode, taxCodes),
-    inputVatCode,
-    inputVatPercent: getVatPercentFromRate(inputVatRate),
-  };
-}
-
-function getTaxCodeBySourceKey(taxCodes: Tax[], sourceKey: string, taxType: "EWT" | "INPUT VAT") {
-  if (!sourceKey) {
-    return "";
-  }
-
-  return (
-    taxCodes.find((taxCode) => taxCode.sourceKey === sourceKey && taxCode.transactionType === "Purchases" && taxCode.taxType === taxType)
-      ?.taxCode ?? ""
-  );
-}
-
-function shouldApplyPartyDefaultsToLineParty(linePartyCode: string, previousPartyCode: string, nextPartyCode: string) {
-  return linePartyCode.trim() === "" || linePartyCode === previousPartyCode || linePartyCode === nextPartyCode;
-}
-
-function formatPartyAddress(record: AccountsPayableVoucherLookupParty) {
-  const address = getPrimaryPartyAddress(record);
-
-  return [address.addressLine1, address.addressLine2, address.barangay, address.cityMunicipality, address.province, address.region]
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .join(", ");
-}
-
-function getPrimaryPartyAddress(record: AccountsPayableVoucherLookupParty) {
-  return record.addresses.find((address) => address.isDefault) ?? record.addresses[0] ?? record.address;
-}
-
-function mapPartyRecordToLookupParty(record: PartyInformationRecord): AccountsPayableVoucherLookupParty {
-  return {
-    id: record.id,
-    address: record.address,
-    addresses: record.addresses,
-    classification: record.classification,
-    contactNo: record.contactNo,
-    contactPerson: record.contactPerson,
-    defaultPayableAccount: record.defaultPayableAccount || record.employeePayableAccount,
-    defaultPurchaseEwtTaxSourceKey: record.defaultPurchaseEwtTaxSourceKey,
-    defaultPurchaseFwtTaxSourceKey: record.defaultPurchaseFwtTaxSourceKey,
-    defaultPurchaseInputVatTaxSourceKey: record.defaultPurchaseInputVatTaxSourceKey,
-    defaultPurchaseWvatTaxSourceKey: record.defaultPurchaseWvatTaxSourceKey,
-    email: record.email,
-    name: getPartyDisplayName(record),
-    partyCodeNo: record.partyCodeNo,
-    partyTypes: record.partyTypes,
-    status: "Active",
-    termId: record.termId,
-    termName: record.termName,
-  };
-}
-
-function createPartyOptions(
-  partyRecords: AccountsPayableVoucherLookupParty[],
-  currentPartyCode: string,
-  currentPartyName: string,
-): AppAdvancedDropdownOption[] {
-  const options = partyRecords
-    .filter((party) => isActiveStatus(party.status))
-    .map((party) => ({
-      description: party.partyTypes.join(", "),
-      label: party.partyCodeNo,
-      name: party.name || party.partyCodeNo,
-      value: party.partyCodeNo,
-    }));
-
-  if (currentPartyCode.trim() && !options.some((option) => option.value === currentPartyCode)) {
-    options.push({
-      description: "Current voucher value",
-      label: currentPartyCode,
-      name: currentPartyName || currentPartyCode,
-      value: currentPartyCode,
-    });
-  }
-
-  return options;
-}
-
-function createProjectOptions(
-  projectRecords: AccountsPayableVoucherLookupResponsibilityCenter[],
-  currentProjectCode: string,
-  currentProjectName: string,
-): AppAdvancedDropdownOption[] {
-  const options = projectRecords
-    .filter((project) => isActiveStatus(project.status) && isProjectResponsibilityCenter(project))
-    .map((project) => ({
-      description: project.typeName,
-      label: project.code,
-      name: project.name,
-      value: project.name,
-    }));
-
-  if (currentProjectName.trim()) {
-    addUniqueDropdownOption(options, {
-      description: "Current voucher value",
-      label: currentProjectCode || "Current project",
-      name: currentProjectName,
-      value: currentProjectName,
-    });
-  }
-
-  return options;
-}
-
-function createTermOptions(options: AppAdvancedDropdownOption[], currentTermId: string, currentTerms: string): AppAdvancedDropdownOption[] {
-  const nextOptions = [...options];
-
-  if (currentTermId.trim() && !nextOptions.some((option) => option.value === currentTermId)) {
-    nextOptions.push({
-      description: "Current voucher value",
-      name: currentTerms || currentTermId,
-      value: currentTermId,
-    });
-  }
-
-  return nextOptions;
-}
-
-function addUniqueDropdownOption(options: AppAdvancedDropdownOption[], option: AppAdvancedDropdownOption) {
-  if (!option.value.trim()) {
-    return;
-  }
-
-  if (options.some((currentOption) => currentOption.value === option.value)) {
-    return;
-  }
-
-  options.push(option);
-}
-
-function createLookupTermOptions(terms: AccountsPayableVoucherLookupTerm[]): AppAdvancedDropdownOption[] {
-  return terms.map((term) => ({
-    description: formatLookupTermDuration(term),
-    name: term.name,
-    value: term.id,
-  }));
-}
-
-function mapLookupTermToMaintenanceTerm(term?: AccountsPayableVoucherLookupTerm): Pick<TermsMaintenance, "datemode" | "period"> | null {
-  if (!term) {
-    return null;
-  }
-
-  return {
-    datemode: mapLookupTermDateMode(term.dateMode),
-    period: String(term.period),
-  };
-}
-
-function mapLookupTermDateMode(dateMode: AccountsPayableVoucherLookupTerm["dateMode"]) {
-  if (dateMode === "DAY") return "Day";
-  if (dateMode === "MONTH") return "Month";
-  return "Year";
-}
-
-function formatLookupTermDuration(term: AccountsPayableVoucherLookupTerm) {
-  const unit = mapLookupTermDateMode(term.dateMode).toLowerCase();
-  const suffix = Number(term.period) === 1 ? unit : `${unit}s`;
-
-  return `${term.period} ${suffix}`;
-}
-
-function mergePayableAccountOptions(...groups: AccountsPayableVoucherLookupAccount[][]) {
-  const accountsById = new Map<string, AccountsPayableVoucherLookupAccount>();
-
-  groups.flat().forEach((account) => {
-    accountsById.set(account.id, account);
-  });
-
-  return [...accountsById.values()];
-}
-
-function getPartyDropdownEmptyMessage(query: { isError: boolean; isFetching: boolean; isLoading: boolean }) {
-  if (query.isLoading || query.isFetching) {
-    return "Loading parties...";
-  }
-
-  if (query.isError) {
-    return "Could not load parties.";
-  }
-
-  return "No active vendors or employees found.";
-}
-
-function getTermDropdownEmptyMessage(query: { isError: boolean; isFetching: boolean; isLoading: boolean }) {
-  if (query.isLoading || query.isFetching) {
-    return "Loading terms...";
-  }
-
-  if (query.isError) {
-    return "Could not load terms.";
-  }
-
-  return "No active terms found.";
-}
-
-function getProjectDropdownEmptyMessage(query: { isError: boolean; isFetching: boolean; isLoading: boolean }) {
-  if (query.isLoading || query.isFetching) {
-    return "Loading projects...";
-  }
-
-  if (query.isError) {
-    return "Could not load projects.";
-  }
-
-  return "No active projects found.";
-}
-
-function isProjectResponsibilityCenter(project: AccountsPayableVoucherLookupResponsibilityCenter) {
-  return project.typeName.trim().toLowerCase() === "project";
-}
-
-function isIndividualParty(record: AccountsPayableVoucherLookupParty | null) {
-  return record?.classification.trim().toUpperCase() === "INDIVIDUAL";
 }

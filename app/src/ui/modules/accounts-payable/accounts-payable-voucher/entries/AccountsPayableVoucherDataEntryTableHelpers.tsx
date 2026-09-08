@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { MoreHorizontal } from "lucide-react";
 import {
   AccountsPayableVoucherAccountingColumnIds,
   AccountsPayableVoucherExpenseColumnIds,
@@ -18,16 +16,18 @@ import type {
   AccountsPayableVoucherLookupResponsibilityCenter,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { ModuleTextareaDialog } from "@/app/src/ui/shared/module/ModuleTextareaDialog";
+import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
+import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+import { MoneyNumberField, formatMoneyNumberInput, parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
 import {
   createVatOptions,
   getEwtPercentFromCode,
   getVatPercentFromRate,
   getVatRateFromCode,
 } from "@/app/src/ui/shared/transaction-setup/AppTaxRateDialog";
-import { ModuleTextareaDialog } from "@/app/src/ui/shared/module/ModuleTextareaDialog";
-import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
-import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { MoneyNumberField, formatMoneyNumberInput, parseMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberField";
+import { MoreHorizontal } from "lucide-react";
+import { useState } from "react";
 
 type PartyBearingRow = {
   partyCode: string;

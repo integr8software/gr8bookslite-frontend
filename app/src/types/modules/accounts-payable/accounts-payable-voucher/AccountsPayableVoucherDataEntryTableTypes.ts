@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
 import type { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
+import type { ReactNode } from "react";
 
 export type AccountsPayableVoucherPartyAddTarget = { kind: "expense"; id: string } | { kind: "accounting"; id: string };
 

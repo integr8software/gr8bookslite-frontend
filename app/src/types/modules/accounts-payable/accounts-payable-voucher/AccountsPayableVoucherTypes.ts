@@ -1,5 +1,4 @@
-export type AccountsPayableVoucherStatus =
-  "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
+export type AccountsPayableVoucherStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
 
 export type AccountsPayableVoucherPayableType =
   "Trade Payable" | "Non-Trade Payable" | "Employee Payable" | "Tax Payable" | "Accrued Payable";
@@ -167,27 +166,15 @@ export type AccountsPayableVoucherRecord = {
   updatedAt: string;
 };
 
-export type AccountsPayableVoucherFormValues = Omit<
-  AccountsPayableVoucherRecord,
-  "id" | "createdAt" | "updatedAt"
->;
+export type AccountsPayableVoucherFormValues = Omit<AccountsPayableVoucherRecord, "id" | "createdAt" | "updatedAt">;
 
 export type AccountsPayableVoucherExpenseLineField = keyof AccountsPayableVoucherExpenseLine;
 
-export type AccountsPayableVoucherAccountingEntryField =
-  keyof AccountsPayableVoucherAccountingEntry;
+export type AccountsPayableVoucherAccountingEntryField = keyof AccountsPayableVoucherAccountingEntry;
 
-export type AccountsPayableVoucherFormErrors = Partial<
-  Record<keyof AccountsPayableVoucherFormValues | "balance", string>
-> & {
-  expenseLineErrors?: Record<
-    string,
-    Partial<Record<keyof AccountsPayableVoucherExpenseLine, string>>
-  >;
-  accountingEntryErrors?: Record<
-    string,
-    Partial<Record<keyof AccountsPayableVoucherAccountingEntry, string>>
-  >;
+export type AccountsPayableVoucherFormErrors = Partial<Record<keyof AccountsPayableVoucherFormValues | "balance", string>> & {
+  expenseLineErrors?: Record<string, Partial<Record<keyof AccountsPayableVoucherExpenseLine, string>>>;
+  accountingEntryErrors?: Record<string, Partial<Record<keyof AccountsPayableVoucherAccountingEntry, string>>>;
 };
 
 export type AccountsPayableVoucherActionMode = "add" | "edit" | "view";

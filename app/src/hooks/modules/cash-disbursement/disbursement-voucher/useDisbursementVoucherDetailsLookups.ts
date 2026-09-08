@@ -5,9 +5,7 @@ import { usePartyLookup } from "@/app/src/hooks/modules/party-management/usePart
 import { useResponsibilityCenterLookup } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenterLookup";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType";
 import { createDisbursementVoucherPaymentTypeRecords } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import type {
-  DisbursementVoucherPartyDropdownOption,
-} from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { DisbursementVoucherPartyDropdownOption } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 export type DisbursementVoucherLookupValues = {
@@ -19,85 +17,68 @@ export type DisbursementVoucherLookupValues = {
 };
 
 export function useDisbursementVoucherDetailsLookups(values: DisbursementVoucherLookupValues = {}) {
-  const partyQuery = usePartyLookup({ detail: "complete" });
-  const responsibilityCenterQuery = useResponsibilityCenterLookup();
+  const partyQuery = usePartyLookup();
+  const rcQuery = useResponsibilityCenterLookup();
   const paymentTypeStore = usePaymentTypeStore();
 
   const partyOptions = useMemo<DisbursementVoucherPartyDropdownOption[]>(() => {
-    const options: DisbursementVoucherPartyDropdownOption[] = (partyQuery.data ?? []).map((party) => ({
+    const list: DisbursementVoucherPartyDropdownOption[] = (partyQuery.data ?? []).map((party) => ({
+      label: party.partyCode || party.label,
+      name: party.partyName || party.name,
+      value: party.partyCode || party.value,
+      description: party.description,
       defaultPurchaseInputVatTaxSourceKey: party.defaultPurchaseInputVatTaxSourceKey,
       defaultPurchaseEwtTaxSourceKey: party.defaultPurchaseEwtTaxSourceKey,
       defaultSalesOutputVatTaxSourceKey: party.defaultSalesOutputVatTaxSourceKey,
       defaultSalesCwtTaxSourceKey: party.defaultSalesCwtTaxSourceKey,
-      description: party.description || (party.partyTypes ? party.partyTypes.join(", ") : ""),
-      label: party.partyCode || party.label,
-      name: party.partyName || party.name,
-      selectedDetails: party.partyCode || party.label,
-      value: party.partyCode || party.value,
     }));
 
-    if (
-      values.partyCode &&
-      !options.some((opt) => opt.value === values.partyCode || opt.label === values.partyCode)
-    ) {
-      options.unshift({
+    if (values.partyCode && !list.some((opt) => opt.value === values.partyCode)) {
+      list.unshift({
         label: values.partyCode,
         name: values.partyName || values.partyCode,
-        selectedDetails: values.partyCode,
         value: values.partyCode,
-        description: values.partyName,
       });
     }
 
-    return options;
+    return list;
   }, [partyQuery.data, values.partyCode, values.partyName]);
 
   const projectOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
-    const centers = responsibilityCenterQuery.data ?? [];
-    const isProject = (rc: { typeName?: string; name?: string }) =>
-      rc.typeName?.toLowerCase().includes("project") || rc.name?.toLowerCase().includes("project");
+    const centers = rcQuery.data ?? [];
+    const projects = centers.filter(
+      (rc) => rc.typeName?.toLowerCase().includes("project") || rc.name?.toLowerCase().includes("project"),
+    );
+    const source = projects.length > 0 ? projects : centers;
 
-    const filtered = centers.filter((rc) => isProject(rc));
-    const base = filtered.length > 0 ? filtered : centers;
-
-    const options: AppAdvancedDropdownOption[] = base.map((rc) => ({
+    const list: AppAdvancedDropdownOption[] = source.map((rc) => ({
       label: rc.code,
       name: rc.name,
       value: rc.name,
     }));
 
     const currentProject = values.projectName || values.projectCode || values.costCenter;
-    if (
-      currentProject &&
-      !options.some((opt) => opt.value === currentProject || opt.name === currentProject || opt.label === currentProject)
-    ) {
-      const code = values.projectCode || values.costCenter || "";
-      options.unshift({
-        label: code && code !== currentProject ? code : undefined,
+    if (currentProject && !list.some((opt) => opt.value === currentProject)) {
+      list.unshift({
+        label: values.projectCode || values.costCenter,
         name: values.projectName || currentProject,
-        value: values.projectName || currentProject,
+        value: currentProject,
       });
     }
 
-    return options;
-  }, [responsibilityCenterQuery.data, values.costCenter, values.projectCode, values.projectName]);
+    return list;
+  }, [rcQuery.data, values.costCenter, values.projectCode, values.projectName]);
 
   const responsibilityCenterOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
-    const centers = responsibilityCenterQuery.data ?? [];
-    const isProject = (rc: { typeName?: string; name?: string }) =>
-      rc.typeName?.toLowerCase().includes("project") || rc.name?.toLowerCase().includes("project");
-
-    const options: AppAdvancedDropdownOption[] = centers
-      .filter((rc) => !isProject(rc))
+    return (rcQuery.data ?? [])
+      .filter((rc) => !rc.typeName?.toLowerCase().includes("project") && !rc.name?.toLowerCase().includes("project"))
       .map((rc) => ({
-        description: rc.code,
         label: rc.code,
         name: rc.name,
         value: rc.name,
+        description: rc.code,
       }));
-
-    return options;
-  }, [responsibilityCenterQuery.data]);
+  }, [rcQuery.data]);
 
   const paymentTypeRecords = useMemo(
     () => createDisbursementVoucherPaymentTypeRecords(paymentTypeStore.paymentTypes),
@@ -106,7 +87,7 @@ export function useDisbursementVoucherDetailsLookups(values: DisbursementVoucher
 
   return {
     isPartyLookupLoading: partyQuery.isLoading,
-    isResponsibilityCenterLookupLoading: responsibilityCenterQuery.isLoading,
+    isResponsibilityCenterLookupLoading: rcQuery.isLoading,
     partyOptions,
     paymentTypeRecords,
     projectOptions,

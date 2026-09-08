@@ -93,10 +93,17 @@ export function useDisbursementVoucherEntryLookups({
         return;
       }
 
+      const matchingOption = options.find(
+        (opt) =>
+          opt.name.toLowerCase() === currentPartyName.toLowerCase() ||
+          (entry.partyCode && opt.value === entry.partyCode) ||
+          (entry.partyCode && opt.label === entry.partyCode),
+      );
+
       customValues.add(value);
       customOptions.push({
-        description: "Copied entry party",
-        label: entry.partyCode ?? "",
+        description: matchingOption?.description ?? "",
+        label: entry.partyCode ?? matchingOption?.label ?? "",
         name: currentPartyName,
         value,
       });

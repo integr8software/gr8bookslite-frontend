@@ -71,17 +71,29 @@ export async function fetchEmployeeLookupOptions(query: Omit<PartyLookupQuery, "
   return fetchPartyLookupOptions({ ...query, partyType: "EMPLOYEE", detail: CompletePartyLookupDetail });
 }
 
+function formatPartyTypes(partyTypes?: string[] | string, classification?: string): string {
+  if (Array.isArray(partyTypes) && partyTypes.length > 0) {
+    return partyTypes.join(", ");
+  }
+  if (typeof partyTypes === "string" && partyTypes.trim()) {
+    return partyTypes.trim();
+  }
+  return classification?.trim() || "";
+}
+
 function mapPartyToLookupOption(party: PartyLookupBackendItem): PartyLookupOption {
   const displayName = party.name || party.partyName || party.partyCodeNo;
+  const partyTypes = formatPartyTypes(party.partyTypes, party.classification);
 
   return {
     ...party,
     name: displayName,
     label: party.partyCodeNo,
     value: party.partyCodeNo,
-    description: displayName,
+    description: partyTypes,
     partyId: party.id,
     partyCode: party.partyCodeNo,
     partyName: displayName,
+    selectedDetails: party.partyCodeNo,
   };
 }

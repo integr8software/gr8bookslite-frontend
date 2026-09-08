@@ -157,6 +157,7 @@ export type BankMasterfileTableProps = {
   query: string;
   statusFilter: BankMasterfileStatusFilter;
   onEditBank: (bank: BankMasterfile) => void;
+  onManageCheckTemplates: (bank: BankMasterfile) => void;
   onQueryChange: (value: string) => void;
   onRefresh: () => void;
   onStatusFilterChange: (value: BankMasterfileStatusFilter) => void;
@@ -187,6 +188,7 @@ export type BankMasterfileTableRowProps = {
   row: Row<BankMasterfile>;
   permissions: BankMasterfilePermissions;
   onEditBank: (bank: BankMasterfile) => void;
+  onManageCheckTemplates: (bank: BankMasterfile) => void;
   onToggleStatus: (bank: BankMasterfile) => void;
   onViewBank: (bank: BankMasterfile) => void;
 };
@@ -196,8 +198,28 @@ export type BankMasterfileCellContentProps = {
   columnId: string;
   permissions: BankMasterfilePermissions;
   onEditBank: (bank: BankMasterfile) => void;
+  onManageCheckTemplates: (bank: BankMasterfile) => void;
   onToggleStatus: (bank: BankMasterfile) => void;
   onViewBank: (bank: BankMasterfile) => void;
+};
+
+export type BankCheckTemplateOrientation = "Landscape" | "Portrait";
+
+export type BankCheckTemplateFormValues = {
+  name: string;
+  description: string;
+  paperWidth: string;
+  paperHeight: string;
+  orientation: BankCheckTemplateOrientation;
+  isDefault: boolean;
+};
+
+export type BankCheckTemplateFormErrors = Partial<Record<keyof BankCheckTemplateFormValues, string>>;
+
+export type BankCheckTemplate = BankCheckTemplateFormValues & {
+  id: string;
+  bankId: string;
+  createdAt: string;
 };
 
 export type BankMasterfileImportDialogProps = {

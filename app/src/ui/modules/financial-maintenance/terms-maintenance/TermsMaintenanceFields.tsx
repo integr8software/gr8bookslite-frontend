@@ -1,13 +1,10 @@
-import type { ClipboardEventHandler, KeyboardEventHandler, ReactNode } from "react";
-import {
-  TermsMaintenanceDatemodeOptions,
-  TermsMaintenanceFieldClassName,
-  TermsMaintenanceSelectClassName,
-} from "@/app/src/constants/modules/financial-maintenance/terms-maintenance/TermsMaintenanceConstants";
+import type { ClipboardEventHandler, KeyboardEventHandler } from "react";
+import { TermsMaintenanceDatemodeOptions } from "@/app/src/constants/modules/financial-maintenance/terms-maintenance/TermsMaintenanceConstants";
 import type { TermsMaintenanceFieldsProps } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
-import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
 
 export function TermsMaintenanceFields({ errors, isReadonly, values, onInputChange, onStatusChange }: TermsMaintenanceFieldsProps) {
   return (
@@ -18,20 +15,19 @@ export function TermsMaintenanceFields({ errors, isReadonly, values, onInputChan
           value={values.name}
           onChange={onInputChange}
           readOnly={isReadonly}
-          className={TermsMaintenanceFieldClassName}
           placeholder="Enter Term Name..."
         />
       </FormField>
 
       <FormField label="Description" error={errors.description} className="lg:col-span-2">
-        <textarea
+        <AppLimitedTextarea
           name="description"
           maxLength={500}
           value={values.description}
           onChange={onInputChange}
           readOnly={isReadonly}
-          placeholder={isReadonly ? "No Description..." : "Enter Description..."}
-          className={`${TermsMaintenanceFieldClassName} min-h-24 resize-y py-3 ${isReadonly ? "placeholder:italic" : ""}`}
+          showCounter={false}
+          className={isReadonly ? "placeholder:italic" : undefined}
         />
       </FormField>
 
@@ -41,7 +37,6 @@ export function TermsMaintenanceFields({ errors, isReadonly, values, onInputChan
           value={values.datemode}
           onChange={onInputChange}
           disabled={isReadonly}
-          className={TermsMaintenanceSelectClassName}
         >
           {TermsMaintenanceDatemodeOptions.map((option) => (
             <option key={option} value={option}>
@@ -68,7 +63,6 @@ export function TermsMaintenanceFields({ errors, isReadonly, values, onInputChan
           onPaste={preventNonWholeNumberPaste}
           onWheel={(event) => event.currentTarget.blur()}
           readOnly={isReadonly}
-          className={TermsMaintenanceFieldClassName}
           placeholder="Enter period"
         />
       </FormField>
@@ -86,36 +80,7 @@ export function TermsMaintenanceFields({ errors, isReadonly, values, onInputChan
   );
 }
 
-function FormField({
-  children,
-  className,
-  error,
-  label,
-  required,
-  warning,
-}: {
-  children: ReactNode;
-  className?: string;
-  error?: string;
-  label: string;
-  required?: boolean;
-  warning?: string;
-}) {
-  return (
-    <label className={className}>
-      <span className="mb-2 block text-sm font-semibold text-darknavy">
-        {label}
-        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
-      </span>
-      {children}
-      {error ? (
-        <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span>
-      ) : warning ? (
-        <span className="mt-1 block text-xs font-medium text-amber-600">{warning}</span>
-      ) : null}
-    </label>
-  );
-}
+
 
 const blockedPeriodKeys = new Set(["e", "E", "+", "-", "."]);
 

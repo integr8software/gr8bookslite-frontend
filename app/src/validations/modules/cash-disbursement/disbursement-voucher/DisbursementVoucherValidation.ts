@@ -148,7 +148,9 @@ export function validateDisbursementVoucherDetails(
         ? "Debit Memo No. is required."
         : "Check No. is required.";
     }
-    if (!(values.paymentDetails.checkDate || values.voucherDate).trim()) errors.checkDate = "Check Date is required.";
+    if (!values.paymentDetails.isMultiCheckNumber && !(values.paymentDetails.checkDate || values.voucherDate).trim()) {
+      errors.checkDate = "Check Date is required.";
+    }
   }
 
   if (requiresTransferDetails) {

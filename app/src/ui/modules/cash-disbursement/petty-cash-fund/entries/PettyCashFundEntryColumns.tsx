@@ -1,9 +1,3 @@
-import {
-  PettyCashFundEntryTypeOptions,
-  PettyCashFundEntryEwtCodeOptions,
-  PettyCashFundEntryVatTypeOptions,
-  PettyCashFundResponsibilityCenterOptions,
-} from "@/app/src/constants/modules/cash-disbursement/petty-cash-fund/PettyCashFundConstants";
 import { calculatePettyCashFundItemTaxFields } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund/PettyCashFundData";
 import type {
   PettyCashFundActionPageState,
@@ -26,6 +20,9 @@ export function createPettyCashFundItemColumns(
   labels: Record<PettyCashFundItemColumnId, string>,
   widths: Record<PettyCashFundItemColumnId, number>,
   supplierOptions: AppAdvancedDropdownOption[],
+  vatOptions: AppAdvancedDropdownOption[] = [],
+  ewtOptions: AppAdvancedDropdownOption[] = [],
+  responsibilityCenterOptions: AppAdvancedDropdownOption[] = [],
   onOpenResponsibilityCenterDrawer?: PettyCashFundOpenResponsibilityCenterDrawerHandler,
   onOpenSupplierDrawer?: PettyCashFundOpenSupplierDrawerHandler,
 ): Record<PettyCashFundItemColumnId, ModuleDataEntryColumn<PettyCashFundItem>> {
@@ -129,8 +126,8 @@ export function createPettyCashFundItemColumns(
             const selectedSupplier = supplierOptions.find(
               (option) => option.value === value || option.name === value || option.label === value,
             );
-            const vatType = getDefaultVatType(selectedSupplier, row.vatType, PettyCashFundEntryVatTypeOptions);
-            const ewtCode = getDefaultEwtCode(selectedSupplier, row.ewtCode, PettyCashFundEntryEwtCodeOptions);
+            const vatType = getDefaultVatType(selectedSupplier, row.vatType, vatOptions);
+            const ewtCode = getDefaultEwtCode(selectedSupplier, row.ewtCode, ewtOptions);
             page.updateItem(row.id, {
               supplierCode: String(selectedSupplier?.label ?? selectedSupplier?.value ?? ""),
               supplierName: selectedSupplier?.name ?? String(value),
@@ -151,16 +148,16 @@ export function createPettyCashFundItemColumns(
         ...calculatePettyCashFundItemTaxFields(value, row.vatType, row.ewtCode),
       }),
     ),
-    type: dropdown("type", PettyCashFundEntryTypeOptions),
+    type: text("type"),
     vatType: {
-      ...dropdown("vatType", PettyCashFundEntryVatTypeOptions),
+      ...dropdown("vatType", vatOptions),
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
           id={context.fieldId}
           name={context.fieldName}
           value={row.vatType}
           readOnly={page.isReadonly}
-          options={PettyCashFundEntryVatTypeOptions}
+          options={vatOptions}
           placeholder="Select VAT Type"
           searchPlaceholder="Search VAT Type"
           onChange={(value) =>
@@ -175,14 +172,14 @@ export function createPettyCashFundItemColumns(
     vatPercent: calculatedMoney("vatPercent"),
     vatAmount: calculatedMoney("vatAmount"),
     ewtCode: {
-      ...dropdown("ewtCode", PettyCashFundEntryEwtCodeOptions),
+      ...dropdown("ewtCode", ewtOptions),
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
           id={context.fieldId}
           name={context.fieldName}
           value={row.ewtCode}
           readOnly={page.isReadonly}
-          options={PettyCashFundEntryEwtCodeOptions}
+          options={ewtOptions}
           optionViewToggle
           placeholder="Select EWT Code"
           searchPlaceholder="Search tax name, code, rate, or description"
@@ -218,7 +215,7 @@ export function createPettyCashFundItemColumns(
           name={context.fieldName}
           value={row.responsibilityCenterCode}
           readOnly={page.isReadonly}
-          options={PettyCashFundResponsibilityCenterOptions}
+          options={responsibilityCenterOptions}
           placeholder="Select Responsibility Center"
           searchPlaceholder="Search Responsibility Center"
           addAction={
@@ -227,7 +224,7 @@ export function createPettyCashFundItemColumns(
               : undefined
           }
           onChange={(value) => {
-            const selectedCenter = PettyCashFundResponsibilityCenterOptions.find((option) => option.value === value);
+            const selectedCenter = responsibilityCenterOptions.find((option) => option.value === value);
             page.updateItem(row.id, {
               responsibilityCenterCode: String(selectedCenter?.value ?? ""),
               responsibilityCenterName: selectedCenter?.name ?? "",

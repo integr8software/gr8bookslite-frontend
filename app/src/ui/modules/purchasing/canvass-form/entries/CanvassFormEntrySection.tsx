@@ -10,6 +10,9 @@ import type {
 	CanvassFormAccountingEntry,
 	CanvassFormItem,
 } from "@/app/src/types/modules/purchasing/canvass-form/CanvassFormTypes";
+import type { ItemRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import type { ServiceMaintenanceOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import {
 	ModuleDataEntry,
 	type ModuleDataEntryClearAction,
@@ -22,17 +25,25 @@ import { createCanvassFormLineColumns } from "@/app/src/ui/modules/purchasing/ca
 type CanvassFormEntrySectionProps = {
 	accountingRows: CanvassFormAccountingEntry[];
 	error?: string;
+	itemDescriptionOptions: ItemRecord[];
 	isReadonly: boolean;
+	purchaseType: string;
 	rows: CanvassFormItem[];
+	serviceDescriptionOptions: ServiceMaintenanceOptionResponseDto[];
+	supplierOptions: AppAdvancedDropdownOption[];
 	onAccountingRowsChange: (rows: CanvassFormAccountingEntry[]) => void;
 	onRowsChange: (rows: CanvassFormItem[]) => void;
 };
 
 export function CanvassFormEntrySection({
 	error,
+	itemDescriptionOptions,
 	isReadonly,
 	onRowsChange,
+	purchaseType,
 	rows,
+	serviceDescriptionOptions,
+	supplierOptions,
 }: CanvassFormEntrySectionProps) {
 	const updateEntry = useCallback(
 		(rowId: string, updates: Partial<CanvassFormItem>) => {
@@ -48,8 +59,8 @@ export function CanvassFormEntrySection({
 	);
 	const total = useMemo(() => getCanvassFormTotal({ items: rows }), [rows]);
 	const columns = useMemo<ModuleDataEntryColumn<CanvassFormItem>[]>(
-		() => createCanvassFormLineColumns(isReadonly, updateEntry),
-		[isReadonly, updateEntry],
+		() => createCanvassFormLineColumns(isReadonly, updateEntry, purchaseType, itemDescriptionOptions, serviceDescriptionOptions, supplierOptions),
+		[isReadonly, itemDescriptionOptions, purchaseType, serviceDescriptionOptions, supplierOptions, updateEntry],
 	);
 	const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
 		() =>
@@ -76,7 +87,7 @@ export function CanvassFormEntrySection({
 			onRowsChange([createBlankCanvassFormItem()]);
 			return;
 		}
-		const nextRows = rows.filter((row) => !shouldClearEntry(row, action));
+		const nextRows = rows.filter((row) => !shouldClearEntry(row, action, purchaseType));
 		onRowsChange(nextRows.length ? nextRows : [createBlankCanvassFormItem()]);
 	}
 
@@ -162,6 +173,7 @@ const EntryExportOptions = [
 function shouldClearEntry(
 	entry: CanvassFormItem,
 	action: Exclude<ModuleDataEntryClearAction, "all">,
+	purchaseType: string,
 ) {
 	const hasData = Boolean(
 		entry.itemCode.trim() ||
@@ -177,9 +189,10 @@ function shouldClearEntry(
 			Number(entry.minimumOrderQuantity) ||
 			Number(entry.quantity),
 	);
-	const isComplete = Boolean(
-		entry.itemCode.trim() && entry.description.trim() && entry.uom.trim(),
-	);
+	const isServices = purchaseType.toLowerCase() === "services";
+	const isComplete = isServices
+		? Boolean(entry.description.trim())
+		: Boolean(entry.itemCode.trim() && entry.description.trim() && entry.uom.trim());
 
 	if (action === "with-data") return hasData;
 	if (action === "incomplete") return hasData && !isComplete;

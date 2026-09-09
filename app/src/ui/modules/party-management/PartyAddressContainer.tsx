@@ -17,7 +17,7 @@ import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAd
 import type { AddressAutocompleteDetails, AddressAutocompleteItem } from "@/app/src/types/shared/address/AddressTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAddressAutocomplete } from "@/app/src/ui/shared/address/AppAddressAutocomplete";
-import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
+import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
 import { useModuleFieldVisibility } from "@/app/src/hooks/shared/field-management/useCurrentModuleFieldManagement";
 
 export function PartyAddressContainer({
@@ -452,12 +452,6 @@ function Field({
   required?: boolean;
 }) {
   const isVisible = useModuleFieldVisibility([label]);
-  const labelContent = (
-    <>
-      {label}
-      <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
-    </>
-  );
 
   if (!isVisible) {
     return null;
@@ -485,19 +479,16 @@ function Field({
   }
 
   return (
-    <div onMouseDown={handleFieldMouseDown}>
-      {htmlFor ? (
-        <label htmlFor={htmlFor} className="mb-2 block text-sm font-semibold text-darknavy">
-          {labelContent}
-        </label>
-      ) : (
-        <span id={labelId} className="mb-2 block text-sm font-semibold text-darknavy">
-          {labelContent}
-        </span>
-      )}
+    <FormField
+      error={error}
+      htmlFor={htmlFor}
+      id={labelId}
+      label={label}
+      onMouseDown={handleFieldMouseDown}
+      required={required}
+    >
       {children}
-      {error ? <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span> : null}
-    </div>
+    </FormField>
   );
 }
 

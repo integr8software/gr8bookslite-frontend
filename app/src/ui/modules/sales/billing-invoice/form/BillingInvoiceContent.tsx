@@ -1,9 +1,4 @@
-import {
-  BillingInvoiceCurrencyOptions,
-  BillingInvoicePartyOptions,
-  BillingInvoiceResponsibilityCenterOptions,
-  BillingInvoiceTermOptions,
-} from "@/app/src/data/modules/sales/billing-invoice/BillingInvoiceData";
+import { BillingInvoiceCurrencyOptions } from "@/app/src/data/modules/sales/billing-invoice/BillingInvoiceData";
 import type {
   BillingInvoiceFieldUpdater,
   BillingInvoiceFormValues,
@@ -18,14 +13,25 @@ import {
   SelectField,
   TextField,
 } from "@/app/src/ui/modules/sales/billing-invoice/form/BillingInvoiceFieldControls";
+import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 type BillingInvoiceDetailsFormProps = {
+  customerPartyOptions: AppAdvancedDropdownOption[];
   isReadonly: boolean;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
+  termOptions: AppAdvancedDropdownOption[];
   values: BillingInvoiceFormValues;
   onUpdateField: BillingInvoiceFieldUpdater<BillingInvoiceFormValues>;
 };
 
-export function BillingInvoiceDetailsForm({ isReadonly, onUpdateField, values }: BillingInvoiceDetailsFormProps) {
+export function BillingInvoiceDetailsForm({
+  customerPartyOptions,
+  isReadonly,
+  onUpdateField,
+  responsibilityCenterOptions,
+  termOptions,
+  values,
+}: BillingInvoiceDetailsFormProps) {
   return (
     <section className="min-w-0 rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid min-w-0 content-start gap-x-8 gap-y-3 xl:grid-cols-2 2xl:grid-cols-3">
@@ -35,10 +41,16 @@ export function BillingInvoiceDetailsForm({ isReadonly, onUpdateField, values }:
               id="billing-invoice-party-name"
               value={values.name}
               readOnly={isReadonly}
-              options={BillingInvoicePartyOptions}
+              options={customerPartyOptions}
               placeholder=""
               searchPlaceholder="Search party"
-              onChange={(value) => onUpdateField("name", String(value))}
+              onChange={(value) => {
+                const partyName = String(value);
+                const selectedParty = customerPartyOptions.find((option) => option.value === partyName);
+
+                onUpdateField("name", partyName);
+                onUpdateField("code", selectedParty?.label ?? "");
+              }}
             />
           </FieldShell>
           <TextField
@@ -87,14 +99,14 @@ export function BillingInvoiceDetailsForm({ isReadonly, onUpdateField, values }:
             id="billing-invoice-party-code"
             label="Party Code"
             value={values.code}
-            readOnly={isReadonly}
+            readOnly
             onChange={(value) => onUpdateField("code", value)}
           />
           <FieldShell controlId="billing-invoice-terms" label="Terms of Payment">
             <SelectField
               value={values.terms}
               readOnly={isReadonly}
-              options={BillingInvoiceTermOptions}
+              options={termOptions}
               placeholder="--Select Terms--"
               onChange={(value) => onUpdateField("terms", value)}
             />
@@ -117,7 +129,7 @@ export function BillingInvoiceDetailsForm({ isReadonly, onUpdateField, values }:
             <SelectField
               value={values.resCenter}
               readOnly={isReadonly}
-              options={BillingInvoiceResponsibilityCenterOptions}
+              options={responsibilityCenterOptions}
               placeholder="--Select Res. Center--"
               onChange={(value) => onUpdateField("resCenter", value)}
             />
@@ -129,7 +141,7 @@ export function BillingInvoiceDetailsForm({ isReadonly, onUpdateField, values }:
             id="billing-invoice-transaction-no"
             label="BI No"
             value={values.transactionNo}
-            readOnly={isReadonly}
+            readOnly
             onChange={(value) => onUpdateField("transactionNo", value)}
           />
           <DateField

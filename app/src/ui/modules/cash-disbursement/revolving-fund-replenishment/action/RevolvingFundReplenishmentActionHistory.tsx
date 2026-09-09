@@ -40,10 +40,10 @@ function createHistory(record?: RevolvingFundReplenishmentRecord): ModuleHistory
       createdAt: record.createdAt,
       description: `${record.transactionNo} was created.`,
       id: `rfr-history-${record.id}-created`,
-      status: RevolvingFundReplenishmentStatuses.draft,
+      status: RevolvingFundReplenishmentStatuses.Draft,
     },
   ];
-  if (record.updatedAt !== record.createdAt || record.status !== RevolvingFundReplenishmentStatuses.draft)
+  if (record.updatedAt !== record.createdAt || record.status !== RevolvingFundReplenishmentStatuses.Draft)
     history.push({
       action: "Updated",
       actor: record.updatedBy,

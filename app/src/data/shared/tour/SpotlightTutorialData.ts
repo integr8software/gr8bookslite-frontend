@@ -163,6 +163,11 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Advances to Suppliers",
   },
   {
+    href: "/cash-disbursement/request-for-payment",
+    addMode: "none",
+    label: "Request for payment",
+  },
+  {
     href: "/sales/sales-journal",
     addMode: "none",
     label: "Sales Journal",

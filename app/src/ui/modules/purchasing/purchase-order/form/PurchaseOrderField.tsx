@@ -1,5 +1,4 @@
 import {
-  PurchaseOrderBooleanOptions,
   PurchaseOrderCurrencyOptions,
   PurchaseOrderStatusOptions,
   PurchaseOrderTermsOptions,
@@ -14,6 +13,7 @@ import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import {
   DateField,
   FieldShell,
@@ -24,25 +24,60 @@ import {
 
 type PurchaseOrderSupplierFieldsProps = {
   isReadonly: boolean;
+  isCopyLocked?: boolean;
+  partyOptions: AppAdvancedDropdownOption[];
   values: PurchaseOrderFormValues;
+  onSelectParty: (partyCode: string) => void;
   onUpdateField: PurchaseOrderFieldUpdater<PurchaseOrderFormValues>;
 };
 
-export function PurchaseOrderSupplierFields({ isReadonly, onUpdateField, values }: PurchaseOrderSupplierFieldsProps) {
+export function PurchaseOrderSupplierFields({
+  isReadonly,
+  isCopyLocked = false,
+  partyOptions,
+  onSelectParty,
+  onUpdateField,
+  values,
+}: PurchaseOrderSupplierFieldsProps) {
+  const sourceReadOnly = isReadonly || isCopyLocked;
+  const selectedPartyOption = partyOptions.find((p) => p.value === values.vceCode);
+  const partyDisplayName = selectedPartyOption
+    ? `${selectedPartyOption.name}${selectedPartyOption.value ? ` - ${selectedPartyOption.value}` : ""}`
+    : values.vceName
+      ? `${values.vceName}${values.vceCode ? ` - ${values.vceCode}` : ""}`
+      : values.vceCode;
+
   return (
     <div className="grid min-w-0 gap-5 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-4">
-        <TextField
-          id="purchase-order-party-name"
-          label="Party Name"
-          readOnly={isReadonly}
-          value={values.vceName}
-          onChange={(value) => onUpdateField("vceName", value)}
-        />
+        {sourceReadOnly ? (
+          <TextField
+            id="purchase-order-party-name"
+            label="Party Name"
+            isRequired
+            readOnly
+            value={partyDisplayName}
+            onChange={() => undefined}
+          />
+        ) : (
+          <FieldShell controlId="purchase-order-party-name" label="Party Name" isRequired>
+            <AppAdvancedDropdown
+              id="purchase-order-party-name"
+              className="w-full min-w-0"
+              value={values.vceCode}
+              readOnly={false}
+              options={partyOptions}
+              placeholder="Select Party Name"
+              searchPlaceholder="Search Party Name"
+              showSelectedDetails
+              onChange={(value) => onSelectParty(String(value))}
+            />
+          </FieldShell>
+        )}
         <TextField
           id="purchase-order-address"
           label="Address"
-          readOnly={isReadonly}
+          readOnly={sourceReadOnly}
           value={values.address}
           onChange={(value) => onUpdateField("address", value)}
         />
@@ -61,60 +96,36 @@ export function PurchaseOrderSupplierFields({ isReadonly, onUpdateField, values 
           onChange={(value) => onUpdateField("contactNo", value)}
         />
         <TextField
-          id="purchase-order-pr-no"
-          label="PR No."
-          readOnly={isReadonly}
-          value={values.prNo}
-          onChange={(value) => onUpdateField("prNo", value)}
-        />
-        <TextField
-          id="purchase-order-project-code"
-          label="Project Code"
-          readOnly={isReadonly}
-          value={values.projectCode}
-          onChange={(value) => onUpdateField("projectCode", value)}
-        />
-        <TextField
           id="purchase-order-project-name"
           label="Project Name"
-          readOnly={isReadonly}
+          readOnly={sourceReadOnly}
           value={values.projectName}
           onChange={(value) => onUpdateField("projectName", value)}
         />
-        <div className="grid min-w-0 gap-2">
-          <label htmlFor="purchase-order-remarks" className="text-sm font-semibold text-darknavy">
-            Remarks
-          </label>
+        <FieldShell controlId="purchase-order-remarks" label="Remarks">
           <AppLimitedTextarea
             id="purchase-order-remarks"
-            readOnly={isReadonly}
+            readOnly={sourceReadOnly}
             value={values.remarks ?? ""}
             onChange={(event) => onUpdateField("remarks", event.target.value)}
             className={`${PurchaseOrderFieldClassName} min-h-23 py-3`}
             counterMode="remaining"
             maxLength={250}
           />
-        </div>
+        </FieldShell>
       </div>
       <div className="grid min-w-0 content-start gap-4">
         <TextField
           id="purchase-order-party-code"
           label="Party Code"
-          readOnly={isReadonly}
+          readOnly
           value={values.vceCode}
-          onChange={(value) => onUpdateField("vceCode", value)}
-        />
-        <SelectField
-          id="purchase-order-terms-of-payment"
-          label="Terms of Payment"
-          readOnly={isReadonly}
-          value={values.termsOfPayment}
-          options={PurchaseOrderTermsOptions}
-          onChange={(value) => onUpdateField("termsOfPayment", value)}
+          onChange={() => undefined}
         />
         <SelectField
           id="purchase-order-purchase-type"
           label="Purchase Type"
+          isRequired
           readOnly={isReadonly}
           value={values.purchaseType}
           options={PurchaseOrderTypeOptions}
@@ -127,39 +138,45 @@ export function PurchaseOrderSupplierFields({ isReadonly, onUpdateField, values 
           onCurrencyChange={(value) => onUpdateField("currency", value)}
           onExchangeRateChange={(value) => onUpdateField("exchangeRate", value)}
         />
-        <BooleanSelectField
-          id="purchase-order-partial-payment"
-          label="Partial Payment"
+        <SelectField
+          id="purchase-order-terms-of-payment"
+          label="Terms of Payment"
           readOnly={isReadonly}
-          value={values.partialPayment ? "True" : "False"}
-          onChange={(value) => onUpdateField("partialPayment", value === "True")}
+          value={values.termsOfPayment}
+          options={PurchaseOrderTermsOptions}
+          onChange={(value) => {
+            onUpdateField("termId", "");
+            onUpdateField("termsOfPayment", value);
+          }}
         />
         <TextField
-          id="purchase-order-importation-no"
-          label="Importation No."
-          readOnly={isReadonly}
-          value={values.importationNo}
-          onChange={(value) => onUpdateField("importationNo", value)}
+          id="purchase-order-project-code"
+          label="Project Code"
+          readOnly={sourceReadOnly}
+          value={values.projectCode}
+          onChange={(value) => onUpdateField("projectCode", value)}
         />
       </div>
       <div className="grid min-w-0 content-start gap-4">
         <TextField
           id="purchase-order-trans-no"
           label="PO No."
-          readOnly={isReadonly}
+          isRequired
+          readOnly={sourceReadOnly}
           value={values.transNo}
           onChange={(value) => onUpdateField("transNo", value)}
         />
         <DateField
           id="purchase-order-document-date"
-          label="Document Date"
+          label="PO Date"
+          isRequired
           readOnly={isReadonly}
           value={values.documentDate}
           onChange={(value) => onUpdateField("documentDate", value)}
         />
         <DateField
           id="purchase-order-delivery-date"
-          label="Delivery Date"
+          label="Date Needed"
           readOnly={isReadonly}
           value={values.deliveryDate}
           onChange={(value) => onUpdateField("deliveryDate", value)}
@@ -220,38 +237,5 @@ function CurrencyExchangeRateField({
         }
       />
     </FieldShell>
-  );
-}
-
-function BooleanSelectField({
-  id,
-  label,
-  onChange,
-  readOnly,
-  value,
-}: {
-  id: string;
-  label: string;
-  onChange: (value: string) => void;
-  readOnly: boolean;
-  value: string;
-}) {
-  return (
-    <div className="grid min-w-0 gap-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-center">
-      <label htmlFor={id} className="text-sm font-semibold text-darknavy">
-        {label}
-      </label>
-      <AppAdvancedDropdown
-        id={id}
-        value={value}
-        readOnly={readOnly}
-        options={PurchaseOrderBooleanOptions.map((option) => ({
-          name: option,
-          value: option,
-        }))}
-        placeholder="False"
-        onChange={(nextValue) => onChange(String(nextValue))}
-      />
-    </div>
   );
 }

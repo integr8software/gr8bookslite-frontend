@@ -287,7 +287,7 @@ function createVoucherProjectOptions({
 
   if (currentProjectName.trim()) {
     addUniqueDropdownOption(options, {
-      label: currentProjectCode || "Current project",
+      label: currentProjectCode && currentProjectCode !== currentProjectName ? currentProjectCode : undefined,
       name: currentProjectName,
       value: currentProjectName,
     });

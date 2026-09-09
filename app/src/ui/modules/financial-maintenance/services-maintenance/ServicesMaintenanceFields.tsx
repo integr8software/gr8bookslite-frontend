@@ -1,10 +1,9 @@
-import { isValidElement, useId } from "react";
-import { ServicesMaintenanceFieldClassName, ServicesMaintenanceServiceTypeOptions } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
-import { ModuleFieldRequiredMark } from "@/app/src/ui/shared/field-management/ModuleFieldRequiredMark";
-import type {
-  ServicesMaintenanceFieldsProps,
-  ServicesMaintenanceFormFieldProps,
-} from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
+import { ServicesMaintenanceServiceTypeOptions } from "@/app/src/constants/modules/financial-maintenance/services-maintenance/ServicesMaintenanceConstants";
+import type { ServicesMaintenanceFieldsProps } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
+import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
+
+export { FormField };
 
 export function ServicesMaintenanceFields({ errors, isReadonly, values, onInputChange }: ServicesMaintenanceFieldsProps) {
   return (
@@ -16,18 +15,16 @@ export function ServicesMaintenanceFields({ errors, isReadonly, values, onInputC
           value={values.serviceName}
           onChange={onInputChange}
           readOnly={isReadonly}
-          className={ServicesMaintenanceFieldClassName}
           placeholder="Enter service name"
         />
       </FormField>
-      <FormField label="Service Type" error={errors.serviceType} required className="lg:col-span-2">
+      <FormField label="Type of Service" error={errors.serviceType} required className="lg:col-span-2">
         <select
           id="services-maintenance-service-type"
           name="serviceType"
           value={values.serviceType}
           onChange={onInputChange}
           disabled={isReadonly}
-          className={ServicesMaintenanceFieldClassName}
         >
           {ServicesMaintenanceServiceTypeOptions.map((option) => (
             <option key={option} value={option}>
@@ -37,37 +34,16 @@ export function ServicesMaintenanceFields({ errors, isReadonly, values, onInputC
         </select>
       </FormField>
       <FormField label="Description" error={errors.description} className="lg:col-span-2">
-        <textarea
+        <AppLimitedTextarea
           id="services-maintenance-description"
           name="description"
           maxLength={500}
           value={values.description}
           onChange={onInputChange}
           readOnly={isReadonly}
-          className={`${ServicesMaintenanceFieldClassName} min-h-28 resize-y py-3`}
-          placeholder={isReadonly ? "No description" : "Enter description"}
+          showCounter={false}
         />
       </FormField>
-    </div>
-  );
-}
-
-export function FormField({ children, className, error, helper, label, required }: ServicesMaintenanceFormFieldProps) {
-  const generatedId = useId();
-  const fieldId = isValidElement<{ id?: string }>(children) ? (children.props.id ?? generatedId) : generatedId;
-
-  return (
-    <div className={className}>
-      <label htmlFor={fieldId} className="mb-2 block text-sm font-semibold text-darknavy">
-        {label}
-        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
-      </label>
-      {children}
-      {error ? (
-        <span className="mt-1 block text-xs font-medium text-coralpink">{error}</span>
-      ) : helper ? (
-        <span className="mt-1 block text-xs font-medium text-darknavy/55">{helper}</span>
-      ) : null}
     </div>
   );
 }

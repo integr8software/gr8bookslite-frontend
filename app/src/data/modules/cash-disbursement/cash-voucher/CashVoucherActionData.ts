@@ -6,7 +6,6 @@ import {
   canDisapproveCashVoucherStatus,
   getCashVoucherViewLink,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
-import { readAccountingGridSession } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherAccountingGridSessionData";
 import { createCashVoucherFormValues } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherData";
 import type {
   CashVoucherTransactionRecord,
@@ -16,7 +15,6 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 
 export function createInitialCashVoucherFormValues({
-  mode,
   transaction,
   voucher,
 }: {
@@ -24,56 +22,39 @@ export function createInitialCashVoucherFormValues({
   transaction?: CashVoucherTransactionRecord;
   voucher?: CashVoucherRecord;
 }) {
-  const defaultValues = createCashVoucherFormValues(transaction, voucher);
-
-  if (mode === "add") {
-    return defaultValues;
-  }
-
-  const session = readAccountingGridSession();
-
-  if (session?.mode !== mode) {
-    return defaultValues;
-  }
-
-  return {
-    ...defaultValues,
-    ...session.values,
-    referenceModule: session.values.referenceModule.trim() || defaultValues.referenceModule,
-    voucherReferenceNo: session.values.voucherReferenceNo.trim() || defaultValues.voucherReferenceNo,
-  };
+  return createCashVoucherFormValues(transaction, voucher);
 }
 
 export function canUpdateCashVoucherStatus(currentStatus: CashVoucherStatus, nextStatus: CashVoucherStatus) {
-  if (nextStatus === CashVoucherStatuses.posted) {
+  if (nextStatus === CashVoucherStatuses.Posted) {
     return canApproveCashVoucherStatus(currentStatus);
   }
 
-  if (nextStatus === CashVoucherStatuses.disapproved) {
+  if (nextStatus === CashVoucherStatuses.Disapproved) {
     return canDisapproveCashVoucherStatus(currentStatus);
   }
 
-  if (nextStatus === CashVoucherStatuses.cancelled) {
+  if (nextStatus === CashVoucherStatuses.Cancelled) {
     return canCancelCashVoucherStatus(currentStatus);
   }
 
-  if (nextStatus === CashVoucherStatuses.forApproval) {
+  if (nextStatus === CashVoucherStatuses.ForApproval) {
     return (
-      currentStatus === CashVoucherStatuses.posted ||
-      currentStatus === CashVoucherStatuses.disapproved ||
-      currentStatus === CashVoucherStatuses.cancelled
+      currentStatus === CashVoucherStatuses.Posted ||
+      currentStatus === CashVoucherStatuses.Disapproved ||
+      currentStatus === CashVoucherStatuses.Cancelled
     );
   }
 
   if (
-    nextStatus === CashVoucherStatuses.draft &&
-    (currentStatus === CashVoucherStatuses.posted || currentStatus === CashVoucherStatuses.disapproved)
+    nextStatus === CashVoucherStatuses.Draft &&
+    (currentStatus === CashVoucherStatuses.Posted || currentStatus === CashVoucherStatuses.Disapproved)
   ) {
     return true;
   }
 
-  if (nextStatus === CashVoucherStatuses.draft) {
-    return currentStatus === CashVoucherStatuses.cancelled;
+  if (nextStatus === CashVoucherStatuses.Draft) {
+    return currentStatus === CashVoucherStatuses.Cancelled;
   }
 
   return false;
@@ -86,9 +67,3 @@ export function createVoucherActionReturnLink(from: string | null, transactionId
 
   return CashVoucherLink;
 }
-
-export function createManualCashVoucherTransactionId() {
-  return `cv-tx-manual-${Date.now()}`;
-}
-
-

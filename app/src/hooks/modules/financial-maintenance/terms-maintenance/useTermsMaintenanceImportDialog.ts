@@ -3,12 +3,14 @@
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import {
-  ImportBatchSize,
-  ImportFieldOrder,
-  PreviewPageSize,
-  SelectionColumnWidth,
-  DefaultColumnWidths,
+  TermImportDefaultColumnWidths,
+  TermImportFieldOrder,
+  TermImportSelectionColumnWidth,
 } from "@/app/src/constants/modules/financial-maintenance/terms-maintenance/TermsMaintenanceConstants";
+import {
+  ModuleImportDefaultBatchSize,
+  ModuleImportDefaultPreviewPageSize,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import {
   createBlankImportRow,
   createExistingTermNameMap,
@@ -51,7 +53,7 @@ export function useTermsMaintenanceImportDialog({
   const [isSelectionMenuOpen, setIsSelectionMenuOpen] = useState(false);
   const [isImportMenuOpen, setIsImportMenuOpen] = useState(false);
   const [importMode, setImportMode] = useState<TermImportMode>("all-rows");
-  const [columnWidths, setColumnWidths] = useState<TermImportColumnWidths>(DefaultColumnWidths);
+  const [columnWidths, setColumnWidths] = useState<TermImportColumnWidths>(TermImportDefaultColumnWidths);
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(() => new Set());
   const existingTermNames = useMemo(() => createExistingTermNameMap(existingTerms), [existingTerms]);
   const validatedRows = useMemo(() => validateTermImportRows(previewRows, existingTermNames), [existingTermNames, previewRows]);
@@ -69,10 +71,10 @@ export function useTermsMaintenanceImportDialog({
   const canImportAllRows = validatedRows.length > 0 && !progress;
   const canImportAllValid = validRows.length > 0 && !progress;
   const canImportSelectedValid = validSelectedRows.length > 0 && !progress;
-  const totalPages = Math.max(1, Math.ceil(displayedRows.length / PreviewPageSize));
+  const totalPages = Math.max(1, Math.ceil(displayedRows.length / ModuleImportDefaultPreviewPageSize));
   const safePreviewPage = Math.min(previewPage, totalPages);
-  const visibleRows = displayedRows.slice((safePreviewPage - 1) * PreviewPageSize, safePreviewPage * PreviewPageSize);
-  const importTableWidth = SelectionColumnWidth + ImportFieldOrder.reduce((total, field) => total + columnWidths[field], 0);
+  const visibleRows = displayedRows.slice((safePreviewPage - 1) * ModuleImportDefaultPreviewPageSize, safePreviewPage * ModuleImportDefaultPreviewPageSize);
+  const importTableWidth = TermImportSelectionColumnWidth + TermImportFieldOrder.reduce((total, field) => total + columnWidths[field], 0);
 
   function updateColumnWidth(field: TermImportColumnId, width: number) {
     setColumnWidths((current) => ({
@@ -118,7 +120,7 @@ export function useTermsMaintenanceImportDialog({
           return next;
         });
         setSelectedRowIds(new Set());
-        setPreviewPage(Math.max(1, Math.ceil(nextRows.length / PreviewPageSize)));
+        setPreviewPage(Math.max(1, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize)));
       } else {
         const parsedRows = parseTermImportText(text);
         const filteredRows = removeDuplicateImportRows(parsedRows, []);
@@ -168,7 +170,7 @@ export function useTermsMaintenanceImportDialog({
       return next;
     });
     setSelectedRowIds(new Set());
-    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / PreviewPageSize))));
+    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize))));
   }
 
   function movePreviewRow(sourceRowId: string, targetRowId: string, position: "before" | "after") {
@@ -293,7 +295,7 @@ export function useTermsMaintenanceImportDialog({
       return next;
     });
 
-    const startColumnIndex = ImportFieldOrder.indexOf(field);
+    const startColumnIndex = TermImportFieldOrder.indexOf(field);
     const isSingleCellPaste = pastedRows.length === 1 && pastedRows[0]?.length === 1;
 
     if (isSingleCellPaste) {
@@ -320,7 +322,7 @@ export function useTermsMaintenanceImportDialog({
         const nextTerm = { ...targetRow.term };
 
         pastedRow.forEach((cellValue, cellIndex) => {
-          const targetField = ImportFieldOrder[startColumnIndex + cellIndex];
+          const targetField = TermImportFieldOrder[startColumnIndex + cellIndex];
 
           if (!targetField) {
             return;
@@ -412,8 +414,8 @@ export function useTermsMaintenanceImportDialog({
 
     setProgress({ imported: 0, total: termsToImport.length });
 
-    for (let index = 0; index < termsToImport.length; index += ImportBatchSize) {
-      const batch = termsToImport.slice(index, index + ImportBatchSize);
+    for (let index = 0; index < termsToImport.length; index += ModuleImportDefaultBatchSize) {
+      const batch = termsToImport.slice(index, index + ModuleImportDefaultBatchSize);
 
       try {
         await onImportTerms(batch);
@@ -449,7 +451,7 @@ export function useTermsMaintenanceImportDialog({
       return nextSelected;
     });
     setImportMode("all-rows");
-    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / PreviewPageSize))));
+    setPreviewPage((page) => Math.max(1, Math.min(page, Math.ceil(nextRows.length / ModuleImportDefaultPreviewPageSize))));
     setImportError(null);
 
     if (nextRows.length === 0) {

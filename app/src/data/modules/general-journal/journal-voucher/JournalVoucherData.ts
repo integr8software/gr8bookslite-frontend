@@ -22,7 +22,7 @@ export function createJournalVoucherInitialFormValues(): JournalVoucherFormValue
     remarks: "",
     currencyType: "PHP",
     currencyRate: 1,
-    status: "Draft",
+    status: "For Approval",
     lines: [createJournalVoucherLine(1), createJournalVoucherLine(2)],
   };
 }

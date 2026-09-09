@@ -1,9 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
 import {
-  BillingStatementPartyOptions,
-  BillingStatementResponsibilityCenterOptions,
-} from "@/app/src/constants/modules/sales/billing-statement/BillingStatementConstants";
-import {
   calculateBillingStatementTotals,
   createBillingStatementId,
   createBlankBillingStatementAccountingEntry,
@@ -26,11 +22,14 @@ import {
 } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { PurchasingEntryTabs } from "@/app/src/ui/modules/purchasing/shared/PurchasingEntryTabs";
 import { createBillingStatementLineColumns } from "@/app/src/ui/modules/sales/billing-statement/entries/BillingStatementLineColumns";
+import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 type BillingStatementEntrySectionProps = {
   accountingRows: BillingStatementAccountingEntry[];
+  customerPartyOptions: AppAdvancedDropdownOption[];
   error?: string;
   isReadonly: boolean;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   rows: BillingStatementItem[];
   onAccountingRowsChange: (rows: BillingStatementAccountingEntry[]) => void;
   onRowsChange: (rows: BillingStatementItem[]) => void;
@@ -38,29 +37,24 @@ type BillingStatementEntrySectionProps = {
 
 export function BillingStatementEntrySection({
   accountingRows,
+  customerPartyOptions,
   error,
   isReadonly,
   onAccountingRowsChange,
   onRowsChange,
+  responsibilityCenterOptions,
   rows,
 }: BillingStatementEntrySectionProps) {
   const [activeTab, setActiveTab] = useState<PurchasingEntryTab>("details");
 
   const updateEntry = useCallback(
     (rowId: string, updates: Partial<BillingStatementItem>) => {
-      onRowsChange(
-        rows.map((row) =>
-          row.id === rowId ? recalculateBillingStatementItem({ ...row, ...updates }) : row,
-        ),
-      );
+      onRowsChange(rows.map((row) => (row.id === rowId ? recalculateBillingStatementItem({ ...row, ...updates }) : row)));
     },
     [onRowsChange, rows],
   );
 
-  const columns = useMemo(
-    () => createBillingStatementLineColumns(isReadonly, updateEntry),
-    [isReadonly, updateEntry],
-  );
+  const columns = useMemo(() => createBillingStatementLineColumns(isReadonly, updateEntry), [isReadonly, updateEntry]);
 
   const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () => createColumnOptions(columns, ["description", "grossAmount"]),
@@ -74,7 +68,7 @@ export function BillingStatementEntrySection({
         description="Record billing statement accounting distributions."
         error={error}
         fieldOptions={{
-          partyName: BillingStatementPartyOptions,
+          partyName: customerPartyOptions,
           vatType: [
             { name: "VAT (12%)", value: "VAT (12%)" },
             { name: "Zero-rated", value: "Zero-rated" },
@@ -86,24 +80,16 @@ export function BillingStatementEntrySection({
             { name: "2.00", value: "2.00" },
             { name: "5.00", value: "5.00" },
           ],
-          responsibilityCenter: BillingStatementResponsibilityCenterOptions,
+          responsibilityCenter: responsibilityCenterOptions,
         }}
         isReadonly={isReadonly}
         readOnlyFields={["partyCode"]}
         rows={accountingRows}
-        title={
-          <PurchasingEntryTabs
-            activeTab={activeTab}
-            detailsLabel="Items"
-            onTabChange={setActiveTab}
-          />
-        }
+        title={<PurchasingEntryTabs activeTab={activeTab} detailsLabel="Items" onTabChange={setActiveTab} />}
         onFieldChange={(row, columnId, value) => {
           if (columnId !== "partyName") return undefined;
 
-          const selectedParty = BillingStatementPartyOptions.find(
-            (option) => option.value === value,
-          );
+          const selectedParty = customerPartyOptions.find((option) => option.value === value);
 
           return {
             partyCode: selectedParty?.label ?? "",
@@ -127,30 +113,16 @@ export function BillingStatementEntrySection({
       isReadonly={isReadonly}
       rows={rows}
       summaryCells={createItemSummaryCells(rows)}
-      title={
-        <PurchasingEntryTabs
-          activeTab={activeTab}
-          detailsLabel="Items"
-          onTabChange={setActiveTab}
-        />
-      }
-      onAddRows={(count) =>
-        onRowsChange([...rows, ...Array.from({ length: count }, () => createBlankBillingStatementItem())])
-      }
+      title={<PurchasingEntryTabs activeTab={activeTab} detailsLabel="Items" onTabChange={setActiveTab} />}
+      onAddRows={(count) => onRowsChange([...rows, ...Array.from({ length: count }, () => createBlankBillingStatementItem())])}
       onAutoColumnWidth={() => undefined}
       onClearRows={(action) => onRowsChange(clearRows(rows, action, createBlankBillingStatementItem))}
-      onDuplicateRow={(rowId) =>
-        onRowsChange(duplicateRow(rows, rowId, () => createBillingStatementId("item")))
-      }
+      onDuplicateRow={(rowId) => onRowsChange(duplicateRow(rows, rowId, () => createBillingStatementId("item")))}
       onFitColumnWidth={() => undefined}
       onImport={() => undefined}
-      onInsertRow={(rowId, position) =>
-        onRowsChange(insertRow(rows, rowId, position, createBlankBillingStatementItem))
-      }
+      onInsertRow={(rowId, position) => onRowsChange(insertRow(rows, rowId, position, createBlankBillingStatementItem))}
       onMoveRow={(fromRowId, toRowId) => onRowsChange(moveRow(rows, fromRowId, toRowId))}
-      onRemoveRow={(rowId) =>
-        onRowsChange(removeRow(rows, rowId, createBlankBillingStatementItem))
-      }
+      onRemoveRow={(rowId) => onRowsChange(removeRow(rows, rowId, createBlankBillingStatementItem))}
       onToggleColumnVisibility={() => undefined}
       onUpdateColumnHeader={() => undefined}
       onUpdateColumnWidth={() => undefined}
@@ -182,9 +154,7 @@ function createItemSummaryCells(rows: BillingStatementItem[]) {
   const totals = calculateBillingStatementTotals(rows);
 
   return {
-    amount: formatBillingStatementCurrency(
-      rows.reduce((sum, r) => sum + Number(r.amount || 0), 0),
-    ),
+    amount: formatBillingStatementCurrency(rows.reduce((sum, r) => sum + Number(r.amount || 0), 0)),
     discountAmount: formatBillingStatementCurrency(totals.discountAmount),
     grossAmount: formatBillingStatementCurrency(totals.grossAmount),
     netAmount: formatBillingStatementCurrency(totals.netAmount),
@@ -193,22 +163,14 @@ function createItemSummaryCells(rows: BillingStatementItem[]) {
   };
 }
 
-function clearRows<TRow extends { id: string }>(
-  rows: TRow[],
-  action: ModuleDataEntryClearAction,
-  factory: () => TRow,
-): TRow[] {
+function clearRows<TRow extends { id: string }>(rows: TRow[], action: ModuleDataEntryClearAction, factory: () => TRow): TRow[] {
   if (action === "all") {
     return [factory()];
   }
   return rows.length > 0 ? rows : [factory()];
 }
 
-function duplicateRow<TRow extends { id: string }>(
-  rows: TRow[],
-  rowId: string,
-  idFactory: () => string,
-): TRow[] {
+function duplicateRow<TRow extends { id: string }>(rows: TRow[], rowId: string, idFactory: () => string): TRow[] {
   const index = rows.findIndex((row) => row.id === rowId);
   if (index === -1) return rows;
   const target = rows[index];
@@ -218,12 +180,7 @@ function duplicateRow<TRow extends { id: string }>(
   return next;
 }
 
-function insertRow<TRow extends { id: string }>(
-  rows: TRow[],
-  rowId: string,
-  position: "above" | "below",
-  factory: () => TRow,
-): TRow[] {
+function insertRow<TRow extends { id: string }>(rows: TRow[], rowId: string, position: "above" | "below", factory: () => TRow): TRow[] {
   const index = rows.findIndex((row) => row.id === rowId);
   if (index === -1) return [...rows, factory()];
   const insertIndex = position === "above" ? index : index + 1;
@@ -242,11 +199,7 @@ function moveRow<TRow extends { id: string }>(rows: TRow[], fromId: string, toId
   return next;
 }
 
-function removeRow<TRow extends { id: string }>(
-  rows: TRow[],
-  rowId: string,
-  factory: () => TRow,
-): TRow[] {
+function removeRow<TRow extends { id: string }>(rows: TRow[], rowId: string, factory: () => TRow): TRow[] {
   const next = rows.filter((row) => row.id !== rowId);
   return next.length > 0 ? next : [factory()];
 }

@@ -23,4 +23,5 @@ export type PricingPlan = {
 	highlighted?: boolean;
 	trialDays?: number;
 	trialPrice?: string;
+	trialPriceInCents?: number;
 };

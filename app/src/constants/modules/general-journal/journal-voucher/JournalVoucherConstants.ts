@@ -56,9 +56,9 @@ export const JournalVoucherDefaultColumnOrder = JournalVoucherTableColumns.map((
 export const JournalVoucherDefaultColumnVisibility: VisibilityState = {};
 export const JournalVoucherDefaultSorting: SortingState = [{ id: "documentDate", desc: true }];
 
-export const JournalVoucherStatusOptions: JournalVoucherStatus[] = ["Posted", "Draft", "For Approval", "Disapproved", "Cancelled"];
+export const JournalVoucherStatusOptions: JournalVoucherStatus[] = ["Posted", "For Approval", "Draft", "Disapproved", "Cancelled"];
 
-export const JournalVoucherStatusFilters = ["all", "Posted", "Draft", "For Approval", "Disapproved", "Cancelled"] as const;
+export const JournalVoucherStatusFilters = ["all", "Posted", "For Approval", "Draft", "Disapproved", "Cancelled"] as const;
 
 export const JournalVoucherStatusFilterOptions = JournalVoucherStatusFilters.map((status) => ({
   label: status === "all" ? "All" : status,

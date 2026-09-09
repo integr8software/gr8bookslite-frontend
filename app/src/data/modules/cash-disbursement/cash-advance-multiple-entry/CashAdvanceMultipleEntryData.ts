@@ -73,7 +73,7 @@ export function createCashAdvanceMultipleEntryFormValues(baseCurrencyCode = "PHP
     projectName: "",
     projectRef: "",
     remarks: "",
-    status: CashAdvanceMultipleEntryStatuses.open,
+    status: CashAdvanceMultipleEntryStatuses.Open,
     totalAmount: "",
     transNo: "",
   };
@@ -257,19 +257,19 @@ export function createCashAdvanceMultipleEntryApprovalRecord(record: CashAdvance
 }
 
 function normalizeCashAdvanceMultipleEntryStatus(value: string): CashAdvanceStatus {
-  if (value === CashAdvanceMultipleEntryStatuses.open) {
-    return CashAdvanceMultipleEntryStatuses.forApproval;
+  if (value === CashAdvanceMultipleEntryStatuses.Open) {
+    return CashAdvanceMultipleEntryStatuses.ForApproval;
   }
 
   const statuses: CashAdvanceStatus[] = [
-    CashAdvanceMultipleEntryStatuses.cancelled,
-    CashAdvanceMultipleEntryStatuses.disapproved,
-    CashAdvanceMultipleEntryStatuses.draft,
-    CashAdvanceMultipleEntryStatuses.forApproval,
-    CashAdvanceMultipleEntryStatuses.posted,
+    CashAdvanceMultipleEntryStatuses.Cancelled,
+    CashAdvanceMultipleEntryStatuses.Disapproved,
+    CashAdvanceMultipleEntryStatuses.Draft,
+    CashAdvanceMultipleEntryStatuses.ForApproval,
+    CashAdvanceMultipleEntryStatuses.Posted,
   ];
 
-  return statuses.includes(value as CashAdvanceStatus) ? (value as CashAdvanceStatus) : CashAdvanceMultipleEntryStatuses.forApproval;
+  return statuses.includes(value as CashAdvanceStatus) ? (value as CashAdvanceStatus) : CashAdvanceMultipleEntryStatuses.ForApproval;
 }
 
 function addUniqueDropdownOption(options: AppAdvancedDropdownOption[], option: AppAdvancedDropdownOption) {

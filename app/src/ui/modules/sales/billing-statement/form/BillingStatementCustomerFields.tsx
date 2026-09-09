@@ -1,9 +1,4 @@
-import {
-  BillingStatementCurrencyOptions,
-  BillingStatementPartyOptions,
-  BillingStatementResponsibilityCenterOptions,
-  BillingStatementTermsOptions,
-} from "@/app/src/constants/modules/sales/billing-statement/BillingStatementConstants";
+import { BillingStatementCurrencyOptions } from "@/app/src/constants/modules/sales/billing-statement/BillingStatementConstants";
 import type {
   BillingStatementFieldUpdater,
   BillingStatementFormErrors,
@@ -19,15 +14,27 @@ import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAd
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
+import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 type BillingStatementCustomerFieldsProps = {
+  customerPartyOptions: AppAdvancedDropdownOption[];
   errors: BillingStatementFormErrors;
   isReadonly: boolean;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
+  termOptions: AppAdvancedDropdownOption[];
   values: BillingStatementFormValues;
   onUpdateField: BillingStatementFieldUpdater<BillingStatementFormValues>;
 };
 
-export function BillingStatementCustomerFields({ errors, isReadonly, onUpdateField, values }: BillingStatementCustomerFieldsProps) {
+export function BillingStatementCustomerFields({
+  customerPartyOptions,
+  errors,
+  isReadonly,
+  onUpdateField,
+  responsibilityCenterOptions,
+  termOptions,
+  values,
+}: BillingStatementCustomerFieldsProps) {
   return (
     <div className="grid min-w-0 content-start gap-x-8 gap-y-3 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="grid min-w-0 content-start gap-3">
@@ -36,12 +43,12 @@ export function BillingStatementCustomerFields({ errors, isReadonly, onUpdateFie
             id="billing-statement-name"
             value={values.name}
             readOnly={isReadonly}
-            options={BillingStatementPartyOptions}
+            options={customerPartyOptions}
             placeholder=""
             searchPlaceholder="Search customer"
             onChange={(value) => {
               const partyName = String(value);
-              const selectedParty = BillingStatementPartyOptions.find((option) => option.value === partyName);
+              const selectedParty = customerPartyOptions.find((option) => option.value === partyName);
 
               onUpdateField("name", partyName);
               if (selectedParty?.label) {
@@ -97,7 +104,7 @@ export function BillingStatementCustomerFields({ errors, isReadonly, onUpdateFie
           id="billing-statement-code"
           label="Party Code"
           isRequired
-          readOnly={isReadonly}
+          readOnly
           value={values.code}
           onChange={(value) => onUpdateField("code", value)}
         />
@@ -107,7 +114,7 @@ export function BillingStatementCustomerFields({ errors, isReadonly, onUpdateFie
           label="Terms of Payment"
           readOnly={isReadonly}
           value={values.terms}
-          options={BillingStatementTermsOptions}
+          options={termOptions}
           placeholder="--Select Terms--"
           onChange={(value) => onUpdateField("terms", value)}
         />
@@ -151,7 +158,7 @@ export function BillingStatementCustomerFields({ errors, isReadonly, onUpdateFie
             id="billing-statement-res-center"
             value={values.resCustomerCode}
             readOnly={isReadonly}
-            options={BillingStatementResponsibilityCenterOptions}
+            options={responsibilityCenterOptions}
             placeholder="--Select Responsibility Center--"
             searchPlaceholder="Search responsibility center"
             onChange={(value) => onUpdateField("resCustomerCode", String(value))}
@@ -164,7 +171,7 @@ export function BillingStatementCustomerFields({ errors, isReadonly, onUpdateFie
           id="billing-statement-trans-no"
           label="BS No."
           isRequired
-          readOnly={isReadonly}
+          readOnly
           value={values.transNo}
           onChange={(value) => onUpdateField("transNo", value)}
         />
@@ -216,7 +223,7 @@ function BillingSelectField({
   isRequired?: boolean;
   label: string;
   onChange: (value: string) => void;
-  options: readonly string[];
+  options: AppAdvancedDropdownOption[];
   placeholder?: string;
   readOnly: boolean;
   value: string;
@@ -227,7 +234,7 @@ function BillingSelectField({
         id={id}
         value={value}
         readOnly={readOnly}
-        options={options.map((option) => ({ name: option, value: option }))}
+        options={options}
         placeholder={placeholder}
         onChange={(nextValue) => onChange(String(nextValue))}
       />

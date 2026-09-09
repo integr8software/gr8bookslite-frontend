@@ -44,6 +44,13 @@ export type PaymentTypeFormErrors = Partial<Record<keyof PaymentTypeFormValues, 
 
 export type PaymentTypeActionMode = "add" | "edit" | "view";
 
+export type PaymentTypeFieldsProps = {
+  errors: PaymentTypeFormErrors;
+  isReadonly: boolean;
+  onInputChange: <TKey extends keyof PaymentTypeFormValues>(field: TKey, value: PaymentTypeFormValues[TKey]) => void;
+  values: PaymentTypeFormValues;
+};
+
 export type PaymentTypeFormPageOptions = {
   existingPaymentType?: PaymentTypeRecord;
   isOpen?: boolean;

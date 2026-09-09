@@ -5,9 +5,9 @@ import { flexRender } from "@tanstack/react-table";
 import { Plus, ReceiptText, Search } from "lucide-react";
 import {
   CashAdvanceTablePaginationStorageKey,
-  getCashAdvanceTableMinWidthClassName,
   CashAdvanceAddLink,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
+import { getTransactionOverviewTableMinWidthClassName } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
 import { useCashAdvanceStore, useCashAdvanceTable } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
 import { CashAdvanceTableToolbar } from "@/app/src/ui/modules/cash-disbursement/cash-advance/overview/CashAdvanceTableToolbar";
 import { renderCashAdvanceTableCell } from "@/app/src/ui/modules/cash-disbursement/cash-advance/overview/CashAdvanceTableCell";
@@ -54,7 +54,7 @@ export function CashAdvanceOverviewPage() {
           emptyDescription="Try another Cash Advance No., Remarks, Date Range, Amount Range, or Status."
           emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
           emptyTitle="No Cash Advance Transaction Found"
-          minWidthClassName={getCashAdvanceTableMinWidthClassName(tableState.table.getVisibleLeafColumns().length)}
+          minWidthClassName={getTransactionOverviewTableMinWidthClassName(tableState.table.getVisibleLeafColumns().length)}
           paginationLabel="entries"
           paginationStorageKey={CashAdvanceTablePaginationStorageKey}
           lastSyncedAt={lastSyncedAt}

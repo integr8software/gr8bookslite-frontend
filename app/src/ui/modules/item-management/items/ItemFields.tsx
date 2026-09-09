@@ -1,6 +1,7 @@
 import { useEffect, useState, type ChangeEventHandler, type KeyboardEvent, type ReactNode } from "react";
 import { formatCurrency } from "@/app/src/utils/currency.util";
 import type { ItemFormErrors, ItemFormValues } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
+import { ItemActiveStatus, ItemInactiveStatus } from "@/app/src/constants/modules/item-management/items/ItemManagementConstants";
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
@@ -133,7 +134,7 @@ export function ItemInformationFields({
           placeholder="Marketplace, legacy, or external system code"
         />
       </FormField>
-      <FormField label="Responsibility / Cost Center" error={errors.responsibilityCenter}>
+      <FormField label="Responsibility Center" error={errors.responsibilityCenter}>
         <AppAdvancedDropdown
           isClearable
           options={responsibilityCenterOptions}
@@ -432,10 +433,10 @@ function FormField({
   );
 }
 
-const ActiveStatusSwitchOption = { label: "Active", value: "Active" } as const;
+const ActiveStatusSwitchOption = { label: ItemActiveStatus, value: ItemActiveStatus } as const;
 const InactiveStatusSwitchOption = {
-  label: "Inactive",
-  value: "Inactive",
+  label: ItemInactiveStatus,
+  value: ItemInactiveStatus,
 } as const;
 
 const fieldClassName =

@@ -1,6 +1,7 @@
 import {
   servicesMaintenanceControllerCreateV1,
   servicesMaintenanceControllerFindAllV1,
+  servicesMaintenanceControllerFindOptionsByTypeV1,
   servicesMaintenanceControllerGetAccountOptionsV1,
   servicesMaintenanceControllerGetNextAccountCodeV1,
   servicesMaintenanceControllerUpdateStatusV1,
@@ -13,6 +14,8 @@ import type {
   CreateServiceMaintenanceDtoStatus,
   ServiceMaintenanceAccountOptionResponseDto,
   ServiceMaintenanceNextAccountCodeResponseDto,
+  ServiceMaintenanceOptionResponseDto,
+  ServiceMaintenanceOptionResponseDtoServiceType,
   ServiceMaintenanceResponseDto,
   ServiceMaintenanceResponseDtoAccountSetupMode,
   ServiceMaintenanceResponseDtoServiceType,
@@ -55,14 +58,27 @@ export async function fetchServicesMaintenanceAccountOptions(): Promise<ModuleCh
   return response.accounts.map(mapApiAccountOption);
 }
 
+export async function fetchServicesMaintenanceOptions(
+  serviceType: ServicesMaintenanceServiceType | "Purchases" | "Sales",
+): Promise<ServiceMaintenanceOptionResponseDto[]> {
+  const response = await servicesMaintenanceControllerFindOptionsByTypeV1(mapServiceTypeToApi(serviceType));
+
+  return response.services;
+}
+
 export async function fetchNextServiceRevenueAccountCode(): Promise<ServiceMaintenanceNextAccountCodeResponseDto> {
   return servicesMaintenanceControllerGetNextAccountCodeV1();
 }
 
-export async function createServiceMaintenance(values: ServicesMaintenanceFormValues): Promise<ServicesMaintenance> {
+export async function createServiceMaintenance(
+  values: ServicesMaintenanceFormValues,
+): Promise<ServicesMaintenance & { message?: string }> {
   const response = await servicesMaintenanceControllerCreateV1(toApiServicePayload(values));
 
-  return mapApiService(response.service);
+  return {
+    ...mapApiService(response.service),
+    message: response.message,
+  };
 }
 
 export async function updateServiceMaintenance(service: ServicesMaintenance): Promise<ServicesMaintenance> {
@@ -121,6 +137,10 @@ function toApiServicePayload(service: ServicesMaintenance | ServicesMaintenanceF
     status: mapStatusToApi(service.status),
     accountSetupMode: mapSetupModeToApi(service.accountSetupMode),
     revenueCoaId: service.accountSetupMode === "Existing" ? service.revenueCoaId : null,
+    expenseParentCoaId:
+      service.accountSetupMode === "Auto" && service.serviceType === "Purchase of Service"
+        ? ("expenseParentCoaId" in service ? service.expenseParentCoaId || null : null)
+        : null,
   };
 }
 
@@ -140,10 +160,14 @@ function mapSetupModeToApi(value: ServicesMaintenanceAccountSetupMode): CreateSe
   return value === "Auto" ? "AUTO" : "EXISTING";
 }
 
-function mapServiceTypeFromApi(value: ServiceMaintenanceResponseDtoServiceType): ServicesMaintenanceServiceType {
-  return value === "PURCHASES" ? "Purchases" : "Sales";
+function mapServiceTypeFromApi(
+  value: ServiceMaintenanceResponseDtoServiceType | ServiceMaintenanceOptionResponseDtoServiceType,
+): ServicesMaintenanceServiceType {
+  return value === "PURCHASES" ? "Purchase of Service" : "Sale of Service";
 }
 
-function mapServiceTypeToApi(value: ServicesMaintenanceServiceType): CreateServiceMaintenanceDtoServiceType {
-  return value === "Purchases" ? "PURCHASES" : "SALES";
+function mapServiceTypeToApi(
+  value: ServicesMaintenanceServiceType | "Purchases" | "Sales",
+): CreateServiceMaintenanceDtoServiceType {
+  return value === "Purchase of Service" || value === "Purchases" ? "PURCHASES" : "SALES";
 }

@@ -58,8 +58,10 @@ export function PurchaseOrderFormHeader({
 					) : (
 						<>
 							<AppCopyFromDropdown
+								lockedPartyName={values.vceName}
 								records={copyFromRecords}
-								sources={["Purchase Request", "Canvass"]}
+								restrictToSameParty
+								sources={values.copyFromSource ? [values.copyFromSource] : ["Purchase Request", "Canvass"]}
 								onApply={onCopyFromSource}
 							/>
 							<button

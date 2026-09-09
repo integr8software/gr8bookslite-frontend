@@ -352,3 +352,7 @@ function createImportTemplateCsv(headers: string[]) {
 function getImportedValue(row: string[], index?: number) {
   return typeof index === "number" ? String(row[index] ?? "").trim() : "";
 }
+
+export function getDefaultAccountTypeLabel(type: DefaultAccountType) {
+  return DefaultAccountTypeOptions.find((option) => option.value === type)?.label ?? type;
+}

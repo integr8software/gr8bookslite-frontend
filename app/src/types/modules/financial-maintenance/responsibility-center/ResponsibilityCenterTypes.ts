@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ChangeEventHandler, ReactNode } from "react";
 import type { Row, Table } from "@tanstack/react-table";
 import type { ResponsibilityCenterResponseDtoStatus } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type { TablePreferencesState } from "@/app/src/types/shared/table-preferences/TablePreferencesTypes";
@@ -122,6 +122,19 @@ export type ResponsibilityCenterFormValues = {
 };
 
 export type ResponsibilityCenterFormErrors = Partial<Record<keyof ResponsibilityCenterFormValues, string>>;
+
+export type ResponsibilityCenterFieldsProps = {
+  classifications: ResponsibilityCenterClassification[];
+  codePlaceholder: string;
+  errors: ResponsibilityCenterFormErrors;
+  isReadonly: boolean;
+  nameLabel: string;
+  onFieldChange: <TKey extends keyof ResponsibilityCenterFormValues>(field: TKey, value: ResponsibilityCenterFormValues[TKey]) => void;
+  onInputChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
+  parentOptions: ResponsibilityCenter[];
+  typeOptions: ResponsibilityCenterTypeOption[];
+  values: ResponsibilityCenterFormValues;
+};
 
 export type ResponsibilityCenterFormPageOptions = {
   center?: ResponsibilityCenter;

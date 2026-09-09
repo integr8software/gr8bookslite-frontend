@@ -32,24 +32,24 @@ import {
 
 export function PettyCashVoucherRecordActions({ onUpdateStatus, record }: PettyCashVoucherRecordActionsProps) {
   const [statusToConfirm, setStatusToConfirm] = useState<PettyCashVoucherStatus | null>(null);
-  const isPosted = record.status === PettyCashVoucherStatuses.posted;
-  const isDisapproved = record.status === PettyCashVoucherStatuses.disapproved;
-  const isCancelled = record.status === PettyCashVoucherStatuses.cancelled;
-  const undoStatus: PettyCashVoucherStatus = PettyCashVoucherStatuses.forApproval;
+  const isPosted = record.status === PettyCashVoucherStatuses.Posted;
+  const isDisapproved = record.status === PettyCashVoucherStatuses.Disapproved;
+  const isCancelled = record.status === PettyCashVoucherStatuses.Cancelled;
+  const undoStatus: PettyCashVoucherStatus = PettyCashVoucherStatuses.ForApproval;
   const canEdit = canEditPettyCashVoucherStatus(record.status);
   const actionItems: ModuleActionMenuItem[] = [
     {
       disabled: !canApprovePettyCashVoucherStatus(record.status),
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () => setStatusToConfirm(isPosted ? undoStatus : PettyCashVoucherStatuses.posted),
+      onSelect: () => setStatusToConfirm(isPosted ? undoStatus : PettyCashVoucherStatuses.Posted),
       type: "button",
     },
     {
       disabled: !canDisapprovePettyCashVoucherStatus(record.status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () => setStatusToConfirm(isDisapproved ? undoStatus : PettyCashVoucherStatuses.disapproved),
+      onSelect: () => setStatusToConfirm(isDisapproved ? undoStatus : PettyCashVoucherStatuses.Disapproved),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
@@ -57,7 +57,7 @@ export function PettyCashVoucherRecordActions({ onUpdateStatus, record }: PettyC
       disabled: !canCancelPettyCashVoucherStatus(record.status),
       icon: isCancelled ? Undo2 : Ban,
       label: isCancelled ? "Undo Cancelled" : "Cancel",
-      onSelect: () => setStatusToConfirm(isCancelled ? undoStatus : PettyCashVoucherStatuses.cancelled),
+      onSelect: () => setStatusToConfirm(isCancelled ? undoStatus : PettyCashVoucherStatuses.Cancelled),
       tone: isCancelled ? "default" : "danger",
       type: "button",
     },

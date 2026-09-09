@@ -5,7 +5,7 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 import type { useCashVoucherPreviewTable } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucher";
 import type { useCashVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherActionPage";
 
-export type CashVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
+export type CashVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
 
 export type CashVoucherDisplayStatus = CashVoucherStatus;
 export type CashVoucherPreviewTableState = ReturnType<typeof useCashVoucherPreviewTable>;
@@ -367,3 +367,25 @@ export type CashVoucherReportPreviewProps = {
 };
 
 export type CashVoucherPdfText = string | Array<string | { text: string; bold?: boolean }>;
+
+export type CashVoucherGeneratedAccount = {
+  accountCode: string;
+  accountName: string;
+};
+
+export type CashVoucherGeneratedAccountOptions = {
+  cashAccount?: CashVoucherGeneratedAccount | null;
+  inputVatAccount?: CashVoucherGeneratedAccount | null;
+  withholdingTaxAccount?: CashVoucherGeneratedAccount | null;
+};
+
+export type CashVoucherDefaultAccount = {
+  accountId: string;
+  accountCode: string;
+  accountTitle: string;
+};
+
+export type CashVoucherDefaultAccounts = {
+  defaultCashAccount: CashVoucherDefaultAccount;
+  creditAccount?: CashVoucherDefaultAccount;
+};

@@ -125,35 +125,35 @@ export function DisbursementVoucherOverviewPage() {
 }
 
 function canUpdatePreviewRowStatus(currentStatus: DisbursementVoucherStatus, nextStatus: DisbursementVoucherStatus) {
-  if (nextStatus === DisbursementVoucherStatuses.posted) {
+  if (nextStatus === DisbursementVoucherStatuses.Posted) {
     return canApproveDisbursementVoucherStatus(currentStatus);
   }
 
-  if (nextStatus === DisbursementVoucherStatuses.disapproved) {
+  if (nextStatus === DisbursementVoucherStatuses.Disapproved) {
     return canDisapproveDisbursementVoucherStatus(currentStatus);
   }
 
-  if (nextStatus === DisbursementVoucherStatuses.cancelled) {
+  if (nextStatus === DisbursementVoucherStatuses.Cancelled) {
     return canCancelDisbursementVoucherStatus(currentStatus);
   }
 
-  if (nextStatus === DisbursementVoucherStatuses.forApproval) {
+  if (nextStatus === DisbursementVoucherStatuses.ForApproval) {
     return (
-      currentStatus === DisbursementVoucherStatuses.posted ||
-      currentStatus === DisbursementVoucherStatuses.disapproved ||
-      currentStatus === DisbursementVoucherStatuses.cancelled
+      currentStatus === DisbursementVoucherStatuses.Posted ||
+      currentStatus === DisbursementVoucherStatuses.Disapproved ||
+      currentStatus === DisbursementVoucherStatuses.Cancelled
     );
   }
 
   if (
-    nextStatus === DisbursementVoucherStatuses.draft &&
-    (currentStatus === DisbursementVoucherStatuses.posted || currentStatus === DisbursementVoucherStatuses.disapproved)
+    nextStatus === DisbursementVoucherStatuses.Draft &&
+    (currentStatus === DisbursementVoucherStatuses.Posted || currentStatus === DisbursementVoucherStatuses.Disapproved)
   ) {
     return true;
   }
 
-  if (nextStatus === DisbursementVoucherStatuses.draft) {
-    return currentStatus === DisbursementVoucherStatuses.cancelled;
+  if (nextStatus === DisbursementVoucherStatuses.Draft) {
+    return currentStatus === DisbursementVoucherStatuses.Cancelled;
   }
 
   return false;

@@ -7,29 +7,13 @@ import {
   PurchaseRequestTablePaginationStorageKey,
 } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import { usePurchaseRequestListPage } from "@/app/src/hooks/modules/purchasing/purchase-request/usePurchaseRequestListPage";
-import {
-  ModuleHeader,
-  moduleHeaderActionClassNames,
-} from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
-import {
-  ModuleTableSearch,
-  ModuleTableToolbar,
-} from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { ModuleTableSearch, ModuleTableToolbar } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 import { PurchaseRequestRecordActions } from "@/app/src/ui/modules/purchasing/purchase-request/overview/PurchaseRequestRecordActions";
 
 export function PurchaseRequestOverviewPage() {
-  const {
-    handleConfirmDelete,
-    handleQueryChange,
-    isMutating,
-    lastSyncedAt,
-    pendingDeleteRequest,
-    query,
-    setPendingDeleteRequest,
-    table,
-  } = usePurchaseRequestListPage();
+  const { handleQueryChange, lastSyncedAt, query, table } = usePurchaseRequestListPage();
 
   return (
     <section className="grid gap-5">
@@ -45,10 +29,7 @@ export function PurchaseRequestOverviewPage() {
           </>
         }
         actions={
-          <Link
-            href={`${PurchaseRequestHref}/add`}
-            className={moduleHeaderActionClassNames.primary}
-          >
+          <Link href={`${PurchaseRequestHref}/add`} className={moduleHeaderActionClassNames.primary}>
             <Plus className="h-4 w-4" aria-hidden="true" />
             New Request
           </Link>
@@ -76,26 +57,9 @@ export function PurchaseRequestOverviewPage() {
               />
             </ModuleTableToolbar>
           }
-          renderRow={({ id, original }) => (
-            <PurchaseRequestRecordActions
-              key={id}
-              request={original}
-              onDeleteRequest={setPendingDeleteRequest}
-            />
-          )}
+          renderRow={({ id, original }) => <PurchaseRequestRecordActions key={id} request={original} />}
         />
       </div>
-
-      <AppDialog
-        isOpen={Boolean(pendingDeleteRequest)}
-        isPending={isMutating}
-        title="Delete purchase request?"
-        description={`This will remove PR ${pendingDeleteRequest?.transNo ?? "the selected request"}.`}
-        confirmLabel="Delete Request"
-        tone="danger"
-        onCancel={() => setPendingDeleteRequest(null)}
-        onConfirm={handleConfirmDelete}
-      />
     </section>
   );
 }

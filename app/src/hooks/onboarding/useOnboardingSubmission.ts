@@ -359,14 +359,38 @@ export function useOnboardingSubmission({
 
         if (values.billingMode === "MANUAL") {
           if (!selectedPlan) {
-            throw new Error("Select a plan before continuing to checkout.");
+            throw new Error("Select a plan before continuing.");
           }
 
-          const checkout = await CreateManualCheckout({
-            amountLabel:
-              selectedBillingCycle === "yearly"
+          const trialDays = selectedPlan.trialDays ?? 0;
+          const trialPriceInCents = selectedPlan.trialPriceInCents ?? 0;
+          const isTrial = trialDays > 0;
+          const isFreeTrial = isTrial && trialPriceInCents === 0;
+
+          // If the plan has a free trial, start the free trial at ₱0 without upfront charge
+          if (isFreeTrial) {
+            const billingResponse = await SaveOnboardingBilling(token, {
+              billingMode: "MANUAL",
+              billingEmail: values.billingEmail.trim() || undefined,
+            });
+
+            setStepIndex((current) => current + 1);
+            setHasPersistedBillingSetup(true);
+            toast.success(
+              billingResponse.message || "Free trial billing preference saved.",
+            );
+            return;
+          }
+
+          const amountLabel =
+            isTrial && trialPriceInCents > 0
+              ? selectedPlan.trialPrice ?? `₱${(trialPriceInCents / 100).toFixed(2)}`
+              : selectedBillingCycle === "yearly"
                 ? selectedPlan.yearlyPrice
-                : selectedPlan.monthlyPrice,
+                : selectedPlan.monthlyPrice;
+
+          const checkout = await CreateManualCheckout({
+            amountLabel,
             billingCycle: GetOnboardingApiBillingCycle(selectedBillingCycle),
             companyName:
               values.taxpayerType === "individual"
@@ -398,6 +422,7 @@ export function useOnboardingSubmission({
         });
 
         const billingResponse = await SaveOnboardingBilling(token, {
+          billingMode: "AUTO",
           cardholderName: values.cardholderName.trim(),
           billingEmail: values.billingEmail.trim(),
           cardLast4: cardDigits.slice(-4),

@@ -1,4 +1,4 @@
-import type { ChangeEventHandler, ReactNode } from "react";
+import type { ChangeEventHandler } from "react";
 import type { Row, Table } from "@tanstack/react-table";
 
 export type BankMasterfileStatus = "Active" | "Inactive";
@@ -22,6 +22,10 @@ export type BankMasterfile = {
   createdAt?: string;
   updatedBy?: string | null;
   updatedAt?: string;
+};
+
+export type CreateBankResult = BankMasterfile & {
+  message?: string;
 };
 
 export type BankMasterfileFormValues = {
@@ -138,14 +142,9 @@ export type BankMasterfileFieldsProps = {
   onStatusChange: (value: BankMasterfileFormValues["status"]) => void;
 };
 
-export type BankMasterfileFormFieldProps = {
-  children: ReactNode;
-  className?: string;
-  error?: string;
-  helper?: string;
-  label: string;
-  required?: boolean;
-};
+import type { ModuleFormFieldProps } from "@/app/src/ui/shared/field-management/ModuleFormField";
+
+export type BankMasterfileFormFieldProps = ModuleFormFieldProps;
 
 export type BankMasterfileTableProps = {
   banks: BankMasterfile[];
@@ -158,6 +157,7 @@ export type BankMasterfileTableProps = {
   query: string;
   statusFilter: BankMasterfileStatusFilter;
   onEditBank: (bank: BankMasterfile) => void;
+  onManageCheckTemplates: (bank: BankMasterfile) => void;
   onQueryChange: (value: string) => void;
   onRefresh: () => void;
   onStatusFilterChange: (value: BankMasterfileStatusFilter) => void;
@@ -188,6 +188,7 @@ export type BankMasterfileTableRowProps = {
   row: Row<BankMasterfile>;
   permissions: BankMasterfilePermissions;
   onEditBank: (bank: BankMasterfile) => void;
+  onManageCheckTemplates: (bank: BankMasterfile) => void;
   onToggleStatus: (bank: BankMasterfile) => void;
   onViewBank: (bank: BankMasterfile) => void;
 };
@@ -197,8 +198,28 @@ export type BankMasterfileCellContentProps = {
   columnId: string;
   permissions: BankMasterfilePermissions;
   onEditBank: (bank: BankMasterfile) => void;
+  onManageCheckTemplates: (bank: BankMasterfile) => void;
   onToggleStatus: (bank: BankMasterfile) => void;
   onViewBank: (bank: BankMasterfile) => void;
+};
+
+export type BankCheckTemplateOrientation = "Landscape" | "Portrait";
+
+export type BankCheckTemplateFormValues = {
+  name: string;
+  description: string;
+  paperWidth: string;
+  paperHeight: string;
+  orientation: BankCheckTemplateOrientation;
+  isDefault: boolean;
+};
+
+export type BankCheckTemplateFormErrors = Partial<Record<keyof BankCheckTemplateFormValues, string>>;
+
+export type BankCheckTemplate = BankCheckTemplateFormValues & {
+  id: string;
+  bankId: string;
+  createdAt: string;
 };
 
 export type BankMasterfileImportDialogProps = {

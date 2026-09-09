@@ -1,20 +1,17 @@
 "use client";
 
 import { AlertCircle } from "lucide-react";
-import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
 import {
   getModuleImportDataColumnWidth,
+  ModuleImportDefaultPreviewGridLabel,
   ModuleImportFixedColumnsWidth,
   ModuleImportRowNumberColumnWidth,
   ModuleImportSelectionColumnWidth,
 } from "@/app/src/constants/shared/module/ModuleImportConstants";
 import {
-  PaymentTypeImportAcceptedFileExtensions,
-  PaymentTypeImportAcceptedFileLabel,
   PaymentTypeImportColumnHeaders,
   PaymentTypeImportFieldOrder,
   PaymentTypeImportPreviewColumnCount,
-  PaymentTypeImportPreviewGridLabel,
 } from "@/app/src/constants/modules/financial-maintenance/payment-type/PaymentTypeConstants";
 import {
   downloadPaymentTypeImportTemplate,
@@ -52,7 +49,6 @@ export function PaymentTypeImportDialog({ existingPaymentTypes, isOpen, onClose,
       onClose={onClose}
       actions={
         <ModuleImportHeaderActions
-          accept={PaymentTypeImportAcceptedFileExtensions}
           disabled={Boolean(importDialog.progress)}
           isParsing={importDialog.isParsing}
           onDownloadTemplate={() => void downloadPaymentTypeImportTemplate()}
@@ -110,7 +106,7 @@ export function PaymentTypeImportDialog({ existingPaymentTypes, isOpen, onClose,
             }
           }}
           className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-purple-200 shadow-[0_0_0_2px_rgba(168,85,247,0.08)] outline-none focus:ring-2 focus:ring-purple-500/15"
-          aria-label={PaymentTypeImportPreviewGridLabel}
+          aria-label={ModuleImportDefaultPreviewGridLabel}
         >
           <div className="min-h-36 flex-1 overflow-auto">
             <table
@@ -187,11 +183,8 @@ export function PaymentTypeImportDialog({ existingPaymentTypes, isOpen, onClose,
                       className="module-import-empty-cell px-3 py-10 text-center text-sm font-medium text-darknavy/45"
                     >
                       <ModuleImportEmptyDropzone
-                        accept={PaymentTypeImportAcceptedFileExtensions}
-                        acceptedFileLabel={PaymentTypeImportAcceptedFileLabel}
                         disabled={Boolean(importDialog.progress)}
                         isParsing={importDialog.isParsing}
-                        maxFileSizeLabel={AppMaxFileUploadSizeLabel}
                         onFileSelect={(file) => void importDialog.handleFileUpload(file)}
                       />
                     </td>

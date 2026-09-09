@@ -24,13 +24,26 @@ const ServicesMaintenanceFormSchema = z
     status: z.enum(ServicesMaintenanceStatusOptions),
     accountSetupMode: z.enum(ServicesMaintenanceAccountSetupModeOptions),
     revenueCoaId: z.string(),
+    expenseParentCoaId: z.string().optional(),
   })
   .superRefine((values, ctx) => {
     if (values.accountSetupMode === "Existing" && !values.revenueCoaId.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Revenue account is required.",
+        message: "Account title is required.",
         path: ["revenueCoaId"],
+      });
+    }
+
+    if (
+      values.serviceType === "Purchase of Service" &&
+      values.accountSetupMode === "Auto" &&
+      !values.expenseParentCoaId?.trim()
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Expense type is required.",
+        path: ["expenseParentCoaId"],
       });
     }
   });
@@ -78,5 +91,16 @@ export function validateServicesMaintenanceForm(
 }
 
 function isServicesMaintenanceField(value: unknown): value is keyof ServicesMaintenanceFormValues {
-  return typeof value === "string" && ["serviceName", "serviceType", "description", "status", "accountSetupMode", "revenueCoaId"].includes(value);
+  return (
+    typeof value === "string" &&
+    [
+      "serviceName",
+      "serviceType",
+      "description",
+      "status",
+      "accountSetupMode",
+      "revenueCoaId",
+      "expenseParentCoaId",
+    ].includes(value)
+  );
 }

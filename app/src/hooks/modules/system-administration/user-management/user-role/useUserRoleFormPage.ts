@@ -113,9 +113,6 @@ export function useUserRoleFormPage() {
 					queryKey: UserListQueryKeys.branchRoles(branchId),
 				});
 				queryClient.invalidateQueries({ queryKey: AuthQueryKeys.profiles() });
-				queryClient.invalidateQueries({
-					queryKey: ["user-sidebar-customization"],
-				});
 			}
 
 			setIsRedirectingAfterSave(true);
@@ -159,9 +156,6 @@ export function useUserRoleFormPage() {
 					queryKey: UserListQueryKeys.branchRoles(branchId),
 				});
 				queryClient.invalidateQueries({ queryKey: AuthQueryKeys.profiles() });
-				queryClient.invalidateQueries({
-					queryKey: ["user-sidebar-customization"],
-				});
 			}
 
 			setIsRedirectingAfterSave(true);

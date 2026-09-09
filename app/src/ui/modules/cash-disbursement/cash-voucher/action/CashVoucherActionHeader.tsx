@@ -48,7 +48,7 @@ export function CashVoucherActionHeader({
   const transactionLabel = transaction?.transactionNo ?? "Cash Voucher";
   const recordLabel = voucher?.voucherNo ?? transaction?.transactionNo ?? "this cash voucher";
   const editableRecordId = voucher?.id ?? transaction?.id;
-  const isDraftEdit = mode === "edit" && (voucher?.status ?? transaction?.status) === CashVoucherStatuses.draft;
+  const isDraftEdit = mode === "edit" && (voucher?.status ?? transaction?.status) === CashVoucherStatuses.Draft;
   const isSaveAction = mode === "add" || isDraftEdit;
   const title =
     mode === "add" ? (

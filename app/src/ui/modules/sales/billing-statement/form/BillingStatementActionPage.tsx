@@ -15,10 +15,7 @@ import {
   type BillingStatementDetailsSection,
 } from "@/app/src/ui/modules/sales/billing-statement/form/BillingStatementDetailsForm";
 import { BillingStatementEntrySection } from "@/app/src/ui/modules/sales/billing-statement/entries/BillingStatementEntrySection";
-import {
-  AppCopyFromDropdown,
-  type AppCopyFromRecord,
-} from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
+import { AppCopyFromDropdown, type AppCopyFromRecord } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 import { ModuleTabs, type ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 export function BillingStatementActionPage() {
@@ -57,16 +54,21 @@ function BillingStatementActionPageInner() {
       <div className="grid min-w-0 gap-5">
         <ModuleTabs activeTab={activeTab} ariaLabel="Billing statement sections" tabs={BillingStatementTabs} onTabChange={setActiveTab} />
         <BillingStatementDetailsForm
+          customerPartyOptions={page.customerPartyOptions}
           errors={page.errors}
           isReadonly={page.isReadonly}
+          responsibilityCenterOptions={page.responsibilityCenterOptions}
           section={activeTab}
+          termOptions={page.termOptions}
           values={page.values}
           onUpdateField={page.updateField}
         />
         <BillingStatementEntrySection
           accountingRows={page.values.accountingEntries}
+          customerPartyOptions={page.customerPartyOptions}
           error={page.errors.items}
           isReadonly={page.isReadonly}
+          responsibilityCenterOptions={page.responsibilityCenterOptions}
           rows={page.values.items}
           onAccountingRowsChange={page.updateAccountingEntries}
           onRowsChange={page.updateItems}
@@ -92,11 +94,7 @@ function BillingStatementHeaderActions({ page }: { page: BillingStatementFormPag
         </Link>
       ) : (
         <>
-          <AppCopyFromDropdown
-            records={BillingStatementCopyFromRecords}
-            sources={["SQ"]}
-            onApply={() => undefined}
-          />
+          <AppCopyFromDropdown records={BillingStatementCopyFromRecords} sources={["SQ"]} onApply={() => undefined} />
           <button
             type="button"
             disabled={page.isSubmitting}

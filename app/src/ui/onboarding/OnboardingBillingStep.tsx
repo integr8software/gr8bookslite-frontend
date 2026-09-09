@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
+import { CheckCircle2, ExternalLink } from "lucide-react";
 import type {
   OnboardingBillingStepProps,
 } from "@/app/src/types/onboarding/OnboardingTypes";
@@ -20,6 +20,16 @@ export function OnboardingBillingStep({
   handleBack,
   handleNext,
 }: OnboardingBillingStepProps) {
+  const trialDays = selectedPlan?.trialDays ?? 0;
+  const trialPriceInCents = selectedPlan?.trialPriceInCents ?? 0;
+  const isTrialPlan = Boolean(selectedPlan && trialDays > 0);
+  const isFreeTrial = Boolean(isTrialPlan && trialPriceInCents === 0);
+  const trialPriceDisplay = selectedPlan?.trialPrice ?? `₱${(trialPriceInCents / 100).toFixed(2)}`;
+  const regularPrice =
+    selectedBillingCycle === "yearly"
+      ? selectedPlan?.yearlyPrice
+      : selectedPlan?.monthlyPrice;
+
   return (
     <div className="grid gap-8 lg:grid-cols-[1.12fr_0.88fr]">
         <div className="order-2 space-y-6 rounded-2xl border border-darknavy/10 bg-white p-5 shadow-[0_20px_60px_rgba(33,39,56,0.09)] sm:p-8 lg:order-1 lg:p-10">
@@ -33,16 +43,26 @@ export function OnboardingBillingStep({
             <div className="rounded-2xl border border-skyblue/20 bg-skyblue/8 p-5">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-darknavy text-offwhite">
-                  <ExternalLink className="h-5 w-5" aria-hidden="true" />
+                  {isFreeTrial ? (
+                    <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
+                  ) : (
+                    <ExternalLink className="h-5 w-5" aria-hidden="true" />
+                  )}
                 </div>
                 <div>
                   <h3 className="font-semibold text-darknavy">
-                    Hosted checkout preview
+                    {isFreeTrial
+                      ? `${trialDays}-Day Free Trial Included`
+                      : isTrialPlan
+                      ? `${trialDays}-Day Trial (${trialPriceDisplay})`
+                      : "Hosted checkout preview"}
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-darknavy/62">
-                    Continue opens a mock PayMongo checkout screen where manual
-                    payment outcomes can be reviewed. No card details are saved,
-                    and no automatic renewal is enabled.
+                    {isFreeTrial
+                      ? `No payment is required today. Your ${trialDays}-day free trial will activate immediately at ₱0.00 cost with full access. Once your trial ends, you will renew manually through hosted checkout to continue your subscription.`
+                      : isTrialPlan
+                      ? `Today's trial charge is ${trialPriceDisplay} for ${trialDays} days. Continue opens PayMongo checkout to pay for your trial access. After your trial ends, renewal will be ${regularPrice ?? "regular price"}.`
+                      : "Continue opens a mock PayMongo checkout screen where manual payment outcomes can be reviewed. No card details are saved, and no automatic renewal is enabled."}
                   </p>
                 </div>
               </div>
@@ -151,7 +171,7 @@ export function OnboardingBillingStep({
           <OnboardingActionRow
             showBack
             primaryLabel={
-              values.billingMode === "MANUAL"
+              values.billingMode === "MANUAL" && !isFreeTrial
                 ? "Continue to hosted checkout"
                 : "Continue"
             }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppName } from "@/app/src/constants/shared/app/AppConstants";
+import { CashVoucherActionModes } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
 import { CashVoucherActionPage } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/action/CashVoucherActionPage";
 
 const PageTitle = "View Cash Voucher";
@@ -10,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function CashDisbursementCashVoucherViewPage() {
-  return <CashVoucherActionPage mode="view" />;
+  return <CashVoucherActionPage mode={CashVoucherActionModes.View} />;
 }

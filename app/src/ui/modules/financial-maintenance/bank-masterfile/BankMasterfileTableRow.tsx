@@ -3,11 +3,12 @@ import type {
   BankMasterfileTableRowProps,
 } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
 import { ModuleTableActionButton, ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import { FileCheck2 } from "lucide-react";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { getColumnMetaClassName } from "@/app/src/ui/shared/module/module-table/utils";
 import { formatDateTime } from "@/app/src/utils/date.util";
 
-export function BankMasterfileTableRow({ row, permissions, onEditBank, onToggleStatus, onViewBank }: BankMasterfileTableRowProps) {
+export function BankMasterfileTableRow({ row, permissions, onEditBank, onManageCheckTemplates, onToggleStatus, onViewBank }: BankMasterfileTableRowProps) {
   return (
     <tr className="module-table-row">
       {row.getVisibleCells().map((cell) => (
@@ -17,6 +18,7 @@ export function BankMasterfileTableRow({ row, permissions, onEditBank, onToggleS
             bank={row.original}
             permissions={permissions}
             onEditBank={onEditBank}
+            onManageCheckTemplates={onManageCheckTemplates}
             onToggleStatus={onToggleStatus}
             onViewBank={onViewBank}
           />
@@ -31,6 +33,7 @@ function BankMasterfileCellContent({
   columnId,
   permissions,
   onEditBank,
+  onManageCheckTemplates,
   onToggleStatus,
   onViewBank,
 }: BankMasterfileCellContentProps) {
@@ -73,6 +76,12 @@ function BankMasterfileCellContent({
           <ModuleTableActionButton variant="view" onClick={() => onViewBank(bank)} label={`View ${bank.bankName}`} />
           {permissions.canUpdate ? (
             <>
+              <ModuleTableActionButton
+                icon={FileCheck2}
+                onClick={() => onManageCheckTemplates(bank)}
+                label={`Manage check templates for ${bank.bankName}`}
+                title="Check templates"
+              />
               <ModuleTableActionButton variant="edit" onClick={() => onEditBank(bank)} label={`Edit ${bank.bankName}`} />
               <ModuleTableActionButton
                 variant={nextStatus === "Inactive" ? "inactive" : "active"}

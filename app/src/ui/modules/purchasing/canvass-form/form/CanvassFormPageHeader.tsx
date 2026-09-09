@@ -19,7 +19,7 @@ export function CanvassFormFormHeader({
 	copyFromRecords,
 	isSubmitting = false,
 	mode,
-	onCopyFromPurchaseRequest,
+	onCopyFromSource,
 	onPreview,
 	onSubmit,
 	recordId,
@@ -56,8 +56,8 @@ export function CanvassFormFormHeader({
 						<>
 							<AppCopyFromDropdown
 								records={copyFromRecords}
-								sources={["Purchase Request"]}
-								onApply={onCopyFromPurchaseRequest}
+								sources={["Purchase Request", "Purchase Order"]}
+								onApply={onCopyFromSource}
 							/>
 							<button
 								type="button"

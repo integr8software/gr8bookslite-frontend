@@ -8,8 +8,8 @@ import type {
   PurchaseRequestFormValues,
   PurchaseRequestStatus,
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import {
-  PurchaseRequestAttachedTextField,
   PurchaseRequestDateField,
   PurchaseRequestFieldClassName,
   PurchaseRequestFieldShell,
@@ -17,36 +17,68 @@ import {
   PurchaseRequestTextField,
 } from "@/app/src/ui/modules/purchasing/purchase-request/form/PurchaseRequestFieldControls";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
 
 type PurchaseRequestSupplierFieldsProps = {
   isReadonly: boolean;
+  partyOptions: AppAdvancedDropdownOption[];
+  projectOptions: AppAdvancedDropdownOption[];
   values: PurchaseRequestFormValues;
+  onOpenPartyDrawer: () => void;
+  onOpenProjectDrawer: () => void;
+  onSelectParty: (partyCode: string, partyName: string) => void;
+  onSelectProject: (projectCode: string, projectName: string) => void;
   onUpdateField: PurchaseRequestFieldUpdater<PurchaseRequestFormValues>;
 };
 
-export function PurchaseRequestSupplierFields({ isReadonly, onUpdateField, values }: PurchaseRequestSupplierFieldsProps) {
+export function PurchaseRequestSupplierFields({
+  isReadonly,
+  onOpenPartyDrawer,
+  onOpenProjectDrawer,
+  onSelectParty,
+  onSelectProject,
+  onUpdateField,
+  partyOptions,
+  projectOptions,
+  values,
+}: PurchaseRequestSupplierFieldsProps) {
   return (
     <div className="grid min-w-0 gap-4 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="grid min-w-0 gap-4">
-        <PurchaseRequestAttachedTextField
-          id="purchase-request-vce-name"
-          label="Party Name"
-          isRequired
-          readOnly={isReadonly}
-          value={values.vceName}
-          onAdd={() => undefined}
-          onChange={(value) => onUpdateField("vceName", value)}
-        />
-        <PurchaseRequestFieldShell controlId="purchase-request-vendor-address" label="Vendor Address">
+        <PurchaseRequestFieldShell controlId="purchase-request-vce-name" label="Party Name" isRequired>
+          <AppLookupDropdown
+            id="purchase-request-vce-name"
+            value={values.vceCode}
+            readOnly={isReadonly}
+            options={partyOptions}
+            placeholder="Select Party Name"
+            searchPlaceholder="Search Party Name"
+            addAction={!isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
+            onChange={onSelectParty}
+          />
+        </PurchaseRequestFieldShell>
+        <PurchaseRequestFieldShell controlId="purchase-request-vendor-address" label="Address">
           <textarea
             id="purchase-request-vendor-address"
             readOnly={isReadonly}
             value={values.vendorAddress ?? ""}
             onChange={(event) => onUpdateField("vendorAddress", event.target.value)}
             className={`${PurchaseRequestFieldClassName} min-h-20 py-3`}
+          />
+        </PurchaseRequestFieldShell>
+        <PurchaseRequestFieldShell controlId="purchase-request-project-name" label="Project Name">
+          <AppLookupDropdown
+            id="purchase-request-project-name"
+            value={values.projectCode}
+            readOnly={isReadonly}
+            options={projectOptions}
+            placeholder="Select Project Name"
+            searchPlaceholder="Search Project Name"
+            addAction={!isReadonly ? { label: "Add Project Name", onClick: onOpenProjectDrawer } : undefined}
+            onChange={onSelectProject}
           />
         </PurchaseRequestFieldShell>
         <PurchaseRequestFieldShell controlId="purchase-request-remarks" label="Remarks">
@@ -79,6 +111,13 @@ export function PurchaseRequestSupplierFields({ isReadonly, onUpdateField, value
           value={values.purchaseType}
           options={PurchaseRequestTypeOptions}
           onChange={(value) => onUpdateField("purchaseType", value)}
+        />
+        <PurchaseRequestTextField
+          id="purchase-request-project-code"
+          label="Project Code"
+          readOnly
+          value={values.projectCode}
+          onChange={(value) => onUpdateField("projectCode", value)}
         />
         <PurchaseRequestFieldShell controlId="purchase-request-currency" label="Currency">
           <CurrencyExchangeRateRow
@@ -140,27 +179,6 @@ export function PurchaseRequestSupplierFields({ isReadonly, onUpdateField, value
           value={values.status}
           options={PurchaseRequestStatusOptions}
           onChange={(value) => onUpdateField("status", value as PurchaseRequestStatus)}
-        />
-        <PurchaseRequestTextField
-          id="purchase-request-bom-no"
-          label="BOM No."
-          readOnly={isReadonly}
-          value={values.bomNo}
-          onChange={(value) => onUpdateField("bomNo", value)}
-        />
-        <PurchaseRequestTextField
-          id="purchase-request-project-code"
-          label="Project Code"
-          readOnly={isReadonly}
-          value={values.projectCode}
-          onChange={(value) => onUpdateField("projectCode", value)}
-        />
-        <PurchaseRequestTextField
-          id="purchase-request-project-name"
-          label="Project Name"
-          readOnly={isReadonly}
-          value={values.projectName}
-          onChange={(value) => onUpdateField("projectName", value)}
         />
       </div>
     </div>

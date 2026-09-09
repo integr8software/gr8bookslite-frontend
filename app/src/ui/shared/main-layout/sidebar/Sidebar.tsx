@@ -1,51 +1,40 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
-import { GripVertical, Save, Settings2, X } from "lucide-react";
+import { Folder, RotateCcw, X } from "lucide-react";
 import {
 	DndContext,
+	DragOverlay,
 	KeyboardSensor,
 	PointerSensor,
 	closestCenter,
-	useDroppable,
+	pointerWithin,
 	useSensor,
 	useSensors,
+	type CollisionDetection,
 	type DragEndEvent,
+	type DragOverEvent,
+	type DragStartEvent,
 } from "@dnd-kit/core";
 import {
-	SortableContext,
 	arrayMove,
 	sortableKeyboardCoordinates,
-	useSortable,
-	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import toast from "react-hot-toast";
 import type {
 	MainNavigationItem,
 	MainNavigationSection,
 } from "@/app/src/types/shared/main-layout/MainLayoutDomainTypes";
-import { useUserSidebarCustomization } from "@/app/src/hooks/shared/main-layout/sidebar/useUserSidebarCustomization";
-import { type UserSidebarApiItem } from "@/app/src/services/company/user-sidebar/UserSidebarApi";
+import { useNavigationOrder } from "@/app/src/hooks/shared/main-layout/sidebar/useSidebarOrderPreference";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
 import { SidebarIdentitySkeleton, SidebarLogo } from "./SidebarIdentity";
-import { SidebarAllowedIcons } from "./SidebarIcons";
+import { MainIcons, SidebarAllowedIcons, renderSidebarItemIcon } from "./SidebarIcons";
 import { SidebarNavigationContent } from "./SidebarNavigationContent";
 import { getActiveNavigationHref, joinClasses, pathMatches } from "./utils";
 
-type TreeItem = Omit<UserSidebarApiItem, "children"> & { children: TreeItem[] };
-type GapDropData = {
-	type: "gap";
-	parentId: number | null;
-	index: number;
-	depth: number;
-};
-
-const InlineCustomizerRootDropId = "inline-sidebar-customizer-root";
-const InlineCustomizerGapPrefix = "inline-sidebar-gap:";
-const MaxCustomizationDepth = 2;
-const SidebarItemTypes = {
-	Link: "LINK",
-} as const;
 const ApprovalManagementHref = "/system-administration/approval-management";
 const ApprovalTransactionsHref = `${ApprovalManagementHref}/approval-transactions`;
 const HiddenSidebarKeys = new Set([
@@ -69,7 +58,7 @@ type MainSidebarProps = {
 	isOpen: boolean;
 	isTransitionEnabled: boolean;
 	navigationSections: MainNavigationSection[];
-	userModuleItems: UserSidebarApiItem[];
+	userModuleItems?: unknown[];
 	canCustomizeSidebar?: boolean;
 	shouldAutoScrollActiveItem: boolean;
 	onClose: () => void;
@@ -90,14 +79,18 @@ export function MainSidebar({
 	isOpen,
 	isTransitionEnabled,
 	navigationSections,
-	userModuleItems,
-	canCustomizeSidebar,
+	canCustomizeSidebar = true,
 	shouldAutoScrollActiveItem,
 	onClose,
 	onNavigateFromSidebar,
 	onToggleExpandedKey,
 }: MainSidebarProps) {
-	const [isCustomizing, setIsCustomizing] = useState(false);
+	const companyId = useAppStore((state) => state.activeCompanyId);
+	const branchUnitId = useAppStore((state) => state.activeBranchId);
+	const accessToken = useAppStore((state) => state.accessToken);
+	const authProfileQuery = useAuthProfileQuery({ accessToken });
+	const userId = authProfileQuery.data?.user.id;
+
 	const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 	const pendingAutoScrollTimeoutRef = useRef<ReturnType<
 		typeof setTimeout
@@ -107,6 +100,7 @@ export function MainSidebar({
 	> | null>(null);
 	const sidebarNavigationHrefRef = useRef<string | null>(null);
 	const sidebarInteractionUntilRef = useRef(0);
+
 	const suppressAutoScrollFromSidebarInteraction = useCallback(() => {
 		sidebarInteractionUntilRef.current = Date.now() + 1800;
 
@@ -115,6 +109,7 @@ export function MainSidebar({
 			pendingAutoScrollTimeoutRef.current = null;
 		}
 	}, []);
+
 	const handleNavigateFromSidebar = useCallback(
 		(href: string) => () => {
 			suppressAutoScrollFromSidebarInteraction();
@@ -210,8 +205,299 @@ export function MainSidebar({
 		() => normalizeApprovalManagementNavigation(navigationSections),
 		[navigationSections],
 	);
+
+	const isDraggable = canCustomizeSidebar;
+
+	const {
+		orderedSections,
+		setLiveSections,
+		updateSections,
+		cancelLiveReorder,
+		resetOrder,
+		hasCustomOrder,
+	} = useNavigationOrder({
+		companyId,
+		branchUnitId,
+		userId,
+		sections: normalizedNavigationSections,
+	});
+
+	const [isMounted, setIsMounted] = useState(false);
+	const [activeId, setActiveId] = useState<string | null>(null);
+	const autoExpandTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const lastOverKeyRef = useRef<string | null>(null);
+
+	useEffect(() => {
+		setIsMounted(true);
+	}, []);
+
+	const activeEntity = useMemo(() => {
+		if (!activeId) return null;
+		for (const section of orderedSections) {
+			if (section.key === activeId) {
+				return { type: "section" as const, section };
+			}
+			for (const item of section.items) {
+				if (item.key === activeId) {
+					return { type: "item" as const, item, section };
+				}
+			}
+		}
+		return null;
+	}, [activeId, orderedSections]);
+
+	const sensors = useSensors(
+		useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		}),
+	);
+
+	const collisionDetection: CollisionDetection = useCallback((args) => {
+		const pointerCollisions = pointerWithin(args);
+		if (pointerCollisions.length > 0) {
+			return pointerCollisions;
+		}
+		return closestCenter(args);
+	}, []);
+
+	const handleDragStart = useCallback(({ active }: DragStartEvent) => {
+		setActiveId(String(active.id));
+	}, []);
+
+	const handleDragOver = useCallback(
+		({ active, over }: DragOverEvent) => {
+			if (!over) {
+				if (autoExpandTimerRef.current) {
+					clearTimeout(autoExpandTimerRef.current);
+					autoExpandTimerRef.current = null;
+				}
+				lastOverKeyRef.current = null;
+				return;
+			}
+
+			const activeId = String(active.id);
+			const overId = String(over.id);
+
+			if (activeId === overId) return;
+
+			// Check if active is a top-level section
+			const isActiveSection = orderedSections.some((s) => s.key === activeId);
+			if (isActiveSection) {
+				const activeSecIdx = orderedSections.findIndex((s) => s.key === activeId);
+				const overSecIdx = orderedSections.findIndex((s) => s.key === overId);
+				if (activeSecIdx !== -1 && overSecIdx !== -1 && activeSecIdx !== overSecIdx) {
+					setLiveSections(arrayMove(orderedSections, activeSecIdx, overSecIdx));
+				}
+				return;
+			}
+
+			// Spring-loaded folder auto-opening:
+			const targetSection = orderedSections.find(
+				(s) => s.key === overId || s.items.some((i) => i.key === overId),
+			);
+
+			if (targetSection && !expandedKeys.includes(targetSection.key)) {
+				if (lastOverKeyRef.current !== targetSection.key) {
+					lastOverKeyRef.current = targetSection.key;
+					if (autoExpandTimerRef.current) {
+						clearTimeout(autoExpandTimerRef.current);
+					}
+					autoExpandTimerRef.current = setTimeout(() => {
+						onToggleExpandedKey(targetSection.key);
+					}, 200);
+				}
+			} else {
+				if (autoExpandTimerRef.current) {
+					clearTimeout(autoExpandTimerRef.current);
+					autoExpandTimerRef.current = null;
+				}
+				lastOverKeyRef.current = null;
+			}
+
+			// Cross-container item movement:
+			// Find which section active item is currently in
+			let sourceSectionIndex = -1;
+			let sourceItemIndex = -1;
+
+			for (let i = 0; i < orderedSections.length; i++) {
+				const idx = orderedSections[i].items.findIndex((item) => item.key === activeId);
+				if (idx !== -1) {
+					sourceSectionIndex = i;
+					sourceItemIndex = idx;
+					break;
+				}
+			}
+
+			if (sourceSectionIndex === -1) return;
+
+			// Find which section overId is in
+			let targetSectionIndex = -1;
+			let targetItemIndex = -1;
+
+			for (let i = 0; i < orderedSections.length; i++) {
+				const idx = orderedSections[i].items.findIndex((item) => item.key === overId);
+				if (idx !== -1) {
+					targetSectionIndex = i;
+					targetItemIndex = idx;
+					break;
+				}
+				if (orderedSections[i].key === overId) {
+					targetSectionIndex = i;
+					targetItemIndex = orderedSections[i].items.length;
+					break;
+				}
+			}
+
+			if (targetSectionIndex === -1) return;
+
+			// If moving into a DIFFERENT section container, transfer item live!
+			if (sourceSectionIndex !== targetSectionIndex) {
+				const itemToMove = orderedSections[sourceSectionIndex].items[sourceItemIndex];
+				const targetSectionObj = orderedSections[targetSectionIndex];
+
+				let newIndex: number;
+				if (targetItemIndex >= 0 && targetItemIndex < targetSectionObj.items.length) {
+					const isBelowOver =
+						over &&
+						active.rect.current.translated &&
+						over.rect &&
+						active.rect.current.translated.top > over.rect.top + over.rect.height / 2;
+					newIndex = isBelowOver ? targetItemIndex + 1 : targetItemIndex;
+				} else {
+					newIndex = targetSectionObj.items.length;
+				}
+
+				newIndex = Math.max(0, Math.min(newIndex, targetSectionObj.items.length));
+
+				const nextSections = orderedSections.map((section, idx) => {
+					if (idx === sourceSectionIndex) {
+						return {
+							...section,
+							items: section.items.filter((_, i) => i !== sourceItemIndex),
+						};
+					}
+					if (idx === targetSectionIndex) {
+						const newItems = [...section.items];
+						newItems.splice(newIndex, 0, itemToMove);
+						return {
+							...section,
+							items: newItems,
+						};
+					}
+					return section;
+				});
+
+				setLiveSections(nextSections);
+			}
+		},
+		[expandedKeys, onToggleExpandedKey, orderedSections, setLiveSections],
+	);
+
+	const handleDragCancel = useCallback(() => {
+		if (autoExpandTimerRef.current) {
+			clearTimeout(autoExpandTimerRef.current);
+			autoExpandTimerRef.current = null;
+		}
+		lastOverKeyRef.current = null;
+		setActiveId(null);
+		cancelLiveReorder();
+	}, [cancelLiveReorder]);
+
+	const handleDragEnd = useCallback(
+		({ active, over }: DragEndEvent) => {
+			if (autoExpandTimerRef.current) {
+				clearTimeout(autoExpandTimerRef.current);
+				autoExpandTimerRef.current = null;
+			}
+			lastOverKeyRef.current = null;
+			setActiveId(null);
+
+			if (!over) {
+				updateSections(orderedSections);
+				return;
+			}
+
+			const activeId = String(active.id);
+			const overId = String(over.id);
+
+			// 1. Reordering top-level sections
+			const activeSectionIndex = orderedSections.findIndex(
+				(s) => s.key === activeId,
+			);
+			const overSectionIndex = orderedSections.findIndex(
+				(s) => s.key === overId,
+			);
+
+			if (activeSectionIndex !== -1 && overSectionIndex !== -1) {
+				if (activeSectionIndex !== overSectionIndex) {
+					const next = arrayMove(
+						orderedSections,
+						activeSectionIndex,
+						overSectionIndex,
+					);
+					updateSections(next);
+				} else {
+					updateSections(orderedSections);
+				}
+				return;
+			}
+
+			// 2. Reordering items within the same section:
+			let activeSecIdx = -1;
+			let activeItmIdx = -1;
+			let overSecIdx = -1;
+			let overItmIdx = -1;
+
+			for (let i = 0; i < orderedSections.length; i++) {
+				const aIdx = orderedSections[i].items.findIndex((it) => it.key === activeId);
+				if (aIdx !== -1) {
+					activeSecIdx = i;
+					activeItmIdx = aIdx;
+				}
+				const oIdx = orderedSections[i].items.findIndex((it) => it.key === overId);
+				if (oIdx !== -1) {
+					overSecIdx = i;
+					overItmIdx = oIdx;
+				}
+			}
+
+			if (
+				activeSecIdx !== -1 &&
+				overSecIdx !== -1 &&
+				activeSecIdx === overSecIdx &&
+				activeItmIdx !== overItmIdx
+			) {
+				const nextSections = orderedSections.map((sec, idx) => {
+					if (idx === activeSecIdx) {
+						return {
+							...sec,
+							items: arrayMove(sec.items, activeItmIdx, overItmIdx),
+						};
+					}
+					return sec;
+				});
+				updateSections(nextSections);
+				return;
+			}
+
+			// Finalize and persist current live sections
+			updateSections(orderedSections);
+		},
+		[orderedSections, updateSections],
+	);
+
+	useEffect(() => {
+		return () => {
+			if (autoExpandTimerRef.current) {
+				clearTimeout(autoExpandTimerRef.current);
+				autoExpandTimerRef.current = null;
+			}
+		};
+	}, []);
+
 	const navigationActiveHref = getActiveNavigationHref(
-		normalizedNavigationSections.flatMap((section) => section.items),
+		orderedSections.flatMap((section) => section.items),
 		activeHref,
 	);
 
@@ -273,527 +559,69 @@ export function MainSidebar({
 
 				<div
 					ref={scrollContainerRef}
-					className={joinClasses(
-						"min-h-0 flex-1 scroll-smooth overflow-y-auto overflow-x-hidden overscroll-contain px-3 py-4",
-						isCustomizing && "pb-20",
-					)}
+					className="min-h-0 flex-1 scroll-smooth overflow-y-auto overflow-x-hidden overscroll-contain px-3 py-4"
 				>
-					{isCustomizing ? (
-						<InlineSidebarCustomizer
-							userModuleItems={userModuleItems}
-							onCancel={() => setIsCustomizing(false)}
-							onSaved={() => setIsCustomizing(false)}
-						/>
-					) : (
+					<DndContext
+						sensors={sensors}
+						collisionDetection={collisionDetection}
+						onDragStart={handleDragStart}
+						onDragOver={handleDragOver}
+						onDragEnd={handleDragEnd}
+						onDragCancel={handleDragCancel}
+					>
 						<SidebarNavigationContent
 							activeHref={navigationActiveHref}
 							expandedKeys={expandedKeys}
-							sections={normalizedNavigationSections}
+							sections={orderedSections}
+							isDraggable={isDraggable}
 							onInteract={suppressAutoScrollFromSidebarInteraction}
 							onNavigateFromSidebar={handleNavigateFromSidebar}
 							onToggleExpandedKey={onToggleExpandedKey}
 						/>
-					)}
+
+						{isMounted
+							? createPortal(
+									<DragOverlay dropAnimation={null}>
+										{activeEntity?.type === "section" ? (
+											<div className="pointer-events-none flex min-h-10 w-64 select-none items-center gap-2 rounded-md bg-white/80 px-3 py-2 text-sm font-semibold text-darknavy opacity-50 shadow-md">
+												<Folder className="h-4 w-4 shrink-0 text-darknavy/65" />
+												<span className="min-w-0 flex-1 truncate">
+													{activeEntity.section.title}
+												</span>
+											</div>
+										) : activeEntity?.type === "item" ? (
+											<div className="pointer-events-none flex min-h-9 w-60 select-none items-center gap-2 rounded-md bg-white/80 px-3 py-2 text-sm font-semibold text-darknavy opacity-50 shadow-md">
+												{renderSidebarItemIcon(activeEntity.item, false, false)}
+												<span className="min-w-0 flex-1 truncate">
+													{activeEntity.item.label}
+												</span>
+											</div>
+										) : null}
+									</DragOverlay>,
+									document.body,
+							  )
+							: null}
+					</DndContext>
 				</div>
-				{canCustomizeSidebar && !isCustomizing ? (
-					<div className="border-t border-darknavy/10 p-3">
+
+				{hasCustomOrder && isDraggable ? (
+					<div className="border-t border-darknavy/10 px-3 py-2">
 						<button
 							type="button"
-							onClick={() => setIsCustomizing(true)}
-							className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-darknavy/65 hover:bg-darknavy/5 hover:text-darknavy"
+							onClick={() => {
+								resetOrder();
+								toast.success("Sidebar order reset to default");
+							}}
+							className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium text-darknavy/50 transition hover:bg-darknavy/5 hover:text-darknavy"
 						>
-							<Settings2 className="h-4 w-4" />
-							Customize sidebar
+							<RotateCcw className="h-3.5 w-3.5" />
+							Reset sidebar order
 						</button>
 					</div>
 				) : null}
 			</div>
 		</aside>
 	);
-}
-
-function InlineSidebarCustomizer({
-	userModuleItems,
-	onCancel,
-	onSaved,
-}: {
-	userModuleItems: UserSidebarApiItem[];
-	onCancel: () => void;
-	onSaved: () => void;
-}) {
-	const [items, setItems] = useState<TreeItem[]>([]);
-	const [dirty, setDirty] = useState(false);
-	const [activeDragId, setActiveDragId] = useState<string | null>(null);
-	const { sourceItems, isLoading, isSaving, saveItems } =
-		useUserSidebarCustomization({
-			fallbackItems: userModuleItems,
-			onSaved,
-		});
-	const sensors = useSensors(
-		useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-		useSensor(KeyboardSensor, {
-			coordinateGetter: sortableKeyboardCoordinates,
-		}),
-	);
-	const displayedItems = useMemo(
-		() => (dirty ? items : sourceItems.map(normalize)),
-		[dirty, items, sourceItems],
-	);
-	const { isOver: isRootDroppableOver, setNodeRef: setRootDroppableNodeRef } =
-		useDroppable({ id: InlineCustomizerRootDropId });
-	function update(nextItems: TreeItem[]) {
-		setItems(nextItems);
-		setDirty(true);
-	}
-
-	function moveToRoot(itemId: number) {
-		const source = locate(displayedItems, itemId);
-		if (!source || source.parentId == null) return;
-		update([...removeItem(displayedItems, source.item.id), source.item]);
-	}
-
-	function onDragEnd({ active, over }: DragEndEvent) {
-		setActiveDragId(null);
-		if (!over || active.id === over.id) return;
-		const source = locate(displayedItems, Number(active.id));
-		if (!source) return;
-		const withoutSource = removeItem(displayedItems, source.item.id);
-
-		if (over.id === InlineCustomizerRootDropId) {
-			update([...withoutSource, source.item]);
-			return;
-		}
-
-		const gap = getGapData(over.id);
-		if (gap) {
-			const siblings =
-				gap.parentId == null
-					? withoutSource
-					: (locate(withoutSource, gap.parentId)?.item.children ?? []);
-			update(
-				replaceChildren(
-					withoutSource,
-					gap.parentId,
-					insertAt(siblings, gap.index, source.item),
-				),
-			);
-			return;
-		}
-
-		const target = locate(displayedItems, Number(over.id));
-		if (!target) return;
-
-		if (
-			target.item.itemType !== SidebarItemTypes.Link &&
-			canNest(source.item, target)
-		) {
-			update(appendChild(withoutSource, target.item.id, source.item));
-			return;
-		}
-
-		if (source.parentId !== target.parentId) return;
-		const siblings =
-			source.parentId == null
-				? displayedItems
-				: locate(displayedItems, source.parentId)!.item.children;
-		update(
-			replaceChildren(
-				displayedItems,
-				source.parentId,
-				arrayMove(siblings, source.index, target.index),
-			),
-		);
-	}
-
-	return (
-		<div className="space-y-2">
-			<DndContext
-				sensors={sensors}
-				collisionDetection={closestCenter}
-				onDragStart={({ active }) => setActiveDragId(String(active.id))}
-				onDragCancel={() => setActiveDragId(null)}
-				onDragEnd={onDragEnd}
-			>
-				<div
-					ref={setRootDroppableNodeRef}
-					className={joinClasses(
-						"rounded-md transition",
-						isRootDroppableOver && "bg-skyblue/5",
-					)}
-				>
-					{isLoading ? (
-						<p className="px-3 py-6 text-center text-sm text-darknavy/55">
-							Loading sidebar customization...
-						</p>
-					) : displayedItems.length === 0 ? (
-						<p className="rounded-md border border-dashed border-darknavy/15 px-3 py-6 text-center text-sm text-darknavy/55">
-							No sidebar items are available for customization.
-						</p>
-					) : (
-						<>
-							<CustomizerGap depth={0} index={0} parentId={null} />
-							<InlineTree
-								items={displayedItems}
-								depth={0}
-								parentId={null}
-								isDragging={Boolean(activeDragId)}
-								onChange={update}
-								onMoveToRoot={moveToRoot}
-							/>
-						</>
-					)}
-				</div>
-			</DndContext>
-			<div className="fixed bottom-0 left-0 z-20 flex w-78 gap-2 border-t border-darknavy/10 bg-white px-3 py-3">
-				<button
-					type="button"
-					className="h-9 flex-1 rounded-md border border-darknavy/10 text-sm font-semibold text-darknavy"
-					onClick={onCancel}
-				>
-					Cancel
-				</button>
-				<button
-					type="button"
-					disabled={!dirty || isSaving}
-					className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-md bg-skyblue text-sm font-semibold text-white disabled:opacity-45"
-					onClick={() =>
-						saveItems(displayedItems.map((item) => serialize(item)))
-					}
-				>
-					<Save className="h-4 w-4" />
-					Save
-				</button>
-			</div>
-		</div>
-	);
-}
-
-function InlineTree({
-	items,
-	depth,
-	parentId,
-	isDragging,
-	onChange,
-	onMoveToRoot,
-}: {
-	items: TreeItem[];
-	depth: number;
-	parentId: number | null;
-	isDragging: boolean;
-	onChange: (items: TreeItem[]) => void;
-	onMoveToRoot: (itemId: number) => void;
-}) {
-	return (
-		<SortableContext
-			items={items.map((item) => String(item.id))}
-			strategy={verticalListSortingStrategy}
-		>
-			<div className="space-y-0.5">
-				{items.map((item, index) => (
-					<div key={item.id}>
-						<InlineEditableRow
-							item={item}
-							depth={depth}
-							parentId={parentId}
-							isDragging={isDragging}
-							onChildren={(children) =>
-								onChange(
-									items.map((value) =>
-										value.id === item.id ? { ...value, children } : value,
-									),
-								)
-							}
-							onMoveToRoot={onMoveToRoot}
-						/>
-						<CustomizerGap
-							depth={depth}
-							index={index + 1}
-							parentId={parentId}
-						/>
-					</div>
-				))}
-			</div>
-		</SortableContext>
-	);
-}
-
-function InlineEditableRow({
-	item,
-	depth,
-	parentId,
-	isDragging,
-	onChildren,
-	onMoveToRoot,
-}: {
-	item: TreeItem;
-	depth: number;
-	parentId: number | null;
-	isDragging: boolean;
-	onChildren: (children: TreeItem[]) => void;
-	onMoveToRoot: (itemId: number) => void;
-}) {
-	const {
-		attributes,
-		isDragging: isSortableDragging,
-		listeners,
-		setNodeRef,
-		transform,
-		transition,
-	} = useSortable({ id: String(item.id) });
-	const isStructural = item.itemType !== SidebarItemTypes.Link;
-	const configuredIcon = item.iconName
-		? SidebarAllowedIcons[item.iconName]
-		: undefined;
-	const ConfiguredIcon = configuredIcon;
-	const shouldShowDefaultFolder = !configuredIcon && isStructural;
-	const shouldShowDefaultFile =
-		!configuredIcon && !isStructural && parentId == null;
-	const shouldShowDefaultDot =
-		!configuredIcon && !shouldShowDefaultFolder && !shouldShowDefaultFile;
-	const rowPadding =
-		depth === 0 ? "px-3" : depth === 1 ? "pl-6 pr-3" : "pl-8 pr-3";
-
-	return (
-		<div
-			ref={setNodeRef}
-			style={{
-				transform: CSS.Transform.toString(transform),
-				transition,
-			}}
-			className={joinClasses("rounded-md", isSortableDragging && "opacity-45")}
-		>
-			<div
-				className={joinClasses(
-					"group flex min-h-8 w-full items-center gap-2 rounded-md py-1 text-sm hover:bg-darknavy/[0.035]",
-					rowPadding,
-				)}
-			>
-				{shouldShowDefaultFolder ? (
-					<SidebarAllowedIcons.folder className="h-4 w-4 shrink-0 text-darknavy/65" />
-				) : shouldShowDefaultFile ? (
-					<SidebarAllowedIcons.link className="h-4 w-4 shrink-0 text-darknavy/65" />
-				) : shouldShowDefaultDot ? (
-					<span
-						aria-hidden="true"
-						className="h-1.5 w-1.5 shrink-0 rounded-full bg-darknavy/30 transition-colors group-hover:bg-skyblue"
-					/>
-				) : ConfiguredIcon ? (
-					<ConfiguredIcon className="h-4 w-4 shrink-0 text-darknavy/65" />
-				) : null}
-				<span
-					className={joinClasses(
-						"min-w-0 flex-1 bg-transparent outline-none",
-						isStructural
-							? "font-semibold text-darknavy"
-							: "font-medium text-darknavy/80",
-					)}
-				>
-					{item.label}
-				</span>
-				<button
-					type="button"
-					aria-label={`Drag ${item.label}`}
-					{...attributes}
-					{...listeners}
-					className="grid h-7 w-7 shrink-0 cursor-grab place-items-center rounded text-darknavy/35 hover:bg-darknavy/5 hover:text-darknavy/55 active:cursor-grabbing"
-				>
-					<GripVertical className="h-3.5 w-3.5" />
-				</button>
-			</div>
-			{isStructural ? (
-				<div className="ml-3 border-l border-darknavy/10 pl-0.5">
-					<CustomizerGap depth={depth + 1} index={0} parentId={item.id} />
-					<SortableContext
-						items={item.children.map((child) => String(child.id))}
-						strategy={verticalListSortingStrategy}
-					>
-						<div>
-							{item.children.map((child, index) => (
-								<div key={child.id}>
-									<InlineEditableRow
-										item={child}
-										depth={depth + 1}
-										parentId={item.id}
-										isDragging={isDragging}
-										onChildren={(children) =>
-											onChildren(
-												item.children.map((value) =>
-													value.id === child.id
-														? { ...value, children }
-														: value,
-												),
-											)
-										}
-										onMoveToRoot={onMoveToRoot}
-									/>
-									<CustomizerGap
-										depth={depth + 1}
-										index={index + 1}
-										parentId={item.id}
-									/>
-								</div>
-							))}
-						</div>
-					</SortableContext>
-				</div>
-			) : null}
-		</div>
-	);
-}
-
-function CustomizerGap({
-	depth,
-	index,
-	parentId,
-}: {
-	depth: number;
-	index: number;
-	parentId: number | null;
-}) {
-	const { isOver, setNodeRef } = useDroppable({
-		id: getGapId({ type: "gap", parentId, index, depth }),
-	});
-	const widthClass =
-		depth === 0
-			? "w-full"
-			: depth === 1
-				? "w-[calc(100%-0.75rem)]"
-				: "w-[calc(100%-1.5rem)]";
-
-	return (
-		<div
-			ref={setNodeRef}
-			className={joinClasses(
-				"group relative -my-px flex h-1 items-center",
-				depth === 1 && "pl-3",
-				depth >= 2 && "pl-6",
-			)}
-		>
-			<div
-				className={joinClasses(
-					"relative h-px transition",
-					widthClass,
-					isOver ? "bg-skyblue" : "bg-transparent group-hover:bg-skyblue/45",
-				)}
-			/>
-		</div>
-	);
-}
-
-function normalize(item: UserSidebarApiItem): TreeItem {
-	return { ...item, children: item.children.map(normalize) };
-}
-
-function serialize(item: TreeItem): UserSidebarApiItem {
-	return {
-		key: item.key,
-		label: item.label,
-		itemType: item.itemType,
-		moduleId:
-			item.itemType === SidebarItemTypes.Link ? item.moduleId : undefined,
-		iconName: item.iconName || undefined,
-		children: item.children.map(serialize),
-	} as UserSidebarApiItem;
-}
-
-function locate(
-	items: TreeItem[],
-	id: number,
-	parentId: number | null = null,
-	depth = 0,
-): {
-	item: TreeItem;
-	parentId: number | null;
-	index: number;
-	depth: number;
-} | null {
-	for (const [index, item] of items.entries()) {
-		if (item.id === id) return { item, parentId, index, depth };
-		const child = locate(item.children, id, item.id, depth + 1);
-		if (child) return child;
-	}
-	return null;
-}
-
-function removeItem(items: TreeItem[], id: number): TreeItem[] {
-	return items
-		.filter((item) => item.id !== id)
-		.map((item) => ({ ...item, children: removeItem(item.children, id) }));
-}
-
-function replaceChildren(
-	items: TreeItem[],
-	parentId: number | null,
-	children: TreeItem[],
-): TreeItem[] {
-	if (parentId == null) return children;
-	return items.map((item) =>
-		item.id === parentId
-			? { ...item, children }
-			: {
-					...item,
-					children: replaceChildren(item.children, parentId, children),
-				},
-	);
-}
-
-function insertAt(items: TreeItem[], index: number, item: TreeItem) {
-	return [...items.slice(0, index), item, ...items.slice(index)];
-}
-
-function appendChild(
-	items: TreeItem[],
-	parentId: number,
-	child: TreeItem,
-): TreeItem[] {
-	return items.map((item) =>
-		item.id === parentId
-			? { ...item, children: [...item.children, child] }
-			: { ...item, children: appendChild(item.children, parentId, child) },
-	);
-}
-
-function canNest(source: TreeItem, target: { item: TreeItem; depth: number }) {
-	if (target.item.itemType === SidebarItemTypes.Link) return false;
-	if (source.itemType === "SECTION") {
-		return (
-			target.item.itemType === "SECTION" &&
-			target.depth < MaxCustomizationDepth - 1
-		);
-	}
-	if (
-		source.itemType === "CONTAINER" &&
-		target.depth >= MaxCustomizationDepth - 1
-	)
-		return false;
-	return target.depth + getTreeDepth(source) <= MaxCustomizationDepth;
-}
-
-function getTreeDepth(item: TreeItem): number {
-	return item.children.length
-		? 1 + Math.max(...item.children.map(getTreeDepth))
-		: 1;
-}
-
-function getGapId(data: GapDropData) {
-	return `${InlineCustomizerGapPrefix}${data.parentId ?? "root"}:${data.index}:${data.depth}`;
-}
-
-function getGapData(id: unknown): GapDropData | null {
-	const text = String(id);
-	if (!text.startsWith(InlineCustomizerGapPrefix)) return null;
-	const [parentToken, indexToken, depthToken] = text
-		.slice(InlineCustomizerGapPrefix.length)
-		.split(":");
-	const index = Number(indexToken);
-	const depth = Number(depthToken);
-	if (!Number.isInteger(index) || !Number.isInteger(depth)) return null;
-	return {
-		type: "gap",
-		parentId: parentToken === "root" ? null : Number(parentToken),
-		index,
-		depth,
-	};
 }
 
 function normalizeApprovalManagementNavigation(
@@ -948,7 +776,7 @@ function createApprovalManagementChildren(
 		{
 			key: "approval-management-transactions",
 			label: "Approval Transactions",
-			href: ApprovalTransactionsHref,
+			href: `${ApprovalManagementHref}/approval-transactions`,
 			accessKey: item.accessKey,
 			permissionCode: item.permissionCode,
 			requiredActions: item.requiredActions,

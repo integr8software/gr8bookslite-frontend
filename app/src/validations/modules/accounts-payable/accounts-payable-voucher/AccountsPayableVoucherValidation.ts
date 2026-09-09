@@ -6,6 +6,8 @@ import {
   getAccountsPayableVoucherExpenseTotals,
 } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
 import type {
+  AccountsPayableVoucherAccountingEntry,
+  AccountsPayableVoucherExpenseLine,
   AccountsPayableVoucherFormErrors,
   AccountsPayableVoucherFormValues,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
@@ -46,9 +48,7 @@ const accountsPayableVoucherAccountingEntrySchema = z.object({
   credit: z.number().min(0, "Credit cannot be negative."),
 });
 
-export function validateAccountsPayableVoucherForm(
-  values: AccountsPayableVoucherFormValues,
-): AccountsPayableVoucherFormErrors {
+export function validateAccountsPayableVoucherForm(values: AccountsPayableVoucherFormValues): AccountsPayableVoucherFormErrors {
   const errors: AccountsPayableVoucherFormErrors = {};
   const headerResult = accountsPayableVoucherHeaderSchema.safeParse(values);
 
@@ -68,10 +68,7 @@ export function validateAccountsPayableVoucherForm(
   return errors;
 }
 
-function validateExpenseLines(
-  values: AccountsPayableVoucherFormValues,
-  errors: AccountsPayableVoucherFormErrors,
-) {
+function validateExpenseLines(values: AccountsPayableVoucherFormValues, errors: AccountsPayableVoucherFormErrors) {
   const hasExpenseItems = accountsPayableVoucherExpenseLinesHaveItems(values.expenseLines);
 
   if (!hasExpenseItems) {
@@ -108,10 +105,7 @@ function validateExpenseLines(
   }
 }
 
-function validateAccountingEntries(
-  values: AccountsPayableVoucherFormValues,
-  errors: AccountsPayableVoucherFormErrors,
-) {
+function validateAccountingEntries(values: AccountsPayableVoucherFormValues, errors: AccountsPayableVoucherFormErrors) {
   if (values.accountingEntries.length <= 1) {
     errors.accountingEntries = "Add at least two accounting entry rows.";
   }
@@ -160,18 +154,25 @@ function validateAccountingEntries(
 
   if (
     expectedAccountingTotal > 0 &&
-    (Math.abs(totals.totalDebit - expectedAccountingTotal) >= 0.001 ||
-      Math.abs(totals.totalCredit - expectedAccountingTotal) >= 0.001)
+    (Math.abs(totals.totalDebit - expectedAccountingTotal) >= 0.001 || Math.abs(totals.totalCredit - expectedAccountingTotal) >= 0.001)
   ) {
     errors.accountingEntries = "Accounting debit and credit totals must match the expense total.";
   }
 }
 
 function getAccountsPayableVoucherAccountingControlTotal(values: AccountsPayableVoucherFormValues) {
-  const total = values.expenseLines.reduce(
-    (sum, line) => sum + Math.abs(Number(line.amount || 0)),
-    0,
-  );
+  const total = values.expenseLines.reduce((sum, line) => sum + Math.abs(Number(line.amount || 0)), 0);
 
   return Math.round(total * 100) / 100;
+}
+
+export function expenseLineIsComplete(line: AccountsPayableVoucherExpenseLine) {
+  return line.expenseAccountCode.trim() !== "" && line.expenseType.trim() !== "" && Math.abs(Number(line.amount || 0)) > 0;
+}
+
+export function accountingEntryIsComplete(entry: AccountsPayableVoucherAccountingEntry) {
+  const hasDebit = Number(entry.debit || 0) > 0;
+  const hasCredit = Number(entry.credit || 0) > 0;
+
+  return entry.accountCode.trim() !== "" && entry.accountTitle.trim() !== "" && (hasDebit || hasCredit) && !(hasDebit && hasCredit);
 }

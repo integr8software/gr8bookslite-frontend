@@ -1,10 +1,10 @@
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import type {
+  BankCheckTemplateFormValues,
   BankImportColumnId,
   BankMasterfile,
   BankMasterfileStatus,
 } from "@/app/src/types/modules/financial-maintenance/bank-masterfile/BankMasterfileTypes";
-import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
@@ -22,12 +22,20 @@ export const BankMasterfileDescription = "Maintain company bank accounts and the
 
 export const BankMasterfileDrawerFormId = "bank-masterfile-drawer-form";
 
-export const BankMasterfileFieldClassName =
-  "h-11 w-full rounded-lg border border-darknavy/10 bg-white px-3 text-sm text-darknavy outline-none transition placeholder:text-darknavy/35 focus:border-skyblue/60 focus:ring-4 focus:ring-skyblue/10 disabled:cursor-not-allowed disabled:bg-darknavy/[0.03] disabled:text-darknavy/70 disabled:placeholder:text-darknavy/32 read-only:bg-darknavy/[0.03] read-only:text-darknavy/70";
+export const BankCheckTemplateDrawerFormId = "bank-check-template-drawer-form";
 
-export const BankMasterfileReadOnlyFieldClassName = `${BankMasterfileFieldClassName} bg-darknavy/[0.03] font-semibold text-darknavy/80`;
+export const BankCheckTemplateStorageKey = "gr8booksneo:bank-masterfile:check-templates:v1";
 
-export const BankMasterfileSelectClassName = `app-select-control ${BankMasterfileFieldClassName} enabled:bg-white enabled:text-darknavy disabled:bg-darknavy/[0.03] disabled:text-darknavy/70`;
+export const BankCheckTemplateOrientationOptions = ["Landscape", "Portrait"] as const;
+
+export const BankCheckTemplateInitialValues: BankCheckTemplateFormValues = {
+  name: "",
+  description: "",
+  paperWidth: "8.5",
+  paperHeight: "3.5",
+  orientation: "Landscape",
+  isDefault: false,
+};
 
 export const BankMasterfileTablePaginationStorageKey = "maintenance:financial-management:bank-masterfile";
 
@@ -61,7 +69,15 @@ export const BankMasterfileDefaultColumnVisibility: VisibilityState = {
 };
 export const BankMasterfileDefaultSorting: SortingState = [{ id: "bankName", desc: false }];
 
-export const BankMasterfileStatusOptions = ["Active", "Inactive"] as const satisfies readonly BankMasterfileStatus[];
+export const BankMasterfileStatuses = {
+  Active: "Active",
+  Inactive: "Inactive",
+} as const satisfies Record<string, BankMasterfileStatus>;
+
+export const BankMasterfileStatusOptions = [
+  BankMasterfileStatuses.Active,
+  BankMasterfileStatuses.Inactive,
+] as const satisfies readonly BankMasterfileStatus[];
 
 export const BankMasterfileDefaultBankSwitchOption = {
   label: "Yes",
@@ -138,15 +154,3 @@ export const BankImportFieldOrder: BankImportColumnId[] = [
   "seriesEnd",
   "seriesDigits",
 ];
-
-export const BankImportPreviewPageSize = 20;
-export const BankImportBatchSize = 25;
-export const BankImportMinFileSizeBytes = 1;
-export const BankImportMaxFileSizeBytes = AppMaxFileUploadSizeBytes;
-
-export const TemplateHeaders = BankImportTemplateHeaders;
-export const ImportFieldOrder = BankImportFieldOrder;
-export const PreviewPageSize = BankImportPreviewPageSize;
-export const ImportBatchSize = BankImportBatchSize;
-export const MinImportFileSizeBytes = BankImportMinFileSizeBytes;
-export const MaxImportFileSizeBytes = BankImportMaxFileSizeBytes;

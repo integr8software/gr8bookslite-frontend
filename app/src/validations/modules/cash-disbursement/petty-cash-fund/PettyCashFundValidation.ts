@@ -22,9 +22,9 @@ const schema = z.object({
 
 export function validatePettyCashFundForm(values: PettyCashFundFormValues): PettyCashFundFormErrors {
   const errors: PettyCashFundFormErrors = {};
-  const result = (values.status === PettyCashFundStatuses.draft ? draftSchema : schema).safeParse(values);
+  const result = (values.status === PettyCashFundStatuses.Draft ? draftSchema : schema).safeParse(values);
   if (!result.success) for (const issue of result.error.issues) errors[issue.path[0] as keyof PettyCashFundFormValues] ??= issue.message;
-  if (values.status === PettyCashFundStatuses.draft) return errors;
+  if (values.status === PettyCashFundStatuses.Draft) return errors;
   if (values.items.length === 0 || values.items.every((item) => !item.supplierName.trim() && (parseAmount(item.amount) ?? 0) <= 0))
     errors.items = "Add at least one petty cash item.";
   else if (values.items.some((item) => !item.supplierName.trim() || (parseAmount(item.amount) ?? 0) <= 0))

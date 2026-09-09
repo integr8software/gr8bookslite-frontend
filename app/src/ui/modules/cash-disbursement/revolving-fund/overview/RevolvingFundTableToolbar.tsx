@@ -1,4 +1,4 @@
-import { RevolvingFundStatusOptions } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
+import { RevolvingFundStatusFilterOptions } from "@/app/src/constants/modules/cash-disbursement/revolving-fund/RevolvingFundConstants";
 import type { RevolvingFundOverviewPageState } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import { AmountRangePicker } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
 import { DateRangePicker } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
@@ -21,7 +21,7 @@ export function RevolvingFundTableToolbar({
         <AmountRangePicker label="Total Amount" value={page.amountRange} onChange={page.setAmountRange} />
       </div>
       <div className="grid grid-cols-[2fr_1fr_1fr] gap-2 md:grid-cols-[minmax(0,1fr)_3.25rem_3.25rem] 2xl:w-[21.5rem]" data-spotlight-id="maintenance-table-options">
-        <ModuleTableFilterSelect label="Status" value={page.statusFilter} options={RevolvingFundStatusOptions.map((status) => ({ label: status, value: status }))} onChange={page.setStatusFilter} />
+        <ModuleTableFilterSelect label="Status" value={page.statusFilter} options={RevolvingFundStatusFilterOptions} onChange={page.setStatusFilter} />
         <ModuleTableColumnVisibilityButton table={page.table} />
         <ModuleTableResetButton className="px-2" onClick={onRefresh} />
       </div>

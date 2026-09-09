@@ -88,11 +88,13 @@ export function AppAdvancedDropdown({
 	removeSelectionOnSelectedOptionClick = true,
 	searchPlaceholder = "Search options",
 	selectionMode = AppAdvancedDropdownSelectionModeSingle,
+	showDescriptionTooltip = false,
 	showSelectionIndicator = true,
 	showSelectedDetails = false,
 	showSelectionRemoveButton = true,
 	value,
 	onChange,
+	onOpen,
 	onSelectOption,
 }: AppAdvancedDropdownProps) {
 	const generatedId = useId();
@@ -326,6 +328,10 @@ export function AppAdvancedDropdown({
 	function showOptions(nextActiveValue?: string) {
 		if (isInteractionLocked) {
 			return;
+		}
+
+		if (!isOpen) {
+			onOpen?.();
 		}
 
 		if (menuPortal) {
@@ -570,6 +576,7 @@ export function AppAdvancedDropdown({
 							view={optionViewToggle ? optionView : AppAdvancedDropdownOptionViewList}
 							selectedValues={selectedValueSet}
 							showSelectionIndicator={showSelectionIndicator}
+							showDescriptionTooltip={showDescriptionTooltip}
 							onActive={setActiveOptionValue}
 							onSelect={selectOption}
 						/>

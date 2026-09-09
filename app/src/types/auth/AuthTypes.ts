@@ -58,6 +58,7 @@ export type EmailVerificationInput = {
 };
 
 export type LoginCredentials = {
+  companyId?: number;
   email: string;
   password: string;
   rememberMe?: boolean;

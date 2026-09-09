@@ -167,7 +167,7 @@ export function AdvancesToSuppliersDetailsFields({
               />
             }
           />
-          <TransactionField label="Amount" error={page.errors.totalPoAmount} isRequired>
+          <TransactionField label="Purchase Order Amount" error={page.errors.totalPoAmount} isRequired>
             <MoneyNumberField
               value={page.values.totalPoAmount}
               min="0"

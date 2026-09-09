@@ -1,6 +1,8 @@
 "use client";
 
 import { ClipboardCheck } from "lucide-react";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { ModuleHeader } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { ApprovalTransactionPreview } from "./ApprovalTransactionPreview";
@@ -67,9 +69,43 @@ export function ApprovalTransactions() {
         isApproving={transactions.approveMutation.isPending}
         isDisapproving={transactions.disapproveMutation.isPending}
         record={transactions.previewTransaction}
-        onApprove={(record) => transactions.approveMutation.mutate(record.id)}
+        onApprove={(record) => transactions.openActionDialog("approve", record)}
         onClose={() => transactions.setPreviewTransaction(null)}
-        onDisapprove={(record) => transactions.disapproveMutation.mutate(record.id)}
+        onDisapprove={(record) => transactions.openActionDialog("disapprove", record)}
+      />
+
+      <AppDialog
+        cancelLabel="Cancel"
+        confirmLabel={transactions.actionDialog?.action === "disapprove" ? "Disapprove" : "Approve"}
+        description={
+          transactions.actionDialog?.action === "disapprove"
+            ? "Are you sure you want to disapprove this transaction?"
+            : "Are you sure you want to approve this transaction?"
+        }
+        iconTone={transactions.actionDialog?.action === "disapprove" ? "disapprove" : "approve"}
+        isOpen={Boolean(transactions.actionDialog)}
+        isPending={transactions.approveMutation.isPending || transactions.disapproveMutation.isPending}
+        pendingLabel={transactions.actionDialog?.action === "disapprove" ? "Disapproving..." : "Approving..."}
+        title={transactions.actionDialog?.record ? `${transactions.actionDialog.record.referenceNo}` : "Approval Transaction"}
+        tone={transactions.actionDialog?.action === "disapprove" ? "danger" : "success"}
+        content={
+          transactions.actionDialog ? (
+            <label className="block text-left">
+              <span className="text-sm font-semibold text-darknavy">Remarks</span>
+              <AppLimitedTextarea
+                id="approval-transaction-action-remarks"
+                value={transactions.actionDialog.remarks}
+                rows={4}
+                placeholder="Add remarks for this action"
+                disabled={transactions.approveMutation.isPending || transactions.disapproveMutation.isPending}
+                className="mt-2 min-h-24 w-full resize-none rounded-md border border-darknavy/10 bg-white px-3 py-2 text-sm font-medium text-darknavy shadow-sm outline-none transition placeholder:text-darknavy/28 focus:border-skyblue focus:ring-4 focus:ring-skyblue/15 disabled:cursor-not-allowed disabled:bg-darknavy/5"
+                onChange={(event) => transactions.updateActionRemarks(event.target.value)}
+              />
+            </label>
+          ) : null
+        }
+        onCancel={transactions.cancelActionDialog}
+        onConfirm={transactions.confirmActionDialog}
       />
     </section>
   );

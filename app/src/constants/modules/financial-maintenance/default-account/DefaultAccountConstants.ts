@@ -83,12 +83,26 @@ export const DefaultAccountTypeOptions = [
   { value: "COLLECTION", label: "Collections" },
 ] as const satisfies readonly { value: DefaultAccountType; label: string }[];
 
+export const DefaultAccountTypeLabels: Record<DefaultAccountType, string> = {
+  EXPENSE: "Expenses",
+  COLLECTION: "Collections",
+  FIXED_ASSET: "Fixed Asset",
+};
+
 export const DefaultAccountTypeFilterOptions = [
   { value: "", label: "All Accounts" },
   ...DefaultAccountTypeOptions,
 ] as const satisfies readonly { value: "" | DefaultAccountType; label: string }[];
 
-export const DefaultAccountStatusOptions = ["Active", "Inactive"] as const satisfies readonly DefaultAccountStatus[];
+export const DefaultAccountStatuses = {
+  Active: "Active",
+  Inactive: "Inactive",
+} as const satisfies Record<string, DefaultAccountStatus>;
+
+export const DefaultAccountStatusOptions = [
+  DefaultAccountStatuses.Active,
+  DefaultAccountStatuses.Inactive,
+] as const satisfies readonly DefaultAccountStatus[];
 
 export const DefaultAccountImportTemplateHeaders = ["Default Account Name", "Description", "Type"];
 
@@ -154,7 +168,7 @@ export const DefaultAccountExportColumns: ModuleTableExportColumn<DefaultAccount
   {
     header: "Type",
     id: "type",
-    value: (row) => getDefaultAccountTypeLabel(row.type),
+    value: (row) => DefaultAccountTypeLabels[row.type] ?? row.type,
   },
   { header: "Status", id: "status", value: "status" },
   {
@@ -168,7 +182,3 @@ export const DefaultAccountExportColumns: ModuleTableExportColumn<DefaultAccount
     value: (row) => row.generatedAccounts.map((account) => account.accountTitle).join("; "),
   },
 ];
-
-export function getDefaultAccountTypeLabel(type: DefaultAccountType) {
-  return DefaultAccountTypeOptions.find((option) => option.value === type)?.label ?? type;
-}

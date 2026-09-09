@@ -8,15 +8,9 @@ import type {
   AccountsPayableVoucherFormValues,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 
-export function getAccountsPayableVoucherReportTotals(
-  values: AccountsPayableVoucherFormValues,
-) {
-  const expenseTotals = getAccountsPayableVoucherExpenseTotals(
-    values.expenseLines,
-  );
-  const accountingTotals = getAccountsPayableVoucherAccountingTotals(
-    values.accountingEntries,
-  );
+export function getAccountsPayableVoucherReportTotals(values: AccountsPayableVoucherFormValues) {
+  const expenseTotals = getAccountsPayableVoucherExpenseTotals(values.expenseLines);
+  const accountingTotals = getAccountsPayableVoucherAccountingTotals(values.accountingEntries);
 
   return {
     ...expenseTotals,
@@ -34,10 +28,7 @@ export function formatAccountsPayableVoucherReportAmount(value: number) {
   return formatAccountsPayableVoucherAmount(Number(value || 0));
 }
 
-export function formatAccountsPayableVoucherReportAccount(
-  accountCode: string,
-  accountTitle: string,
-) {
+export function formatAccountsPayableVoucherReportAccount(accountCode: string, accountTitle: string) {
   if (accountCode && accountTitle) {
     return `${accountCode} - ${accountTitle}`;
   }
@@ -57,10 +48,7 @@ export function formatAccountsPayableVoucherReportDate(value: string) {
   }).format(new Date(value));
 }
 
-export function formatAccountsPayableVoucherAmountInWords(
-  amount: number,
-  currencyCode: string,
-) {
+export function formatAccountsPayableVoucherAmountInWords(amount: number, currencyCode: string) {
   if (!Number.isFinite(amount) || amount <= 0) {
     return "-";
   }
@@ -134,18 +122,7 @@ function numberToWords(value: number): string {
     "eighteen",
     "nineteen",
   ];
-  const tens = [
-    "",
-    "",
-    "twenty",
-    "thirty",
-    "forty",
-    "fifty",
-    "sixty",
-    "seventy",
-    "eighty",
-    "ninety",
-  ];
+  const tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
   const scales = ["", "thousand", "million", "billion"];
   const chunks: string[] = [];
   let remaining = Math.floor(value);

@@ -71,7 +71,7 @@ export type PettyCashVoucherTextFieldName = {
   [TKey in keyof PettyCashVoucherFormValues]: PettyCashVoucherFormValues[TKey] extends string ? TKey : never;
 }[keyof PettyCashVoucherFormValues];
 
-export type PettyCashVoucherFormMode = "add" | "edit" | "view";
+export type PettyCashVoucherActionMode = "add" | "edit" | "view";
 
 export type PettyCashVoucherActionTab = "details" | "attachments";
 
@@ -82,7 +82,7 @@ export type PettyCashVoucherOverviewPageState = ReturnType<typeof usePettyCashVo
 
 export type PettyCashVoucherActionPageOptions = {
   existingVoucher?: PettyCashVoucherRecord;
-  mode: PettyCashVoucherFormMode;
+  mode: PettyCashVoucherActionMode;
   onSaved?: () => void;
 };
 

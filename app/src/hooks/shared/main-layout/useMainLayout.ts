@@ -150,6 +150,7 @@ export function useMainLayout() {
   const setStoredActiveCompanyName = useAppStore((state) => state.setActiveCompanyName);
   const shellContextSwitchMessage = useAppStore((state) => state.shellContextSwitchMessage);
   const isShellContextSettling = useAppStore((state) => state.isShellContextSettling);
+  const storedActiveCompanyId = useAppStore((state) => state.activeCompanyId);
   const beginShellContextSwitch = useAppStore((state) => state.beginShellContextSwitch);
   const endShellContextSwitch = useAppStore((state) => state.endShellContextSwitch);
   const finishShellContextSettling = useAppStore((state) => state.finishShellContextSettling);
@@ -192,9 +193,9 @@ export function useMainLayout() {
     (state) => state.setApprovalTransactions,
   );
   const approvalTransactionsQuery = useQuery({
-    queryKey: ApprovalManagementQueryKeys.transactions(),
+    queryKey: ApprovalManagementQueryKeys.transactions(storedActiveCompanyId),
     queryFn: GetApprovalTransactions,
-    enabled: Boolean(accessToken) && isAuthSessionReady,
+    enabled: Boolean(accessToken) && isAuthSessionReady && storedActiveCompanyId !== null,
     placeholderData: [],
     refetchInterval: 60_000,
     retry: false,
@@ -259,6 +260,7 @@ export function useMainLayout() {
     });
 
     setApprovalTransactions(transactions);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- approval notifications are synchronized from the approval transaction query result.
     setNotifications((current) => {
       const notificationId = "pending-approval-transactions";
       const existing = current.find(

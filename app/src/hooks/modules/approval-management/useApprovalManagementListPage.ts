@@ -56,8 +56,10 @@ import type {
 import { validateApprovalManagementForm } from "@/app/src/validations/modules/system-administration/approval-management/ApprovalManagementValidation";
 import { useApprovalManagementStore } from "@/app/src/hooks/modules/approval-management/useApprovalManagement";
 import { useApprovalAlertStore } from "@/app/src/hooks/modules/approval-management/useApprovalAlertStore";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 
 export function useApprovalManagementListPage() {
+	const activeCompanyId = useAppStore((state) => state.activeCompanyId);
 	const {
 		addWorkflow,
 		inactivateWorkflow,
@@ -68,8 +70,9 @@ export function useApprovalManagementListPage() {
 		workflows,
 	} = useApprovalManagementStore();
 	const modulesQuery = useQuery({
-		queryKey: ApprovalManagementQueryKeys.modules(),
+		queryKey: ApprovalManagementQueryKeys.modules(activeCompanyId),
 		queryFn: GetApprovalManagementModules,
+		enabled: activeCompanyId !== null,
 		placeholderData: [],
 	});
 	const approverSetupsQuery = useQuery({

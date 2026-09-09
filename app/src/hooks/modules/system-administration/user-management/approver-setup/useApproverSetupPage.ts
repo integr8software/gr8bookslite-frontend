@@ -13,6 +13,7 @@ import {
 	ApproverSetupAllStatusesFilter,
 	ApproverSetupAllTypesFilter,
 	ApproverSetupCurrentDate,
+	ApproverSetupTemporaryType,
 } from "@/app/src/constants/modules/system-administration/user-management/approver-setup/ApproverSetupConstants";
 import {
 	CreateApproverSetup,
@@ -25,6 +26,7 @@ import {
 } from "@/app/src/services/modules/system-administration/user-management/approver-setup/ApproverSetupApi";
 import { ApprovalManagementQueryKeys } from "@/app/src/services/modules/approval-management/ApprovalManagementQueryKeys";
 import { ApproverSetupQueryKeys } from "@/app/src/services/modules/system-administration/user-management/approver-setup/ApproverSetupQueryKeys";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import type {
 	ApproverAssignmentType,
 	ApproverCondition,
@@ -42,6 +44,7 @@ import {
 
 export function useApproverSetupPage() {
 	const queryClient = useQueryClient();
+	const activeCompanyId = useAppStore((state) => state.activeCompanyId);
 	const [records, setRecords] = useState<ApproverSetupRecord[]>([]);
 	const approverUsersQuery = useQuery({
 		queryKey: ApproverSetupQueryKeys.users(),
@@ -175,7 +178,7 @@ export function useApproverSetupPage() {
 		(record) => record.status === "Active",
 	).length;
 	const temporaryCount = records.filter(
-		(record) => record.assignmentType === "Temporary",
+		(record) => record.assignmentType === ApproverSetupTemporaryType,
 	).length;
 	const levelCount = new Set(records.map((record) => record.levelName)).size;
 	const expiringCount = records.filter(
@@ -286,12 +289,57 @@ export function useApproverSetupPage() {
 			return;
 		}
 
+		const targetType = formValues.assignmentType.trim().toLowerCase();
+
+		if (drawerState?.mode === "edit" && drawerState.record) {
+			const targetScope = formValues.moduleScope.trim().toLowerCase();
+			const hasDuplicate = records.some(
+				(item) =>
+					item.id !== drawerState.record!.id &&
+					item.moduleScope.trim().toLowerCase() === targetScope &&
+					item.assignmentType.trim().toLowerCase() === targetType,
+			);
+
+			if (hasDuplicate) {
+				const moduleName =
+					moduleOptions.find(
+						(m) => m.code.trim().toLowerCase() === targetScope,
+					)?.name || formValues.moduleScope;
+				setDrawerError(
+					`Approver setup for module "${moduleName}" with type "${formValues.assignmentType}" already exists.`,
+				);
+				return;
+			}
+		} else {
+			const conflictingScopes = moduleScopes.filter((scope) =>
+				records.some(
+					(item) =>
+						item.moduleScope.trim().toLowerCase() ===
+							scope.trim().toLowerCase() &&
+						item.assignmentType.trim().toLowerCase() === targetType,
+				),
+			);
+
+			if (conflictingScopes.length > 0) {
+				const conflictNames = conflictingScopes.map(
+					(scope) =>
+						moduleOptions.find(
+							(m) => m.code.trim().toLowerCase() === scope.trim().toLowerCase(),
+						)?.name || scope,
+				);
+				setDrawerError(
+					`Approver setup for module "${conflictNames.join(", ")}" with type "${formValues.assignmentType}" already exists.`,
+				);
+				return;
+			}
+		}
+
 		if (!formValues.levelName.trim()) {
 			setDrawerError("Enter a level name.");
 			return;
 		}
 
-		if (formValues.assignmentType === "Temporary" && !formValues.effectiveTo) {
+		if (formValues.assignmentType === ApproverSetupTemporaryType && !formValues.effectiveTo) {
 			setDrawerError("Enter a valid until date.");
 			return;
 		}
@@ -314,7 +362,7 @@ export function useApproverSetupPage() {
 			status: formValues.status,
 			type: formValues.assignmentType,
 			validUntil:
-				formValues.assignmentType === "Temporary"
+				formValues.assignmentType === ApproverSetupTemporaryType
 					? formValues.effectiveTo
 					: undefined,
 		};
@@ -357,7 +405,7 @@ export function useApproverSetupPage() {
 			queryKey: ApproverSetupQueryKeys.records(),
 		});
 		void queryClient.invalidateQueries({
-			queryKey: ApprovalManagementQueryKeys.workflows(),
+			queryKey: ApprovalManagementQueryKeys.workflows(activeCompanyId),
 		});
 	}
 
@@ -426,11 +474,11 @@ export function createRecordFromFormValues(
 		assignmentType: values.assignmentType,
 		condition: values.condition.trim() as ApproverCondition,
 		effectiveFrom:
-			values.assignmentType === "Temporary"
+			values.assignmentType === ApproverSetupTemporaryType
 				? values.effectiveFrom || "2026-07-08"
 				: undefined,
 		effectiveTo:
-			values.assignmentType === "Temporary"
+			values.assignmentType === ApproverSetupTemporaryType
 				? values.effectiveTo || undefined
 				: undefined,
 		lastUpdatedAt: "2026-07-08",

@@ -65,8 +65,8 @@ export const AccountsPayableVoucherDefaultSorting: SortingState = [{ id: "docume
 
 export const AccountsPayableVoucherStatusOptions: AccountsPayableVoucherStatus[] = [
   "Posted",
-  "Draft",
   "For Approval",
+  "Draft",
   "Disapproved",
   "Cancelled",
 ];

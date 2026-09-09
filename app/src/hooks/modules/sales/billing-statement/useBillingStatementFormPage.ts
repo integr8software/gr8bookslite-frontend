@@ -4,7 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { BillingStatementHref } from "@/app/src/constants/modules/sales/billing-statement/BillingStatementConstants";
+import {
+  BillingStatementHref,
+  BillingStatementPartyOptions,
+  BillingStatementResponsibilityCenterOptions,
+  BillingStatementTermsOptions,
+} from "@/app/src/constants/modules/sales/billing-statement/BillingStatementConstants";
 import {
   calculateBillingStatementTotals,
   createBillingStatementAccountingEntries,
@@ -13,12 +18,15 @@ import {
 } from "@/app/src/data/modules/sales/billing-statement/BillingStatementData";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { useBillingMaintenanceOptions } from "@/app/src/hooks/modules/sales/shared/useBillingMaintenanceOptions";
 import {
   createBillingStatement,
   fetchBillingStatement,
   updateBillingStatement,
 } from "@/app/src/services/modules/sales/billing-statement/BillingStatementApi";
 import { BillingStatementQueryKeys } from "@/app/src/services/modules/sales/billing-statement/BillingStatementQueryKeys";
+import { fetchPartyOptions } from "@/app/src/services/modules/party-management/PartyManagementApi";
+import { PartyManagementQueryKeys } from "@/app/src/services/modules/party-management/PartyManagementQueryKeys";
 import type {
   BillingStatementAccountingEntry,
   BillingStatementFormErrors,
@@ -27,6 +35,8 @@ import type {
   BillingStatementItem,
   BillingStatementRecord,
 } from "@/app/src/types/modules/sales/billing-statement/BillingStatementTypes";
+import type { ItemSupplierRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { validateBillingStatementForm } from "@/app/src/validations/modules/sales/billing-statement/BillingStatementValidation";
 
 export function useBillingStatementFormPage() {
@@ -39,26 +49,33 @@ export function useBillingStatementFormPage() {
   const mode = getBillingStatementFormMode(pathname);
   const isReadonly = mode === "view";
   const recordQuery = useQuery({
-    enabled:
-      mode !== "add" &&
-      Boolean(params.recordId) &&
-      activeCompanyId !== null &&
-      activeBranchId !== null,
+    enabled: mode !== "add" && Boolean(params.recordId) && activeCompanyId !== null && activeBranchId !== null,
     queryFn: () =>
       fetchBillingStatement(params.recordId ?? "", {
         branchUnitId: activeBranchId,
       }),
-    queryKey: BillingStatementQueryKeys.detail(
-      activeCompanyId,
-      activeBranchId,
-      params.recordId ?? "missing",
-    ),
+    queryKey: BillingStatementQueryKeys.detail(activeCompanyId, activeBranchId, params.recordId ?? "missing"),
     retry: false,
   });
-  const existingStatement = mode === "add" ? undefined : recordQuery.data ?? undefined;
-  const [values, setValues] = useState<BillingStatementFormValues>(() =>
-    createBillingStatementFormValues(existingStatement),
+  const customerPartyOptionsQuery = useQuery({
+    enabled: activeCompanyId !== null,
+    queryFn: () => fetchPartyOptions("Customer"),
+    queryKey: PartyManagementQueryKeys.customerOptions("sales-billing-statement"),
+    retry: false,
+  });
+  const customerPartyOptions = useMemo(
+    () => (customerPartyOptionsQuery.data ? mapCustomerPartyOptions(customerPartyOptionsQuery.data) : BillingStatementPartyOptions),
+    [customerPartyOptionsQuery.data],
   );
+  const { responsibilityCenterOptions, termOptions } = useBillingMaintenanceOptions({
+    responsibilityCenterFallbackOptions: BillingStatementResponsibilityCenterOptions,
+    termFallbackOptions: BillingStatementTermsOptions.map((option) => ({
+      name: option,
+      value: option === "--Select Terms--" ? "" : option,
+    })),
+  });
+  const existingStatement = mode === "add" ? undefined : (recordQuery.data ?? undefined);
+  const [values, setValues] = useState<BillingStatementFormValues>(() => createBillingStatementFormValues(existingStatement));
   const [errors, setErrors] = useState<BillingStatementFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
@@ -78,15 +95,9 @@ export function useBillingStatementFormPage() {
         queryKey: BillingStatementQueryKeys.all(activeCompanyId, activeBranchId),
       });
       void queryClient.invalidateQueries({
-        queryKey: BillingStatementQueryKeys.detail(
-          activeCompanyId,
-          activeBranchId,
-          statement.id,
-        ),
+        queryKey: BillingStatementQueryKeys.detail(activeCompanyId, activeBranchId, statement.id),
       });
-      toast.success(
-        mode === "edit" ? "Billing statement updated." : "Billing statement created.",
-      );
+      toast.success(mode === "edit" ? "Billing statement updated." : "Billing statement created.");
       router.push(`${BillingStatementHref}/view/${statement.id}`);
     },
     onError: (error) => {
@@ -118,24 +129,13 @@ export function useBillingStatementFormPage() {
     setErrors({});
   }, [existingStatement]);
 
-  const previewRecord = useMemo(
-    () => createBillingStatementRecord(values, params.recordId ?? "preview"),
-    [params.recordId, values],
-  );
+  const previewRecord = useMemo(() => createBillingStatementRecord(values, params.recordId ?? "preview"), [params.recordId, values]);
 
-  function updateField<TKey extends keyof BillingStatementFormValues>(
-    field: TKey,
-    value: BillingStatementFormValues[TKey],
-  ) {
+  function updateField<TKey extends keyof BillingStatementFormValues>(field: TKey, value: BillingStatementFormValues[TKey]) {
     if (isReadonly) return;
     setValues((current) => {
       const nextValues = { ...current, [field]: value };
-      if (
-        field === "name" ||
-        field === "code" ||
-        field === "transNo" ||
-        field === "defaultAccount"
-      ) {
+      if (field === "name" || field === "code" || field === "transNo" || field === "defaultAccount") {
         return {
           ...nextValues,
           accountingEntries: createBillingStatementAccountingEntries({
@@ -181,9 +181,7 @@ export function useBillingStatementFormPage() {
   function handleSubmit() {
     if (isReadonly || isSubmittingRef.current) return;
 
-    const releaseSubmitLock = acquireModuleActionLock(
-      `sales:billing-statement:submit:${mode}:${params.recordId ?? values.transNo}`,
-    );
+    const releaseSubmitLock = acquireModuleActionLock(`sales:billing-statement:submit:${mode}:${params.recordId ?? values.transNo}`);
 
     if (!releaseSubmitLock) return;
 
@@ -194,9 +192,7 @@ export function useBillingStatementFormPage() {
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       const firstErrorMessage = Object.values(nextErrors).find(Boolean);
-      toast.error(
-        firstErrorMessage || "Please complete the required billing statement fields.",
-      );
+      toast.error(firstErrorMessage || "Please complete the required billing statement fields.");
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
@@ -215,16 +211,25 @@ export function useBillingStatementFormPage() {
     isSubmitting,
     isReadonly,
     mode,
-    needsRecord:
-      (mode === "edit" || mode === "view") &&
-      recordQuery.isFetched &&
-      !recordQuery.isLoading,
+    needsRecord: (mode === "edit" || mode === "view") && recordQuery.isFetched && !recordQuery.isLoading,
     previewRecord,
+    customerPartyOptions,
+    responsibilityCenterOptions,
+    termOptions,
     updateAccountingEntries,
     updateField,
     updateItems,
     values,
   };
+}
+
+function mapCustomerPartyOptions(parties: ItemSupplierRecord[]): AppAdvancedDropdownOption[] {
+  return parties.map((party) => ({
+    label: party.code,
+    name: party.name,
+    selectedDetails: party.code,
+    value: party.name,
+  }));
 }
 
 function getBillingStatementFormMode(pathname: string): BillingStatementFormMode {

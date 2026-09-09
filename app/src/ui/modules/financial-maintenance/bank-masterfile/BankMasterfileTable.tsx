@@ -20,6 +20,7 @@ export function BankMasterfileTable({
   query,
   statusFilter,
   onEditBank,
+  onManageCheckTemplates,
   onQueryChange,
   onRefresh,
   onStatusFilterChange,
@@ -64,6 +65,7 @@ export function BankMasterfileTable({
             row={row}
             permissions={permissions}
             onEditBank={onEditBank}
+            onManageCheckTemplates={onManageCheckTemplates}
             onToggleStatus={onToggleStatus}
             onViewBank={onViewBank}
           />

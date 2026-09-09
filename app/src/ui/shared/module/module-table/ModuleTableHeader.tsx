@@ -192,7 +192,7 @@ export function ModuleTableHeader<TData>({
 								<div
 									className={joinClasses(
 										"flex h-6 min-w-0 animate-pulse items-center",
-										isCenteredHeader(header) ? "justify-center" : "justify-start",
+										isCenteredHeader(header) ? "justify-center" : undefined,
 									)}
 								>
 									<span className="sr-only">Loading column</span>
@@ -204,7 +204,7 @@ export function ModuleTableHeader<TData>({
 										"flex min-w-0 items-center gap-1.5",
 										isCenteredHeader(header)
 											? "justify-center"
-											: "justify-start",
+											: undefined,
 									)}
 								>
 									{enableColumnReorder ? (
@@ -294,7 +294,7 @@ function ModuleTableSortButton<TData>({
 			title={getHeaderTitle(header)}
 			className={joinClasses(
 				"inline-flex min-w-0 max-w-full items-center gap-2 overflow-hidden rounded-md transition hover:text-darknavy focus-visible:outline-none focus-visible:ring-2",
-				align === "center" ? "justify-center text-center" : "justify-start text-left",
+				align === "center" ? "justify-center text-center" : "text-left",
 				moduleAccentClassNames.focusRing,
 			)}
 		>

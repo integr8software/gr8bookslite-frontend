@@ -15,6 +15,8 @@ export type PurchaseRequestStatus =
 
 export type PurchaseRequestItem = {
 	id: string;
+	itemId: string;
+	serviceMaintenanceId: string;
 	itemCode: string;
 	barcode: string;
 	description: string;
@@ -23,6 +25,7 @@ export type PurchaseRequestItem = {
 	lotNo: string;
 	expiryDate: string;
 	cost: number;
+	responsibilityCenterId: string;
 	responsibilityCenter: string;
 };
 

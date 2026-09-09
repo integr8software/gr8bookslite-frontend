@@ -71,6 +71,7 @@ function toPricingPayload(item: ItemRecord): UpsertItemPricingDto {
 
 function toPayload(item: ItemRecord): CreateItemBasicInfoDto {
   return {
+    suppliers: item.suppliers.map((row) => ({ supplierId: row.supplier, supplierCode: row.supplierItemCode.trim(), leadTime: row.leadTime.trim(), cost: row.lastCost, isDefault: row.isDefault })),
     code: item.code.trim(), skuCode: item.skuCode.trim(), name: item.name.trim(),
     barcode: item.barcode.trim(), categoryId: item.primaryCategory,
     unitOfMeasurementId: item.unitOfMeasurementId ?? item.uom,
@@ -94,7 +95,8 @@ function mapItem(item: ItemBasicInfoResponseDto): ItemRecord {
     sellingPrice: item.sellingPrice ?? 0,
     suggestedPrice: item.suggestedPrice ?? 0,
     taxTreatment: item.taxTreatment ?? "",
-    supplier: "", suppliers: [],
+    supplier: item.suppliers?.find((row) => row.isDefault)?.supplierName ?? "",
+    suppliers: (item.suppliers ?? []).map((row) => ({ id: row.id, supplier: row.supplierId, supplierName: row.supplierName, supplierItemCode: row.supplierCode ?? "", leadTime: row.leadTime ?? "", lastCost: row.cost, isDefault: row.isDefault })),
   };
 }
 

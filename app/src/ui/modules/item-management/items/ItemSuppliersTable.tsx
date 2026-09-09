@@ -169,8 +169,8 @@ function SupplierRow({
     transition,
   };
   const rowSupplierOptions = useMemo(
-    () => createSupplierDropdownOptions(supplierOptions, supplier.supplier),
-    [supplier.supplier, supplierOptions],
+    () => createSupplierDropdownOptions([...supplierOptions, ...(supplier.supplierName && !supplierOptions.some((option) => option.value === supplier.supplier) ? [{ name: supplier.supplierName, value: supplier.supplier }] : [])], supplier.supplier),
+    [supplier.supplier, supplier.supplierName, supplierOptions],
   );
 
   return (

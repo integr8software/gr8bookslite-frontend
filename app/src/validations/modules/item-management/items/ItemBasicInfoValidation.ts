@@ -4,6 +4,13 @@ import type { ItemFormErrors, ItemFormValues } from "@/app/src/types/modules/ite
 
 const referenceId = z.string().regex(/^[1-9][0-9]*$/, "Select a valid record.");
 export const ItemBasicInfoValidationSchema = z.object({
+  suppliers: z.array(z.object({
+    supplier: referenceId,
+    supplierItemCode: z.string().trim().max(100),
+    leadTime: z.string().trim().max(50).regex(/^(?:\d+(?:\.\d+)? (?:days|weeks|months))?$/, "Enter a nonnegative lead time in days, weeks, or months."),
+    lastCost: z.number().min(0).max(999999999999.99).refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 0.001, "Cost allows at most two decimal places."),
+    isDefault: z.boolean(),
+  })).max(100).refine((rows) => new Set(rows.map((row) => row.supplier)).size === rows.length, "Remove duplicate suppliers.").refine((rows) => !rows.length || rows.filter((row) => row.isDefault).length === 1, "Choose exactly one default supplier."),
   code: z.string().trim().min(1, "Enter an item code.").max(50),
   skuCode: z.string().trim().max(100),
   name: z.string().trim().min(1, "Enter an item name.").max(150),

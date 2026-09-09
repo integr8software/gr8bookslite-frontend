@@ -16,7 +16,6 @@ import {
 import {
   ItemInitialFormValues,
   MockItemVariations,
-  MockItemSuppliers,
   createItemFormValues,
   createItemRecord,
   updateItemRecord,
@@ -76,9 +75,10 @@ export function useItemsFormPage() {
     retry: false,
   });
   const vendorOptionsQuery = useQuery({
-    queryKey: ItemManagementQueryKeys.vendorOptions(),
+    queryKey: [...ItemManagementQueryKeys.vendorOptions(), activeCompanyId],
+    enabled: activeCompanyId !== null,
     queryFn: () => fetchPartyOptions("Vendor"),
-    initialData: MockItemSuppliers,
+    initialData: [],
     retry: false,
   });
   const categoryRecords = itemCategoryOptionsQuery.data;
@@ -255,7 +255,7 @@ export function useItemsFormPage() {
 
           return {
             ...supplier,
-            [field]: field === "lastCost" ? Number(value) || 0 : String(value),
+            [field]: field === "lastCost" ? Number(value) : String(value),
           };
         }),
       ),
@@ -508,11 +508,7 @@ export function useItemsFormPage() {
     responsibilityCenterOptions: withSavedOption(referenceOptionsQuery.data?.centers ?? [], existingItem?.responsibilityCenterId, existingItem?.responsibilityCenter),
     setIsStatusDialogOpen,
     taxTreatmentOptions,
-    supplierOptions: createSimpleOptions(
-      vendorOptionsQuery.data
-        .filter((supplier) => supplier.status === ItemActiveStatus)
-        .map((supplier) => supplier.name),
-    ),
+    supplierOptions: vendorOptionsQuery.data.filter((supplier) => supplier.status === "Active").map((supplier) => ({ name: supplier.name, value: supplier.id })),
     uomOptions,
     updateField,
     updateVariationAssignment,
@@ -829,12 +825,6 @@ function createSetupOption(
   };
 }
 
-function createSimpleOptions(options: string[]) {
-  return options.map((option) => ({
-    name: option,
-    value: option,
-  }));
-}
 
 
 function createWarehouseOptions(warehouses: WarehouseRecord[]) {

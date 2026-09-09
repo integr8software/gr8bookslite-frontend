@@ -39,6 +39,7 @@ type PaymentVoucherCopyRecordOptions<TCandidate extends PaymentVoucherCopyCandid
   source: string;
   getReferencePrefix?: (candidate: TCandidate) => string;
   getRemarks?: (candidate: TCandidate) => string;
+  getSource?: (candidate: TCandidate) => string;
   isAlreadyAdded?: (candidate: TCandidate) => boolean;
 };
 
@@ -78,6 +79,8 @@ export function buildPaymentVoucherCopyFromRecords({
       candidates: cashAdvances,
       copiedReferences,
       getReferencePrefix: (advance) => advance.referencePrefix,
+      getSource: (advance) =>
+        advance.referencePrefix === PaymentVoucherCopyPrefixes.CashAdvanceMultipleEntry ? "Cash Advance Multiple Entry" : "Cash Advance",
       getRemarks: (advance) => advance.remarks || "",
       prefix: PaymentVoucherCopyPrefixes.CashAdvance,
       source: "Employee Advance",
@@ -218,6 +221,7 @@ export function buildCashDisbursementCopyRecordSet<TCandidate extends PaymentVou
   copiedReferences,
   getReferencePrefix,
   getRemarks,
+  getSource,
   isAlreadyAdded,
   prefix,
   source,
@@ -236,7 +240,7 @@ export function buildCashDisbursementCopyRecordSet<TCandidate extends PaymentVou
       id: `${prefix}:${candidate.id}`,
       partyName: candidate.partyName || "",
       remarks: getRemarks ? getRemarks(candidate) : candidate.remarks || "",
-      source,
+      source: getSource ? getSource(candidate) : source,
       sourceNo: candidate.transactionNo,
     };
   });

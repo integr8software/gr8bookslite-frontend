@@ -171,7 +171,7 @@ export function ItemsFormPage() {
 
   return (
     <>
-      <p className="text-sm text-darknavy/60">Save applies to Basic Information and Pricing. Other tabs are not saved yet.</p>
+      <p className="text-sm text-darknavy/60">Save applies to Basic Information, Pricing, and Suppliers. Other tabs are not saved yet.</p>
       <form id={ItemsFormId} onSubmit={page.handleSubmit} className="grid gap-5">
         <ModuleHeader
           variant="panel"

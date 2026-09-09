@@ -10,13 +10,17 @@ const itemSchema = z.object({
 	barcode: z.string(),
 	description: requiredText("Enter a description."),
 	id: z.string(),
-	itemCode: requiredText("Enter an item code."),
+	itemCode: z.string(),
 	minimumOrderQuantity: z.coerce.number().min(0),
 	prNo: z.string(),
 	quantity: z.coerce.number().min(0),
 	responsibilityCenter: z.string(),
 	selectedSupplier: z.string(),
 	supplierCount: z.coerce.number().min(1).max(4),
+	supplierQuotationNo1: z.string(),
+	supplierQuotationNo2: z.string(),
+	supplierQuotationNo3: z.string(),
+	supplierQuotationNo4: z.string(),
 	supplierCode1: z.string(),
 	supplierCode2: z.string(),
 	supplierCode3: z.string(),
@@ -30,7 +34,11 @@ const itemSchema = z.object({
 	unitCost2: z.coerce.number().min(0),
 	unitCost3: z.coerce.number().min(0),
 	unitCost4: z.coerce.number().min(0),
-	uom: requiredText("Select a UOM."),
+	uom: z.string(),
+	vatable1: z.string(),
+	vatable2: z.string(),
+	vatable3: z.string(),
+	vatable4: z.string(),
 	vatExclusive: z.string(),
 	vatExclusive1: z.string(),
 	vatExclusive2: z.string(),
@@ -65,6 +73,9 @@ const formSchema = z.object({
 	exchangeRate: z.coerce.number().positive("Enter a valid exchange rate."),
 	items: z.array(itemSchema).min(1, "Add at least one item."),
 	prNo: z.string(),
+	poNo: z.string(),
+	projectCode: z.string(),
+	projectName: z.string(),
 	purchaseType: z.string(),
 	remarks: z.string(),
 	requestedBy: requiredText("Enter requested by."),
@@ -73,6 +84,26 @@ const formSchema = z.object({
 	status: z.enum(["Draft", "For Approval", "Posted", "Disapproved", "Cancelled"]),
 	termsOfPayment: z.string(),
 	transNo: requiredText("Enter a transaction number."),
+}).superRefine((values, context) => {
+	if (!["goods", "assets"].includes(values.purchaseType.toLowerCase())) return;
+
+	values.items.forEach((item, index) => {
+		if (!item.itemCode.trim()) {
+			context.addIssue({
+				code: "custom",
+				message: "Enter an item code.",
+				path: ["items", index, "itemCode"],
+			});
+		}
+
+		if (!item.uom.trim()) {
+			context.addIssue({
+				code: "custom",
+				message: "Select a UOM.",
+				path: ["items", index, "uom"],
+			});
+		}
+	});
 });
 
 export function validateCanvassForm(values: CanvassFormValues): CanvassFormErrors {

@@ -5,6 +5,8 @@ import { formatMoneyNumberInput } from "@/app/src/ui/shared/money/MoneyNumberFie
 export const SupplierQuotationFields = [
 	{
 		index: 1,
+		quotationNo: "supplierQuotationNo1",
+		vatable: "vatable1",
 		code: "supplierCode1",
 		name: "supplierName1",
 		cost: "unitCost1",
@@ -13,6 +15,8 @@ export const SupplierQuotationFields = [
 	},
 	{
 		index: 2,
+		quotationNo: "supplierQuotationNo2",
+		vatable: "vatable2",
 		code: "supplierCode2",
 		name: "supplierName2",
 		cost: "unitCost2",
@@ -21,6 +25,8 @@ export const SupplierQuotationFields = [
 	},
 	{
 		index: 3,
+		quotationNo: "supplierQuotationNo3",
+		vatable: "vatable3",
 		code: "supplierCode3",
 		name: "supplierName3",
 		cost: "unitCost3",
@@ -29,6 +35,8 @@ export const SupplierQuotationFields = [
 	},
 	{
 		index: 4,
+		quotationNo: "supplierQuotationNo4",
+		vatable: "vatable4",
 		code: "supplierCode4",
 		name: "supplierName4",
 		cost: "unitCost4",
@@ -37,6 +45,8 @@ export const SupplierQuotationFields = [
 	},
 ] satisfies {
 	index: number;
+	quotationNo: keyof CanvassFormItem;
+	vatable: keyof CanvassFormItem;
 	code: keyof CanvassFormItem;
 	name: keyof CanvassFormItem;
 	cost: keyof CanvassFormItem;
@@ -127,6 +137,8 @@ export function createRemoveSupplierUpdates(
 		const next = SupplierQuotationFields[index];
 
 		updates[current.code] = next ? String(row[next.code] ?? "") : "";
+		updates[current.quotationNo] = next ? String(row[next.quotationNo] ?? "") : "";
+		updates[current.vatable] = next ? String(row[next.vatable] ?? "False") : "False";
 		updates[current.name] = next ? String(row[next.name] ?? "") : "";
 		updates[current.cost] = next ? Number(row[next.cost]) || 0 : 0;
 		updates[current.vatExclusive] = next

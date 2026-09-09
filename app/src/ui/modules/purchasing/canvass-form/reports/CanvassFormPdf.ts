@@ -62,7 +62,8 @@ function header(record: CanvassFormRecord): TableCell {
 										stack: [
 											`Document Date: ${formatCanvassFormDate(record.documentDate)}`,
 											`Trans No.: ${record.transNo}`,
-											`PR No.: ${record.prNo}`,
+											...(record.prNo ? [`PR No.: ${record.prNo}`] : []),
+											...(record.poNo ? [`PO No.: ${record.poNo}`] : []),
 										],
 										bold: true,
 										alignment: "right",
@@ -86,7 +87,7 @@ function info(record: CanvassFormRecord): TableCell {
 			widths: ["*", "*", "*"],
 			body: [
 				[label("Requested By", record.requestedBy), label("Required Before", formatCanvassFormDate(record.requiredBefore)), label("Terms of Payment", record.termsOfPayment)],
-				[label("Currency", record.currency), label("Status", record.status), label("PR No.", record.prNo)],
+				[label("Currency", record.currency), label("Status", record.status), label(record.poNo ? "PO No." : "PR No.", record.poNo || record.prNo)],
 			],
 		},
 		layout: gridLayout,

@@ -5,6 +5,29 @@
  * Versioned REST API for GR8Books Neo frontend clients.
  * OpenAPI spec version: 1.0
  */
+export interface ItemSupplierResponseDto {
+  /**
+     * Vendor party ID.
+     * @pattern ^[1-9][0-9]*$
+     */
+  supplierId: string;
+  /** @maxLength 100 */
+  supplierCode?: string;
+  /**
+     * @maxLength 50
+     * @pattern ^(?:\d+(?:\.\d+)? (?:days|weeks|months))?$
+     */
+  leadTime?: string;
+  /**
+     * @minimum 0
+     * @maximum 999999999999.99
+     */
+  cost: number;
+  isDefault: boolean;
+  id: string;
+  supplierName: string;
+}
+
 export type ItemBasicInfoResponseDtoStatus = typeof ItemBasicInfoResponseDtoStatus[keyof typeof ItemBasicInfoResponseDtoStatus];
 
 
@@ -14,6 +37,11 @@ export const ItemBasicInfoResponseDtoStatus = {
 } as const;
 
 export interface ItemBasicInfoResponseDto {
+  /**
+     * Replace all supplier rows. Nonempty lists require exactly one default.
+     * @maxItems 100
+     */
+  suppliers?: ItemSupplierResponseDto[];
   /** @maxLength 50 */
   code: string;
   /** @maxLength 100 */
@@ -61,6 +89,27 @@ export interface ItemBasicInfoListResponseDto {
   items: ItemBasicInfoResponseDto[];
 }
 
+export interface ItemSupplierDto {
+  /**
+     * Vendor party ID.
+     * @pattern ^[1-9][0-9]*$
+     */
+  supplierId: string;
+  /** @maxLength 100 */
+  supplierCode?: string;
+  /**
+     * @maxLength 50
+     * @pattern ^(?:\d+(?:\.\d+)? (?:days|weeks|months))?$
+     */
+  leadTime?: string;
+  /**
+     * @minimum 0
+     * @maximum 999999999999.99
+     */
+  cost: number;
+  isDefault: boolean;
+}
+
 export type CreateItemBasicInfoDtoStatus = typeof CreateItemBasicInfoDtoStatus[keyof typeof CreateItemBasicInfoDtoStatus];
 
 
@@ -70,6 +119,11 @@ export const CreateItemBasicInfoDtoStatus = {
 } as const;
 
 export interface CreateItemBasicInfoDto {
+  /**
+     * Replace all supplier rows. Nonempty lists require exactly one default.
+     * @maxItems 100
+     */
+  suppliers?: ItemSupplierDto[];
   /** @maxLength 50 */
   code: string;
   /** @maxLength 100 */
@@ -113,6 +167,11 @@ export const UpdateItemBasicInfoDtoStatus = {
 } as const;
 
 export interface UpdateItemBasicInfoDto {
+  /**
+     * Replace all supplier rows. Nonempty lists require exactly one default.
+     * @maxItems 100
+     */
+  suppliers?: ItemSupplierDto[];
   /** @maxLength 50 */
   code?: string;
   /** @maxLength 100 */
@@ -427,11 +486,24 @@ export const OnboardingDraftResponseDtoBillingCycle = {
   YEARLY: 'YEARLY',
 } as const;
 
+/**
+ * @nullable
+ */
+export type OnboardingDraftResponseDtoBillingMode = typeof OnboardingDraftResponseDtoBillingMode[keyof typeof OnboardingDraftResponseDtoBillingMode] | null;
+
+
+export const OnboardingDraftResponseDtoBillingMode = {
+  MANUAL: 'MANUAL',
+  AUTO: 'AUTO',
+} as const;
+
 export interface OnboardingDraftResponseDto {
   /** @nullable */
   plan: OnboardingPlanResponseDto | null;
   /** @nullable */
   billingCycle: OnboardingDraftResponseDtoBillingCycle;
+  /** @nullable */
+  billingMode?: OnboardingDraftResponseDtoBillingMode;
   /** @nullable */
   cardholderName: string | null;
   /** @nullable */
@@ -480,28 +552,58 @@ export interface SelectOnboardingPlanResponseDto {
   draft: OnboardingDraftResponseDto;
 }
 
+/**
+ * Billing mode for onboarding (MANUAL or AUTO)
+ */
+export type SaveOnboardingBillingDtoBillingMode = typeof SaveOnboardingBillingDtoBillingMode[keyof typeof SaveOnboardingBillingDtoBillingMode];
+
+
+export const SaveOnboardingBillingDtoBillingMode = {
+  MANUAL: 'MANUAL',
+  AUTO: 'AUTO',
+} as const;
+
 export interface SaveOnboardingBillingDto {
-  billingMode?: "MANUAL" | "AUTO";
-  /** @minLength 2 */
+  /** Billing mode for onboarding (MANUAL or AUTO) */
+  billingMode?: SaveOnboardingBillingDtoBillingMode;
+  /**
+     * Cardholder name (required for AUTO mode)
+     * @minLength 2
+     */
   cardholderName?: string;
+  /** Billing email */
   billingEmail?: string;
-  /** @pattern ^\d{4}$ */
+  /**
+     * Card last 4 digits (required for AUTO mode)
+     * @pattern ^\d{4}$
+     */
   cardLast4?: string;
-  /** @minLength 2 */
+  /**
+     * Card brand (required for AUTO mode)
+     * @minLength 2
+     */
   cardBrand?: string;
   /**
+     * Card expiry month (1-12, required for AUTO mode)
      * @minimum 1
      * @maximum 12
      */
   expiryMonth?: number;
   /**
+     * Card expiry year (required for AUTO mode)
      * @minimum 2000
      * @maximum 9999
      */
   expiryYear?: number;
-  /** @minLength 5 */
+  /**
+     * Billing address (required for AUTO mode)
+     * @minLength 5
+     */
   billingAddress?: string;
-  /** @pattern ^pm_[A-Za-z0-9]+$ */
+  /**
+     * PayMongo payment method reference (required for AUTO mode)
+     * @pattern ^pm_[A-Za-z0-9]+$
+     */
   paymentMethodId?: string;
 }
 
@@ -517,11 +619,24 @@ export const OnboardingBillingResponseDtoBillingCycle = {
   YEARLY: 'YEARLY',
 } as const;
 
+/**
+ * @nullable
+ */
+export type OnboardingBillingResponseDtoBillingMode = typeof OnboardingBillingResponseDtoBillingMode[keyof typeof OnboardingBillingResponseDtoBillingMode] | null;
+
+
+export const OnboardingBillingResponseDtoBillingMode = {
+  MANUAL: 'MANUAL',
+  AUTO: 'AUTO',
+} as const;
+
 export interface OnboardingBillingResponseDto {
   /** @nullable */
   planCode: string | null;
   /** @nullable */
   billingCycle: OnboardingBillingResponseDtoBillingCycle;
+  /** @nullable */
+  billingMode?: OnboardingBillingResponseDtoBillingMode;
   /** @nullable */
   cardholderName: string | null;
   /** @nullable */
@@ -6233,6 +6348,7 @@ export interface ApprovalTransactionResponseDto {
   moduleScope: string;
   moduleName: string;
   referenceNo: string;
+  referenceId?: string;
   remarks: string;
   ruleId: string;
   ruleName: string;
@@ -17369,30 +17485,58 @@ export const DefaultAccountControllerFindOptionsByTypeV1Status = {
 
 export type ServicesMaintenanceControllerFindAllV1Params = {
 /**
+ * Search term for service name, description, or account
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * Filter by status
+ */
+status?: ServicesMaintenanceControllerFindAllV1Status;
+/**
+ * Filter by account setup mode
+ */
+accountSetupMode?: ServicesMaintenanceControllerFindAllV1AccountSetupMode;
+/**
  * Filter by service type
  */
 serviceType?: ServicesMaintenanceControllerFindAllV1ServiceType;
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Number of items per page
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
 /**
  * Sort by field
  */
 sortBy?: ServicesMaintenanceControllerFindAllV1SortBy;
 /**
- * @maxLength 120
+ * Sort direction
  */
-search?: string;
-status?: ServicesMaintenanceControllerFindAllV1Status;
-accountSetupMode?: ServicesMaintenanceControllerFindAllV1AccountSetupMode;
-/**
- * @minimum 1
- */
-page?: number;
-/**
- * @minimum 1
- * @maximum 500
- */
-limit?: number;
 sortDirection?: ServicesMaintenanceControllerFindAllV1SortDirection;
 };
+
+export type ServicesMaintenanceControllerFindAllV1Status = typeof ServicesMaintenanceControllerFindAllV1Status[keyof typeof ServicesMaintenanceControllerFindAllV1Status];
+
+
+export const ServicesMaintenanceControllerFindAllV1Status = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export type ServicesMaintenanceControllerFindAllV1AccountSetupMode = typeof ServicesMaintenanceControllerFindAllV1AccountSetupMode[keyof typeof ServicesMaintenanceControllerFindAllV1AccountSetupMode];
+
+
+export const ServicesMaintenanceControllerFindAllV1AccountSetupMode = {
+  AUTO: 'AUTO',
+  EXISTING: 'EXISTING',
+} as const;
 
 export type ServicesMaintenanceControllerFindAllV1ServiceType = typeof ServicesMaintenanceControllerFindAllV1ServiceType[keyof typeof ServicesMaintenanceControllerFindAllV1ServiceType];
 
@@ -17414,22 +17558,6 @@ export const ServicesMaintenanceControllerFindAllV1SortBy = {
   updatedAt: 'updatedAt',
 } as const;
 
-export type ServicesMaintenanceControllerFindAllV1Status = typeof ServicesMaintenanceControllerFindAllV1Status[keyof typeof ServicesMaintenanceControllerFindAllV1Status];
-
-
-export const ServicesMaintenanceControllerFindAllV1Status = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
-} as const;
-
-export type ServicesMaintenanceControllerFindAllV1AccountSetupMode = typeof ServicesMaintenanceControllerFindAllV1AccountSetupMode[keyof typeof ServicesMaintenanceControllerFindAllV1AccountSetupMode];
-
-
-export const ServicesMaintenanceControllerFindAllV1AccountSetupMode = {
-  AUTO: 'AUTO',
-  EXISTING: 'EXISTING',
-} as const;
-
 export type ServicesMaintenanceControllerFindAllV1SortDirection = typeof ServicesMaintenanceControllerFindAllV1SortDirection[keyof typeof ServicesMaintenanceControllerFindAllV1SortDirection];
 
 
@@ -17440,30 +17568,58 @@ export const ServicesMaintenanceControllerFindAllV1SortDirection = {
 
 export type ServicesMaintenanceControllerFindOptionsV1Params = {
 /**
+ * Search term for service name, description, or account
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * Filter by status
+ */
+status?: ServicesMaintenanceControllerFindOptionsV1Status;
+/**
+ * Filter by account setup mode
+ */
+accountSetupMode?: ServicesMaintenanceControllerFindOptionsV1AccountSetupMode;
+/**
  * Filter by service type
  */
 serviceType?: ServicesMaintenanceControllerFindOptionsV1ServiceType;
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Number of items per page
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
 /**
  * Sort by field
  */
 sortBy?: ServicesMaintenanceControllerFindOptionsV1SortBy;
 /**
- * @maxLength 120
+ * Sort direction
  */
-search?: string;
-status?: ServicesMaintenanceControllerFindOptionsV1Status;
-accountSetupMode?: ServicesMaintenanceControllerFindOptionsV1AccountSetupMode;
-/**
- * @minimum 1
- */
-page?: number;
-/**
- * @minimum 1
- * @maximum 500
- */
-limit?: number;
 sortDirection?: ServicesMaintenanceControllerFindOptionsV1SortDirection;
 };
+
+export type ServicesMaintenanceControllerFindOptionsV1Status = typeof ServicesMaintenanceControllerFindOptionsV1Status[keyof typeof ServicesMaintenanceControllerFindOptionsV1Status];
+
+
+export const ServicesMaintenanceControllerFindOptionsV1Status = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export type ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = typeof ServicesMaintenanceControllerFindOptionsV1AccountSetupMode[keyof typeof ServicesMaintenanceControllerFindOptionsV1AccountSetupMode];
+
+
+export const ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = {
+  AUTO: 'AUTO',
+  EXISTING: 'EXISTING',
+} as const;
 
 export type ServicesMaintenanceControllerFindOptionsV1ServiceType = typeof ServicesMaintenanceControllerFindOptionsV1ServiceType[keyof typeof ServicesMaintenanceControllerFindOptionsV1ServiceType];
 
@@ -17485,22 +17641,6 @@ export const ServicesMaintenanceControllerFindOptionsV1SortBy = {
   updatedAt: 'updatedAt',
 } as const;
 
-export type ServicesMaintenanceControllerFindOptionsV1Status = typeof ServicesMaintenanceControllerFindOptionsV1Status[keyof typeof ServicesMaintenanceControllerFindOptionsV1Status];
-
-
-export const ServicesMaintenanceControllerFindOptionsV1Status = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
-} as const;
-
-export type ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = typeof ServicesMaintenanceControllerFindOptionsV1AccountSetupMode[keyof typeof ServicesMaintenanceControllerFindOptionsV1AccountSetupMode];
-
-
-export const ServicesMaintenanceControllerFindOptionsV1AccountSetupMode = {
-  AUTO: 'AUTO',
-  EXISTING: 'EXISTING',
-} as const;
-
 export type ServicesMaintenanceControllerFindOptionsV1SortDirection = typeof ServicesMaintenanceControllerFindOptionsV1SortDirection[keyof typeof ServicesMaintenanceControllerFindOptionsV1SortDirection];
 
 
@@ -17511,30 +17651,58 @@ export const ServicesMaintenanceControllerFindOptionsV1SortDirection = {
 
 export type ServicesMaintenanceControllerFindOptionsByTypeV1Params = {
 /**
+ * Search term for service name, description, or account
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * Filter by status
+ */
+status?: ServicesMaintenanceControllerFindOptionsByTypeV1Status;
+/**
+ * Filter by account setup mode
+ */
+accountSetupMode?: ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode;
+/**
  * Filter by service type
  */
 serviceType?: ServicesMaintenanceControllerFindOptionsByTypeV1ServiceType;
+/**
+ * Page number
+ * @minimum 1
+ */
+page?: number;
+/**
+ * Number of items per page
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
 /**
  * Sort by field
  */
 sortBy?: ServicesMaintenanceControllerFindOptionsByTypeV1SortBy;
 /**
- * @maxLength 120
+ * Sort direction
  */
-search?: string;
-status?: ServicesMaintenanceControllerFindOptionsByTypeV1Status;
-accountSetupMode?: ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode;
-/**
- * @minimum 1
- */
-page?: number;
-/**
- * @minimum 1
- * @maximum 500
- */
-limit?: number;
 sortDirection?: ServicesMaintenanceControllerFindOptionsByTypeV1SortDirection;
 };
+
+export type ServicesMaintenanceControllerFindOptionsByTypeV1Status = typeof ServicesMaintenanceControllerFindOptionsByTypeV1Status[keyof typeof ServicesMaintenanceControllerFindOptionsByTypeV1Status];
+
+
+export const ServicesMaintenanceControllerFindOptionsByTypeV1Status = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export type ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode = typeof ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode[keyof typeof ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode];
+
+
+export const ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode = {
+  AUTO: 'AUTO',
+  EXISTING: 'EXISTING',
+} as const;
 
 export type ServicesMaintenanceControllerFindOptionsByTypeV1ServiceType = typeof ServicesMaintenanceControllerFindOptionsByTypeV1ServiceType[keyof typeof ServicesMaintenanceControllerFindOptionsByTypeV1ServiceType];
 
@@ -17554,22 +17722,6 @@ export const ServicesMaintenanceControllerFindOptionsByTypeV1SortBy = {
   accountSetupMode: 'accountSetupMode',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-} as const;
-
-export type ServicesMaintenanceControllerFindOptionsByTypeV1Status = typeof ServicesMaintenanceControllerFindOptionsByTypeV1Status[keyof typeof ServicesMaintenanceControllerFindOptionsByTypeV1Status];
-
-
-export const ServicesMaintenanceControllerFindOptionsByTypeV1Status = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
-} as const;
-
-export type ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode = typeof ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode[keyof typeof ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode];
-
-
-export const ServicesMaintenanceControllerFindOptionsByTypeV1AccountSetupMode = {
-  AUTO: 'AUTO',
-  EXISTING: 'EXISTING',
 } as const;
 
 export type ServicesMaintenanceControllerFindOptionsByTypeV1SortDirection = typeof ServicesMaintenanceControllerFindOptionsByTypeV1SortDirection[keyof typeof ServicesMaintenanceControllerFindOptionsByTypeV1SortDirection];
@@ -18033,6 +18185,9 @@ export const TaxControllerListAutocompleteV1SortDirection = {
 } as const;
 
 export type TaxControllerListTaxDefaultAccountOptionsV1Params = {
+/**
+ * Tax classification filter for default accounts
+ */
 classification?: TaxControllerListTaxDefaultAccountOptionsV1Classification;
 };
 
@@ -21141,3 +21296,4 @@ page?: number;
  */
 limit?: number;
 };
+

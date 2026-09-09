@@ -100,6 +100,7 @@ export type ItemBundleRecord = {
 };
 
 export type ItemSupplierAssignment = {
+  supplierName?: string;
   id: string;
   supplier: string;
   supplierItemCode: string;

@@ -108,18 +108,20 @@ type MappedRevolvingFundReplenishmentListResponse = Omit<RevolvingFundReplenishm
 export const StatusFromApi: Record<string, RevolvingFundReplenishmentStatus> = {
   DRAFT: RevolvingFundReplenishmentStatuses.Draft,
   FOR_APPROVAL: "For Approval",
-  APPROVED: "For Approval",
+  APPROVED: "Posted",
   POSTED: "Posted",
   DISAPPROVED: "Disapproved",
   CANCELLED: "Cancelled",
+  CLOSED: "Closed",
 };
 
-export const StatusToApi: Record<RevolvingFundReplenishmentStatus, UpdateRevolvingFundReplenishmentStatusDtoStatus> = {
+export const StatusToApi: Record<RevolvingFundReplenishmentStatus, string> = {
   Draft: "DRAFT",
   "For Approval": "FOR_APPROVAL",
   Posted: "POSTED",
   Disapproved: "DISAPPROVED",
   Cancelled: "CANCELLED",
+  Closed: "CLOSED",
 };
 
 export function mapRevolvingFundReplenishmentRecordFromDto(dto: RevolvingFundReplenishmentResponseDto): RevolvingFundReplenishmentRecord {
@@ -235,7 +237,9 @@ export function mapRevolvingFundReplenishmentFormValuesToCreateDto(
     exchangeRate: parseMoneyNumberInput(values.exchangeRate) || 1.0,
     amount: totalAmount,
     remarks: values.remarks,
-    status: values.status && values.status !== "Open" ? StatusToApi[values.status as RevolvingFundReplenishmentStatus] : "DRAFT",
+    status: (values.status && values.status !== "Open"
+      ? StatusToApi[values.status as RevolvingFundReplenishmentStatus]
+      : "DRAFT") as CreateRevolvingFundReplenishmentDto["status"],
     details,
   };
 }
@@ -291,6 +295,7 @@ export async function fetchRevolvingFundReplenishmentCopyFromCandidates(params: 
   limit?: number;
   page?: number;
   partyCode?: string | null;
+  partyName?: string | null;
   target: "cash-voucher" | "disbursement-voucher";
 }) {
   const response = await ApiClient.get<{ records: RevolvingFundReplenishmentCopyFromCandidate[] }>(
@@ -301,6 +306,7 @@ export async function fetchRevolvingFundReplenishmentCopyFromCandidates(params: 
         limit: params.limit ?? 100,
         page: params.page ?? 1,
         partyCode: params.partyCode,
+        partyName: params.partyName,
         target: params.target,
       }),
     },
@@ -339,7 +345,7 @@ export async function updateRevolvingFundReplenishmentStatusApi(
   id: string,
   status: RevolvingFundReplenishmentStatus,
 ): Promise<RevolvingFundReplenishmentRecord> {
-  const apiStatus = StatusToApi[status];
+  const apiStatus = StatusToApi[status] as UpdateRevolvingFundReplenishmentStatusDtoStatus;
   const response = (await revolvingFundReplenishmentControllerUpdateStatusV1(id, {
     status: apiStatus,
   })) as RevolvingFundReplenishmentResponseDto;

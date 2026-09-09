@@ -38,7 +38,7 @@ export type CashAdvanceResponsibilityCenterDropdownOption = AppAdvancedDropdownO
   typeName?: string;
 };
 
-export type CashAdvanceStatus = "Cancelled" | "Disapproved" | "Draft" | "For Approval" | "Open" | "Posted";
+export type CashAdvanceStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 
 export type CashAdvanceRecord = {
   accountCode: string;

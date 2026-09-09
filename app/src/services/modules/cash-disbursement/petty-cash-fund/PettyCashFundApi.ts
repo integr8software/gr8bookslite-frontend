@@ -116,18 +116,20 @@ type MappedPettyCashFundListResponse = Omit<PettyCashFundListResponseDto, "items
 export const StatusFromApi: Record<string, PettyCashFundStatus> = {
   DRAFT: PettyCashFundStatuses.Draft,
   FOR_APPROVAL: "For Approval",
-  APPROVED: "For Approval",
+  APPROVED: "Posted",
   POSTED: "Posted",
   DISAPPROVED: "Disapproved",
   CANCELLED: "Cancelled",
+  CLOSED: "Closed",
 };
 
-export const StatusToApi: Record<PettyCashFundStatus, UpdatePettyCashFundStatusDtoStatus> = {
+export const StatusToApi: Record<PettyCashFundStatus, string> = {
   Draft: "DRAFT",
   "For Approval": "FOR_APPROVAL",
   Posted: "POSTED",
   Disapproved: "DISAPPROVED",
   Cancelled: "CANCELLED",
+  Closed: "CLOSED",
 };
 
 export function mapPettyCashFundRecordFromDto(dto: PettyCashFundResponseDto): PettyCashFundRecord {
@@ -240,7 +242,9 @@ export function mapPettyCashFundFormValuesToCreateDto(values: PettyCashFundFormV
     exchangeRate: parseMoneyNumberInput(values.exchangeRate) || 1.0,
     amount: totalAmount,
     remarks: values.remarks,
-    status: values.status && values.status !== "Open" ? StatusToApi[values.status as PettyCashFundStatus] : "DRAFT",
+    status: (values.status && values.status !== "Open"
+      ? StatusToApi[values.status as PettyCashFundStatus]
+      : "DRAFT") as CreatePettyCashFundDto["status"],
     details,
   };
 }
@@ -329,7 +333,7 @@ export async function updatePettyCashFundApi(id: string, values: PettyCashFundFo
 }
 
 export async function updatePettyCashFundStatusApi(id: string, status: PettyCashFundStatus): Promise<PettyCashFundRecord> {
-  const apiStatus = StatusToApi[status];
+  const apiStatus = StatusToApi[status] as UpdatePettyCashFundStatusDtoStatus;
   const response = (await pettyCashFundControllerUpdateStatusV1(id, { status: apiStatus })) as PettyCashFundResponseDto;
   return mapPettyCashFundRecordFromDto(response);
 }

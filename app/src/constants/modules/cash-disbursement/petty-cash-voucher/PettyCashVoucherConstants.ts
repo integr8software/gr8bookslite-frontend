@@ -64,10 +64,7 @@ export const PettyCashVoucherStatusFilterOptions = [
   { label: "Cancelled", value: PettyCashVoucherStatuses.Cancelled },
 ] as const;
 
-export const PettyCashVoucherStatusFilters = [
-  PettyCashVoucherAllStatusFilter,
-  ...PettyCashVoucherRecordStatuses,
-] as const;
+export const PettyCashVoucherStatusFilters = [PettyCashVoucherAllStatusFilter, ...PettyCashVoucherRecordStatuses] as const;
 
 export const PettyCashVoucherStatusMetricTones = {
   [PettyCashVoucherStatuses.Draft]: "blue",

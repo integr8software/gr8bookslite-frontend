@@ -116,18 +116,20 @@ type MappedRevolvingFundListResponse = Omit<RevolvingFundListResponseDto, "items
 export const StatusFromApi: Record<string, RevolvingFundStatus> = {
   DRAFT: RevolvingFundStatuses.Draft,
   FOR_APPROVAL: "For Approval",
-  APPROVED: "For Approval",
+  APPROVED: "Posted",
   POSTED: "Posted",
   DISAPPROVED: "Disapproved",
   CANCELLED: "Cancelled",
+  CLOSED: "Closed",
 };
 
-export const StatusToApi: Record<RevolvingFundStatus, UpdateRevolvingFundStatusDtoStatus> = {
+export const StatusToApi: Record<RevolvingFundStatus, string> = {
   Draft: "DRAFT",
   "For Approval": "FOR_APPROVAL",
   Posted: "POSTED",
   Disapproved: "DISAPPROVED",
   Cancelled: "CANCELLED",
+  Closed: "CLOSED",
 };
 
 export function mapRevolvingFundRecordFromDto(dto: RevolvingFundResponseDto): RevolvingFundRecord {
@@ -240,7 +242,9 @@ export function mapRevolvingFundFormValuesToCreateDto(values: RevolvingFundFormV
     exchangeRate: parseMoneyNumberInput(values.exchangeRate) || 1.0,
     amount: totalAmount,
     remarks: values.remarks,
-    status: values.status && values.status !== "Open" ? StatusToApi[values.status as RevolvingFundStatus] : "DRAFT",
+    status: (values.status && values.status !== "Open"
+      ? StatusToApi[values.status as RevolvingFundStatus]
+      : "DRAFT") as CreateRevolvingFundDto["status"],
     details,
   };
 }
@@ -329,7 +333,7 @@ export async function updateRevolvingFundApi(id: string, values: RevolvingFundFo
 }
 
 export async function updateRevolvingFundStatusApi(id: string, status: RevolvingFundStatus): Promise<RevolvingFundRecord> {
-  const apiStatus = StatusToApi[status];
+  const apiStatus = StatusToApi[status] as UpdateRevolvingFundStatusDtoStatus;
   const response = (await revolvingFundControllerUpdateStatusV1(id, { status: apiStatus })) as RevolvingFundResponseDto;
   return mapRevolvingFundRecordFromDto(response);
 }

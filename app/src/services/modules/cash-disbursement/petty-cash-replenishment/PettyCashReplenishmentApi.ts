@@ -107,18 +107,20 @@ type MappedPettyCashReplenishmentListResponse = Omit<PettyCashReplenishmentListR
 export const StatusFromApi: Record<string, PettyCashReplenishmentStatus> = {
   DRAFT: PettyCashReplenishmentStatuses.Draft,
   FOR_APPROVAL: "For Approval",
-  APPROVED: "For Approval",
+  APPROVED: "Posted",
   POSTED: "Posted",
   DISAPPROVED: "Disapproved",
   CANCELLED: "Cancelled",
+  CLOSED: "Closed",
 };
 
-export const StatusToApi: Record<PettyCashReplenishmentStatus, UpdatePettyCashReplenishmentStatusDtoStatus> = {
+export const StatusToApi: Record<PettyCashReplenishmentStatus, string> = {
   Draft: "DRAFT",
   "For Approval": "FOR_APPROVAL",
   Posted: "POSTED",
   Disapproved: "DISAPPROVED",
   Cancelled: "CANCELLED",
+  Closed: "CLOSED",
 };
 
 export function mapPettyCashReplenishmentRecordFromDto(dto: PettyCashReplenishmentResponseDto): PettyCashReplenishmentRecord {
@@ -232,7 +234,9 @@ export function mapPettyCashReplenishmentFormValuesToCreateDto(values: PettyCash
     exchangeRate: parseMoneyNumberInput(values.exchangeRate) || 1.0,
     amount: totalAmount,
     remarks: values.remarks,
-    status: values.status && values.status !== "Open" ? StatusToApi[values.status as PettyCashReplenishmentStatus] : "DRAFT",
+    status: (values.status && values.status !== "Open"
+      ? StatusToApi[values.status as PettyCashReplenishmentStatus]
+      : "DRAFT") as CreatePettyCashReplenishmentDto["status"],
     details,
   };
 }
@@ -286,6 +290,7 @@ export async function fetchPettyCashReplenishmentCopyFromCandidates(params: {
   limit?: number;
   page?: number;
   partyCode?: string | null;
+  partyName?: string | null;
   target: "cash-voucher" | "disbursement-voucher";
 }) {
   const response = await ApiClient.get<{ records: PettyCashReplenishmentCopyFromCandidate[] }>(
@@ -296,6 +301,7 @@ export async function fetchPettyCashReplenishmentCopyFromCandidates(params: {
         limit: params.limit ?? 100,
         page: params.page ?? 1,
         partyCode: params.partyCode,
+        partyName: params.partyName,
         target: params.target,
       }),
     },
@@ -332,7 +338,7 @@ export async function updatePettyCashReplenishmentStatusApi(
   id: string,
   status: PettyCashReplenishmentStatus,
 ): Promise<PettyCashReplenishmentRecord> {
-  const apiStatus = StatusToApi[status];
+  const apiStatus = StatusToApi[status] as UpdatePettyCashReplenishmentStatusDtoStatus;
   const response = (await pettyCashReplenishmentControllerUpdateStatusV1(id, { status: apiStatus })) as PettyCashReplenishmentResponseDto;
   return mapPettyCashReplenishmentRecordFromDto(response);
 }

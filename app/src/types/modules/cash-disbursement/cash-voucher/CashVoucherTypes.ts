@@ -5,7 +5,7 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 import type { useCashVoucherPreviewTable } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucher";
 import type { useCashVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherActionPage";
 
-export type CashVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
+export type CashVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 
 export type CashVoucherDisplayStatus = CashVoucherStatus;
 export type CashVoucherPreviewTableState = ReturnType<typeof useCashVoucherPreviewTable>;
@@ -299,13 +299,7 @@ export type CashVoucherAccountingGridSession = {
 };
 
 export type CashVoucherFormErrors = Partial<
-  Record<
-    | keyof Omit<CashVoucherFormValues, "lineEntries" | "attachments">
-    | "attachments"
-    | "lineEntries"
-    | "entryDraft",
-    string
-  >
+  Record<keyof Omit<CashVoucherFormValues, "lineEntries" | "attachments"> | "attachments" | "lineEntries" | "entryDraft", string>
 >;
 
 export type CashVoucherCopyFromRecord = {

@@ -8,7 +8,6 @@ import {
   AccountsPayableVoucherAccountingDebitSide,
   AccountsPayableVoucherEwtTaxLabel,
   AccountsPayableVoucherInputVatTaxLabel,
-  AccountsPayableVoucherPurchaseTransactionType,
 } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import {
   accountsPayableVoucherExpenseLineHasItem,
@@ -51,6 +50,10 @@ const ManualInputVatAccountingEntryIdPrefix = "apv-entry-manual-input-vat-";
 const ManualEwtAccountingEntryIdPrefix = "apv-entry-manual-ewt-";
 const ManualDefaultPayableAccountingEntryId = "apv-entry-manual-default-payable";
 const AccountsPayableVoucherAddMode = "add" as const;
+const TaxAccountingAccountFallbackIds: Partial<Record<keyof TaxDefinitionDefaultAccountIds, string>> = {
+  expandedWithholdingTaxAccountId: "expanded-withholding-tax",
+  inputTaxAccountId: "input-vat-tax-payable",
+};
 
 export function getActionMode(pathname: string): AccountsPayableVoucherActionMode {
   if (pathname.includes("/view/")) {
@@ -513,7 +516,15 @@ export function getExpenseVatType(line: AccountsPayableVoucherExpenseLine, conte
 
 export function getTaxAccountingAccount(field: keyof TaxDefinitionDefaultAccountIds, context: AccountsPayableVoucherTaxAccountingContext) {
   const accountId = context.defaultAccountIds[field];
-  const account = accountId ? findModuleChartAccount(accountId, context.accountOptions) : undefined;
+  const fallbackAccountId = TaxAccountingAccountFallbackIds[field];
+  const configuredAccount = accountId
+    ? (findModuleChartAccount(accountId, context.accountOptions) ?? findModuleChartAccount(accountId))
+    : undefined;
+  const fallbackAccount = fallbackAccountId
+    ? (findModuleChartAccount(fallbackAccountId, context.accountOptions) ?? findModuleChartAccount(fallbackAccountId))
+    : undefined;
+  const account = configuredAccount ?? fallbackAccount;
+
   return {
     accountId: account?.id,
     accountCode: account?.accountNumber ?? "",

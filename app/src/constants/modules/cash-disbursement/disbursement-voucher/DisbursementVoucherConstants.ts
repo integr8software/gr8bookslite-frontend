@@ -134,10 +134,7 @@ export const DisbursementVoucherRecordStatuses = [
   DisbursementVoucherStatuses.Cancelled,
 ] as const satisfies readonly DisbursementVoucherStatus[];
 
-export const DisbursementVoucherStatusFilters = [
-  DisbursementVoucherAllStatusFilter,
-  ...DisbursementVoucherRecordStatuses,
-] as const;
+export const DisbursementVoucherStatusFilters = [DisbursementVoucherAllStatusFilter, ...DisbursementVoucherRecordStatuses] as const;
 
 export const DisbursementVoucherStatusFilterOptions = [
   { label: "All statuses", value: DisbursementVoucherAllStatusFilter },

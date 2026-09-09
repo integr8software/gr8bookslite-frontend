@@ -84,7 +84,7 @@ import { AccountsPayableVoucherQueryKeys } from "@/app/src/services/modules/acco
 import {
   fetchAdvanceToSupplierCopyFromCandidates,
   type AdvanceToSupplierCopyFromCandidate,
-} from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersService";
+} from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersApi";
 import { AdvancesToSuppliersQueryKeys } from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersQueryKeys";
 import {
   fetchPettyCashReplenishmentCopyFromCandidates,
@@ -202,23 +202,39 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       ),
     [taxDefaultAccountOptionsQuery.data],
   );
+  const copyFromPartyName = values.partyName.trim();
+  const copyFromPartyCode = copyFromPartyName ? values.partyCode.trim() : "";
   const copyFromCandidatesQuery = useQuery({
-    queryKey: AccountsPayableVoucherQueryKeys.copyFromCandidates("disbursement-voucher", activeCompanyId, activeBranchId, values.partyCode),
+    queryKey: AccountsPayableVoucherQueryKeys.copyFromCandidates(
+      "disbursement-voucher",
+      activeCompanyId,
+      activeBranchId,
+      copyFromPartyCode,
+      copyFromPartyName,
+    ),
     queryFn: () =>
       fetchAccountsPayableVoucherCopyFromCandidates({
         branchUnitId: activeBranchId,
-        partyCode: values.partyCode,
+        partyCode: copyFromPartyCode,
+        partyName: copyFromPartyName,
         target: "disbursement-voucher",
       }),
     enabled: activeCompanyId !== null,
   });
   const apvCopyFromCandidates = useMemo(() => copyFromCandidatesQuery.data ?? [], [copyFromCandidatesQuery.data]);
   const advanceToSupplierCopyFromCandidatesQuery = useQuery({
-    queryKey: AdvancesToSuppliersQueryKeys.copyFromCandidates("disbursement-voucher", activeCompanyId, activeBranchId, values.partyCode),
+    queryKey: AdvancesToSuppliersQueryKeys.copyFromCandidates(
+      "disbursement-voucher",
+      activeCompanyId,
+      activeBranchId,
+      copyFromPartyCode,
+      copyFromPartyName,
+    ),
     queryFn: () =>
       fetchAdvanceToSupplierCopyFromCandidates({
         branchUnitId: activeBranchId,
-        partyCode: values.partyCode,
+        partyCode: copyFromPartyCode,
+        partyName: copyFromPartyName,
         target: "disbursement-voucher",
       }),
     enabled: activeCompanyId !== null,
@@ -234,12 +250,14 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       "disbursement-voucher",
       activeCompanyId,
       activeBranchId,
-      values.partyCode,
+      copyFromPartyCode,
+      copyFromPartyName,
     ],
     queryFn: () =>
       fetchPettyCashReplenishmentCopyFromCandidates({
         branchUnitId: activeBranchId,
-        partyCode: values.partyCode,
+        partyCode: copyFromPartyCode,
+        partyName: copyFromPartyName,
         target: "disbursement-voucher",
       }),
     enabled: activeCompanyId !== null,
@@ -255,12 +273,14 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       "disbursement-voucher",
       activeCompanyId,
       activeBranchId,
-      values.partyCode,
+      copyFromPartyCode,
+      copyFromPartyName,
     ],
     queryFn: () =>
       fetchRevolvingFundReplenishmentCopyFromCandidates({
         branchUnitId: activeBranchId,
-        partyCode: values.partyCode,
+        partyCode: copyFromPartyCode,
+        partyName: copyFromPartyName,
         target: "disbursement-voucher",
       }),
     enabled: activeCompanyId !== null,

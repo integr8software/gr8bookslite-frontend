@@ -2,7 +2,7 @@ import type { TransactionAttachment } from "@/app/src/types/shared/transaction-s
 import type { useAdvancesToSuppliersActionPage } from "@/app/src/hooks/modules/cash-disbursement/advances-to-suppliers/useAdvancesToSuppliersActionPage";
 import type { useAdvancesToSuppliersOverviewPage } from "@/app/src/hooks/modules/cash-disbursement/advances-to-suppliers/useAdvancesToSuppliersOverviewPage";
 
-export type AdvancesToSuppliersStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
+export type AdvancesToSuppliersStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 export type AdvancesToSuppliersFormStatus = "Open" | AdvancesToSuppliersStatus;
 export type AdvancesToSuppliersActionMode = "add" | "edit" | "view";
 export type AdvancesToSuppliersActionTab = "details" | "attachments";

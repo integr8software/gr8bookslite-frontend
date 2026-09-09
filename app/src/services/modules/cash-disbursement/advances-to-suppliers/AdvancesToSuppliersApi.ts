@@ -86,14 +86,16 @@ type AdvancesToSuppliersApiResponse =
 const StatusFromApi: Record<string, AdvancesToSuppliersStatus> = {
   APPROVED: "Posted",
   CANCELLED: "Cancelled",
+  CLOSED: "Closed",
   DISAPPROVED: "Disapproved",
   DRAFT: "Draft",
   FOR_APPROVAL: "For Approval",
   POSTED: "Posted",
 };
 
-const StatusToApi: Record<AdvancesToSuppliersStatus, UpdateAdvanceToSupplierStatusDtoStatus> = {
+const StatusToApi: Record<AdvancesToSuppliersStatus, string> = {
   Cancelled: "CANCELLED",
+  Closed: "CLOSED",
   Disapproved: "DISAPPROVED",
   Draft: "DRAFT",
   "For Approval": "FOR_APPROVAL",
@@ -139,6 +141,7 @@ export async function fetchAdvanceToSupplierCopyFromCandidates(query: {
   page?: number;
   partyCode?: string | null;
   partyId?: string | null;
+  partyName?: string | null;
   search?: string | null;
   target: "cash-voucher" | "disbursement-voucher";
 }): Promise<AdvanceToSupplierCopyFromCandidate[]> {
@@ -151,6 +154,7 @@ export async function fetchAdvanceToSupplierCopyFromCandidates(query: {
         page: query.page ?? 1,
         partyCode: query.partyCode,
         partyId: query.partyId,
+        partyName: query.partyName,
         search: query.search,
         target: query.target,
       }),
@@ -183,7 +187,7 @@ export async function updateAdvancesToSuppliersStatusApi(
   status: AdvancesToSuppliersStatus,
 ): Promise<AdvancesToSuppliersRecord> {
   const response = (await advancesToSuppliersControllerUpdateStatusV1(id, {
-    status: StatusToApi[status],
+    status: StatusToApi[status] as UpdateAdvanceToSupplierStatusDtoStatus,
   })) as AdvancesToSuppliersApiResponse;
   return mapAdvancesToSuppliersRecordFromDto(unwrapAdvancesToSuppliersResponse(response));
 }

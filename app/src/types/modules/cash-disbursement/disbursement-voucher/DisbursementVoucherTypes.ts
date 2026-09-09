@@ -6,7 +6,7 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 import type { useDisbursementVoucherPreviewTable } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucher";
 import type { useDisbursementVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucherActionPage";
 
-export type DisbursementVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
+export type DisbursementVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 
 export type DisbursementVoucherDisplayStatus = DisbursementVoucherStatus;
 export type DisbursementVoucherPreviewTableState = ReturnType<typeof useDisbursementVoucherPreviewTable>;
@@ -27,7 +27,8 @@ export type DisbursementVoucherTableColumnKey =
   | "updatedBy"
   | "updatedAt";
 
-export type DisbursementPaymentMethod = "Bank Transfer" | "Check" | "Debit Memo" | "E-Wallet" | "InstaPay" | "Manager's Check" | "PESONet" | (string & {});
+export type DisbursementPaymentMethod =
+  "Bank Transfer" | "Check" | "Debit Memo" | "E-Wallet" | "InstaPay" | "Manager's Check" | "PESONet" | (string & {});
 
 export type DisbursementPaymentClassification = "Bank Transfer" | "Check" | "Debit Memo" | "Digital Wallet";
 
@@ -297,12 +298,7 @@ export type DisbursementVoucherAccountingGridSession = {
 };
 
 export type DisbursementVoucherPaymentErrorField =
-  | "bankAccountCode"
-  | "checkDate"
-  | "checkNo"
-  | "payee"
-  | "transferAccountNo"
-  | "transferToBank";
+  "bankAccountCode" | "checkDate" | "checkNo" | "payee" | "transferAccountNo" | "transferToBank";
 
 export type DisbursementVoucherFormErrors = Partial<
   Record<

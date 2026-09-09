@@ -27,7 +27,7 @@ import {
   submitAdvancesToSuppliersApprovalApi,
   updateAdvancesToSuppliersApi,
   updateAdvancesToSuppliersStatusApi,
-} from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersService";
+} from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersApi";
 import { fetchPurchaseOrderCopyFromCandidates } from "@/app/src/services/modules/purchasing/purchase-order/PurchaseOrderApi";
 import { PurchaseOrderQueryKeys } from "@/app/src/services/modules/purchasing/purchase-order/PurchaseOrderQueryKeys";
 import {

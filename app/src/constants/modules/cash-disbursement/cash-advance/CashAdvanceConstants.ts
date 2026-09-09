@@ -74,10 +74,7 @@ export const CashAdvanceRecordStatuses = [
   CashAdvanceStatuses.Cancelled,
 ] as const satisfies readonly CashAdvanceStatus[];
 
-export const CashAdvanceStatusFilters = [
-  CashAdvanceAllStatusFilter,
-  ...CashAdvanceRecordStatuses,
-] as const;
+export const CashAdvanceStatusFilters = [CashAdvanceAllStatusFilter, ...CashAdvanceRecordStatuses] as const;
 
 export const CashAdvanceTablePaginationStorageKey = "cash-disbursement-cash-advance";
 export const CashAdvanceTablePreferencesModuleKey = "cash-disbursement:cash-advance";

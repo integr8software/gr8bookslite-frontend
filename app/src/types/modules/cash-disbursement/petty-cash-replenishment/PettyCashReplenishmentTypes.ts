@@ -2,7 +2,7 @@ import type { TransactionAttachment } from "@/app/src/types/shared/transaction-s
 import type { usePettyCashReplenishmentActionPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-replenishment/usePettyCashReplenishmentActionPage";
 import type { usePettyCashReplenishmentOverviewPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-replenishment/usePettyCashReplenishmentOverviewPage";
 
-export type PettyCashReplenishmentStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
+export type PettyCashReplenishmentStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 export type PettyCashReplenishmentFormStatus = "Open" | PettyCashReplenishmentStatus;
 export type PettyCashReplenishmentActionMode = "add" | "edit" | "view";
 export type PettyCashReplenishmentActionTab = "details" | "attachments";

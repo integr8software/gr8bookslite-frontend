@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { DefaultLookupStaleTime } from "@/app/src/constants/shared/query/QueryKeyConstants";
 import {
   createAccountingChartAccountOptions,
   createDefaultAccountExpenseOptions,
@@ -18,6 +19,8 @@ import {
 } from "@/app/src/data/shared/tax/TaxData";
 import { FetchChartAccountsTree } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsQueryKeys";
+import { fetchDisbursementVoucherAccountTitleOptions } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherApi";
+import { DisbursementVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherQueryKeys";
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import { useTaxDefaultAccountOptionGroups } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
@@ -51,6 +54,12 @@ export function useDisbursementVoucherEntryLookups({
     queryFn: FetchChartAccountsTree,
     staleTime: 60_000,
   });
+  const accountTitleOptionsQuery = useQuery({
+    queryKey: DisbursementVoucherQueryKeys.accountTitleOptions(activeCompanyId),
+    queryFn: fetchDisbursementVoucherAccountTitleOptions,
+    enabled: activeCompanyId !== null,
+    staleTime: DefaultLookupStaleTime,
+  });
   const taxCodesQuery = useAlphanumericTaxCodes();
   const taxDefaultAccountOptionsQuery = useTaxDefaultAccountOptionGroups();
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
@@ -71,7 +80,10 @@ export function useDisbursementVoucherEntryLookups({
 
   const liveChartAccounts = useMemo(() => createSpecificChartAccountOptions(chartAccountsQuery.data ?? []), [chartAccountsQuery.data]);
   const chartAccounts = useMemo(() => createAccountingChartAccountOptions(entries, liveChartAccounts), [entries, liveChartAccounts]);
-  const expenseAccounts = useMemo(() => createDefaultAccountExpenseOptions(defaultAccounts), [defaultAccounts]);
+  const expenseAccounts = useMemo(
+    () => accountTitleOptionsQuery.data ?? createDefaultAccountExpenseOptions(defaultAccounts),
+    [accountTitleOptionsQuery.data, defaultAccounts],
+  );
   const expenseRows = useMemo(() => entries.filter((entry) => !isGeneratedAccountingEntry(entry)), [entries]);
 
   const partyOptions = useMemo<DisbursementVoucherPartyDropdownOption[]>(() => {

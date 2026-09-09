@@ -8,5 +8,15 @@ export const AdvancesToSuppliersQueryKeys = {
     companyId?: number | null,
     branchUnitId?: number | null,
     partyCode?: string | null,
-  ) => [...AdvancesToSuppliersQueryKeys.all, "copy-from", target, companyId ?? null, branchUnitId ?? null, partyCode ?? null] as const,
+    partyName?: string | null,
+  ) =>
+    [
+      ...AdvancesToSuppliersQueryKeys.all,
+      "copy-from",
+      target,
+      companyId ?? null,
+      branchUnitId ?? null,
+      partyCode?.trim() || null,
+      partyName?.trim() || null,
+    ] as const,
 };

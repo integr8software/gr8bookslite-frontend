@@ -36,10 +36,7 @@ type FetchCashAdvanceListResponse = Omit<CashAdvanceListResponseDto, "data"> & {
 export async function fetchCashAdvanceList(params?: FetchCashAdvanceListParams): Promise<FetchCashAdvanceListResponse> {
   const response = await cashAdvanceControllerFindAllV1({
     ...params,
-    status:
-      params?.status && params.status !== "all" && params.status !== "All"
-        ? mapCashAdvanceStatusToApi(params.status)
-        : undefined,
+    status: params?.status && params.status !== "all" && params.status !== "All" ? mapCashAdvanceStatusToApi(params.status) : undefined,
   });
 
   return {
@@ -159,10 +156,7 @@ export async function createCashAdvanceApi(payload: CreateCashAdvanceDto): Promi
   return mapCashAdvanceResponseFromApi(response);
 }
 
-export async function updateCashAdvanceApi(
-  id: string,
-  payload: UpdateCashAdvanceDto,
-): Promise<CashAdvanceRecord> {
+export async function updateCashAdvanceApi(id: string, payload: UpdateCashAdvanceDto): Promise<CashAdvanceRecord> {
   const response = await cashAdvanceControllerUpdateV1(id, payload);
   return mapCashAdvanceResponseFromApi(response);
 }
@@ -223,6 +217,7 @@ function mapCashAdvanceStatusFromApi(status: string): CashAdvanceStatus {
   const statusMap: Record<string, CashAdvanceStatus> = {
     APPROVED: "Posted",
     CANCELLED: "Cancelled",
+    CLOSED: "Closed",
     DISAPPROVED: "Disapproved",
     DRAFT: "Draft",
     FOR_APPROVAL: "For Approval",
@@ -235,6 +230,7 @@ function mapCashAdvanceStatusFromApi(status: string): CashAdvanceStatus {
 function mapCashAdvanceStatusToApi(status: string): ApiCashAdvanceStatus {
   const statusMap: Record<string, ApiCashAdvanceStatus> = {
     Cancelled: "CANCELLED",
+    Closed: "CLOSED",
     Disapproved: "DISAPPROVED",
     Draft: "DRAFT",
     "For Approval": "FOR_APPROVAL",

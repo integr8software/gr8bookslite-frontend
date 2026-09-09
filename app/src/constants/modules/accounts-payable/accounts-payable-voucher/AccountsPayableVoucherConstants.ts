@@ -69,6 +69,7 @@ export const AccountsPayableVoucherStatusOptions: AccountsPayableVoucherStatus[]
   "Draft",
   "Disapproved",
   "Cancelled",
+  "Closed",
 ];
 
 export const AccountsPayableVoucherStatusFilters = ["all", ...AccountsPayableVoucherStatusOptions] as const;

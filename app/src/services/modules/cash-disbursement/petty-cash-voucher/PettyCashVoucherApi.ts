@@ -86,18 +86,20 @@ type MappedPettyCashVoucherListResponse = Omit<PettyCashVoucherListResponseDto, 
 export const StatusFromApi: Record<string, PettyCashVoucherStatus> = {
   DRAFT: "Draft",
   FOR_APPROVAL: "For Approval",
-  APPROVED: "For Approval",
+  APPROVED: "Posted",
   POSTED: "Posted",
   DISAPPROVED: "Disapproved",
   CANCELLED: "Cancelled",
+  CLOSED: "Closed",
 };
 
-export const StatusToApi: Record<PettyCashVoucherStatus, UpdatePettyCashVoucherStatusDtoStatus> = {
+export const StatusToApi: Record<PettyCashVoucherStatus, string> = {
   Draft: "DRAFT",
   "For Approval": "FOR_APPROVAL",
   Posted: "POSTED",
   Disapproved: "DISAPPROVED",
   Cancelled: "CANCELLED",
+  Closed: "CLOSED",
 };
 
 export function mapPettyCashVoucherRecordFromDto(dto: PettyCashVoucherResponseDto): PettyCashVoucherRecord {
@@ -158,7 +160,9 @@ export function mapPettyCashVoucherFormValuesToCreateDto(values: PettyCashVouche
     ewtAmount: parseMoneyNumberInput(values.ewtAmount),
     netAmount: parseMoneyNumberInput(values.netAmount),
     remarks: values.remarks,
-    status: values.status && values.status !== "Open" ? StatusToApi[values.status as PettyCashVoucherStatus] : "DRAFT",
+    status: (values.status && values.status !== "Open"
+      ? StatusToApi[values.status as PettyCashVoucherStatus]
+      : "DRAFT") as CreatePettyCashVoucherDto["status"],
   };
 }
 
@@ -235,7 +239,7 @@ export async function updatePettyCashVoucherApi(id: string, values: PettyCashVou
 }
 
 export async function updatePettyCashVoucherStatusApi(id: string, status: PettyCashVoucherStatus): Promise<PettyCashVoucherRecord> {
-  const apiStatus = StatusToApi[status];
+  const apiStatus = StatusToApi[status] as UpdatePettyCashVoucherStatusDtoStatus;
   const response = (await pettyCashVoucherControllerUpdateStatusV1(id, { status: apiStatus })) as PettyCashVoucherResponseDto;
   return mapPettyCashVoucherRecordFromDto(response);
 }

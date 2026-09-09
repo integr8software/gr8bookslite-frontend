@@ -1,5 +1,5 @@
 import type { AccountsPayableVoucherCopyFromCandidate } from "@/app/src/services/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherApi";
-import type { AdvanceToSupplierCopyFromCandidate } from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersService";
+import type { AdvanceToSupplierCopyFromCandidate } from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersApi";
 import type { PettyCashReplenishmentCopyFromCandidate } from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentApi";
 import type { RevolvingFundReplenishmentCopyFromCandidate } from "@/app/src/services/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentApi";
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";

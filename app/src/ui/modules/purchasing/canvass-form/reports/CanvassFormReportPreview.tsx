@@ -49,7 +49,8 @@ export function CanvassFormReportDocument({ record }: { record: CanvassFormRecor
 						<div className="text-right font-bold">
 							<p>Document Date: {formatCanvassFormDate(record.documentDate)}</p>
 							<p>Trans No.: {record.transNo}</p>
-							<p>PR No.: {record.prNo}</p>
+							{record.prNo ? <p>PR No.: {record.prNo}</p> : null}
+							{record.poNo ? <p>PO No.: {record.poNo}</p> : null}
 						</div>
 					</div>
 					<div className="grid grid-cols-2 border-t border-black">
@@ -58,7 +59,8 @@ export function CanvassFormReportDocument({ record }: { record: CanvassFormRecor
 						<InfoCell label="Terms of Payment" value={record.termsOfPayment} />
 						<InfoCell label="Currency" value={record.currency} />
 						<InfoCell label="Status" value={record.status} />
-						<InfoCell label="PR No." value={record.prNo} />
+						{record.prNo ? <InfoCell label="PR No." value={record.prNo} /> : null}
+						{record.poNo ? <InfoCell label="PO No." value={record.poNo} /> : null}
 					</div>
 					<div className="min-h-14 border-t border-black px-1 py-1">
 						<span className="font-bold">Remarks:</span> {record.remarks}

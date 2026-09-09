@@ -1,10 +1,12 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { CanvassFormHref } from "@/app/src/constants/modules/purchasing/canvass-form/CanvassFormConstants";
 import { useCanvassFormActionPage } from "@/app/src/hooks/modules/purchasing/canvass-form/useCanvassFormActionPage";
+import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { CanvassFormDetailsForm } from "@/app/src/ui/modules/purchasing/canvass-form/form/CanvassFormFieldContent";
 import { CanvassFormEntrySection } from "@/app/src/ui/modules/purchasing/canvass-form/entries/CanvassFormEntrySection";
 import { CanvassFormFormHeader } from "@/app/src/ui/modules/purchasing/canvass-form/form/CanvassFormPageHeader";
@@ -21,6 +23,25 @@ export function CanvassFormActionPage() {
 
 function CanvassFormActionPageInner() {
   const page = useCanvassFormActionPage();
+  const partyStore = usePartyManagementStore();
+  const supplierOptions = useMemo(
+    () =>
+      partyStore.records
+        .filter(
+          (record) =>
+            record.status === "Active" &&
+            record.partyCodeNo.trim() !== "" &&
+            record.partyTypes.some((partyType) => partyType.trim().toUpperCase() === "VENDOR"),
+        )
+        .map((record) => ({
+          description: record.partyTypes.join(", "),
+          label: record.partyCodeNo,
+          name: getPartyDisplayName(record),
+          selectedDetails: record.partyCodeNo,
+          value: record.partyCodeNo,
+        })),
+    [partyStore.records],
+  );
 
   if (page.needsRecord && !page.existingForm) {
     return <CanvassFormNotFound />;
@@ -29,12 +50,12 @@ function CanvassFormActionPageInner() {
   return (
     <section className="grid gap-5">
       <CanvassFormFormHeader
-        copyFromRecords={page.purchaseRequestCopyRecords}
+        copyFromRecords={page.copyFromRecords}
         isSubmitting={page.isSubmitting}
         mode={page.mode}
         recordId={page.recordId}
         values={page.values}
-        onCopyFromPurchaseRequest={page.copyFromPurchaseRequests}
+        onCopyFromSource={page.copyFromSourceRecords}
         onPreview={() => page.setShowPreview(true)}
         onSubmit={page.handleSubmit}
       />
@@ -42,8 +63,12 @@ function CanvassFormActionPageInner() {
       <CanvassFormEntrySection
         accountingRows={page.values.accountingEntries}
         error={page.errors.items}
+        itemDescriptionOptions={page.itemDescriptionOptions}
         isReadonly={page.isReadonly}
+        purchaseType={page.values.purchaseType}
         rows={page.values.items}
+        serviceDescriptionOptions={page.serviceDescriptionOptions}
+        supplierOptions={supplierOptions}
         onAccountingRowsChange={page.updateAccountingEntries}
         onRowsChange={page.updateItems}
       />

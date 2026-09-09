@@ -24,6 +24,14 @@ export type CanvassFormItem = {
 	minimumOrderQuantity: number;
 	responsibilityCenter: string;
 	supplierCount: number;
+	supplierQuotationNo1: string;
+	supplierQuotationNo2: string;
+	supplierQuotationNo3: string;
+	supplierQuotationNo4: string;
+	vatable1: string;
+	vatable2: string;
+	vatable3: string;
+	vatable4: string;
 	vatExclusive: string;
 	vatInclusive: string;
 	vatExclusive1: string;
@@ -55,6 +63,9 @@ export type CanvassFormRecord = {
 	currency: string;
 	exchangeRate: number;
 	prNo: string;
+	poNo: string;
+	projectCode: string;
+	projectName: string;
 	purchaseType: string;
 	requestedBy: string;
 	responsibilityCenter: string;
@@ -81,7 +92,7 @@ export type CanvassFormFormHeaderProps = {
 	mode: CanvassFormMode;
 	recordId?: string;
 	values: CanvassFormValues;
-	onCopyFromPurchaseRequest: (recordIds: string[]) => void;
+	onCopyFromSource: (recordIds: string[]) => void;
 	onPreview: () => void;
 	onSubmit: () => void;
 };

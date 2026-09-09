@@ -9,6 +9,7 @@ import type {
   RevolvingFundOpenSupplierDrawerHandler,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { ModuleDataEntryDropdownCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryDropdownCell";
 import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
@@ -23,6 +24,7 @@ export function createRevolvingFundItemColumns(
   supplierOptions: AppAdvancedDropdownOption[],
   vatOptions: AppAdvancedDropdownOption[] = [],
   ewtOptions: AppAdvancedDropdownOption[] = [],
+  taxCodes: AlphanumericTaxCode[] = [],
   responsibilityCenterOptions: AppAdvancedDropdownOption[] = [],
   onOpenResponsibilityCenterDrawer?: RevolvingFundOpenResponsibilityCenterDrawerHandler,
   onOpenSupplierDrawer?: RevolvingFundOpenSupplierDrawerHandler,
@@ -134,7 +136,7 @@ export function createRevolvingFundItemColumns(
               supplierName: selectedSupplier?.name ?? String(value),
               vatType,
               ewtCode,
-              ...calculateRevolvingFundItemTaxFields(row.amount, vatType, ewtCode),
+              ...calculateRevolvingFundItemTaxFields(row.amount, vatType, ewtCode, taxCodes),
             });
           }}
         />
@@ -162,7 +164,7 @@ export function createRevolvingFundItemColumns(
     amount: money("amount", (row, value) =>
       page.updateItem(row.id, {
         amount: value,
-        ...calculateRevolvingFundItemTaxFields(value, row.vatType, row.ewtCode),
+        ...calculateRevolvingFundItemTaxFields(value, row.vatType, row.ewtCode, taxCodes),
       }),
     ),
     type: text("type"),
@@ -180,7 +182,7 @@ export function createRevolvingFundItemColumns(
           onChange={(value) =>
             page.updateItem(row.id, {
               vatType: value,
-              ...calculateRevolvingFundItemTaxFields(row.amount, value, row.ewtCode),
+              ...calculateRevolvingFundItemTaxFields(row.amount, value, row.ewtCode, taxCodes),
             })
           }
         />
@@ -203,7 +205,7 @@ export function createRevolvingFundItemColumns(
           onChange={(value) =>
             page.updateItem(row.id, {
               ewtCode: value,
-              ...calculateRevolvingFundItemTaxFields(row.amount, row.vatType, value),
+              ...calculateRevolvingFundItemTaxFields(row.amount, row.vatType, value, taxCodes),
             })
           }
         />

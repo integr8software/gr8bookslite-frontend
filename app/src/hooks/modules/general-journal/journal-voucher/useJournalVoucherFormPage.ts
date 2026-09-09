@@ -11,6 +11,7 @@ import {
   JournalVoucherEwtTaxType,
   JournalVoucherCwtTaxType,
 } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
+import { JournalVoucherCopyFromSource } from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherCopyFromData";
 import {
   createJournalVoucherFormValues,
   createJournalVoucherFromForm,
@@ -30,6 +31,9 @@ import {
   useJournalVoucherNumberSuggestion,
   useJournalVoucherStore,
 } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucher";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { fetchCashVoucherList } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherApi";
+import { fetchDisbursementVoucherList } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherApi";
 import { FetchMultiCurrencyRates } from "@/app/src/services/modules/system-administration/multi-currency-setup/MultiCurrencySetupService";
 import type {
   JournalVoucherActionMode,
@@ -40,8 +44,10 @@ import type {
   JournalVoucherLookupAccount,
   JournalVoucherLookupTax,
 } from "@/app/src/types/modules/general-journal/journal-voucher/JournalVoucherTypes";
+import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import { validateJournalVoucherForm } from "@/app/src/validations/modules/general-journal/journal-voucher/JournalVoucherValidation";
+import { useQuery } from "@tanstack/react-query";
 
 export function useJournalVoucherFormPage() {
   const router = useRouter();
@@ -52,6 +58,8 @@ export function useJournalVoucherFormPage() {
   const updateRecord = useJournalVoucherStore((state) => state.updateRecord);
   const updateStatus = useJournalVoucherStore((state) => state.updateStatus);
   const isMutating = useJournalVoucherStore((state) => state.isMutating);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
   const mode = getActionMode(pathname);
   const detailQuery = useJournalVoucherDetail(params.recordId);
   const lookupsQuery = useJournalVoucherLookups();
@@ -77,6 +85,44 @@ export function useJournalVoucherFormPage() {
     [taxAccountingContext, values],
   );
   const totals = useMemo(() => getJournalVoucherTotals(displayValues.lines), [displayValues.lines]);
+  const cashVoucherCopyFromQuery = useQuery({
+    queryKey: ["journal-voucher", "copy-from", "cash-voucher", activeCompanyId, activeBranchId],
+    queryFn: () => fetchCashVoucherList({ branchUnitId: activeBranchId ?? undefined, limit: 500, status: "Posted" }),
+    enabled: activeCompanyId !== null && activeBranchId !== null && !isReadonly,
+  });
+  const disbursementVoucherCopyFromQuery = useQuery({
+    queryKey: ["journal-voucher", "copy-from", "disbursement-voucher", activeCompanyId, activeBranchId],
+    queryFn: () => fetchDisbursementVoucherList({ branchUnitId: activeBranchId ?? undefined, limit: 500, status: "Posted" }),
+    enabled: activeCompanyId !== null && activeBranchId !== null && !isReadonly,
+  });
+  const copyFromRecords = useMemo<AppCopyFromRecord[]>(() => {
+    const cashVouchers =
+      cashVoucherCopyFromQuery.data?.data
+        .filter((voucher) => voucher.referenceModule === "Employee Advance")
+        .map((voucher) => ({
+          amount: String(voucher.amount),
+          documentDate: voucher.voucherDate,
+          id: `CV:${voucher.voucherNo}`,
+          partyName: voucher.partyName,
+          remarks: voucher.remarks,
+          source: "Cash Voucher",
+          sourceNo: voucher.voucherNo,
+        })) ?? [];
+    const disbursementVouchers =
+      disbursementVoucherCopyFromQuery.data?.data
+        .filter((voucher) => voucher.referenceModule === "Employee Advance")
+        .map((voucher) => ({
+          amount: String(voucher.amount),
+          documentDate: voucher.voucherDate,
+          id: `DV:${voucher.voucherNo}`,
+          partyName: voucher.partyName,
+          remarks: voucher.remarks,
+          source: "Disbursement Voucher",
+          sourceNo: voucher.voucherNo,
+        })) ?? [];
+
+    return [...cashVouchers, ...disbursementVouchers];
+  }, [cashVoucherCopyFromQuery.data?.data, disbursementVoucherCopyFromQuery.data?.data]);
 
   useEffect(() => {
     if (!detailQuery.data || hydratedRecordIdRef.current === detailQuery.data.id) {
@@ -216,6 +262,55 @@ export function useJournalVoucherFormPage() {
       ],
     }));
     setErrors((current) => ({ ...current, lines: undefined }));
+  }
+
+  function copyFromPaymentVouchers(recordIds: string[]) {
+    if (isReadonly) {
+      return;
+    }
+
+    const selectedIds = new Set(recordIds);
+    const cashVouchers = cashVoucherCopyFromQuery.data?.data.filter((voucher) => selectedIds.has(`CV:${voucher.voucherNo}`)) ?? [];
+    const disbursementVouchers =
+      disbursementVoucherCopyFromQuery.data?.data.filter((voucher) => selectedIds.has(`DV:${voucher.voucherNo}`)) ?? [];
+    const sourceRows = [
+      ...cashVouchers.map((voucher) => ({ prefix: "CV", voucher })),
+      ...disbursementVouchers.map((voucher) => ({ prefix: "DV", voucher })),
+    ];
+
+    if (sourceRows.length === 0) {
+      toast.error("No voucher was selected.");
+      return;
+    }
+
+    setValues((current) => {
+      const copiedLines = sourceRows.flatMap(({ prefix, voucher }) =>
+        voucher.lineEntries.map((entry) =>
+          createJournalVoucherLine(current.lines.length + 1, {
+            accountCode: entry.accountCode,
+            accountTitle: entry.accountName,
+            credit: entry.credit,
+            debit: entry.debit,
+            particulars: entry.particulars || voucher.remarks,
+            partyCode: entry.partyCode || voucher.partyCode,
+            partyName: entry.partyName || voucher.partyName,
+            refNo: `${prefix}:${voucher.voucherNo}`,
+            responsibilityCenter: entry.responsibilityCenter ?? voucher.costCenter,
+          }),
+        ),
+      );
+      const nextValues = {
+        ...current,
+        currencyType: sourceRows[0]?.voucher.currency ?? current.currencyType,
+        currencyRate: Number(sourceRows[0]?.voucher.fxRate || current.currencyRate),
+        lines: renumberJournalVoucherLines([...current.lines.filter((line) => journalVoucherLineHasData(line)), ...copiedLines]),
+        remarks: sourceRows[0]?.voucher.remarks || current.remarks || `Copied from ${JournalVoucherCopyFromSource}`,
+      };
+
+      return ensureJournalVoucherTrailingBlankSourceLineForGeneratedTaxes(nextValues, taxAccountingContext);
+    });
+    setErrors({});
+    toast.success("Voucher details copied to the JV.");
   }
 
   function removeLine(lineId: string) {
@@ -388,6 +483,8 @@ export function useJournalVoucherFormPage() {
   return {
     addLines,
     clearLines,
+    copyFromPaymentVouchers,
+    copyFromRecords,
     duplicateLine,
     errors,
     existingRecord,

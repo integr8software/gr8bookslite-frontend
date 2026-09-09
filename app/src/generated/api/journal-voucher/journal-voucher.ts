@@ -27,8 +27,10 @@ import type {
 import type {
   CreateJournalVoucherDto,
   JournalVoucherControllerFindAllV1Params,
+  JournalVoucherControllerFindCopyFromCandidatesV1Params,
   JournalVoucherControllerFindOneV1Params,
   JournalVoucherControllerSuggestTransactionNumberV1Params,
+  JournalVoucherCopyFromCandidatesResponseDto,
   UpdateJournalVoucherDto,
   UpdateJournalVoucherStatusDto
 } from '../gR8BooksNeoAPI.schemas';
@@ -361,6 +363,99 @@ export function useJournalVoucherControllerFindLookupOptionsV1<TData = Awaited<R
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getJournalVoucherControllerFindLookupOptionsV1QueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary List available Journal Voucher lines for Copy From
+ */
+export const journalVoucherControllerFindCopyFromCandidatesV1 = (
+    params: JournalVoucherControllerFindCopyFromCandidatesV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<JournalVoucherCopyFromCandidatesResponseDto>(
+      {url: `/api/v1/general-journal/journal-voucher/copy-from/candidates`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getJournalVoucherControllerFindCopyFromCandidatesV1QueryKey = (params?: JournalVoucherControllerFindCopyFromCandidatesV1Params,) => {
+    return [
+    `/api/v1/general-journal/journal-voucher/copy-from/candidates`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getJournalVoucherControllerFindCopyFromCandidatesV1QueryOptions = <TData = Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(params: JournalVoucherControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getJournalVoucherControllerFindCopyFromCandidatesV1QueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>> = ({ signal }) => journalVoucherControllerFindCopyFromCandidatesV1(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type JournalVoucherControllerFindCopyFromCandidatesV1QueryResult = NonNullable<Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>>
+export type JournalVoucherControllerFindCopyFromCandidatesV1QueryError = unknown
+
+
+export function useJournalVoucherControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: JournalVoucherControllerFindCopyFromCandidatesV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useJournalVoucherControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: JournalVoucherControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useJournalVoucherControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: JournalVoucherControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List available Journal Voucher lines for Copy From
+ */
+
+export function useJournalVoucherControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: JournalVoucherControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof journalVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getJournalVoucherControllerFindCopyFromCandidatesV1QueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

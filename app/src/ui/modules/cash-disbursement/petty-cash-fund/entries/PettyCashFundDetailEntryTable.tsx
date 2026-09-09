@@ -99,6 +99,7 @@ export function PettyCashFundDetailEntryTable({
         supplierOptions,
         vatOptions,
         ewtOptions,
+        taxCodes,
         responsibilityCenterOptions,
         onOpenResponsibilityCenterDrawer,
         onOpenSupplierDrawer,
@@ -112,6 +113,7 @@ export function PettyCashFundDetailEntryTable({
       page,
       responsibilityCenterOptions,
       supplierOptions,
+      taxCodes,
       vatOptions,
     ],
   );

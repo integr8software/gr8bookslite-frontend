@@ -11,5 +11,12 @@ export const JournalVoucherQueryKeys = {
     [...JournalVoucherQueryKeys.all(companyId, branchUnitId), "transaction-number"] as const,
   lookups: (companyId?: number | null, branchUnitId?: number | null) =>
     [...JournalVoucherQueryKeys.all(companyId, branchUnitId), "lookups"] as const,
+  copyFromCandidates: (
+    target: string,
+    companyId?: number | null,
+    branchUnitId?: number | null,
+    partyCode?: string | null,
+    partyName?: string | null,
+  ) => [...JournalVoucherQueryKeys.all(companyId, branchUnitId), "copy-from", target, partyCode ?? "", partyName ?? ""] as const,
   records: (companyId?: number | null, branchUnitId?: number | null) => JournalVoucherQueryKeys.list(companyId, branchUnitId),
 };

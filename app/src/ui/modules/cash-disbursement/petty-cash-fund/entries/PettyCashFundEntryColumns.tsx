@@ -9,6 +9,7 @@ import type {
   PettyCashFundOpenSupplierDrawerHandler,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { ModuleDataEntryDropdownCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryDropdownCell";
 import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
@@ -22,6 +23,7 @@ export function createPettyCashFundItemColumns(
   supplierOptions: AppAdvancedDropdownOption[],
   vatOptions: AppAdvancedDropdownOption[] = [],
   ewtOptions: AppAdvancedDropdownOption[] = [],
+  taxCodes: AlphanumericTaxCode[] = [],
   responsibilityCenterOptions: AppAdvancedDropdownOption[] = [],
   onOpenResponsibilityCenterDrawer?: PettyCashFundOpenResponsibilityCenterDrawerHandler,
   onOpenSupplierDrawer?: PettyCashFundOpenSupplierDrawerHandler,
@@ -133,7 +135,7 @@ export function createPettyCashFundItemColumns(
               supplierName: selectedSupplier?.name ?? String(value),
               vatType,
               ewtCode,
-              ...calculatePettyCashFundItemTaxFields(row.amount, vatType, ewtCode),
+              ...calculatePettyCashFundItemTaxFields(row.amount, vatType, ewtCode, taxCodes),
             });
           }}
         />
@@ -145,7 +147,7 @@ export function createPettyCashFundItemColumns(
     amount: money("amount", (row, value) =>
       page.updateItem(row.id, {
         amount: value,
-        ...calculatePettyCashFundItemTaxFields(value, row.vatType, row.ewtCode),
+        ...calculatePettyCashFundItemTaxFields(value, row.vatType, row.ewtCode, taxCodes),
       }),
     ),
     type: text("type"),
@@ -163,7 +165,7 @@ export function createPettyCashFundItemColumns(
           onChange={(value) =>
             page.updateItem(row.id, {
               vatType: value,
-              ...calculatePettyCashFundItemTaxFields(row.amount, value, row.ewtCode),
+              ...calculatePettyCashFundItemTaxFields(row.amount, value, row.ewtCode, taxCodes),
             })
           }
         />
@@ -186,7 +188,7 @@ export function createPettyCashFundItemColumns(
           onChange={(value) =>
             page.updateItem(row.id, {
               ewtCode: value,
-              ...calculatePettyCashFundItemTaxFields(row.amount, row.vatType, value),
+              ...calculatePettyCashFundItemTaxFields(row.amount, row.vatType, value, taxCodes),
             })
           }
         />

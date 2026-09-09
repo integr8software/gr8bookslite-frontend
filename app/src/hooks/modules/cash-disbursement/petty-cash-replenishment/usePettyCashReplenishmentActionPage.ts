@@ -41,7 +41,6 @@ import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
   buildCashDisbursementCopyRecordSet,
   findPaymentVoucherCopyCandidates,
-  getPaymentVoucherCopyRatio,
   PaymentVoucherCopyPrefixes,
   scalePaymentVoucherCopyAmount,
 } from "@/app/src/data/modules/cash-disbursement/shared/PaymentVoucherCopyFromData";
@@ -115,6 +114,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   });
 
   const totals = useMemo(() => calculatePettyCashReplenishmentTotals(values.entries), [values.entries]);
+  const selectedPartyCode = values.partyCode.trim();
   const pettyCashVoucherCandidatesQuery = useQuery({
     queryKey: [
       ...PettyCashVoucherQueryKeys.all,
@@ -122,21 +122,21 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
       "petty-cash-replenishment",
       activeCompanyId,
       activeBranchId,
-      values.partyCode,
+      selectedPartyCode,
     ],
     queryFn: () =>
       fetchPettyCashVoucherCopyFromCandidates({
         branchUnitId: activeBranchId,
-        partyCode: values.partyCode,
+        partyCode: selectedPartyCode,
       }),
     enabled: activeCompanyId !== null && mode === PettyCashReplenishmentActionModes.Add,
   });
   const pettyCashFundCandidatesQuery = useQuery({
-    queryKey: [...PettyCashFundQueryKeys.all, "copy-from", "petty-cash-replenishment", activeCompanyId, activeBranchId, values.partyCode],
+    queryKey: [...PettyCashFundQueryKeys.all, "copy-from", "petty-cash-replenishment", activeCompanyId, activeBranchId, selectedPartyCode],
     queryFn: () =>
       fetchPettyCashFundCopyFromCandidates({
         branchUnitId: activeBranchId,
-        partyCode: values.partyCode,
+        partyCode: selectedPartyCode,
       }),
     enabled: activeCompanyId !== null && mode === PettyCashReplenishmentActionModes.Add,
   });
@@ -419,12 +419,14 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
       }),
     );
     const fundEntries = selectedFunds.flatMap((record) => {
-      const ratio = getPaymentVoucherCopyRatio(record);
+      return record.details.map((detail) => {
+        const grossAmount = Number(detail.grossAmount || 0);
+        const availableGrossAmount = Number(detail.availableGrossAmount ?? detail.grossAmount ?? 0);
+        const ratio = grossAmount > 0 ? availableGrossAmount / grossAmount : 1;
 
-      return record.details.map((detail) =>
-        createCopiedPettyCashReplenishmentEntry({
-          amount: String(scalePaymentVoucherCopyAmount(detail.grossAmount, ratio)),
-          disburseAmount: String(scalePaymentVoucherCopyAmount(detail.disburseAmount, ratio)),
+        return createCopiedPettyCashReplenishmentEntry({
+          amount: String(availableGrossAmount),
+          disburseAmount: String(detail.availableAmount ?? scalePaymentVoucherCopyAmount(detail.disburseAmount, ratio)),
           ewtAmount: String(scalePaymentVoucherCopyAmount(detail.ewtAmount, ratio)),
           ewtCode: detail.ewtCode || "",
           ewtPercent: String(detail.ewtPercent || 0),
@@ -439,8 +441,8 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
           vatAmount: String(scalePaymentVoucherCopyAmount(detail.vatAmount, ratio)),
           vatPercent: String(detail.vatPercent || 0),
           vatType: detail.vatType || "",
-        }),
-      );
+        });
+      });
     });
     const copiedEntries = [...voucherEntries, ...fundEntries];
     const firstSource = selectedSources[0];

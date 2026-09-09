@@ -6,9 +6,9 @@ import type {
   RevolvingFundStatus,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund/RevolvingFundTypes";
 import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
-import { calculateTaxAmounts } from "@/app/src/data/shared/tax/TaxData";
+import { getEwtPercentFromCode, getVatPercentFromRate, getVatRateFromCode } from "@/app/src/data/shared/tax/TaxData";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import { todayDateValue } from "@/app/src/utils/date.util";
-import { parseTaxPercent } from "@/app/src/utils/percentage.util";
 
 export function createBlankRevolvingFundItem(): RevolvingFundItem {
   return {
@@ -119,23 +119,21 @@ export function calculateRevolvingFundItemTaxFields(
   amountValue: string | number,
   vatType = "",
   ewtCode = "",
+  taxCodes: AlphanumericTaxCode[] = [],
 ): Pick<RevolvingFundItem, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "disburseAmount" | "grossAmount"> {
   const amount = roundRevolvingFundTaxAmount(parseMoneyNumberInput(amountValue));
-  const vatPercent = getRevolvingFundVatPercent(vatType);
-  const ewtPercent = getRevolvingFundEwtPercent(ewtCode);
-  const taxAmounts = calculateTaxAmounts({
-    grossAmount: amount,
-    taxRate: vatPercent,
-    ewtRate: ewtPercent,
-  });
+  const vatPercent = getRevolvingFundVatPercent(vatType, taxCodes);
+  const ewtPercent = getEwtPercentFromCode(ewtCode, taxCodes);
+  const vatAmount = roundRevolvingFundTaxAmount((amount * vatPercent) / 100);
+  const ewtAmount = roundRevolvingFundTaxAmount((amount * ewtPercent) / 100);
 
   return {
-    netAmount: formatRevolvingFundAmount(taxAmounts.netAmount),
+    netAmount: formatRevolvingFundAmount(Math.max(amount - vatAmount, 0)),
     vatPercent: vatPercent ? `${formatRevolvingFundAmount(vatPercent)}%` : "",
-    vatAmount: formatRevolvingFundAmount(taxAmounts.vatAmount),
+    vatAmount: formatRevolvingFundAmount(vatAmount),
     ewtPercent: ewtPercent ? `${formatRevolvingFundAmount(ewtPercent)}%` : "",
-    ewtAmount: formatRevolvingFundAmount(taxAmounts.ewtAmount),
-    disburseAmount: formatRevolvingFundAmount(taxAmounts.totalAmountDue),
+    ewtAmount: formatRevolvingFundAmount(ewtAmount),
+    disburseAmount: formatRevolvingFundAmount(Math.max(amount - ewtAmount, 0)),
     grossAmount: formatRevolvingFundAmount(amount),
   };
 }
@@ -184,14 +182,13 @@ export function formatRevolvingFundAmount(value: number) {
   return formatMoneyNumberDisplayValue(value.toFixed(2));
 }
 
-function getRevolvingFundVatPercent(vatType: string) {
-  const match = vatType.toLowerCase().match(/(\d+(?:\.\d+)?)/);
+function getRevolvingFundVatPercent(vatType: string, taxCodes: AlphanumericTaxCode[]) {
+  const catalogRate = getVatPercentFromRate(getVatRateFromCode(vatType, taxCodes));
+  if (catalogRate) return catalogRate;
+
+  const match = vatType.toLowerCase().match(/(\d+(?:\.\d+)?)\s*%/);
   if (match) return Number.parseFloat(match[1]);
   return 0;
-}
-
-function getRevolvingFundEwtPercent(ewtCode: string) {
-  return parseTaxPercent(ewtCode);
 }
 
 function roundRevolvingFundTaxAmount(value: number) {

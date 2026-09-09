@@ -37,7 +37,6 @@ import { RevolvingFundQueryKeys } from "@/app/src/services/modules/cash-disburse
 import {
   buildCashDisbursementCopyRecordSet,
   findPaymentVoucherCopyCandidates,
-  getPaymentVoucherCopyRatio,
   PaymentVoucherCopyPrefixes,
   scalePaymentVoucherCopyAmount,
   validatePaymentVoucherCopySelection,
@@ -112,6 +111,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
   });
 
   const totals = useMemo(() => calculateRevolvingFundReplenishmentTotals(values.entries), [values.entries]);
+  const selectedPartyCode = values.partyCode.trim();
   const revolvingFundCandidatesQuery = useQuery({
     queryKey: [
       ...RevolvingFundQueryKeys.all,
@@ -119,12 +119,12 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
       "revolving-fund-replenishment",
       activeCompanyId,
       activeBranchId,
-      values.partyCode,
+      selectedPartyCode,
     ],
     queryFn: () =>
       fetchRevolvingFundCopyFromCandidates({
         branchUnitId: activeBranchId,
-        partyCode: values.partyCode,
+        partyCode: selectedPartyCode,
       }),
     enabled: activeCompanyId !== null && mode === RevolvingFundReplenishmentActionModes.Add,
   });
@@ -361,12 +361,14 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
     }
 
     const copiedEntries = selectedFunds.flatMap((record) => {
-      const ratio = getPaymentVoucherCopyRatio(record);
+      return record.details.map((detail) => {
+        const grossAmount = Number(detail.grossAmount || 0);
+        const availableGrossAmount = Number(detail.availableGrossAmount ?? detail.grossAmount ?? 0);
+        const ratio = grossAmount > 0 ? availableGrossAmount / grossAmount : 1;
 
-      return record.details.map((detail) =>
-        createCopiedRevolvingFundReplenishmentEntry({
-          amount: String(scalePaymentVoucherCopyAmount(detail.grossAmount, ratio)),
-          disburseAmount: String(scalePaymentVoucherCopyAmount(detail.disburseAmount, ratio)),
+        return createCopiedRevolvingFundReplenishmentEntry({
+          amount: String(availableGrossAmount),
+          disburseAmount: String(detail.availableAmount ?? scalePaymentVoucherCopyAmount(detail.disburseAmount, ratio)),
           ewtAmount: String(scalePaymentVoucherCopyAmount(detail.ewtAmount, ratio)),
           ewtCode: detail.ewtCode || "",
           ewtPercent: String(detail.ewtPercent || 0),
@@ -382,8 +384,8 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
           vatAmount: String(scalePaymentVoucherCopyAmount(detail.vatAmount, ratio)),
           vatPercent: String(detail.vatPercent || 0),
           vatType: detail.vatType || "",
-        }),
-      );
+        });
+      });
     });
     const firstSource = selectedFunds[0];
 

@@ -25,7 +25,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ChartAccountOptionsResponseDto,
   CreateDisbursementVoucherDto,
+  DisbursementVoucherControllerFindAccountTitleOptionsV1Params,
   DisbursementVoucherControllerFindAllV1Params,
   DisbursementVoucherControllerFindOneV1Params,
   DisbursementVoucherControllerRemoveV1200,
@@ -297,6 +299,99 @@ export function useDisbursementVoucherControllerSuggestTransactionNumberV1<TData
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getDisbursementVoucherControllerSuggestTransactionNumberV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Get disbursement voucher account title options
+ */
+export const disbursementVoucherControllerFindAccountTitleOptionsV1 = (
+    params?: DisbursementVoucherControllerFindAccountTitleOptionsV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<ChartAccountOptionsResponseDto>(
+      {url: `/api/v1/cash-disbursement/disbursement-voucher/account-title-options`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getDisbursementVoucherControllerFindAccountTitleOptionsV1QueryKey = (params?: DisbursementVoucherControllerFindAccountTitleOptionsV1Params,) => {
+    return [
+    `/api/v1/cash-disbursement/disbursement-voucher/account-title-options`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getDisbursementVoucherControllerFindAccountTitleOptionsV1QueryOptions = <TData = Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>, TError = unknown>(params?: DisbursementVoucherControllerFindAccountTitleOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDisbursementVoucherControllerFindAccountTitleOptionsV1QueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>> = ({ signal }) => disbursementVoucherControllerFindAccountTitleOptionsV1(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DisbursementVoucherControllerFindAccountTitleOptionsV1QueryResult = NonNullable<Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>>
+export type DisbursementVoucherControllerFindAccountTitleOptionsV1QueryError = unknown
+
+
+export function useDisbursementVoucherControllerFindAccountTitleOptionsV1<TData = Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>, TError = unknown>(
+ params: undefined |  DisbursementVoucherControllerFindAccountTitleOptionsV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>,
+          TError,
+          Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDisbursementVoucherControllerFindAccountTitleOptionsV1<TData = Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>, TError = unknown>(
+ params?: DisbursementVoucherControllerFindAccountTitleOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>,
+          TError,
+          Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDisbursementVoucherControllerFindAccountTitleOptionsV1<TData = Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>, TError = unknown>(
+ params?: DisbursementVoucherControllerFindAccountTitleOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get disbursement voucher account title options
+ */
+
+export function useDisbursementVoucherControllerFindAccountTitleOptionsV1<TData = Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>, TError = unknown>(
+ params?: DisbursementVoucherControllerFindAccountTitleOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof disbursementVoucherControllerFindAccountTitleOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDisbursementVoucherControllerFindAccountTitleOptionsV1QueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

@@ -1,6 +1,7 @@
 import { PettyCashReplenishmentStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentConstants";
 import { calculatePettyCashFundTotals } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund/PettyCashFundData";
 import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { getEwtPercentFromCode } from "@/app/src/data/shared/tax/TaxData";
 import type { PettyCashFundRecord } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import type {
   PettyCashReplenishmentEntry,
@@ -8,10 +9,10 @@ import type {
   PettyCashReplenishmentRecord,
   PettyCashReplenishmentStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentTypes";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { roundCurrency } from "@/app/src/utils/currency.util";
 import { todayDateValue } from "@/app/src/utils/date.util";
-import { parseTaxPercent } from "@/app/src/utils/percentage.util";
 
 export function createBlankPettyCashReplenishmentEntry(): PettyCashReplenishmentEntry {
   return {
@@ -226,10 +227,11 @@ export function calculatePettyCashReplenishmentEntryTaxFields(
   amountValue: string | number,
   vatType = "",
   ewtCode = "",
+  taxCodes: AlphanumericTaxCode[] = [],
 ): Pick<PettyCashReplenishmentEntry, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "disburseAmount"> {
   const amount = roundCurrency(parseMoneyNumberInput(amountValue));
   const vatPercent = getPettyCashReplenishmentVatPercent(vatType);
-  const ewtPercent = parseTaxPercent(ewtCode);
+  const ewtPercent = getEwtPercentFromCode(ewtCode, taxCodes);
   const vatAmount = roundCurrency((amount * vatPercent) / 100);
   const ewtAmount = roundCurrency((amount * ewtPercent) / 100);
 

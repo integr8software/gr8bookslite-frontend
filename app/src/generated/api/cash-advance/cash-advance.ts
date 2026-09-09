@@ -26,8 +26,10 @@ import type {
 
 import type {
   CashAdvanceControllerFindAllV1Params,
+  CashAdvanceControllerFindCopyFromCandidatesV1Params,
   CashAdvanceControllerRemoveV1200,
   CashAdvanceControllerSuggestTransactionNumberV1Params,
+  CashAdvanceCopyFromCandidatesResponseDto,
   CashAdvanceListResponseDto,
   CashAdvanceSingleResponseDto,
   CreateCashAdvanceDto,
@@ -296,6 +298,99 @@ export function useCashAdvanceControllerSuggestTransactionNumberV1<TData = Await
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getCashAdvanceControllerSuggestTransactionNumberV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Get available Employee Advances for voucher Copy From
+ */
+export const cashAdvanceControllerFindCopyFromCandidatesV1 = (
+    params: CashAdvanceControllerFindCopyFromCandidatesV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<CashAdvanceCopyFromCandidatesResponseDto>(
+      {url: `/api/v1/cash-disbursement/cash-advance/copy-from/candidates`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getCashAdvanceControllerFindCopyFromCandidatesV1QueryKey = (params?: CashAdvanceControllerFindCopyFromCandidatesV1Params,) => {
+    return [
+    `/api/v1/cash-disbursement/cash-advance/copy-from/candidates`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getCashAdvanceControllerFindCopyFromCandidatesV1QueryOptions = <TData = Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError = unknown>(params: CashAdvanceControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getCashAdvanceControllerFindCopyFromCandidatesV1QueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>> = ({ signal }) => cashAdvanceControllerFindCopyFromCandidatesV1(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type CashAdvanceControllerFindCopyFromCandidatesV1QueryResult = NonNullable<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>>
+export type CashAdvanceControllerFindCopyFromCandidatesV1QueryError = unknown
+
+
+export function useCashAdvanceControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: CashAdvanceControllerFindCopyFromCandidatesV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCashAdvanceControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: CashAdvanceControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCashAdvanceControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: CashAdvanceControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get available Employee Advances for voucher Copy From
+ */
+
+export function useCashAdvanceControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: CashAdvanceControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getCashAdvanceControllerFindCopyFromCandidatesV1QueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

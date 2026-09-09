@@ -107,9 +107,10 @@ export function RevolvingFundReplenishmentDetailEntryTable({
         page,
         responsibilityCenterOptions,
         supplierOptions,
+        taxCodes,
         vatOptions,
       }),
-    [columnLabels, columnWidths, ewtOptions, onOpenSupplierDrawer, page, responsibilityCenterOptions, supplierOptions, vatOptions],
+    [columnLabels, columnWidths, ewtOptions, onOpenSupplierDrawer, page, responsibilityCenterOptions, supplierOptions, taxCodes, vatOptions],
   );
 
   const columns = useMemo(

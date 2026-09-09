@@ -4,12 +4,14 @@ import {
   JournalVoucherActionCopy,
   JournalVoucherHref,
 } from "@/app/src/constants/modules/general-journal/journal-voucher/JournalVoucherConstants";
+import { JournalVoucherCopySources } from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherCopyFromData";
 import type { useJournalVoucherFormPage } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucherFormPage";
 import {
   ModuleHeader,
   moduleHeaderActionClassNames,
 } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
+import { AppCopyFromDropdown } from "@/app/src/ui/shared/transaction-setup/AppCopyFromDropdown";
 
 type JournalVoucherHeaderPageProps = {
   onPreview?: () => void;
@@ -64,6 +66,11 @@ export function JournalVoucherHeaderPage({
           ) : null}
           {!page.isReadonly && page.mode !== "view" ? (
             <>
+              <AppCopyFromDropdown
+                records={page.copyFromRecords}
+                sources={JournalVoucherCopySources}
+                onApply={page.copyFromPaymentVouchers}
+              />
               {page.mode === "edit" ? (
                 <button
                   type="button"

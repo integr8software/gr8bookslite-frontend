@@ -6,9 +6,9 @@ import type {
   PettyCashFundStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
 import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
-import { calculateTaxAmounts } from "@/app/src/data/shared/tax/TaxData";
+import { getEwtPercentFromCode } from "@/app/src/data/shared/tax/TaxData";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import { todayDateValue } from "@/app/src/utils/date.util";
-import { parseTaxPercent } from "@/app/src/utils/percentage.util";
 
 export function createBlankPettyCashFundItem(): PettyCashFundItem {
   return {
@@ -119,23 +119,21 @@ export function calculatePettyCashFundItemTaxFields(
   amountValue: string | number,
   vatType = "",
   ewtCode = "",
+  taxCodes: AlphanumericTaxCode[] = [],
 ): Pick<PettyCashFundItem, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "disburseAmount" | "grossAmount"> {
   const amount = roundPettyCashTaxAmount(parseMoneyNumberInput(amountValue));
   const vatPercent = getPettyCashFundVatPercent(vatType);
-  const ewtPercent = getPettyCashFundEwtPercent(ewtCode);
-  const taxAmounts = calculateTaxAmounts({
-    grossAmount: amount,
-    taxRate: vatPercent,
-    ewtRate: ewtPercent,
-  });
+  const ewtPercent = getEwtPercentFromCode(ewtCode, taxCodes);
+  const vatAmount = roundPettyCashTaxAmount((amount * vatPercent) / 100);
+  const ewtAmount = roundPettyCashTaxAmount((amount * ewtPercent) / 100);
 
   return {
-    netAmount: formatPettyCashFundAmount(taxAmounts.netAmount),
+    netAmount: formatPettyCashFundAmount(Math.max(amount - vatAmount, 0)),
     vatPercent: vatPercent ? `${formatPettyCashFundAmount(vatPercent)}%` : "",
-    vatAmount: formatPettyCashFundAmount(taxAmounts.vatAmount),
+    vatAmount: formatPettyCashFundAmount(vatAmount),
     ewtPercent: ewtPercent ? `${formatPettyCashFundAmount(ewtPercent)}%` : "",
-    ewtAmount: formatPettyCashFundAmount(taxAmounts.ewtAmount),
-    disburseAmount: formatPettyCashFundAmount(taxAmounts.totalAmountDue),
+    ewtAmount: formatPettyCashFundAmount(ewtAmount),
+    disburseAmount: formatPettyCashFundAmount(Math.max(amount - ewtAmount, 0)),
     grossAmount: formatPettyCashFundAmount(amount),
   };
 }
@@ -189,10 +187,6 @@ function getPettyCashFundVatPercent(vatType: string) {
   const match = normalized.match(/(\d+(?:\.\d+)?)/);
   if (match) return Number.parseFloat(match[1]);
   return 0;
-}
-
-function getPettyCashFundEwtPercent(ewtCode: string) {
-  return parseTaxPercent(ewtCode);
 }
 
 function roundPettyCashTaxAmount(value: number) {

@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   InitialAppDisbursementTypeRecords,
   type AppDisbursementTypeRecord,
@@ -14,9 +15,16 @@ import {
   OfficialReceiptActionTabs,
   OfficialReceiptHref,
 } from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
+import {
+  buildJournalVoucherCopyFromRecords,
+  JournalVoucherCopyFromSource,
+} from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherCopyFromData";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { fetchJournalVoucherCopyFromCandidates } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherService";
+import { JournalVoucherQueryKeys } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherQueryKeys";
 import type {
   OfficialReceiptActionMode,
   OfficialReceiptActionTab,
@@ -76,6 +84,24 @@ export function OfficialReceiptActionPage<TReceipt>({
   const isReadonly = mode === "view";
   const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
   const [activeTab, setActiveTab] = useState<OfficialReceiptActionTab>("details");
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const journalVoucherCopyFromCandidatesQuery = useQuery({
+    queryKey: JournalVoucherQueryKeys.copyFromCandidates("official-receipt", activeCompanyId, activeBranchId),
+    queryFn: () =>
+      fetchJournalVoucherCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        target: "official-receipt",
+      }),
+    enabled: activeCompanyId !== null && activeBranchId !== null && !isReadonly,
+  });
+  const journalVoucherCopyFromRecords = buildJournalVoucherCopyFromRecords(
+    journalVoucherCopyFromCandidatesQuery.data ?? [],
+  ) as OfficialReceiptCopyFromRecord[];
+  const copyFromRecordsWithJournalVoucher = [...(copyFromRecords ?? []), ...journalVoucherCopyFromRecords];
+  const copyFromSourcesWithJournalVoucher = copyFromSources?.includes(JournalVoucherCopyFromSource)
+    ? copyFromSources
+    : [...(copyFromSources ?? []), JournalVoucherCopyFromSource];
   const receiptForm = useOfficialReceiptActionForm(
     mode,
     recordId,
@@ -84,7 +110,7 @@ export function OfficialReceiptActionPage<TReceipt>({
     },
     {
       api,
-      copyFromRecords,
+      copyFromRecords: copyFromRecordsWithJournalVoucher,
       receiptLabel: receiptLabel.toLowerCase(),
       storageKey,
     },
@@ -125,8 +151,8 @@ export function OfficialReceiptActionPage<TReceipt>({
       <section className="grid gap-5">
         <OfficialReceiptActionHeader
           baseHref={baseHref}
-          copyFromRecords={copyFromRecords}
-          copyFromSources={copyFromSources}
+          copyFromRecords={copyFromRecordsWithJournalVoucher} // Initial
+          copyFromSources={copyFromSourcesWithJournalVoucher} // Initial
           mode={mode}
           receiptLabel={receiptLabel}
           values={receiptForm.values}

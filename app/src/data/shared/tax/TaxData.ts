@@ -127,6 +127,14 @@ export function getEwtPercentFromCode(value: string, taxCodes: AlphanumericTaxCo
     return knownAtcRates[normalized];
   }
 
+  const percentMatch = clean.match(/(\d+(?:\.\d+)?)\s*%/);
+  if (percentMatch) {
+    const parsed = Number.parseFloat(percentMatch[1]);
+    if (Number.isFinite(parsed) && parsed > 0 && parsed <= 100) {
+      return parsed;
+    }
+  }
+
   return parsePercentage(value);
 }
 

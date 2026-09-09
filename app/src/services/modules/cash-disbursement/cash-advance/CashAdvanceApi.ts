@@ -1,6 +1,7 @@
 import {
   cashAdvanceControllerCreateV1,
   cashAdvanceControllerFindAllV1,
+  cashAdvanceControllerFindCopyFromCandidatesV1,
   cashAdvanceControllerFindOneV1,
   cashAdvanceControllerRemoveV1,
   cashAdvanceControllerSubmitApprovalV1,
@@ -10,6 +11,8 @@ import {
 } from "@/app/src/generated/api/cash-advance/cash-advance";
 import type {
   CashAdvanceControllerFindAllV1Params,
+  CashAdvanceControllerFindCopyFromCandidatesV1Params,
+  CashAdvanceCopyFromCandidateDto,
   CashAdvanceDto,
   CashAdvanceListResponseDto,
   CashAdvanceSingleResponseDto,
@@ -21,6 +24,7 @@ import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-nu
 import { fetchPostingAccountLookupOptions } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartOfAccountsLookupApi";
 import { fetchResponsibilityCenterLookupOptions } from "@/app/src/services/modules/financial-maintenance/responsibility-center/ResponsibilityCenterLookupApi";
 import { fetchPartyLookupOptions } from "@/app/src/services/modules/party-management/PartyLookupApi";
+import { cleanCopyFromQueryParams } from "@/app/src/utils/query.util";
 import type {
   CashAdvanceAccountDropdownOption,
   CashAdvancePartyDropdownOption,
@@ -32,6 +36,8 @@ import type {
 type ApiCashAdvanceStatus = UpdateCashAdvanceStatusDtoStatus | string;
 type FetchCashAdvanceListParams = CashAdvanceControllerFindAllV1Params;
 type FetchCashAdvanceListResponse = Omit<CashAdvanceListResponseDto, "data"> & { data: CashAdvanceRecord[] };
+
+export type CashAdvanceCopyFromCandidate = CashAdvanceCopyFromCandidateDto;
 
 export async function fetchCashAdvanceList(params?: FetchCashAdvanceListParams): Promise<FetchCashAdvanceListResponse> {
   const response = await cashAdvanceControllerFindAllV1({
@@ -144,6 +150,25 @@ export async function fetchCashAdvanceResponsibilityCenters(): Promise<{
 
 export async function fetchNextCashAdvanceTransactionNo(): Promise<string> {
   return fetchTransactionNumber(cashAdvanceControllerSuggestTransactionNumberV1);
+}
+
+export async function fetchCashAdvanceCopyFromCandidates(query: {
+  branchUnitId?: number | null;
+  partyCode?: string;
+  partyName?: string;
+  target: "cash-voucher" | "disbursement-voucher";
+}): Promise<CashAdvanceCopyFromCandidate[]> {
+  const params = cleanCopyFromQueryParams({
+    branchUnitId: query.branchUnitId ?? undefined,
+    limit: 100,
+    page: 1,
+    partyCode: query.partyCode,
+    partyName: query.partyName,
+    target: query.target,
+  }) as CashAdvanceControllerFindCopyFromCandidatesV1Params;
+  const response = await cashAdvanceControllerFindCopyFromCandidatesV1(params);
+
+  return response.records;
 }
 
 export async function fetchCashAdvanceById(id: string): Promise<CashAdvanceRecord> {

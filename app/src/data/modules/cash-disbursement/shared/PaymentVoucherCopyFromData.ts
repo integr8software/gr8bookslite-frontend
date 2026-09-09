@@ -1,12 +1,17 @@
 import type { AccountsPayableVoucherCopyFromCandidate } from "@/app/src/services/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherApi";
 import type { AdvanceToSupplierCopyFromCandidate } from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersApi";
+import type { CashAdvanceCopyFromCandidate } from "@/app/src/services/modules/cash-disbursement/cash-advance/CashAdvanceApi";
 import type { PettyCashReplenishmentCopyFromCandidate } from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentApi";
 import type { RevolvingFundReplenishmentCopyFromCandidate } from "@/app/src/services/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentApi";
+import type { JournalVoucherCopyFromCandidate } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherService";
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 
 export const PaymentVoucherCopyPrefixes = {
   AccountsPayableVoucher: "APV",
   AdvancesToSuppliers: "ATS",
+  CashAdvance: "CA",
+  CashAdvanceMultipleEntry: "CAME",
+  JournalVoucher: "JV",
   PettyCashFund: "PCF",
   PettyCashReplenishment: "PCR",
   PettyCashVoucher: "PCV",
@@ -32,6 +37,7 @@ type PaymentVoucherCopyRecordOptions<TCandidate extends PaymentVoucherCopyCandid
   copiedReferences: Set<string>;
   prefix: string;
   source: string;
+  getReferencePrefix?: (candidate: TCandidate) => string;
   getRemarks?: (candidate: TCandidate) => string;
   isAlreadyAdded?: (candidate: TCandidate) => boolean;
 };
@@ -39,13 +45,17 @@ type PaymentVoucherCopyRecordOptions<TCandidate extends PaymentVoucherCopyCandid
 export function buildPaymentVoucherCopyFromRecords({
   accountsPayableVouchers,
   advancesToSuppliers,
+  cashAdvances,
   copiedReferences,
+  journalVouchers = [],
   pettyCashReplenishments,
   revolvingFundReplenishments,
 }: {
   accountsPayableVouchers: AccountsPayableVoucherCopyFromCandidate[];
   advancesToSuppliers: AdvanceToSupplierCopyFromCandidate[];
+  cashAdvances: CashAdvanceCopyFromCandidate[];
   copiedReferences: Set<string>;
+  journalVouchers?: JournalVoucherCopyFromCandidate[];
   pettyCashReplenishments: PettyCashReplenishmentCopyFromCandidate[];
   revolvingFundReplenishments: RevolvingFundReplenishmentCopyFromCandidate[];
 }): AppCopyFromRecord[] {
@@ -64,6 +74,25 @@ export function buildPaymentVoucherCopyFromRecords({
       prefix: PaymentVoucherCopyPrefixes.AdvancesToSuppliers,
       source: "Advances to Suppliers",
     }),
+    ...buildCashDisbursementCopyRecordSet({
+      candidates: cashAdvances,
+      copiedReferences,
+      getReferencePrefix: (advance) => advance.referencePrefix,
+      getRemarks: (advance) => advance.remarks || "",
+      prefix: PaymentVoucherCopyPrefixes.CashAdvance,
+      source: "Employee Advance",
+    }),
+    ...journalVouchers.map((journalVoucher) => ({
+      amount: formatPaymentVoucherCopyAmount(journalVoucher.availableAmount),
+      disabled: copiedReferences.has(journalVoucher.id),
+      disabledReason: copiedReferences.has(journalVoucher.id) ? "Already added" : undefined,
+      documentDate: journalVoucher.documentDate,
+      id: journalVoucher.id,
+      partyName: journalVoucher.partyName ?? undefined,
+      remarks: journalVoucher.particulars ?? journalVoucher.refNo ?? undefined,
+      source: "Journal Voucher",
+      sourceNo: journalVoucher.id,
+    })),
     ...buildCashDisbursementCopyRecordSet({
       candidates: pettyCashReplenishments,
       copiedReferences,
@@ -90,6 +119,7 @@ export function findPaymentVoucherCopyCandidates<TCandidate extends PaymentVouch
 export function validatePaymentVoucherCopySelection<TCandidate extends PaymentVoucherCopyCandidate>({
   copiedReferences,
   duplicateMessage,
+  getReferencePrefix,
   mixedCurrencyMessage,
   mixedPartyMessage,
   prefix,
@@ -97,12 +127,17 @@ export function validatePaymentVoucherCopySelection<TCandidate extends PaymentVo
 }: {
   copiedReferences: Set<string>;
   duplicateMessage: string;
+  getReferencePrefix?: (candidate: TCandidate) => string;
   mixedCurrencyMessage: (currency: string) => string;
   mixedPartyMessage: (partyName: string) => string;
   prefix: string;
   records: TCandidate[];
 }) {
-  if (records.some((record) => isPaymentVoucherCopyAlreadyAdded(record, prefix, copiedReferences))) {
+  if (
+    records.some((record) =>
+      isPaymentVoucherCopyAlreadyAdded(record, getReferencePrefix ? getReferencePrefix(record) : prefix, copiedReferences),
+    )
+  ) {
     return duplicateMessage;
   }
 
@@ -150,6 +185,13 @@ export function roundCashDisbursementCopyAmount(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
+function formatPaymentVoucherCopyAmount(value: number | string | null | undefined) {
+  return new Intl.NumberFormat("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(value || 0));
+}
+
 export function getPaymentVoucherCopiedDisburseAmount<TEntry extends { debit?: number; taxDetails?: { amount?: number | string } }>(
   entries: TEntry[],
   isGeneratedEntry: (entry: TEntry) => boolean,
@@ -174,13 +216,17 @@ export function getEditablePaymentVoucherCopyEntries<TEntry extends { accountCod
 export function buildCashDisbursementCopyRecordSet<TCandidate extends PaymentVoucherCopyCandidate>({
   candidates,
   copiedReferences,
+  getReferencePrefix,
   getRemarks,
   isAlreadyAdded,
   prefix,
   source,
 }: PaymentVoucherCopyRecordOptions<TCandidate>): AppCopyFromRecord[] {
   return candidates.map((candidate) => {
-    const disabled = isAlreadyAdded ? isAlreadyAdded(candidate) : isPaymentVoucherCopyAlreadyAdded(candidate, prefix, copiedReferences);
+    const referencePrefix = getReferencePrefix ? getReferencePrefix(candidate) : prefix;
+    const disabled = isAlreadyAdded
+      ? isAlreadyAdded(candidate)
+      : isPaymentVoucherCopyAlreadyAdded(candidate, referencePrefix, copiedReferences);
 
     return {
       amount: String(candidate.availableGrossAmount || 0),
@@ -196,11 +242,7 @@ export function buildCashDisbursementCopyRecordSet<TCandidate extends PaymentVou
   });
 }
 
-function isPaymentVoucherCopyAlreadyAdded(
-  candidate: PaymentVoucherCopyCandidate,
-  prefix: string,
-  copiedReferences: Set<string>,
-) {
+function isPaymentVoucherCopyAlreadyAdded(candidate: PaymentVoucherCopyCandidate, prefix: string, copiedReferences: Set<string>) {
   return (
     copiedReferences.has(`${prefix}:${candidate.transactionNo}`) ||
     copiedReferences.has(candidate.transactionNo) ||

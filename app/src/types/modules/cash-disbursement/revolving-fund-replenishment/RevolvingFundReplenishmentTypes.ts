@@ -65,6 +65,7 @@ export type RevolvingFundReplenishmentDetailEntryColumnsParams = {
   supplierOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
   vatOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
   ewtOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
+  taxCodes?: import("@/app/src/types/shared/tax/AlphanumericTaxCodeTypes").AlphanumericTaxCode[];
   responsibilityCenterOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
   onOpenSupplierDrawer?: RevolvingFundReplenishmentOpenSupplierDrawerHandler;
 };

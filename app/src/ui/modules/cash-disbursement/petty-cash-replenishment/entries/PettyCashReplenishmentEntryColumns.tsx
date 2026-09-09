@@ -23,6 +23,7 @@ export function createPettyCashReplenishmentLineColumns({
   page,
   responsibilityCenterOptions = [],
   supplierOptions = [],
+  taxCodes = [],
   vatOptions = [],
 }: PettyCashReplenishmentDetailEntryColumnsParams): Record<
   PettyCashReplenishmentEntryColumnId,
@@ -92,7 +93,7 @@ export function createPettyCashReplenishmentLineColumns({
           const ewtCode = id === "ewtCode" ? value : row.ewtCode;
           page.updateEntry(row.id, {
             [id]: value,
-            ...calculatePettyCashReplenishmentEntryTaxFields(row.amount, vatType, ewtCode),
+            ...calculatePettyCashReplenishmentEntryTaxFields(row.amount, vatType, ewtCode, taxCodes),
           });
         }}
       />
@@ -149,7 +150,7 @@ export function createPettyCashReplenishmentLineColumns({
               supplierName: selectedSupplier?.name ?? String(value),
               vatType,
               ewtCode,
-              ...calculatePettyCashReplenishmentEntryTaxFields(row.amount, vatType, ewtCode),
+              ...calculatePettyCashReplenishmentEntryTaxFields(row.amount, vatType, ewtCode, taxCodes),
             });
           }}
         />
@@ -158,7 +159,7 @@ export function createPettyCashReplenishmentLineColumns({
     amount: money("amount", (row, value) =>
       page.updateEntry(row.id, {
         amount: value,
-        ...calculatePettyCashReplenishmentEntryTaxFields(value, row.vatType, row.ewtCode),
+        ...calculatePettyCashReplenishmentEntryTaxFields(value, row.vatType, row.ewtCode, taxCodes),
       }),
     ),
     netAmount: calculatedMoney("netAmount"),

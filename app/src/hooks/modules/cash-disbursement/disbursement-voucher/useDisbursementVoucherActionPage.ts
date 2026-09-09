@@ -87,6 +87,11 @@ import {
 } from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersApi";
 import { AdvancesToSuppliersQueryKeys } from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersQueryKeys";
 import {
+  fetchCashAdvanceCopyFromCandidates,
+  type CashAdvanceCopyFromCandidate,
+} from "@/app/src/services/modules/cash-disbursement/cash-advance/CashAdvanceApi";
+import { CashAdvanceQueryKeys } from "@/app/src/services/modules/cash-disbursement/cash-advance/CashAdvanceQueryKeys";
+import {
   fetchPettyCashReplenishmentCopyFromCandidates,
   type PettyCashReplenishmentCopyFromCandidate,
 } from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentApi";
@@ -96,6 +101,11 @@ import {
   type RevolvingFundReplenishmentCopyFromCandidate,
 } from "@/app/src/services/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentApi";
 import { RevolvingFundReplenishmentQueryKeys } from "@/app/src/services/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentQueryKeys";
+import {
+  fetchJournalVoucherCopyFromCandidates,
+  type JournalVoucherCopyFromCandidate,
+} from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherService";
+import { JournalVoucherQueryKeys } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherQueryKeys";
 import {
   createDisbursementVoucherApi,
   fetchDisbursementVoucherById,
@@ -243,6 +253,27 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     () => advanceToSupplierCopyFromCandidatesQuery.data ?? [],
     [advanceToSupplierCopyFromCandidatesQuery.data],
   );
+  const cashAdvanceCopyFromCandidatesQuery = useQuery({
+    queryKey: CashAdvanceQueryKeys.copyFromCandidates(
+      "disbursement-voucher",
+      activeCompanyId,
+      activeBranchId,
+      copyFromPartyCode,
+      copyFromPartyName,
+    ),
+    queryFn: () =>
+      fetchCashAdvanceCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        partyCode: copyFromPartyCode,
+        partyName: copyFromPartyName,
+        target: "disbursement-voucher",
+      }),
+    enabled: activeCompanyId !== null,
+  });
+  const cashAdvanceCopyFromCandidates = useMemo(
+    () => cashAdvanceCopyFromCandidatesQuery.data ?? [],
+    [cashAdvanceCopyFromCandidatesQuery.data],
+  );
   const pettyCashReplenishmentCopyFromCandidatesQuery = useQuery({
     queryKey: [
       ...PettyCashReplenishmentQueryKeys.all,
@@ -299,16 +330,47 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       ),
     [values.lineEntries],
   );
+  const journalVoucherCopyFromCandidatesQuery = useQuery({
+    queryKey: JournalVoucherQueryKeys.copyFromCandidates(
+      "disbursement-voucher",
+      activeCompanyId,
+      activeBranchId,
+      copyFromPartyCode,
+      copyFromPartyName,
+    ),
+    queryFn: () =>
+      fetchJournalVoucherCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        partyCode: copyFromPartyCode,
+        partyName: copyFromPartyName,
+        target: "disbursement-voucher",
+      }),
+    enabled: activeCompanyId !== null,
+  });
+  const journalVoucherCopyFromCandidates = useMemo(
+    () => journalVoucherCopyFromCandidatesQuery.data ?? [],
+    [journalVoucherCopyFromCandidatesQuery.data],
+  );
   const copyFromRecords = useMemo(
     () =>
       buildPaymentVoucherCopyFromRecords({
         accountsPayableVouchers: apvCopyFromCandidates,
         advancesToSuppliers: atsCopyFromCandidates,
+        cashAdvances: cashAdvanceCopyFromCandidates,
         copiedReferences: copiedApvReferences,
+        journalVouchers: journalVoucherCopyFromCandidates,
         pettyCashReplenishments: pcrCopyFromCandidates,
         revolvingFundReplenishments: rfrCopyFromCandidates,
       }),
-    [apvCopyFromCandidates, atsCopyFromCandidates, copiedApvReferences, pcrCopyFromCandidates, rfrCopyFromCandidates],
+    [
+      apvCopyFromCandidates,
+      atsCopyFromCandidates,
+      cashAdvanceCopyFromCandidates,
+      copiedApvReferences,
+      journalVoucherCopyFromCandidates,
+      pcrCopyFromCandidates,
+      rfrCopyFromCandidates,
+    ],
   );
   const { partyOptions, paymentTypeRecords, projectOptions, responsibilityCenterOptions } = useDisbursementVoucherDetailsLookups(values);
 
@@ -1141,6 +1203,22 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       return;
     }
 
+    const selectedEmployeeAdvances = findPaymentVoucherCopyCandidates(
+      cashAdvanceCopyFromCandidates,
+      PaymentVoucherCopyPrefixes.CashAdvance,
+      recordIds,
+    );
+    if (selectedEmployeeAdvances.length > 0) {
+      copyFromEmployeeAdvances(selectedEmployeeAdvances);
+      return;
+    }
+
+    const selectedJournalVouchers = journalVoucherCopyFromCandidates.filter((record) => recordIds.includes(record.id));
+    if (selectedJournalVouchers.length > 0) {
+      copyFromJournalVouchers(selectedJournalVouchers);
+      return;
+    }
+
     const selectedApvs = findPaymentVoucherCopyCandidates(
       apvCopyFromCandidates,
       PaymentVoucherCopyPrefixes.AccountsPayableVoucher,
@@ -1304,6 +1382,73 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     }));
 
     toast.success(`Copied ${selectedApvs.length} Accounts Payable Voucher${selectedApvs.length > 1 ? "s" : ""}.`);
+  }
+
+  function copyFromJournalVouchers(selectedRecords: JournalVoucherCopyFromCandidate[]) {
+    const selectionError = validatePaymentVoucherCopySelection({
+      copiedReferences: copiedApvReferences,
+      duplicateMessage: "The selected Journal Voucher has already been added.",
+      mixedCurrencyMessage: (currency) => `All selected Journal Vouchers must have the same Currency ("${currency}").`,
+      mixedPartyMessage: (partyName) => `All selected Journal Vouchers must belong to the same Party ("${partyName}").`,
+      prefix: PaymentVoucherCopyPrefixes.JournalVoucher,
+      records: selectedRecords,
+    });
+    if (selectionError) {
+      toast.error(selectionError);
+      return;
+    }
+
+    const firstRecord = selectedRecords[0];
+    const copiedEntries = selectedRecords.map((record) =>
+      createBlankDisbursementLineEntry({
+        accountCode: record.accountCode,
+        accountName: record.accountTitle,
+        credit: 0,
+        debit: record.availableAmount,
+        particulars: record.particulars || `Payment for ${record.id}`,
+        partyCode: record.partyCode ?? "",
+        partyName: record.partyName ?? "",
+        refId: record.id,
+        responsibilityCenter: record.responsibilityCenter ?? "",
+        status: "Balanced",
+        taxDetails: {
+          ...createTaxDetails(record.availableAmount, "0%"),
+          amount: record.availableAmount,
+          grossAmount: record.availableAmount,
+          netAmount: record.availableAmount,
+          refId: record.id,
+          responsibilityCenter: record.responsibilityCenter ?? "",
+        },
+        taxRate: "0%",
+      }),
+    );
+
+    setValues((current) => {
+      const existingEditableEntries = getEditablePaymentVoucherCopyEntries(current.lineEntries, isGeneratedAccountingEntry);
+      const mergedEntries = existingEditableEntries.length > 0 ? [...existingEditableEntries, ...copiedEntries] : copiedEntries;
+      const automaticEntries = createAutomaticEntriesForPayment(mergedEntries);
+      const nextAmount = getPaymentVoucherCopiedDisburseAmount(mergedEntries, isGeneratedAccountingEntry, roundHydratedDisbursementVoucherAmount);
+
+      return {
+        ...current,
+        amount: nextAmount.toFixed(2),
+        currency: (firstRecord.currency || current.currency) as VoucherCurrency,
+        fxRate: String(firstRecord.exchangeRate || current.fxRate || "1.00"),
+        lineEntries: automaticEntries,
+        partyCode: firstRecord.partyCode || current.partyCode,
+        partyName: firstRecord.partyName || current.partyName,
+        referenceModule: "Journal Voucher",
+        remarks: firstRecord.particulars || current.remarks,
+        taxDetails: createTaxDetails(nextAmount, "0%"),
+        taxRate: "0%",
+        voucherReferenceNo: mergeUniqueTextValues(
+          current.voucherReferenceNo,
+          selectedRecords.map((record) => record.id),
+        ),
+      };
+    });
+    setErrors((current) => ({ ...current, amount: undefined, lineEntries: undefined, partyCode: undefined, partyName: undefined }));
+    toast.success(`Copied ${selectedRecords.length} Journal Voucher line${selectedRecords.length > 1 ? "s" : ""}.`);
   }
 
   function copyFromPettyCashReplenishment(selectedPcrs: PettyCashReplenishmentCopyFromCandidate[]) {
@@ -1574,6 +1719,87 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       voucherReferenceNo: undefined,
     }));
     toast.success(`Copied ${selectedRfrs.length} Revolving Fund Replenishment${selectedRfrs.length > 1 ? "s" : ""}.`);
+  }
+
+  function copyFromEmployeeAdvances(selectedAdvances: CashAdvanceCopyFromCandidate[]) {
+    const selectionError = validatePaymentVoucherCopySelection({
+      copiedReferences: copiedApvReferences,
+      duplicateMessage: "The selected Employee Advance has already been added.",
+      getReferencePrefix: (advance) => advance.referencePrefix,
+      mixedCurrencyMessage: (currency) => `All selected Employee Advances must have the same Currency ("${currency}").`,
+      mixedPartyMessage: (partyName) => `All selected Employee Advances must belong to the same Party ("${partyName}").`,
+      prefix: PaymentVoucherCopyPrefixes.CashAdvance,
+      records: selectedAdvances,
+    });
+    if (selectionError) {
+      toast.error(selectionError);
+      return;
+    }
+
+    const firstAdvance = selectedAdvances[0];
+    const advanceReferences = selectedAdvances.map((advance) => `${advance.referencePrefix}:${advance.transactionNo}`);
+    const copiedEntries: DisbursementLineEntry[] = selectedAdvances.map((advance) => {
+      const refId = `${advance.referencePrefix}:${advance.transactionNo}`;
+      const disburseAmount = Number(advance.availableAmount) || 0;
+      const particulars = advance.remarks || `Payment for ${advance.referencePrefix} ${advance.transactionNo}`;
+
+      return createBlankDisbursementLineEntry({
+        accountCode: advance.details[0]?.accountCode || "1130-CA",
+        accountName: advance.details[0]?.accountTitle || "Employee Advance",
+        credit: 0,
+        debit: disburseAmount,
+        particulars,
+        partyCode: advance.partyCode,
+        partyName: advance.partyName,
+        refId,
+        remarks: particulars,
+        responsibilityCenter: advance.projectCode || advance.projectName || "",
+        status: "Balanced",
+        taxDetails: { ...createTaxDetails(disburseAmount, "0%"), amount: disburseAmount, grossAmount: disburseAmount, refId },
+        taxRate: "0%",
+        vatType: "",
+      });
+    });
+
+    setValues((current) => {
+      const existingEditableEntries = getEditablePaymentVoucherCopyEntries(current.lineEntries, isGeneratedAccountingEntry);
+      const mergedEntries = existingEditableEntries.length > 0 ? [...existingEditableEntries, ...copiedEntries] : copiedEntries;
+      const automaticEntries = createAutomaticEntriesForPayment(mergedEntries);
+      const nextAmount = getDisbursementVoucherCopiedDisburseAmount(mergedEntries);
+
+      return {
+        ...current,
+        amount: nextAmount.toFixed(2),
+        costCenter: current.projectCode || firstAdvance.projectCode || firstAdvance.projectName || current.costCenter,
+        currency: firstAdvance.currency || current.currency || "PHP",
+        fxRate: String(firstAdvance.exchangeRate || current.fxRate || "1.00"),
+        lineEntries: automaticEntries,
+        partyCode: current.partyCode || firstAdvance.partyCode || "",
+        partyName: current.partyName || firstAdvance.partyName || "",
+        projectCode: current.projectCode || firstAdvance.projectCode || "",
+        projectName: current.projectName || firstAdvance.projectName || "",
+        referenceModule: "Employee Advance",
+        remarks:
+          current.remarks ||
+          selectedAdvances
+            .map((advance) => advance.remarks)
+            .filter(Boolean)
+            .join("; ") ||
+          `Payment for Employee Advance ${selectedAdvances.map((advance) => advance.transactionNo).join(", ")}`,
+        taxDetails: createTaxDetails(nextAmount, "0%"),
+        taxRate: "0%",
+        voucherReferenceNo: mergeUniqueTextValues(current.voucherReferenceNo, advanceReferences),
+      };
+    });
+    setErrors((current) => ({
+      ...current,
+      amount: undefined,
+      lineEntries: undefined,
+      partyCode: undefined,
+      partyName: undefined,
+      voucherReferenceNo: undefined,
+    }));
+    toast.success(`Copied ${selectedAdvances.length} Employee Advance${selectedAdvances.length > 1 ? "s" : ""}.`);
   }
 
   function copyFromAdvancesToSuppliers(selectedAtsRecords: AdvanceToSupplierCopyFromCandidate[]) {

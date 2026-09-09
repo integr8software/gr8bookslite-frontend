@@ -6289,6 +6289,7 @@ export interface ApprovalTransactionResponseDto {
   moduleScope: string;
   moduleName: string;
   referenceNo: string;
+  referenceId?: string;
   remarks: string;
   ruleId: string;
   ruleName: string;
@@ -7190,12 +7191,16 @@ export type UpdateAccountsPayableVoucherStatusDtoStatus = typeof UpdateAccountsP
 
 export const UpdateAccountsPayableVoucherStatusDtoStatus = {
   DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
   APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CLOSED: 'CLOSED',
   CANCELLED: 'CANCELLED',
   Draft: 'Draft',
+  For_Approval: 'For Approval',
   Approved: 'Approved',
+  Posted: 'Posted',
   Disapproved: 'Disapproved',
   Closed: 'Closed',
   Cancelled: 'Cancelled',
@@ -7208,6 +7213,54 @@ export interface UpdateAccountsPayableVoucherStatusDto {
      * @nullable
      */
   reason?: string | null;
+}
+
+export type JournalVoucherCopyFromCandidateDtoSide = typeof JournalVoucherCopyFromCandidateDtoSide[keyof typeof JournalVoucherCopyFromCandidateDtoSide];
+
+
+export const JournalVoucherCopyFromCandidateDtoSide = {
+  debit: 'debit',
+  credit: 'credit',
+} as const;
+
+export interface JournalVoucherCopyFromCandidateDto {
+  id: string;
+  source: string;
+  sourceNo: string;
+  transactionNo: string;
+  lineNumber: number;
+  documentDate: string;
+  branchUnitId: number;
+  currency: string;
+  exchangeRate: number;
+  /** @nullable */
+  partyCode: string | null;
+  /** @nullable */
+  partyName: string | null;
+  accountCode: string;
+  accountTitle: string;
+  /** @nullable */
+  particulars: string | null;
+  /** @nullable */
+  refNo: string | null;
+  /** @nullable */
+  responsibilityCenter: string | null;
+  amount: number;
+  consumedAmount: number;
+  availableAmount: number;
+  side: JournalVoucherCopyFromCandidateDtoSide;
+}
+
+export type JournalVoucherCopyFromCandidatesResponseDtoPagination = {
+  limit: number;
+  page: number;
+  total: number;
+  totalPages: number;
+};
+
+export interface JournalVoucherCopyFromCandidatesResponseDto {
+  records: JournalVoucherCopyFromCandidateDto[];
+  pagination: JournalVoucherCopyFromCandidatesResponseDtoPagination;
 }
 
 export interface JournalVoucherLineDto {
@@ -11424,10 +11477,10 @@ export type AdvanceToSupplierResponseDtoStatus = typeof AdvanceToSupplierRespons
 export const AdvanceToSupplierResponseDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
-  DISAPPROVED: 'DISAPPROVED',
   POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface AdvanceToSupplierResponseDto {
@@ -11535,16 +11588,21 @@ export interface AdvanceToSupplierCopyFromCandidateDto {
   details: AdvanceToSupplierCopyFromCandidateDetailDto[];
 }
 
-export type AdvanceToSupplierCopyFromCandidatesResponseDtoPagination = {
+export interface PaginationMetaDto {
+  /** @minimum 1 */
   page: number;
+  /** @minimum 1 */
   limit: number;
+  /** @minimum 0 */
   total: number;
+  /** @minimum 0 */
   totalPages: number;
-};
+}
 
 export interface AdvanceToSupplierCopyFromCandidatesResponseDto {
   records: AdvanceToSupplierCopyFromCandidateDto[];
-  pagination: AdvanceToSupplierCopyFromCandidatesResponseDtoPagination;
+  /** Pagination metadata */
+  pagination: PaginationMetaDto;
 }
 
 export type CreateAdvanceToSupplierDtoAdvancePaymentType = typeof CreateAdvanceToSupplierDtoAdvancePaymentType[keyof typeof CreateAdvanceToSupplierDtoAdvancePaymentType];
@@ -11561,10 +11619,10 @@ export type CreateAdvanceToSupplierDtoStatus = typeof CreateAdvanceToSupplierDto
 export const CreateAdvanceToSupplierDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
-  DISAPPROVED: 'DISAPPROVED',
   POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface CreateAdvanceToSupplierDto {
@@ -11629,10 +11687,10 @@ export type UpdateAdvanceToSupplierDtoStatus = typeof UpdateAdvanceToSupplierDto
 export const UpdateAdvanceToSupplierDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
-  DISAPPROVED: 'DISAPPROVED',
   POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdateAdvanceToSupplierDto {
@@ -11689,10 +11747,10 @@ export type UpdateAdvanceToSupplierStatusDtoStatus = typeof UpdateAdvanceToSuppl
 export const UpdateAdvanceToSupplierStatusDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
-  DISAPPROVED: 'DISAPPROVED',
   POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdateAdvanceToSupplierStatusDto {
@@ -11705,10 +11763,10 @@ export type CashAdvanceDtoStatus = typeof CashAdvanceDtoStatus[keyof typeof Cash
 export const CashAdvanceDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
-  DISAPPROVED: 'DISAPPROVED',
   POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface CashAdvanceDto {
@@ -11739,20 +11797,62 @@ export interface CashAdvanceDto {
   updatedAt?: string;
 }
 
-export interface PaginationMetaDto {
-  /** @minimum 1 */
-  page: number;
-  /** @minimum 1 */
-  limit: number;
-  /** @minimum 0 */
-  total: number;
-  /** @minimum 0 */
-  totalPages: number;
-}
-
 export interface CashAdvanceListResponseDto {
   data: CashAdvanceDto[];
   meta: PaginationMetaDto;
+}
+
+export interface CashAdvanceCopyFromCandidateDetailDto {
+  id: string;
+  lineNumber: number;
+  /** @nullable */
+  accountCode?: string | null;
+  /** @nullable */
+  accountTitle?: string | null;
+  amount: number;
+  grossAmount: number;
+  consumptionAmount: number;
+  /** @nullable */
+  particulars?: string | null;
+  /** @nullable */
+  responsibilityCenter?: string | null;
+  /** @nullable */
+  referenceNo?: string | null;
+}
+
+export interface CashAdvanceCopyFromCandidateDto {
+  id: string;
+  source: string;
+  sourceNo: string;
+  transactionNo: string;
+  documentDate: string;
+  /** @nullable */
+  branchUnitId?: number | null;
+  /** @nullable */
+  partyId?: string | null;
+  partyCode: string;
+  partyName: string;
+  currency: string;
+  exchangeRate: number;
+  amount: number;
+  consumedAmount: number;
+  availableAmount: number;
+  grossAmount: number;
+  consumedGrossAmount: number;
+  availableGrossAmount: number;
+  /** @nullable */
+  projectCode?: string | null;
+  /** @nullable */
+  projectName?: string | null;
+  /** @nullable */
+  remarks?: string | null;
+  referencePrefix: string;
+  details: CashAdvanceCopyFromCandidateDetailDto[];
+}
+
+export interface CashAdvanceCopyFromCandidatesResponseDto {
+  records: CashAdvanceCopyFromCandidateDto[];
+  pagination: PaginationMetaDto;
 }
 
 export interface CashAdvanceSingleResponseDto {
@@ -11858,10 +11958,10 @@ export type UpdateCashAdvanceStatusDtoStatus = typeof UpdateCashAdvanceStatusDto
 export const UpdateCashAdvanceStatusDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
-  DISAPPROVED: 'DISAPPROVED',
   POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdateCashAdvanceStatusDto {
@@ -11899,10 +11999,10 @@ export type CreateCashAdvanceMultipleEntryDtoStatus = typeof CreateCashAdvanceMu
 export const CreateCashAdvanceMultipleEntryDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
-  DISAPPROVED: 'DISAPPROVED',
   POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface CreateCashAdvanceMultipleEntryDto {
@@ -11936,10 +12036,10 @@ export type UpdateCashAdvanceMultipleEntryDtoStatus = typeof UpdateCashAdvanceMu
 export const UpdateCashAdvanceMultipleEntryDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
-  DISAPPROVED: 'DISAPPROVED',
   POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdateCashAdvanceMultipleEntryDto {
@@ -11973,10 +12073,10 @@ export type UpdateCashAdvanceMultipleEntryStatusDtoStatus = typeof UpdateCashAdv
 export const UpdateCashAdvanceMultipleEntryStatusDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
-  DISAPPROVED: 'DISAPPROVED',
   POSTED: 'POSTED',
+  DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdateCashAdvanceMultipleEntryStatusDto {
@@ -12096,7 +12196,6 @@ export type CashVoucherRecordResponseDtoStatus = typeof CashVoucherRecordRespons
 export const CashVoucherRecordResponseDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
@@ -12406,7 +12505,6 @@ export type CreateCashVoucherDtoStatus = typeof CreateCashVoucherDtoStatus[keyof
 export const CreateCashVoucherDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
@@ -12598,7 +12696,6 @@ export type UpdateCashVoucherDtoStatus = typeof UpdateCashVoucherDtoStatus[keyof
 export const UpdateCashVoucherDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
@@ -12907,7 +13004,6 @@ export type DisbursementVoucherRecordResponseDtoStatus = typeof DisbursementVouc
 export const DisbursementVoucherRecordResponseDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
@@ -13219,7 +13315,6 @@ export type CreateDisbursementVoucherDtoStatus = typeof CreateDisbursementVouche
 export const CreateDisbursementVoucherDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
@@ -13429,7 +13524,6 @@ export type UpdateDisbursementVoucherDtoStatus = typeof UpdateDisbursementVouche
 export const UpdateDisbursementVoucherDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
@@ -13636,10 +13730,10 @@ export type PettyCashVoucherResponseDtoStatus = typeof PettyCashVoucherResponseD
 export const PettyCashVoucherResponseDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface PettyCashVoucherResponseDto {
@@ -13886,17 +13980,11 @@ export interface PettyCashVoucherCopyFromCandidateDto {
   sourceNo: string;
 }
 
-export type PettyCashVoucherCopyFromCandidatesResponseDtoPagination = {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-};
-
 export interface PettyCashVoucherCopyFromCandidatesResponseDto {
   /** Available PCV records */
   records: PettyCashVoucherCopyFromCandidateDto[];
-  pagination: PettyCashVoucherCopyFromCandidatesResponseDtoPagination;
+  /** Pagination metadata */
+  pagination: PaginationMetaDto;
 }
 
 /**
@@ -13908,10 +13996,10 @@ export type CreatePettyCashVoucherDtoStatus = typeof CreatePettyCashVoucherDtoSt
 export const CreatePettyCashVoucherDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface CreatePettyCashVoucherDto {
@@ -14049,10 +14137,10 @@ export type UpdatePettyCashVoucherDtoStatus = typeof UpdatePettyCashVoucherDtoSt
 export const UpdatePettyCashVoucherDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdatePettyCashVoucherDto {
@@ -14190,10 +14278,10 @@ export type UpdatePettyCashVoucherStatusDtoStatus = typeof UpdatePettyCashVouche
 export const UpdatePettyCashVoucherStatusDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdatePettyCashVoucherStatusDto {
@@ -14319,10 +14407,10 @@ export type PettyCashFundResponseDtoStatus = typeof PettyCashFundResponseDtoStat
 export const PettyCashFundResponseDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface PettyCashFundResponseDto {
@@ -14476,6 +14564,10 @@ export interface PettyCashFundCopyFromCandidateDetailDto {
   supplierName?: string | null;
   /** Gross amount */
   grossAmount: number;
+  /** Gross amount already copied to active Petty Cash Replenishments for this detail line */
+  consumedGrossAmount: number;
+  /** Remaining gross amount available to copy for this detail line */
+  availableGrossAmount: number;
   /** Net amount */
   netAmount: number;
   /**
@@ -14498,6 +14590,10 @@ export interface PettyCashFundCopyFromCandidateDetailDto {
   ewtAmount: number;
   /** Disburse amount */
   disburseAmount: number;
+  /** Disburse amount already copied to active Petty Cash Replenishments for this detail line */
+  consumedAmount: number;
+  /** Remaining disburse amount available to copy for this detail line */
+  availableAmount: number;
   /**
      * Particulars
      * @nullable
@@ -14605,17 +14701,11 @@ export interface PettyCashFundCopyFromCandidateDto {
   sourceNo: string;
 }
 
-export type PettyCashFundCopyFromCandidatesResponseDtoPagination = {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-};
-
 export interface PettyCashFundCopyFromCandidatesResponseDto {
   /** Available PCF records */
   records: PettyCashFundCopyFromCandidateDto[];
-  pagination: PettyCashFundCopyFromCandidatesResponseDtoPagination;
+  /** Pagination metadata */
+  pagination: PaginationMetaDto;
 }
 
 /**
@@ -14627,10 +14717,10 @@ export type CreatePettyCashFundDtoStatus = typeof CreatePettyCashFundDtoStatus[k
 export const CreatePettyCashFundDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface CreatePettyCashFundDto {
@@ -14728,10 +14818,10 @@ export type UpdatePettyCashFundDtoStatus = typeof UpdatePettyCashFundDtoStatus[k
 export const UpdatePettyCashFundDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdatePettyCashFundDto {
@@ -14829,10 +14919,10 @@ export type UpdatePettyCashFundStatusDtoStatus = typeof UpdatePettyCashFundStatu
 export const UpdatePettyCashFundStatusDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdatePettyCashFundStatusDto {
@@ -14951,10 +15041,10 @@ export type PettyCashReplenishmentResponseDtoStatus = typeof PettyCashReplenishm
 export const PettyCashReplenishmentResponseDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface PettyCashReplenishmentResponseDto {
@@ -15214,17 +15304,11 @@ export interface PettyCashReplenishmentCopyFromCandidateDto {
   sourceNo: string;
 }
 
-export type PettyCashReplenishmentCopyFromCandidatesResponseDtoPagination = {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-};
-
 export interface PettyCashReplenishmentCopyFromCandidatesResponseDto {
   /** Available PCR records */
   records: PettyCashReplenishmentCopyFromCandidateDto[];
-  pagination: PettyCashReplenishmentCopyFromCandidatesResponseDtoPagination;
+  /** Pagination metadata */
+  pagination: PaginationMetaDto;
 }
 
 /**
@@ -15236,10 +15320,10 @@ export type CreatePettyCashReplenishmentDtoStatus = typeof CreatePettyCashReplen
 export const CreatePettyCashReplenishmentDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface CreatePettyCashReplenishmentDto {
@@ -15337,10 +15421,10 @@ export type UpdatePettyCashReplenishmentDtoStatus = typeof UpdatePettyCashReplen
 export const UpdatePettyCashReplenishmentDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdatePettyCashReplenishmentDto {
@@ -15438,10 +15522,10 @@ export type UpdatePettyCashReplenishmentStatusDtoStatus = typeof UpdatePettyCash
 export const UpdatePettyCashReplenishmentStatusDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdatePettyCashReplenishmentStatusDto {
@@ -15567,10 +15651,10 @@ export type RevolvingFundResponseDtoStatus = typeof RevolvingFundResponseDtoStat
 export const RevolvingFundResponseDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface RevolvingFundResponseDto {
@@ -15724,6 +15808,10 @@ export interface RevolvingFundCopyFromCandidateDetailDto {
   supplierName?: string | null;
   /** Gross amount */
   grossAmount: number;
+  /** Gross amount already copied to active Revolving Fund Replenishments for this detail line */
+  consumedGrossAmount: number;
+  /** Remaining gross amount available to copy for this detail line */
+  availableGrossAmount: number;
   /** Net amount */
   netAmount: number;
   /**
@@ -15746,6 +15834,10 @@ export interface RevolvingFundCopyFromCandidateDetailDto {
   ewtAmount: number;
   /** Disburse amount */
   disburseAmount: number;
+  /** Disburse amount already copied to active Revolving Fund Replenishments for this detail line */
+  consumedAmount: number;
+  /** Remaining disburse amount available to copy for this detail line */
+  availableAmount: number;
   /**
      * Particulars
      * @nullable
@@ -15853,17 +15945,11 @@ export interface RevolvingFundCopyFromCandidateDto {
   sourceNo: string;
 }
 
-export type RevolvingFundCopyFromCandidatesResponseDtoPagination = {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-};
-
 export interface RevolvingFundCopyFromCandidatesResponseDto {
   /** Available RF records */
   records: RevolvingFundCopyFromCandidateDto[];
-  pagination: RevolvingFundCopyFromCandidatesResponseDtoPagination;
+  /** Pagination metadata */
+  pagination: PaginationMetaDto;
 }
 
 /**
@@ -15875,10 +15961,10 @@ export type CreateRevolvingFundDtoStatus = typeof CreateRevolvingFundDtoStatus[k
 export const CreateRevolvingFundDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface CreateRevolvingFundDto {
@@ -15976,10 +16062,10 @@ export type UpdateRevolvingFundDtoStatus = typeof UpdateRevolvingFundDtoStatus[k
 export const UpdateRevolvingFundDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdateRevolvingFundDto {
@@ -16077,10 +16163,10 @@ export type UpdateRevolvingFundStatusDtoStatus = typeof UpdateRevolvingFundStatu
 export const UpdateRevolvingFundStatusDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdateRevolvingFundStatusDto {
@@ -16199,10 +16285,10 @@ export type RevolvingFundReplenishmentResponseDtoStatus = typeof RevolvingFundRe
 export const RevolvingFundReplenishmentResponseDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface RevolvingFundReplenishmentResponseDto {
@@ -16462,17 +16548,11 @@ export interface RevolvingFundReplenishmentCopyFromCandidateDto {
   sourceNo: string;
 }
 
-export type RevolvingFundReplenishmentCopyFromCandidatesResponseDtoPagination = {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-};
-
 export interface RevolvingFundReplenishmentCopyFromCandidatesResponseDto {
   /** Available RFR records */
   records: RevolvingFundReplenishmentCopyFromCandidateDto[];
-  pagination: RevolvingFundReplenishmentCopyFromCandidatesResponseDtoPagination;
+  /** Pagination metadata */
+  pagination: PaginationMetaDto;
 }
 
 /**
@@ -16484,10 +16564,10 @@ export type CreateRevolvingFundReplenishmentDtoStatus = typeof CreateRevolvingFu
 export const CreateRevolvingFundReplenishmentDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface CreateRevolvingFundReplenishmentDto {
@@ -16585,10 +16665,10 @@ export type UpdateRevolvingFundReplenishmentDtoStatus = typeof UpdateRevolvingFu
 export const UpdateRevolvingFundReplenishmentDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdateRevolvingFundReplenishmentDto {
@@ -16686,10 +16766,10 @@ export type UpdateRevolvingFundReplenishmentStatusDtoStatus = typeof UpdateRevol
 export const UpdateRevolvingFundReplenishmentStatusDtoStatus = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export interface UpdateRevolvingFundReplenishmentStatusDto {
@@ -19370,12 +19450,16 @@ export type AccountsPayableVoucherControllerFindAllV1Status = typeof AccountsPay
 
 export const AccountsPayableVoucherControllerFindAllV1Status = {
   DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
   APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CLOSED: 'CLOSED',
   CANCELLED: 'CANCELLED',
   Draft: 'Draft',
+  For_Approval: 'For Approval',
   Approved: 'Approved',
+  Posted: 'Posted',
   Disapproved: 'Disapproved',
   Closed: 'Closed',
   Cancelled: 'Cancelled',
@@ -19436,12 +19520,16 @@ export type AccountsPayableVoucherControllerSuggestTransactionNumberV1Status = t
 
 export const AccountsPayableVoucherControllerSuggestTransactionNumberV1Status = {
   DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
   APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CLOSED: 'CLOSED',
   CANCELLED: 'CANCELLED',
   Draft: 'Draft',
+  For_Approval: 'For Approval',
   Approved: 'Approved',
+  Posted: 'Posted',
   Disapproved: 'Disapproved',
   Closed: 'Closed',
   Cancelled: 'Cancelled',
@@ -19488,6 +19576,10 @@ partyId?: string;
  * @maxLength 80
  */
 partyCode?: string;
+/**
+ * @maxLength 160
+ */
+partyName?: string;
 /**
  * @minimum 1
  */
@@ -19539,12 +19631,16 @@ export type AccountsPayableVoucherControllerFindOneV1Status = typeof AccountsPay
 
 export const AccountsPayableVoucherControllerFindOneV1Status = {
   DRAFT: 'DRAFT',
+  FOR_APPROVAL: 'FOR_APPROVAL',
   APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CLOSED: 'CLOSED',
   CANCELLED: 'CANCELLED',
   Draft: 'Draft',
+  For_Approval: 'For Approval',
   Approved: 'Approved',
+  Posted: 'Posted',
   Disapproved: 'Disapproved',
   Closed: 'Closed',
   Cancelled: 'Cancelled',
@@ -19691,6 +19787,46 @@ export type JournalVoucherControllerSuggestTransactionNumberV1SortDirection = ty
 export const JournalVoucherControllerSuggestTransactionNumberV1SortDirection = {
   asc: 'asc',
   desc: 'desc',
+} as const;
+
+export type JournalVoucherControllerFindCopyFromCandidatesV1Params = {
+target: JournalVoucherControllerFindCopyFromCandidatesV1Target;
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @maxLength 80
+ */
+partyCode?: string;
+/**
+ * @maxLength 160
+ */
+partyName?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+};
+
+export type JournalVoucherControllerFindCopyFromCandidatesV1Target = typeof JournalVoucherControllerFindCopyFromCandidatesV1Target[keyof typeof JournalVoucherControllerFindCopyFromCandidatesV1Target];
+
+
+export const JournalVoucherControllerFindCopyFromCandidatesV1Target = {
+  'official-receipt': 'official-receipt',
+  'acknowledgement-receipt': 'acknowledgement-receipt',
+  'accounts-payable-voucher': 'accounts-payable-voucher',
+  'cash-voucher': 'cash-voucher',
+  'disbursement-voucher': 'disbursement-voucher',
 } as const;
 
 export type JournalVoucherControllerFindOneV1Params = {
@@ -21168,6 +21304,10 @@ partyId?: string;
  */
 partyCode?: string;
 /**
+ * Supplier party name filter
+ */
+partyName?: string;
+/**
  * Search by ATS number, PO reference, supplier, project, or remarks
  */
 search?: string;
@@ -21206,7 +21346,7 @@ limit?: number;
  */
 search?: string;
 /**
- * Status filter (DRAFT, FOR_APPROVAL, APPROVED, DISAPPROVED, POSTED, CANCELLED)
+ * Status filter (DRAFT, FOR_APPROVAL, POSTED, DISAPPROVED, CANCELLED)
  */
 status?: string;
 /**
@@ -21243,6 +21383,47 @@ export type CashAdvanceControllerSuggestTransactionNumberV1Params = {
 branchUnitId?: number;
 };
 
+export type CashAdvanceControllerFindCopyFromCandidatesV1Params = {
+target: CashAdvanceControllerFindCopyFromCandidatesV1Target;
+/**
+ * @maxLength 120
+ */
+search?: string;
+/**
+ * @minimum 1
+ */
+branchUnitId?: number;
+/**
+ * @maxLength 40
+ */
+partyId?: string;
+/**
+ * @maxLength 80
+ */
+partyCode?: string;
+/**
+ * @maxLength 160
+ */
+partyName?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+};
+
+export type CashAdvanceControllerFindCopyFromCandidatesV1Target = typeof CashAdvanceControllerFindCopyFromCandidatesV1Target[keyof typeof CashAdvanceControllerFindCopyFromCandidatesV1Target];
+
+
+export const CashAdvanceControllerFindCopyFromCandidatesV1Target = {
+  'cash-voucher': 'cash-voucher',
+  'disbursement-voucher': 'disbursement-voucher',
+} as const;
+
 export type CashAdvanceControllerRemoveV1200 = {
   message?: string;
 };
@@ -21262,7 +21443,7 @@ limit?: number;
  */
 search?: string;
 /**
- * DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, or CANCELLED
+ * DRAFT, FOR_APPROVAL, POSTED, DISAPPROVED, or CANCELLED
  */
 status?: string;
 };
@@ -21291,7 +21472,7 @@ branchUnitId?: number;
  */
 search?: string;
 /**
- * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ * Filter by Status (DRAFT, FOR_APPROVAL, POSTED, DISAPPROVED, CANCELLED)
  */
 status?: string;
 /**
@@ -21389,7 +21570,7 @@ branchUnitId?: number;
  */
 search?: string;
 /**
- * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ * Filter by Status (DRAFT, FOR_APPROVAL, POSTED, DISAPPROVED, CANCELLED)
  */
 status?: string;
 /**
@@ -21467,6 +21648,57 @@ export const CashVoucherControllerSuggestTransactionNumberV1SortDirection = {
   desc: 'desc',
 } as const;
 
+export type CashVoucherControllerFindAccountTitleOptionsV1Params = {
+/**
+ * @maxLength 120
+ */
+search?: string;
+accountLevel?: CashVoucherControllerFindAccountTitleOptionsV1AccountLevel;
+status?: CashVoucherControllerFindAccountTitleOptionsV1Status;
+accountType?: CashVoucherControllerFindAccountTitleOptionsV1AccountType;
+accountNature?: CashVoucherControllerFindAccountTitleOptionsV1AccountNature;
+postingOnly?: boolean;
+parentAccountId?: string;
+};
+
+export type CashVoucherControllerFindAccountTitleOptionsV1AccountLevel = typeof CashVoucherControllerFindAccountTitleOptionsV1AccountLevel[keyof typeof CashVoucherControllerFindAccountTitleOptionsV1AccountLevel];
+
+
+export const CashVoucherControllerFindAccountTitleOptionsV1AccountLevel = {
+  SUB3: 'SUB3',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  MAJOR: 'MAJOR',
+  SPECIFIC: 'SPECIFIC',
+} as const;
+
+export type CashVoucherControllerFindAccountTitleOptionsV1Status = typeof CashVoucherControllerFindAccountTitleOptionsV1Status[keyof typeof CashVoucherControllerFindAccountTitleOptionsV1Status];
+
+
+export const CashVoucherControllerFindAccountTitleOptionsV1Status = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export type CashVoucherControllerFindAccountTitleOptionsV1AccountType = typeof CashVoucherControllerFindAccountTitleOptionsV1AccountType[keyof typeof CashVoucherControllerFindAccountTitleOptionsV1AccountType];
+
+
+export const CashVoucherControllerFindAccountTitleOptionsV1AccountType = {
+  ASSET: 'ASSET',
+  EXPENSE: 'EXPENSE',
+  REVENUE: 'REVENUE',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+} as const;
+
+export type CashVoucherControllerFindAccountTitleOptionsV1AccountNature = typeof CashVoucherControllerFindAccountTitleOptionsV1AccountNature[keyof typeof CashVoucherControllerFindAccountTitleOptionsV1AccountNature];
+
+
+export const CashVoucherControllerFindAccountTitleOptionsV1AccountNature = {
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
+} as const;
+
 export type CashVoucherControllerFindOneV1Params = {
 /**
  * Page number
@@ -21487,7 +21719,7 @@ branchUnitId?: number;
  */
 search?: string;
 /**
- * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ * Filter by Status (DRAFT, FOR_APPROVAL, POSTED, DISAPPROVED, CANCELLED)
  */
 status?: string;
 /**
@@ -21589,7 +21821,7 @@ branchUnitId?: number;
  */
 search?: string;
 /**
- * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ * Filter by Status (DRAFT, FOR_APPROVAL, POSTED, DISAPPROVED, CANCELLED)
  */
 status?: string;
 /**
@@ -21687,7 +21919,7 @@ branchUnitId?: number;
  */
 search?: string;
 /**
- * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ * Filter by Status (DRAFT, FOR_APPROVAL, POSTED, DISAPPROVED, CANCELLED)
  */
 status?: string;
 /**
@@ -21765,6 +21997,57 @@ export const DisbursementVoucherControllerSuggestTransactionNumberV1SortDirectio
   desc: 'desc',
 } as const;
 
+export type DisbursementVoucherControllerFindAccountTitleOptionsV1Params = {
+/**
+ * @maxLength 120
+ */
+search?: string;
+accountLevel?: DisbursementVoucherControllerFindAccountTitleOptionsV1AccountLevel;
+status?: DisbursementVoucherControllerFindAccountTitleOptionsV1Status;
+accountType?: DisbursementVoucherControllerFindAccountTitleOptionsV1AccountType;
+accountNature?: DisbursementVoucherControllerFindAccountTitleOptionsV1AccountNature;
+postingOnly?: boolean;
+parentAccountId?: string;
+};
+
+export type DisbursementVoucherControllerFindAccountTitleOptionsV1AccountLevel = typeof DisbursementVoucherControllerFindAccountTitleOptionsV1AccountLevel[keyof typeof DisbursementVoucherControllerFindAccountTitleOptionsV1AccountLevel];
+
+
+export const DisbursementVoucherControllerFindAccountTitleOptionsV1AccountLevel = {
+  SUB3: 'SUB3',
+  SUB1: 'SUB1',
+  SUB2: 'SUB2',
+  MAJOR: 'MAJOR',
+  SPECIFIC: 'SPECIFIC',
+} as const;
+
+export type DisbursementVoucherControllerFindAccountTitleOptionsV1Status = typeof DisbursementVoucherControllerFindAccountTitleOptionsV1Status[keyof typeof DisbursementVoucherControllerFindAccountTitleOptionsV1Status];
+
+
+export const DisbursementVoucherControllerFindAccountTitleOptionsV1Status = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export type DisbursementVoucherControllerFindAccountTitleOptionsV1AccountType = typeof DisbursementVoucherControllerFindAccountTitleOptionsV1AccountType[keyof typeof DisbursementVoucherControllerFindAccountTitleOptionsV1AccountType];
+
+
+export const DisbursementVoucherControllerFindAccountTitleOptionsV1AccountType = {
+  ASSET: 'ASSET',
+  EXPENSE: 'EXPENSE',
+  REVENUE: 'REVENUE',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+} as const;
+
+export type DisbursementVoucherControllerFindAccountTitleOptionsV1AccountNature = typeof DisbursementVoucherControllerFindAccountTitleOptionsV1AccountNature[keyof typeof DisbursementVoucherControllerFindAccountTitleOptionsV1AccountNature];
+
+
+export const DisbursementVoucherControllerFindAccountTitleOptionsV1AccountNature = {
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT',
+} as const;
+
 export type DisbursementVoucherControllerFindOneV1Params = {
 /**
  * Page number
@@ -21785,7 +22068,7 @@ branchUnitId?: number;
  */
 search?: string;
 /**
- * Filter by Status (DRAFT, FOR_APPROVAL, APPROVED, POSTED, DISAPPROVED, CANCELLED, CLOSED)
+ * Filter by Status (DRAFT, FOR_APPROVAL, POSTED, DISAPPROVED, CANCELLED)
  */
 status?: string;
 /**
@@ -21930,10 +22213,10 @@ export type PettyCashVoucherControllerFindAllV1Status = typeof PettyCashVoucherC
 export const PettyCashVoucherControllerFindAllV1Status = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export type PettyCashVoucherControllerFindAllV1SortOrder = typeof PettyCashVoucherControllerFindAllV1SortOrder[keyof typeof PettyCashVoucherControllerFindAllV1SortOrder];
@@ -21946,26 +22229,32 @@ export const PettyCashVoucherControllerFindAllV1SortOrder = {
 
 export type PettyCashVoucherControllerFindCopyFromCandidatesV1Params = {
 /**
+ * Search term across transaction number, party, or remarks
  * @maxLength 120
  */
 search?: string;
 /**
+ * Branch unit ID filter
  * @minimum 1
  */
 branchUnitId?: number;
 /**
+ * Party primary key ID
  * @maxLength 40
  */
 partyId?: string;
 /**
+ * Party code filter
  * @maxLength 80
  */
 partyCode?: string;
 /**
+ * Page number
  * @minimum 1
  */
 page?: number;
 /**
+ * Limit per page
  * @minimum 1
  * @maximum 500
  */
@@ -22035,10 +22324,10 @@ export type PettyCashFundControllerFindAllV1Status = typeof PettyCashFundControl
 export const PettyCashFundControllerFindAllV1Status = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export type PettyCashFundControllerFindAllV1SortOrder = typeof PettyCashFundControllerFindAllV1SortOrder[keyof typeof PettyCashFundControllerFindAllV1SortOrder];
@@ -22051,26 +22340,32 @@ export const PettyCashFundControllerFindAllV1SortOrder = {
 
 export type PettyCashFundControllerFindCopyFromCandidatesV1Params = {
 /**
+ * Search term across transaction number, party, or remarks
  * @maxLength 120
  */
 search?: string;
 /**
+ * Branch unit ID filter
  * @minimum 1
  */
 branchUnitId?: number;
 /**
+ * Party primary key ID
  * @maxLength 40
  */
 partyId?: string;
 /**
+ * Party code filter
  * @maxLength 80
  */
 partyCode?: string;
 /**
+ * Page number
  * @minimum 1
  */
 page?: number;
 /**
+ * Limit per page
  * @minimum 1
  * @maximum 500
  */
@@ -22140,10 +22435,10 @@ export type PettyCashReplenishmentControllerFindAllV1Status = typeof PettyCashRe
 export const PettyCashReplenishmentControllerFindAllV1Status = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export type PettyCashReplenishmentControllerFindAllV1SortOrder = typeof PettyCashReplenishmentControllerFindAllV1SortOrder[keyof typeof PettyCashReplenishmentControllerFindAllV1SortOrder];
@@ -22155,28 +22450,42 @@ export const PettyCashReplenishmentControllerFindAllV1SortOrder = {
 } as const;
 
 export type PettyCashReplenishmentControllerFindCopyFromCandidatesV1Params = {
+/**
+ * Target voucher type
+ */
 target: PettyCashReplenishmentControllerFindCopyFromCandidatesV1Target;
 /**
+ * Search term across transaction number, party, or remarks
  * @maxLength 120
  */
 search?: string;
 /**
+ * Branch unit ID filter
  * @minimum 1
  */
 branchUnitId?: number;
 /**
+ * Party primary key ID
  * @maxLength 40
  */
 partyId?: string;
 /**
+ * Party code filter
  * @maxLength 80
  */
 partyCode?: string;
 /**
+ * Party name filter
+ * @maxLength 160
+ */
+partyName?: string;
+/**
+ * Page number
  * @minimum 1
  */
 page?: number;
 /**
+ * Limit per page
  * @minimum 1
  * @maximum 500
  */
@@ -22254,10 +22563,10 @@ export type RevolvingFundControllerFindAllV1Status = typeof RevolvingFundControl
 export const RevolvingFundControllerFindAllV1Status = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export type RevolvingFundControllerFindAllV1SortOrder = typeof RevolvingFundControllerFindAllV1SortOrder[keyof typeof RevolvingFundControllerFindAllV1SortOrder];
@@ -22270,26 +22579,32 @@ export const RevolvingFundControllerFindAllV1SortOrder = {
 
 export type RevolvingFundControllerFindCopyFromCandidatesV1Params = {
 /**
+ * Search term across transaction number, party, or remarks
  * @maxLength 120
  */
 search?: string;
 /**
+ * Branch unit ID filter
  * @minimum 1
  */
 branchUnitId?: number;
 /**
+ * Party primary key ID
  * @maxLength 40
  */
 partyId?: string;
 /**
+ * Party code filter
  * @maxLength 80
  */
 partyCode?: string;
 /**
+ * Page number
  * @minimum 1
  */
 page?: number;
 /**
+ * Limit per page
  * @minimum 1
  * @maximum 500
  */
@@ -22359,10 +22674,10 @@ export type RevolvingFundReplenishmentControllerFindAllV1Status = typeof Revolvi
 export const RevolvingFundReplenishmentControllerFindAllV1Status = {
   DRAFT: 'DRAFT',
   FOR_APPROVAL: 'FOR_APPROVAL',
-  APPROVED: 'APPROVED',
   POSTED: 'POSTED',
   DISAPPROVED: 'DISAPPROVED',
   CANCELLED: 'CANCELLED',
+  CLOSED: 'CLOSED',
 } as const;
 
 export type RevolvingFundReplenishmentControllerFindAllV1SortOrder = typeof RevolvingFundReplenishmentControllerFindAllV1SortOrder[keyof typeof RevolvingFundReplenishmentControllerFindAllV1SortOrder];
@@ -22374,28 +22689,42 @@ export const RevolvingFundReplenishmentControllerFindAllV1SortOrder = {
 } as const;
 
 export type RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Params = {
+/**
+ * Target voucher type
+ */
 target: RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Target;
 /**
+ * Search term across transaction number, party, or remarks
  * @maxLength 120
  */
 search?: string;
 /**
+ * Branch unit ID filter
  * @minimum 1
  */
 branchUnitId?: number;
 /**
+ * Party primary key ID
  * @maxLength 40
  */
 partyId?: string;
 /**
+ * Party code filter
  * @maxLength 80
  */
 partyCode?: string;
 /**
+ * Party name filter
+ * @maxLength 160
+ */
+partyName?: string;
+/**
+ * Page number
  * @minimum 1
  */
 page?: number;
 /**
+ * Limit per page
  * @minimum 1
  * @maximum 500
  */

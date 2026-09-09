@@ -58,6 +58,10 @@ export type PettyCashFundCopyFromCandidate = {
   details: Array<{
     date?: string | null;
     disburseAmount: number;
+    availableAmount: number;
+    availableGrossAmount: number;
+    consumedAmount: number;
+    consumedGrossAmount: number;
     ewtAmount: number;
     ewtCode?: string | null;
     ewtPercent: number;

@@ -6,9 +6,10 @@ import type {
   RevolvingFundReplenishmentRecord,
   RevolvingFundReplenishmentStatus,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
+import { getEwtPercentFromCode, getVatPercentFromRate, getVatRateFromCode } from "@/app/src/data/shared/tax/TaxData";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import { roundCurrency } from "@/app/src/utils/currency.util";
 import { todayDateValue } from "@/app/src/utils/date.util";
-import { parseTaxPercent } from "@/app/src/utils/percentage.util";
 
 export function createBlankRevolvingFundReplenishmentEntry(): RevolvingFundReplenishmentEntry {
   return {
@@ -161,10 +162,11 @@ export function calculateRevolvingFundReplenishmentEntryTaxFields(
   amountValue: string | number,
   vatType = "",
   ewtCode = "",
+  taxCodes: AlphanumericTaxCode[] = [],
 ): Pick<RevolvingFundReplenishmentEntry, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "disburseAmount"> {
   const amount = roundCurrency(parseMoneyNumberInput(amountValue));
-  const vatPercent = getRevolvingFundReplenishmentVatPercent(vatType);
-  const ewtPercent = parseTaxPercent(ewtCode);
+  const vatPercent = getRevolvingFundReplenishmentVatPercent(vatType, taxCodes);
+  const ewtPercent = getEwtPercentFromCode(ewtCode, taxCodes);
   const vatAmount = roundCurrency((amount * vatPercent) / 100);
   const ewtAmount = roundCurrency((amount * ewtPercent) / 100);
 
@@ -197,8 +199,11 @@ function normalizeRevolvingFundReplenishmentEntry(
   };
 }
 
-function getRevolvingFundReplenishmentVatPercent(vatType: string) {
-  const match = vatType.match(/(\d+(?:\.\d+)?)/);
+function getRevolvingFundReplenishmentVatPercent(vatType: string, taxCodes: AlphanumericTaxCode[]) {
+  const catalogRate = getVatPercentFromRate(getVatRateFromCode(vatType, taxCodes));
+  if (catalogRate) return catalogRate;
+
+  const match = vatType.match(/(\d+(?:\.\d+)?)\s*%/);
   if (match) return Number.parseFloat(match[1]);
   return 0;
 }

@@ -16,6 +16,7 @@ const SectionAccess: Record<string, MainAccessKey> = {
   "financial-maintenance": "maintenance.chartOfAccounts",
   "item-management": "maintenance.item",
   "party-management": "maintenance.party",
+  "project-maintenance": "maintenance.project",
   "warehouse-management": "maintenance.warehouse",
   "delivery-vehicle-management": "maintenance.deliveryVehicle",
   "cash-receipt": "cashReceipt",
@@ -161,5 +162,6 @@ function getAccessKey(item: AuthUserModuleItem): MainAccessKey {
   if (item.key.includes("warehouse")) return "maintenance.warehouse";
   if (item.key.includes("item")) return "maintenance.item";
   if (item.key.includes("party-management")) return "maintenance.party";
+  if (item.key.includes("project-maintenance")) return "maintenance.project";
   return SectionAccess[item.key] ?? SectionAccess[sectionKey] ?? "settings";
 }

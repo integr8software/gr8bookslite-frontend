@@ -5,6 +5,29 @@
  * Versioned REST API for GR8Books Neo frontend clients.
  * OpenAPI spec version: 1.0
  */
+export interface ItemSupplierResponseDto {
+  /**
+     * Vendor party ID.
+     * @pattern ^[1-9][0-9]*$
+     */
+  supplierId: string;
+  /** @maxLength 100 */
+  supplierCode?: string;
+  /**
+     * @maxLength 50
+     * @pattern ^(?:\d+(?:\.\d+)? (?:days|weeks|months))?$
+     */
+  leadTime?: string;
+  /**
+     * @minimum 0
+     * @maximum 999999999999.99
+     */
+  cost: number;
+  isDefault: boolean;
+  id: string;
+  supplierName: string;
+}
+
 export type ItemBasicInfoResponseDtoStatus = typeof ItemBasicInfoResponseDtoStatus[keyof typeof ItemBasicInfoResponseDtoStatus];
 
 
@@ -14,6 +37,11 @@ export const ItemBasicInfoResponseDtoStatus = {
 } as const;
 
 export interface ItemBasicInfoResponseDto {
+  /**
+     * Replace all supplier rows. Nonempty lists require exactly one default.
+     * @maxItems 100
+     */
+  suppliers?: ItemSupplierResponseDto[];
   /** @maxLength 50 */
   code: string;
   /** @maxLength 100 */
@@ -61,6 +89,27 @@ export interface ItemBasicInfoListResponseDto {
   items: ItemBasicInfoResponseDto[];
 }
 
+export interface ItemSupplierDto {
+  /**
+     * Vendor party ID.
+     * @pattern ^[1-9][0-9]*$
+     */
+  supplierId: string;
+  /** @maxLength 100 */
+  supplierCode?: string;
+  /**
+     * @maxLength 50
+     * @pattern ^(?:\d+(?:\.\d+)? (?:days|weeks|months))?$
+     */
+  leadTime?: string;
+  /**
+     * @minimum 0
+     * @maximum 999999999999.99
+     */
+  cost: number;
+  isDefault: boolean;
+}
+
 export type CreateItemBasicInfoDtoStatus = typeof CreateItemBasicInfoDtoStatus[keyof typeof CreateItemBasicInfoDtoStatus];
 
 
@@ -70,6 +119,11 @@ export const CreateItemBasicInfoDtoStatus = {
 } as const;
 
 export interface CreateItemBasicInfoDto {
+  /**
+     * Replace all supplier rows. Nonempty lists require exactly one default.
+     * @maxItems 100
+     */
+  suppliers?: ItemSupplierDto[];
   /** @maxLength 50 */
   code: string;
   /** @maxLength 100 */
@@ -113,6 +167,11 @@ export const UpdateItemBasicInfoDtoStatus = {
 } as const;
 
 export interface UpdateItemBasicInfoDto {
+  /**
+     * Replace all supplier rows. Nonempty lists require exactly one default.
+     * @maxItems 100
+     */
+  suppliers?: ItemSupplierDto[];
   /** @maxLength 50 */
   code?: string;
   /** @maxLength 100 */
@@ -2747,6 +2806,98 @@ export interface UpdateTermDto {
   /** @minimum 0 */
   period?: number;
   status?: UpdateTermDtoStatus;
+}
+
+export type ProjectMaintenanceResponseDtoStatus = typeof ProjectMaintenanceResponseDtoStatus[keyof typeof ProjectMaintenanceResponseDtoStatus];
+
+
+export const ProjectMaintenanceResponseDtoStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export interface ProjectMaintenanceResponseDto {
+  id: string;
+  projectName: string;
+  /** @nullable */
+  projectDescription: string | null;
+  status: ProjectMaintenanceResponseDtoStatus;
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedBy: string | null;
+  updatedAt: string;
+}
+
+export interface ProjectMaintenanceStatisticsResponseDto {
+  totalProjects: number;
+  activeProjects: number;
+  inactiveProjects: number;
+}
+
+export interface ProjectMaintenancePaginationResponseDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface ProjectMaintenancePermissionsResponseDto {
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canExport: boolean;
+  canImport?: boolean;
+}
+
+export interface ProjectMaintenanceListResponseDto {
+  projects: ProjectMaintenanceResponseDto[];
+  statistics: ProjectMaintenanceStatisticsResponseDto;
+  pagination: ProjectMaintenancePaginationResponseDto;
+  permissions: ProjectMaintenancePermissionsResponseDto;
+}
+
+export interface ProjectMaintenanceContainerResponseDto {
+  project: ProjectMaintenanceResponseDto;
+  permissions: ProjectMaintenancePermissionsResponseDto;
+}
+
+export type CreateProjectMaintenanceDtoStatus = typeof CreateProjectMaintenanceDtoStatus[keyof typeof CreateProjectMaintenanceDtoStatus];
+
+
+export const CreateProjectMaintenanceDtoStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export interface CreateProjectMaintenanceDto {
+  /** @maxLength 150 */
+  projectName: string;
+  /** @maxLength 500 */
+  projectDescription?: string;
+  status?: CreateProjectMaintenanceDtoStatus;
+}
+
+export interface SaveProjectMaintenanceResponseDto {
+  message: string;
+  project: ProjectMaintenanceResponseDto;
+}
+
+export type UpdateProjectMaintenanceDtoStatus = typeof UpdateProjectMaintenanceDtoStatus[keyof typeof UpdateProjectMaintenanceDtoStatus];
+
+
+export const UpdateProjectMaintenanceDtoStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export interface UpdateProjectMaintenanceDto {
+  /** @maxLength 150 */
+  projectName?: string;
+  /** @maxLength 500 */
+  projectDescription?: string;
+  status?: UpdateProjectMaintenanceDtoStatus;
 }
 
 export type ItemVariationValueDtoStatus = typeof ItemVariationValueDtoStatus[keyof typeof ItemVariationValueDtoStatus];
@@ -17821,6 +17972,51 @@ export const TermsMaintenanceControllerFindOptionsV1DateMode = {
   DAY: 'DAY',
   MONTH: 'MONTH',
   YEAR: 'YEAR',
+} as const;
+
+export type ProjectMaintenanceControllerFindAllV1Params = {
+/**
+ * @maxLength 120
+ */
+search?: string;
+status?: ProjectMaintenanceControllerFindAllV1Status;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
+limit?: number;
+sortBy?: ProjectMaintenanceControllerFindAllV1SortBy;
+sortDirection?: ProjectMaintenanceControllerFindAllV1SortDirection;
+};
+
+export type ProjectMaintenanceControllerFindAllV1Status = typeof ProjectMaintenanceControllerFindAllV1Status[keyof typeof ProjectMaintenanceControllerFindAllV1Status];
+
+
+export const ProjectMaintenanceControllerFindAllV1Status = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export type ProjectMaintenanceControllerFindAllV1SortBy = typeof ProjectMaintenanceControllerFindAllV1SortBy[keyof typeof ProjectMaintenanceControllerFindAllV1SortBy];
+
+
+export const ProjectMaintenanceControllerFindAllV1SortBy = {
+  projectName: 'projectName',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProjectMaintenanceControllerFindAllV1SortDirection = typeof ProjectMaintenanceControllerFindAllV1SortDirection[keyof typeof ProjectMaintenanceControllerFindAllV1SortDirection];
+
+
+export const ProjectMaintenanceControllerFindAllV1SortDirection = {
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
 export type UnitOfMeasurementControllerFindAllV1Params = {

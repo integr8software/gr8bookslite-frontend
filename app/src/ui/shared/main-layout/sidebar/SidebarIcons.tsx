@@ -182,6 +182,7 @@ const SidebarItemIcons: Record<string, LucideIcon> = {
 	"maintenance-item": Package,
 	"maintenance-item-sub-category": Tags,
 	"maintenance-party-management": Users,
+	"maintenance-project-maintenance": Folder,
 	"maintenance-party": Users,
 	"cash-disbursement-voucher": FileCheck2,
 	"cash-disbursement-request-payment": FileText,
@@ -284,6 +285,8 @@ function getSidebarItemIcon(item: MainNavigationItem) {
 			return ReceiptText;
 		case "maintenance.party":
 			return Users;
+		case "maintenance.project":
+			return Folder;
 		case "maintenance.discount":
 			return BadgePercent;
 		case "maintenance.term":

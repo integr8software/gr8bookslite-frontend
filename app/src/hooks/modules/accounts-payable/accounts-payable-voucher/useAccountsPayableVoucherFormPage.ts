@@ -19,8 +19,11 @@ import {
   updateAccountsPayableVoucherFromForm,
 } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
 import { createAccountsPayableVoucherPurchaseOrderLines } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherPurchaseOrderData";
+import {
+  buildJournalVoucherCopyFromRecords,
+} from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherCopyFromData";
 import { getPurchaseOrderTotals } from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
-import { findModuleChartAccount, type ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
+import { findModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import {
   createCurrencyCatalogFromReferencesAndRates,
   resolveFetchedExchangeRate,
@@ -42,6 +45,11 @@ import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { useTaxDefinitionOptions } from "@/app/src/hooks/shared/tax/useTaxDefinitionOptions";
 import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import { FetchMultiCurrencyRates } from "@/app/src/services/modules/system-administration/multi-currency-setup/MultiCurrencySetupService";
+import {
+  fetchJournalVoucherCopyFromCandidates,
+  type JournalVoucherCopyFromCandidate,
+} from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherService";
+import { JournalVoucherQueryKeys } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherQueryKeys";
 import type {
   AccountsPayableVoucherAccountingEntryField,
   AccountsPayableVoucherExpenseLineField,
@@ -49,11 +57,10 @@ import type {
   AccountsPayableVoucherFormValues,
 } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
-import type { TaxDefinitionDefaultAccountIds } from "@/app/src/types/shared/tax/TaxDefinitionTypes";
-import type { Tax } from "@/app/src/types/shared/tax/TaxTypes";
 import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { validateAccountsPayableVoucherForm } from "@/app/src/validations/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherValidation";
 import { useParams, usePathname, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import toast from "react-hot-toast";
 
@@ -91,6 +98,7 @@ export function useAccountsPayableVoucherFormPage() {
   const accessToken = useAppStore((state) => state.accessToken);
   const authProfileQuery = useAuthProfileQuery({ accessToken });
   const { addRecord, isMutating, records, updateRecord, updateStatus } = useAccountsPayableVoucherStore();
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
   const { orders: purchaseOrders } = usePurchaseOrderStore();
   const partyOptionsQuery = useAccountsPayableVoucherPartyOptions();
   const termOptionsQuery = useAccountsPayableVoucherTermOptions();
@@ -162,6 +170,31 @@ export function useAccountsPayableVoucherFormPage() {
   const hasAppliedBaseCurrencyRef = useRef(false);
   const hasHydratedExistingRecordRef = useRef(false);
   const exchangeRateRequestIdRef = useRef(0);
+  const journalVoucherCopyFromCandidatesQuery = useQuery({
+    queryKey: JournalVoucherQueryKeys.copyFromCandidates(
+      "accounts-payable-voucher",
+      activeCompanyId,
+      activeBranchId,
+      values.partyCode,
+      values.partyName,
+    ),
+    queryFn: () =>
+      fetchJournalVoucherCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        partyCode: values.partyCode,
+        partyName: values.partyName,
+        target: "accounts-payable-voucher",
+      }),
+    enabled: activeBranchId !== null && !isReadonly,
+  });
+  const journalVoucherCopyRecords = useMemo(
+    () => buildJournalVoucherCopyFromRecords(journalVoucherCopyFromCandidatesQuery.data ?? []),
+    [journalVoucherCopyFromCandidatesQuery.data],
+  );
+  const copyFromRecords = useMemo(
+    () => [...purchaseOrderCopyRecords, ...journalVoucherCopyRecords],
+    [journalVoucherCopyRecords, purchaseOrderCopyRecords],
+  );
 
   useEffect(() => {
     hasHydratedExistingRecordRef.current = false;
@@ -347,6 +380,12 @@ export function useAccountsPayableVoucherFormPage() {
       return;
     }
 
+    const selectedJournalVouchers = findJournalVoucherCopyFromCandidates(journalVoucherCopyFromCandidatesQuery.data ?? [], recordIds);
+    if (selectedJournalVouchers.length > 0) {
+      copyFromJournalVouchers(selectedJournalVouchers);
+      return;
+    }
+
     const order = purchaseOrders.find((record) => recordIds.includes(record.id));
 
     if (!order) {
@@ -420,6 +459,48 @@ export function useAccountsPayableVoucherFormPage() {
     } else {
       toast.success("Purchase order details copied to the APV.");
     }
+  }
+
+  function copyFromJournalVouchers(selectedRecords: JournalVoucherCopyFromCandidate[]) {
+    if (selectedRecords.length === 0) {
+      toast.error("No journal voucher was selected.");
+      return;
+    }
+
+    const firstRecord = selectedRecords[0];
+    const copiedExpenseLines = selectedRecords.map((record, index) =>
+      createAccountsPayableVoucherExpenseLine(index + 1, {
+        amount: record.availableAmount,
+        expenseAccountCode: record.accountCode,
+        expenseType: record.accountTitle,
+        netAmount: record.availableAmount,
+        particulars: record.particulars ?? "",
+        partyCode: record.partyCode ?? "",
+        partyName: record.partyName ?? "",
+        referenceNo: record.id,
+        responsibilityCenter: record.responsibilityCenter ?? "",
+        totalAmountDue: record.availableAmount,
+      }),
+    );
+
+    hasEditedCurrencyRef.current = true;
+    setValues((current) =>
+      syncAccountsPayableVoucherWithGeneratedAccountingEntries(
+        {
+          ...current,
+          currency: firstRecord.currency || current.currency,
+          exchangeRate: firstRecord.exchangeRate || current.exchangeRate,
+          expenseLines: copiedExpenseLines,
+          partyCode: firstRecord.partyCode || current.partyCode,
+          partyName: firstRecord.partyName || current.partyName,
+          referenceNo: selectedRecords.map((record) => record.id).join(", "),
+          remarks: firstRecord.particulars || current.remarks,
+        },
+        taxAccountingContext,
+      ),
+    );
+    setErrors({});
+    toast.success("Journal voucher details copied to the APV.");
   }
 
   function updateExpenseLine(lineId: string, field: AccountsPayableVoucherExpenseLineField, value: string | number) {
@@ -911,7 +992,7 @@ export function useAccountsPayableVoucherFormPage() {
     moveAccountingEntry,
     moveExpenseLine,
     needsRecord: mode === AccountsPayableVoucherEditMode || mode === AccountsPayableVoucherViewMode,
-    purchaseOrderCopyRecords,
+    purchaseOrderCopyRecords: copyFromRecords,
     removeAccountingEntry,
     removeExpenseLine,
     setIsCancelDialogOpen,
@@ -923,4 +1004,10 @@ export function useAccountsPayableVoucherFormPage() {
     currencyOptions,
     values: displayValues,
   };
+}
+
+function findJournalVoucherCopyFromCandidates(candidates: JournalVoucherCopyFromCandidate[], recordIds: string[]) {
+  const selectedIds = new Set(recordIds);
+
+  return candidates.filter((candidate) => selectedIds.has(candidate.id));
 }

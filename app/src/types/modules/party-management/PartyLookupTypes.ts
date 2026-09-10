@@ -31,6 +31,12 @@ export type PartyLookupOption = AppAdvancedDropdownOption & {
   vendorAdvanceAccount?: string;
   employeeAdvanceAccount?: string;
   employeePayableAccount?: string;
+  defaultResponsibilityCenterId?: string;
+  defaultResponsibilityCenterName?: string;
+  defaultPaymentTypeId?: string;
+  defaultPaymentTypeName?: string;
+  defaultBank?: string;
+  defaultBankAccountNo?: string;
   accountingAccounts?: {
     defaultReceivableAccount?: PartyLookupOptionAccountingAccount;
     customerAdvanceAccount?: PartyLookupOptionAccountingAccount;

@@ -18,9 +18,9 @@ import type {
 } from "@/app/src/types/modules/financial-maintenance/services-maintenance/ServicesMaintenanceTypes";
 import { ChartAccountQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartAccountQuickAddDialog";
 import {
-  DefaultAccountExpenseSubAccountDialog,
-  type DefaultAccountExpenseSubAccountDialogState,
-} from "@/app/src/ui/modules/financial-maintenance/default-account/DefaultAccountExpenseSubAccountDialog";
+  DisbursementTypeExpenseSubAccountDialog,
+  type DisbursementTypeExpenseSubAccountDialogState,
+} from "@/app/src/ui/modules/financial-maintenance/disbursement-type/DisbursementTypeExpenseSubAccountDialog";
 import { ServicesMaintenanceAccountingSetupTab } from "@/app/src/ui/modules/financial-maintenance/services-maintenance/ServicesMaintenanceAccountingSetupTab";
 import {
   FormField,
@@ -56,7 +56,7 @@ function ServicesMaintenanceDrawerPanel({
   service?: ServicesMaintenance;
 }) {
   const [isAccountTitleDialogOpen, setIsAccountTitleDialogOpen] = useState(false);
-  const [expenseSubAccountDialog, setExpenseSubAccountDialog] = useState<DefaultAccountExpenseSubAccountDialogState>(null);
+  const [expenseSubAccountDialog, setExpenseSubAccountDialog] = useState<DisbursementTypeExpenseSubAccountDialogState>(null);
   const page = useServicesMaintenanceFormPage({
     existingService: service,
     isOpen,
@@ -186,7 +186,7 @@ function ServicesMaintenanceDrawerPanel({
           setIsAccountTitleDialogOpen(false);
         }}
       />
-      <DefaultAccountExpenseSubAccountDialog
+      <DisbursementTypeExpenseSubAccountDialog
         accountLevel={expenseSubAccountDialog?.accountLevel ?? null}
         isOpen={Boolean(expenseSubAccountDialog)}
         parentAccount={expenseSubAccountDialog?.parentAccount ?? null}

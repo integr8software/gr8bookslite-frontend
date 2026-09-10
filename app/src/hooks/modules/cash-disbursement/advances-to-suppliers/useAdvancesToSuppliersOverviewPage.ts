@@ -26,7 +26,7 @@ import {
   fetchAdvancesToSuppliersList,
   submitAdvancesToSuppliersApprovalApi,
   updateAdvancesToSuppliersStatusApi,
-} from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersService";
+} from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersApi";
 import { AdvancesToSuppliersQueryKeys } from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersQueryKeys";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import type {

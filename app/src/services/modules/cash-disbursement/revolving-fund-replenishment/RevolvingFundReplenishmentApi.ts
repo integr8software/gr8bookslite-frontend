@@ -1,5 +1,7 @@
 "use client";
 
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { cleanCopyFromQueryParams } from "@/app/src/utils/query.util";
 import {
   revolvingFundReplenishmentControllerCreateV1,
   revolvingFundReplenishmentControllerFindAllV1,
@@ -25,7 +27,6 @@ import type {
   RevolvingFundReplenishmentRecord,
   RevolvingFundReplenishmentStatus,
 } from "@/app/src/types/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { calculateRevolvingFundReplenishmentTotals } from "@/app/src/data/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentData";
 
@@ -41,6 +42,49 @@ type RevolvingFundReplenishmentResponseExtras = {
 };
 
 type RevolvingFundReplenishmentQueryParams = NonNullable<Parameters<typeof revolvingFundReplenishmentControllerFindAllV1>[0]>;
+export type RevolvingFundReplenishmentCopyFromCandidate = {
+  amount: number;
+  availableAmount: number;
+  availableGrossAmount: number;
+  consumedAmount: number;
+  consumedGrossAmount: number;
+  creditAccountCode: string;
+  creditAccountId?: string | null;
+  creditAccountTitle: string;
+  currency: string;
+  details: Array<{
+    amount: number;
+    disburseAmount: number;
+    ewtAmount: number;
+    ewtCode?: string | null;
+    ewtPercent: number;
+    id: string;
+    lineNumber: number;
+    netAmount: number;
+    particulars?: string | null;
+    responsibilityCenter?: string | null;
+    responsibilityCenterId?: string | null;
+    revolvingFundDate?: string | null;
+    revolvingFundNo?: string | null;
+    supplierCode?: string | null;
+    supplierName?: string | null;
+    vatAmount: number;
+    vatPercent: number;
+    vatType?: string | null;
+  }>;
+  documentDate: string;
+  exchangeRate: number;
+  id: string;
+  partyCode: string;
+  partyId?: string | null;
+  partyName: string;
+  projectCode?: string | null;
+  projectName?: string | null;
+  remarks?: string | null;
+  source: "Revolving Fund Replenishment";
+  sourceNo: string;
+  transactionNo: string;
+};
 
 export type FetchRevolvingFundReplenishmentListParams = {
   page?: number;
@@ -64,18 +108,20 @@ type MappedRevolvingFundReplenishmentListResponse = Omit<RevolvingFundReplenishm
 export const StatusFromApi: Record<string, RevolvingFundReplenishmentStatus> = {
   DRAFT: RevolvingFundReplenishmentStatuses.Draft,
   FOR_APPROVAL: "For Approval",
-  APPROVED: "For Approval",
+  APPROVED: "Posted",
   POSTED: "Posted",
   DISAPPROVED: "Disapproved",
   CANCELLED: "Cancelled",
+  CLOSED: "Closed",
 };
 
-export const StatusToApi: Record<RevolvingFundReplenishmentStatus, UpdateRevolvingFundReplenishmentStatusDtoStatus> = {
+export const StatusToApi: Record<RevolvingFundReplenishmentStatus, string> = {
   Draft: "DRAFT",
   "For Approval": "FOR_APPROVAL",
   Posted: "POSTED",
   Disapproved: "DISAPPROVED",
   Cancelled: "CANCELLED",
+  Closed: "CLOSED",
 };
 
 export function mapRevolvingFundReplenishmentRecordFromDto(dto: RevolvingFundReplenishmentResponseDto): RevolvingFundReplenishmentRecord {
@@ -146,7 +192,9 @@ export function mapRevolvingFundReplenishmentRecordFromDto(dto: RevolvingFundRep
   };
 }
 
-export function mapRevolvingFundReplenishmentFormValuesToCreateDto(values: RevolvingFundReplenishmentFormValues): CreateRevolvingFundReplenishmentDto {
+export function mapRevolvingFundReplenishmentFormValuesToCreateDto(
+  values: RevolvingFundReplenishmentFormValues,
+): CreateRevolvingFundReplenishmentDto {
   const entries =
     values.status === RevolvingFundReplenishmentStatuses.Draft
       ? (values.entries ?? []).filter(isRevolvingFundReplenishmentEntryPopulated)
@@ -189,7 +237,9 @@ export function mapRevolvingFundReplenishmentFormValuesToCreateDto(values: Revol
     exchangeRate: parseMoneyNumberInput(values.exchangeRate) || 1.0,
     amount: totalAmount,
     remarks: values.remarks,
-    status: values.status && values.status !== "Open" ? StatusToApi[values.status as RevolvingFundReplenishmentStatus] : "DRAFT",
+    status: (values.status && values.status !== "Open"
+      ? StatusToApi[values.status as RevolvingFundReplenishmentStatus]
+      : "DRAFT") as CreateRevolvingFundReplenishmentDto["status"],
     details,
   };
 }
@@ -197,15 +247,17 @@ export function mapRevolvingFundReplenishmentFormValuesToCreateDto(values: Revol
 function isRevolvingFundReplenishmentEntryPopulated(item: RevolvingFundReplenishmentEntry) {
   return Boolean(
     item.revolvingFundNo.trim() ||
-      item.supplierCode.trim() ||
-      item.supplierName.trim() ||
-      item.particulars.trim() ||
-      item.amount.trim() ||
-      item.disburseAmount.trim(),
+    item.supplierCode.trim() ||
+    item.supplierName.trim() ||
+    item.particulars.trim() ||
+    item.amount.trim() ||
+    item.disburseAmount.trim(),
   );
 }
 
-export function mapRevolvingFundReplenishmentFormValuesToUpdateDto(values: RevolvingFundReplenishmentFormValues): UpdateRevolvingFundReplenishmentDto {
+export function mapRevolvingFundReplenishmentFormValuesToUpdateDto(
+  values: RevolvingFundReplenishmentFormValues,
+): UpdateRevolvingFundReplenishmentDto {
   return mapRevolvingFundReplenishmentFormValuesToCreateDto(values) as UpdateRevolvingFundReplenishmentDto;
 }
 
@@ -238,6 +290,31 @@ export async function fetchRevolvingFundReplenishmentList(
   };
 }
 
+export async function fetchRevolvingFundReplenishmentCopyFromCandidates(params: {
+  branchUnitId?: number | null;
+  limit?: number;
+  page?: number;
+  partyCode?: string | null;
+  partyName?: string | null;
+  target: "cash-voucher" | "disbursement-voucher";
+}) {
+  const response = await ApiClient.get<{ records: RevolvingFundReplenishmentCopyFromCandidate[] }>(
+    "/cash-disbursement/revolving-fund-replenishment/copy-from/candidates",
+    {
+      params: cleanCopyFromQueryParams({
+        branchUnitId: params.branchUnitId,
+        limit: params.limit ?? 100,
+        page: params.page ?? 1,
+        partyCode: params.partyCode,
+        partyName: params.partyName,
+        target: params.target,
+      }),
+    },
+  );
+
+  return response.data.records;
+}
+
 export async function fetchRevolvingFundReplenishmentById(id: string): Promise<RevolvingFundReplenishmentRecord> {
   const response = (await revolvingFundReplenishmentControllerFindOneV1(id)) as RevolvingFundReplenishmentResponseDto;
   return mapRevolvingFundReplenishmentRecordFromDto(response);
@@ -247,21 +324,31 @@ export async function fetchNextRevolvingFundReplenishmentNo(branchUnitId?: numbe
   return fetchTransactionNumber(revolvingFundReplenishmentControllerSuggestTransactionNumberV1, { branchUnitId });
 }
 
-export async function createRevolvingFundReplenishmentApi(values: RevolvingFundReplenishmentFormValues): Promise<RevolvingFundReplenishmentRecord> {
+export async function createRevolvingFundReplenishmentApi(
+  values: RevolvingFundReplenishmentFormValues,
+): Promise<RevolvingFundReplenishmentRecord> {
   const payload = mapRevolvingFundReplenishmentFormValuesToCreateDto(values);
   const response = (await revolvingFundReplenishmentControllerCreateV1(payload)) as RevolvingFundReplenishmentResponseDto;
   return mapRevolvingFundReplenishmentRecordFromDto(response);
 }
 
-export async function updateRevolvingFundReplenishmentApi(id: string, values: RevolvingFundReplenishmentFormValues): Promise<RevolvingFundReplenishmentRecord> {
+export async function updateRevolvingFundReplenishmentApi(
+  id: string,
+  values: RevolvingFundReplenishmentFormValues,
+): Promise<RevolvingFundReplenishmentRecord> {
   const payload = mapRevolvingFundReplenishmentFormValuesToUpdateDto(values);
   const response = (await revolvingFundReplenishmentControllerUpdateV1(id, payload)) as RevolvingFundReplenishmentResponseDto;
   return mapRevolvingFundReplenishmentRecordFromDto(response);
 }
 
-export async function updateRevolvingFundReplenishmentStatusApi(id: string, status: RevolvingFundReplenishmentStatus): Promise<RevolvingFundReplenishmentRecord> {
-  const apiStatus = StatusToApi[status];
-  const response = (await revolvingFundReplenishmentControllerUpdateStatusV1(id, { status: apiStatus })) as RevolvingFundReplenishmentResponseDto;
+export async function updateRevolvingFundReplenishmentStatusApi(
+  id: string,
+  status: RevolvingFundReplenishmentStatus,
+): Promise<RevolvingFundReplenishmentRecord> {
+  const apiStatus = StatusToApi[status] as UpdateRevolvingFundReplenishmentStatusDtoStatus;
+  const response = (await revolvingFundReplenishmentControllerUpdateStatusV1(id, {
+    status: apiStatus,
+  })) as RevolvingFundReplenishmentResponseDto;
   return mapRevolvingFundReplenishmentRecordFromDto(response);
 }
 

@@ -121,7 +121,10 @@ export function AppAdvancedDropdown({
 	const uniqueOptions = useMemo(() => sortOptionsByName(deduplicateOptions(options)), [options]);
 	const flatOptions = useMemo(() => flattenOptions(uniqueOptions), [uniqueOptions]);
 	const selectedOptions = selectedValues
-		.map((selectedValue) => flatOptions.find((option) => option.value === selectedValue))
+		.map(
+			(selectedValue) =>
+				flatOptions.find((option) => option.value === selectedValue || option.label === selectedValue),
+		)
 		.filter((option): option is AppAdvancedDropdownOption => Boolean(option));
 	const filteredOptions = useMemo(
 		() => filterOptions(uniqueOptions, query),

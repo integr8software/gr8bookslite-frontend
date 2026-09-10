@@ -29,7 +29,9 @@ import type {
   CashVoucherRecord,
   CashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 
 type ApiCashVoucherStatus = CreateCashVoucherDtoStatus | UpdateCashVoucherDtoStatus | string;
 type ApiCashVoucherLineAmountSource = CashVoucherLineEntry & {
@@ -46,10 +48,7 @@ type FetchCashVoucherListResponse = Omit<CashVoucherListResponseDto, "data"> & {
 export async function fetchCashVoucherList(params?: FetchCashVoucherListParams): Promise<FetchCashVoucherListResponse> {
   const response = await cashVoucherControllerFindAllV1({
     ...params,
-    status:
-      params?.status && params.status !== "all" && params.status !== "All"
-        ? mapCashVoucherStatusToApi(params.status)
-        : undefined,
+    status: params?.status && params.status !== "all" && params.status !== "All" ? mapCashVoucherStatusToApi(params.status) : undefined,
   });
 
   return {
@@ -73,6 +72,12 @@ export async function fetchCashVoucherPartyOptions(): Promise<AppAdvancedDropdow
 
 export async function fetchCashVoucherAccountOptions(): Promise<AppAdvancedDropdownOption[]> {
   return fetchPostingAccountLookupOptions();
+}
+
+export async function fetchCashVoucherAccountTitleOptions(): Promise<ModuleChartAccount[]> {
+  const response = await ApiClient.get<CashDisbursementAccountTitleOptionsResponse>("/cash-disbursement/cash-voucher/account-title-options");
+
+  return (response.data.accounts ?? []).map(mapAccountTitleOption);
 }
 
 export async function fetchCashVoucherDefaultAccounts(): Promise<CashVoucherDefaultAccountsResponseDto> {
@@ -414,7 +419,9 @@ function getCashVoucherApiLineGrossAmount(entry: ApiCashVoucherLineAmountSource)
 
 function isGeneratedCashVoucherApiLine(entry: ApiCashVoucherLineAmountSource) {
   const id = String(entry.id ?? "");
-  const accountName = String(entry.accountName || entry.accountTitle || "").trim().toLowerCase();
+  const accountName = String(entry.accountName || entry.accountTitle || "")
+    .trim()
+    .toLowerCase();
 
   return (
     id.startsWith("auto-input-vat-") ||
@@ -438,6 +445,7 @@ function mapCashVoucherStatusFromApi(status: string): CashVoucherStatus {
   const statusMap: Record<string, CashVoucherStatus> = {
     APPROVED: "Posted",
     CANCELLED: "Cancelled",
+    CLOSED: "Closed",
     DISAPPROVED: "Disapproved",
     DRAFT: "Draft",
     FOR_APPROVAL: "For Approval",
@@ -450,6 +458,7 @@ function mapCashVoucherStatusFromApi(status: string): CashVoucherStatus {
 function mapCashVoucherStatusToApi(status: string): ApiCashVoucherStatus {
   const statusMap: Record<string, ApiCashVoucherStatus> = {
     Cancelled: "CANCELLED",
+    Closed: "CLOSED",
     Disapproved: "DISAPPROVED",
     Draft: "DRAFT",
     "For Approval": "FOR_APPROVAL",
@@ -492,4 +501,45 @@ function cleanOptional(value?: string | null) {
   const trimmed = value?.trim();
 
   return trimmed ? trimmed : undefined;
+}
+
+type CashDisbursementAccountTitleOptionsResponse = {
+  accounts: CashDisbursementAccountTitleOption[];
+};
+
+type CashDisbursementAccountTitleOption = {
+  id: string;
+  accountCode: string;
+  accountTitle: string;
+  accountType?: string | null;
+  accountNature?: string | null;
+  status?: string | null;
+};
+
+function mapAccountTitleOption(account: CashDisbursementAccountTitleOption): ModuleChartAccount {
+  const accountType = mapChartAccountType(account.accountType);
+  const accountNature = account.accountNature ?? "DEBIT";
+
+  return {
+    accountCategory: accountNature,
+    accountName: account.accountTitle,
+    accountNumber: account.accountCode,
+    accountType,
+    description: account.accountTitle,
+    id: account.id,
+    normalBalance: accountNature === "CREDIT" ? "Credit" : "Debit",
+    statementGroup: accountType === "Expenses" ? "Income Statement" : "Balance Sheet",
+    statementSection: accountNature,
+    status: account.status === "INACTIVE" ? "Inactive" : "Active",
+  };
+}
+
+function mapChartAccountType(accountType?: string | null) {
+  if (accountType === "EXPENSE") return "Expenses";
+  if (accountType === "ASSET") return "Assets";
+  if (accountType === "LIABILITY") return "Liabilities";
+  if (accountType === "REVENUE") return "Revenues";
+  if (accountType === "EQUITY") return "Equity";
+
+  return accountType ?? "";
 }

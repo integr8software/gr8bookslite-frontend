@@ -56,7 +56,7 @@ function createPdfDefinition(values: PettyCashReplenishmentFormValues): TDocumen
               "Supplier Code",
               "Supplier Name",
               "Amount",
-              "Net Amount",
+              "Net of VAT",
               "VAT Type",
               "VAT Rate",
               "VAT Amount",

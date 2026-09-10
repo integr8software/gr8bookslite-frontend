@@ -1,27 +1,22 @@
-import { Ban, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
-import {
-  PettyCashVoucherStatuses,
-  canApprovePettyCashVoucherStatus,
-  canCancelPettyCashVoucherStatus,
-  canDisapprovePettyCashVoucherStatus,
-} from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
+import { Ban, ThumbsDown, ThumbsUp } from "lucide-react";
+import { PettyCashVoucherStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import type {
-  PettyCashVoucherFormStatus,
-  PettyCashVoucherStatus,
+  PettyCashVoucherConfirmationAction,
+  PettyCashVoucherRecord,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
-import { moduleStatusActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { moduleHeaderActionClassNames, moduleStatusActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 
 export function PettyCashVoucherStatusActions({
-  status,
-  onRequestStatus,
+  onRequestConfirmation,
+  record,
 }: {
-  status: PettyCashVoucherFormStatus;
-  onRequestStatus: (status: PettyCashVoucherStatus) => void;
+  onRequestConfirmation: (action: PettyCashVoucherConfirmationAction) => void;
+  record?: PettyCashVoucherRecord | null;
 }) {
   const actions = createPettyCashVoucherStatusActionItems({
-    status,
-    onRequestStatus,
+    onRequestConfirmation,
+    record,
   });
 
   return (
@@ -43,37 +38,37 @@ export function PettyCashVoucherStatusActions({
 }
 
 function createPettyCashVoucherStatusActionItems({
-  status,
-  onRequestStatus,
+  onRequestConfirmation,
+  record,
 }: {
-  status: PettyCashVoucherFormStatus;
-  onRequestStatus: (status: PettyCashVoucherStatus) => void;
+  onRequestConfirmation: (action: PettyCashVoucherConfirmationAction) => void;
+  record?: PettyCashVoucherRecord | null;
 }) {
-  const isPosted = status === PettyCashVoucherStatuses.Posted;
-  const isDisapproved = status === PettyCashVoucherStatuses.Disapproved;
+  const status = record?.status ?? PettyCashVoucherStatuses.Draft;
   const isCancelled = status === PettyCashVoucherStatuses.Cancelled;
+  const isPosted = status === PettyCashVoucherStatuses.Posted;
   const actions: ModuleActionMenuItem[] = [
     {
-      disabled: !canApprovePettyCashVoucherStatus(status),
-      icon: isPosted ? Undo2 : ThumbsUp,
-      label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () => onRequestStatus(isPosted ? PettyCashVoucherStatuses.ForApproval : PettyCashVoucherStatuses.Posted),
+      disabled: isPosted || isCancelled,
+      icon: ThumbsUp,
+      label: "Approve",
+      onSelect: () => onRequestConfirmation("approve"),
       type: "button",
     },
     {
-      disabled: !canDisapprovePettyCashVoucherStatus(status),
-      icon: isDisapproved ? Undo2 : ThumbsDown,
-      label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () => onRequestStatus(isDisapproved ? PettyCashVoucherStatuses.ForApproval : PettyCashVoucherStatuses.Disapproved),
-      tone: isDisapproved ? "default" : "danger",
+      disabled: status === PettyCashVoucherStatuses.Disapproved || isCancelled,
+      icon: ThumbsDown,
+      label: "Disapprove",
+      onSelect: () => onRequestConfirmation("disapprove"),
+      tone: "danger",
       type: "button",
     },
     {
-      disabled: !canCancelPettyCashVoucherStatus(status),
-      icon: isCancelled ? Undo2 : Ban,
-      label: isCancelled ? "Undo Cancelled" : "Cancel",
-      onSelect: () => onRequestStatus(isCancelled ? PettyCashVoucherStatuses.ForApproval : PettyCashVoucherStatuses.Cancelled),
-      tone: isCancelled ? "default" : "danger",
+      disabled: isCancelled,
+      icon: Ban,
+      label: "Cancel",
+      onSelect: () => onRequestConfirmation("cancel"),
+      tone: "danger",
       type: "button",
     },
   ];
@@ -81,13 +76,9 @@ function createPettyCashVoucherStatusActionItems({
   return actions;
 }
 
-function HeaderActionButton({
-  action,
-}: {
-  action: Extract<ModuleActionMenuItem, { type: "button" }>;
-}) {
+function HeaderActionButton({ action }: { action: Extract<ModuleActionMenuItem, { type: "button" }> }) {
   const Icon = action.icon;
-  const className = getActionButtonClassName(action);
+  const className = getStatusActionButtonClassName(action);
 
   return (
     <button type="button" disabled={action.disabled} onClick={action.onSelect} className={className}>
@@ -97,7 +88,7 @@ function HeaderActionButton({
   );
 }
 
-function getActionButtonClassName(action: Extract<ModuleActionMenuItem, { type: "button" }>) {
+function getStatusActionButtonClassName(action: Extract<ModuleActionMenuItem, { type: "button" }>) {
   if (action.label === "Approve") {
     return moduleStatusActionClassNames.approve;
   }
@@ -110,5 +101,9 @@ function getActionButtonClassName(action: Extract<ModuleActionMenuItem, { type: 
     return moduleStatusActionClassNames.cancel;
   }
 
-  return moduleStatusActionClassNames.undo;
+  if (action.tone === "danger") {
+    return moduleStatusActionClassNames.danger;
+  }
+
+  return moduleHeaderActionClassNames.secondary;
 }

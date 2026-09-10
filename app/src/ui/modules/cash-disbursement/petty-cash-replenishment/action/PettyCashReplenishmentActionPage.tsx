@@ -20,6 +20,7 @@ import { PettyCashReplenishmentReportPreview } from "@/app/src/ui/modules/cash-d
 import { openPettyCashReplenishmentPdf } from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/reports/PettyCashReplenishmentPdf";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
+import { ProjectMaintenanceDrawer } from "@/app/src/ui/modules/project-maintenance/ProjectMaintenanceDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 export function PettyCashReplenishmentActionPage({ mode }: { mode: PettyCashReplenishmentActionMode }) {
@@ -72,10 +73,7 @@ export function PettyCashReplenishmentActionPage({ mode }: { mode: PettyCashRepl
               onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
               onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
             />
-            <PettyCashReplenishmentEntrySection
-              page={page}
-              onOpenSupplierDrawer={handleOpenSupplierDrawer}
-            />
+            <PettyCashReplenishmentEntrySection page={page} onOpenSupplierDrawer={handleOpenSupplierDrawer} />
           </>
         ) : (
           <PettyCashReplenishmentFileAttachmentFields page={page} />
@@ -113,14 +111,13 @@ export function PettyCashReplenishmentActionPage({ mode }: { mode: PettyCashRepl
           setIsResponsibilityCenterDrawerOpen(false);
         }}
       />
-      <ResponsibilityCenterDrawer
+      <ProjectMaintenanceDrawer
         isOpen={!page.isReadonly && isProjectDrawerOpen}
         mode="add"
         onClose={() => setIsProjectDrawerOpen(false)}
-        onSaved={(center) => {
-          page.updateField("projectCode", center.code);
-          page.updateField("projectName", center.name);
-          setIsProjectDrawerOpen(false);
+        onSaved={(project) => {
+          page.updateField("projectCode", project.projectCode);
+          page.updateField("projectName", project.projectName);
         }}
       />
       <PettyCashReplenishmentReportPreview

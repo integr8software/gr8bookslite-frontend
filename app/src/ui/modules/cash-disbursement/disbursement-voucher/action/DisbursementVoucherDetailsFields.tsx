@@ -263,10 +263,17 @@ function createVoucherPartyOptions({
   const options: AppAdvancedDropdownOption[] = [...sourceOptions];
 
   if (currentPartyCode.trim() || currentPartyName.trim()) {
+    const matchingOption = options.find(
+      (opt) =>
+        opt.value === currentPartyCode ||
+        (currentPartyCode && opt.label === currentPartyCode) ||
+        opt.name.toLowerCase() === currentPartyName.trim().toLowerCase(),
+    );
+
     addUniqueDropdownOption(options, {
-      description: "Current voucher value",
-      label: currentPartyCode || "Current voucher",
-      name: currentPartyName || currentPartyCode,
+      description: matchingOption?.description ?? "",
+      label: currentPartyCode || matchingOption?.label || "",
+      name: currentPartyName || matchingOption?.name || currentPartyCode,
       value: currentPartyCode || currentPartyName,
     });
   }

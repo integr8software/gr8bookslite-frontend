@@ -2,7 +2,7 @@ import type { TransactionAttachment } from "@/app/src/types/shared/transaction-s
 import type { usePettyCashReplenishmentActionPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-replenishment/usePettyCashReplenishmentActionPage";
 import type { usePettyCashReplenishmentOverviewPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-replenishment/usePettyCashReplenishmentOverviewPage";
 
-export type PettyCashReplenishmentStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
+export type PettyCashReplenishmentStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 export type PettyCashReplenishmentFormStatus = "Open" | PettyCashReplenishmentStatus;
 export type PettyCashReplenishmentActionMode = "add" | "edit" | "view";
 export type PettyCashReplenishmentActionTab = "details" | "attachments";
@@ -65,6 +65,7 @@ export type PettyCashReplenishmentDetailEntryColumnsParams = {
   supplierOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
   vatOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
   ewtOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
+  taxCodes?: import("@/app/src/types/shared/tax/AlphanumericTaxCodeTypes").AlphanumericTaxCode[];
   responsibilityCenterOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
   onOpenSupplierDrawer?: PettyCashReplenishmentOpenSupplierDrawerHandler;
 };

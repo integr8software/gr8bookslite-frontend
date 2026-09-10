@@ -143,7 +143,7 @@ export const RevolvingFundItemColumnLabels: Record<RevolvingFundItemColumnId, st
   vatType: "VAT Type",
   vatPercent: "VAT %",
   vatAmount: "VAT Amount",
-  netAmount: "NET Amount",
+  netAmount: "Net of VAT",
   ewtCode: "EWT Code",
   ewtPercent: "EWT %",
   ewtAmount: "EWT Amount",

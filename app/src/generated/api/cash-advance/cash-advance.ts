@@ -26,8 +26,9 @@ import type {
 
 import type {
   CashAdvanceControllerFindAllV1Params,
-  CashAdvanceControllerRemoveV1200,
+  CashAdvanceControllerFindCopyFromCandidatesV1Params,
   CashAdvanceControllerSuggestTransactionNumberV1Params,
+  CashAdvanceCopyFromCandidatesResponseDto,
   CashAdvanceListResponseDto,
   CashAdvanceSingleResponseDto,
   CreateCashAdvanceDto,
@@ -59,7 +60,7 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 /**
- * @summary Get paginated list of cash advance records
+ * @summary Get paginated cash advance records
  */
 export const cashAdvanceControllerFindAllV1 = (
     params?: CashAdvanceControllerFindAllV1Params,
@@ -131,7 +132,7 @@ export function useCashAdvanceControllerFindAllV1<TData = Awaited<ReturnType<typ
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get paginated list of cash advance records
+ * @summary Get paginated cash advance records
  */
 
 export function useCashAdvanceControllerFindAllV1<TData = Awaited<ReturnType<typeof cashAdvanceControllerFindAllV1>>, TError = unknown>(
@@ -152,7 +153,7 @@ export function useCashAdvanceControllerFindAllV1<TData = Awaited<ReturnType<typ
 
 
 /**
- * @summary Create new cash advance record
+ * @summary Create a cash advance batch
  */
 export const cashAdvanceControllerCreateV1 = (
     createCashAdvanceDto: CreateCashAdvanceDto,
@@ -160,7 +161,7 @@ export const cashAdvanceControllerCreateV1 = (
 ) => {
 
 
-      return OrvalApiClient<CashAdvanceSingleResponseDto>(
+      return OrvalApiClient<void>(
       {url: `/api/v1/cash-disbursement/cash-advance`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createCashAdvanceDto, signal
@@ -202,7 +203,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type CashAdvanceControllerCreateV1MutationError = unknown
 
     /**
- * @summary Create new cash advance record
+ * @summary Create a cash advance batch
  */
 export const useCashAdvanceControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cashAdvanceControllerCreateV1>>, TError,{data: CreateCashAdvanceDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -308,7 +309,100 @@ export function useCashAdvanceControllerSuggestTransactionNumberV1<TData = Await
 
 
 /**
- * @summary Get single cash advance details by ID
+ * @summary Get available Employee Advances for voucher Copy From
+ */
+export const cashAdvanceControllerFindCopyFromCandidatesV1 = (
+    params: CashAdvanceControllerFindCopyFromCandidatesV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<CashAdvanceCopyFromCandidatesResponseDto>(
+      {url: `/api/v1/cash-disbursement/cash-advance/copy-from/candidates`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getCashAdvanceControllerFindCopyFromCandidatesV1QueryKey = (params?: CashAdvanceControllerFindCopyFromCandidatesV1Params,) => {
+    return [
+    `/api/v1/cash-disbursement/cash-advance/copy-from/candidates`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getCashAdvanceControllerFindCopyFromCandidatesV1QueryOptions = <TData = Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError = unknown>(params: CashAdvanceControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getCashAdvanceControllerFindCopyFromCandidatesV1QueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>> = ({ signal }) => cashAdvanceControllerFindCopyFromCandidatesV1(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type CashAdvanceControllerFindCopyFromCandidatesV1QueryResult = NonNullable<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>>
+export type CashAdvanceControllerFindCopyFromCandidatesV1QueryError = unknown
+
+
+export function useCashAdvanceControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: CashAdvanceControllerFindCopyFromCandidatesV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCashAdvanceControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: CashAdvanceControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCashAdvanceControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: CashAdvanceControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get available Employee Advances for voucher Copy From
+ */
+
+export function useCashAdvanceControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: CashAdvanceControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashAdvanceControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getCashAdvanceControllerFindCopyFromCandidatesV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Get one cash advance batch
  */
 export const cashAdvanceControllerFindOneV1 = (
     id: string,
@@ -379,7 +473,7 @@ export function useCashAdvanceControllerFindOneV1<TData = Awaited<ReturnType<typ
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get single cash advance details by ID
+ * @summary Get one cash advance batch
  */
 
 export function useCashAdvanceControllerFindOneV1<TData = Awaited<ReturnType<typeof cashAdvanceControllerFindOneV1>>, TError = unknown>(
@@ -400,7 +494,7 @@ export function useCashAdvanceControllerFindOneV1<TData = Awaited<ReturnType<typ
 
 
 /**
- * @summary Update existing cash advance record
+ * @summary Update a draft cash advance batch
  */
 export const cashAdvanceControllerUpdateV1 = (
     id: string,
@@ -409,7 +503,7 @@ export const cashAdvanceControllerUpdateV1 = (
 ) => {
 
 
-      return OrvalApiClient<CashAdvanceSingleResponseDto>(
+      return OrvalApiClient<void>(
       {url: `/api/v1/cash-disbursement/cash-advance/${id}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: updateCashAdvanceDto, signal
@@ -451,7 +545,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type CashAdvanceControllerUpdateV1MutationError = unknown
 
     /**
- * @summary Update existing cash advance record
+ * @summary Update a draft cash advance batch
  */
 export const useCashAdvanceControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cashAdvanceControllerUpdateV1>>, TError,{id: string;data: UpdateCashAdvanceDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -464,7 +558,7 @@ export const useCashAdvanceControllerUpdateV1 = <TError = unknown,
       return useMutation(getCashAdvanceControllerUpdateV1MutationOptions(options), queryClient);
     }
     /**
- * @summary Cancel/soft-delete cash advance record
+ * @summary Cancel a cash advance batch
  */
 export const cashAdvanceControllerRemoveV1 = (
     id: string,
@@ -472,7 +566,7 @@ export const cashAdvanceControllerRemoveV1 = (
 ) => {
 
 
-      return OrvalApiClient<CashAdvanceControllerRemoveV1200>(
+      return OrvalApiClient<void>(
       {url: `/api/v1/cash-disbursement/cash-advance/${id}`, method: 'DELETE', signal
     },
       options);
@@ -512,7 +606,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type CashAdvanceControllerRemoveV1MutationError = unknown
 
     /**
- * @summary Cancel/soft-delete cash advance record
+ * @summary Cancel a cash advance batch
  */
 export const useCashAdvanceControllerRemoveV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cashAdvanceControllerRemoveV1>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -525,7 +619,7 @@ export const useCashAdvanceControllerRemoveV1 = <TError = unknown,
       return useMutation(getCashAdvanceControllerRemoveV1MutationOptions(options), queryClient);
     }
     /**
- * @summary Update cash advance status
+ * @summary Update a cash advance batch status
  */
 export const cashAdvanceControllerUpdateStatusV1 = (
     id: string,
@@ -534,7 +628,7 @@ export const cashAdvanceControllerUpdateStatusV1 = (
 ) => {
 
 
-      return OrvalApiClient<CashAdvanceSingleResponseDto>(
+      return OrvalApiClient<void>(
       {url: `/api/v1/cash-disbursement/cash-advance/${id}/status`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateCashAdvanceStatusDto, signal
@@ -576,7 +670,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type CashAdvanceControllerUpdateStatusV1MutationError = unknown
 
     /**
- * @summary Update cash advance status
+ * @summary Update a cash advance batch status
  */
 export const useCashAdvanceControllerUpdateStatusV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cashAdvanceControllerUpdateStatusV1>>, TError,{id: string;data: UpdateCashAdvanceStatusDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -597,7 +691,7 @@ export const cashAdvanceControllerSubmitApprovalV1 = (
 ) => {
 
 
-      return OrvalApiClient<CashAdvanceSingleResponseDto>(
+      return OrvalApiClient<void>(
       {url: `/api/v1/cash-disbursement/cash-advance/${id}/submit-approval`, method: 'POST', signal
     },
       options);

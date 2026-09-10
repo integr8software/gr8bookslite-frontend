@@ -52,7 +52,7 @@ export function PettyCashReplenishmentReportPreview({
                 <th className="px-3 py-2 text-left">Supplier Code</th>
                 <th className="px-3 py-2 text-left">Supplier Name</th>
                 <th className="px-3 py-2 text-right">Amount</th>
-                <th className="px-3 py-2 text-right">Net Amount</th>
+                <th className="px-3 py-2 text-right">Net of VAT</th>
                 <th className="px-3 py-2 text-left">VAT Type</th>
                 <th className="px-3 py-2 text-right">VAT Rate</th>
                 <th className="px-3 py-2 text-right">VAT Amount</th>

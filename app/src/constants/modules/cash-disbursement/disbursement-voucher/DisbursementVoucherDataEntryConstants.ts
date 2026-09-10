@@ -84,7 +84,7 @@ export const ExpenseEntryColumnLabels: Record<ExpenseEntryColumnId, string> = {
   checkDate: "Check Date",
   checkNo: "Check No.",
   checkStatus: "Check Status",
-  netAmount: "Net Amount",
+  netAmount: "Net of VAT",
   vatCode: "VAT Type",
   vatPercent: "VAT %",
   vatAmount: "VAT Amount",

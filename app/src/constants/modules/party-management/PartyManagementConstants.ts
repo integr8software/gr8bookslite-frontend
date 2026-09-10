@@ -331,6 +331,10 @@ export const PartyInformationExportColumns: ModuleTableExportColumn<PartyInforma
   { header: "Default Employee Advance Account", value: "employeeAdvanceAccount" },
   { header: "Default Employee Payable Account", value: "employeePayableAccount" },
   { header: "Cash Advance Limit", value: "cashAdvanceLimit" },
+  { header: "Default Responsibility Center", value: "defaultResponsibilityCenterName" },
+  { header: "Default Payment Type", value: "defaultPaymentTypeName" },
+  { header: "Default Bank", value: "defaultBank" },
+  { header: "Default Bank Account No", value: "defaultBankAccountNo" },
 ];
 
 export const PartyManagementFieldClassName =
@@ -385,6 +389,10 @@ export const PartyImportTemplateHeaders = [
   "Default Employee Advance Account Title",
   "Default Employee Payable Account Title",
   "Cash Advance Limit",
+  "Default Responsibility Center",
+  "Default Payment Type",
+  "Default Bank",
+  "Default Bank Account No",
 ];
 
 export const PartyImportAcceptedFileExtensions = ".xlsx,.csv,.tsv,.txt";
@@ -436,6 +444,10 @@ export const PartyImportDefaultColumnIndexes: Partial<Record<PartyImportColumnId
   employeeAdvanceAccount: 41,
   employeePayableAccount: 42,
   cashAdvanceLimit: 43,
+  defaultResponsibilityCenterName: 44,
+  defaultPaymentTypeName: 45,
+  defaultBank: 46,
+  defaultBankAccountNo: 47,
 };
 
 export const PartyImportFieldOrder: PartyImportColumnId[] = [
@@ -483,6 +495,10 @@ export const PartyImportFieldOrder: PartyImportColumnId[] = [
   "employeeAdvanceAccount",
   "employeePayableAccount",
   "cashAdvanceLimit",
+  "defaultResponsibilityCenterName",
+  "defaultPaymentTypeName",
+  "defaultBank",
+  "defaultBankAccountNo",
 ];
 
 export const PartyImportSelectionColumnWidth = ModuleImportFixedColumnsWidth;
@@ -537,6 +553,10 @@ export const PartyImportDefaultColumnWidths: PartyImportColumnWidths = {
   employeeAdvanceAccount: 280,
   employeePayableAccount: 280,
   cashAdvanceLimit: 180,
+  defaultResponsibilityCenterName: 220,
+  defaultPaymentTypeName: 200,
+  defaultBank: 200,
+  defaultBankAccountNo: 200,
 };
 
 export const PartyImportColumnHeaders: PartyImportColumnHeader[] = PartyImportFieldOrder.map((id, index) => ({

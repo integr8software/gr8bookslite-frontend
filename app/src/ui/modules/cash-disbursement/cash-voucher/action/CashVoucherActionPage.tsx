@@ -1,21 +1,21 @@
 "use client";
 
-import { Suspense, useMemo } from "react";
+import { Suspense } from "react";
 import type { ReactNode } from "react";
 import {
   CashVoucherActionTabs,
   CashVoucherCopySources,
   CashVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/cash-voucher/CashVoucherConstants";
-import { createProjectResponsibilityCenterInitialValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { useCashVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherActionPage";
 import type {
   CashVoucherActionMode,
   CashVoucherActionPageState,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
-import { DefaultAccountDrawer } from "@/app/src/ui/modules/financial-maintenance/default-account/DefaultAccountDrawer";
+import { DisbursementTypeDrawer } from "@/app/src/ui/modules/financial-maintenance/disbursement-type/DisbursementTypeDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
+import { ProjectMaintenanceDrawer } from "@/app/src/ui/modules/project-maintenance/ProjectMaintenanceDrawer";
 import { CashVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/action/CashVoucherActionHeader";
 import { CashVoucherEntrySection } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/entries/CashVoucherEntrySection";
 import { CashVoucherDetailsFields } from "@/app/src/ui/modules/cash-disbursement/cash-voucher/action/CashVoucherDetailsFields";
@@ -150,7 +150,7 @@ function CashVoucherDetailsSection({ voucherAction }: { voucherAction: CashVouch
         totalCredit={voucherAction.totalCredit}
         totalDebit={voucherAction.totalDebit}
         onAddEntries={voucherAction.handleAddEntries}
-        onAddExpenseType={() => voucherAction.setIsDefaultAccountDrawerOpen(true)}
+        onAddExpenseType={() => voucherAction.setIsDisbursementTypeDrawerOpen(true)}
         onAddPartyName={() => voucherAction.setIsPartyNameDrawerOpen(true)}
         onAddResponsibilityCenter={voucherAction.handleOpenResponsibilityCenterDrawer}
         onClearEntries={voucherAction.handleClearEntries}
@@ -167,15 +167,6 @@ function CashVoucherDetailsSection({ voucherAction }: { voucherAction: CashVouch
 }
 
 function CashVoucherActionDialogs({ voucherAction }: { voucherAction: CashVoucherActionPageState }) {
-  const projectInitialValues = useMemo(
-    () =>
-      createProjectResponsibilityCenterInitialValues(
-        voucherAction.responsibilityCenterStore.classifications,
-        voucherAction.responsibilityCenterStore.types,
-      ),
-    [voucherAction.responsibilityCenterStore.classifications, voucherAction.responsibilityCenterStore.types],
-  );
-
   return (
     <>
       <CashVoucherReportPreview
@@ -193,12 +184,15 @@ function CashVoucherActionDialogs({ voucherAction }: { voucherAction: CashVouche
         onClose={() => voucherAction.setIsPartyNameDrawerOpen(false)}
         onCreateParty={voucherAction.handleCreateParty}
       />
-      <ResponsibilityCenterDrawer
-        initialValues={projectInitialValues}
+      <ProjectMaintenanceDrawer
         isOpen={!voucherAction.isReadonly && voucherAction.isProjectNameDrawerOpen}
         mode="add"
         onClose={() => voucherAction.setIsProjectNameDrawerOpen(false)}
-        onSaved={voucherAction.handleCreateProject}
+        onSaved={(project) => {
+          voucherAction.updateField("projectCode", project.projectCode);
+          voucherAction.updateField("costCenter", project.projectCode);
+          voucherAction.updateField("projectName", project.projectName);
+        }}
       />
       <ResponsibilityCenterDrawer
         isOpen={!voucherAction.isReadonly && voucherAction.isResponsibilityCenterDrawerOpen}
@@ -206,11 +200,12 @@ function CashVoucherActionDialogs({ voucherAction }: { voucherAction: CashVouche
         onClose={voucherAction.handleCloseResponsibilityCenterDrawer}
         onSaved={voucherAction.handleCreateResponsibilityCenter}
       />
-      <DefaultAccountDrawer
-        isOpen={!voucherAction.isReadonly && voucherAction.isDefaultAccountDrawerOpen}
+      <DisbursementTypeDrawer
+        isOpen={!voucherAction.isReadonly && voucherAction.isDisbursementTypeDrawerOpen}
+        kind="disbursement"
         mode="add"
         permissions={voucherAction.defaultAccountStore.permissions}
-        onClose={() => voucherAction.setIsDefaultAccountDrawerOpen(false)}
+        onClose={() => voucherAction.setIsDisbursementTypeDrawerOpen(false)}
       />
     </>
   );

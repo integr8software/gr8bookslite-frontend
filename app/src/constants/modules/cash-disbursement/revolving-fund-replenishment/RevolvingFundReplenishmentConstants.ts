@@ -168,7 +168,7 @@ export const RevolvingFundReplenishmentEntryColumnLabels: Record<RevolvingFundRe
   supplierCode: "Supplier Code",
   supplierName: "Supplier Name",
   amount: "Gross Amount",
-  netAmount: "NET Amount",
+  netAmount: "Net of VAT",
   vatType: "VAT Type",
   vatPercent: "VAT %",
   vatAmount: "VAT Amount",

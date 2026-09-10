@@ -2,25 +2,24 @@
 
 import { AccountsPayableVoucherPurchaseTransactionType } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import { calculateAccountsPayableVoucherDueDate } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
-import { createProjectResponsibilityCenterInitialValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
+import { createProjectNameLookupOptions } from "@/app/src/data/modules/project-maintenance/ProjectMaintenanceLookupData";
 import { useMemo, useState, type ChangeEventHandler, type ReactNode } from "react";
 
 import {
   useAccountsPayableVoucherPartyOptions,
   useAccountsPayableVoucherPayableAccountOptions,
-  useAccountsPayableVoucherResponsibilityCenterOptions,
   useAccountsPayableVoucherTermOptions,
 } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
 import { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
-import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import { useTermsMaintenanceStore } from "@/app/src/hooks/modules/financial-maintenance/terms-maintenance/useTermsMaintenance";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import { useProjectMaintenanceLookup } from "@/app/src/hooks/modules/project-maintenance/useProjectMaintenance";
 import { useModuleFieldVisibility } from "@/app/src/hooks/shared/field-management/useCurrentModuleFieldManagement";
 import { useTaxes } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import type { AccountsPayableVoucherLookupParty } from "@/app/src/types/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherTypes";
-import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { TermsMaintenance } from "@/app/src/types/modules/financial-maintenance/terms-maintenance/TermsMaintenanceTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
+import type { ProjectMaintenance } from "@/app/src/types/modules/project-maintenance/ProjectMaintenanceTypes";
 import {
   applyAccountingEntryPartyTaxDefaults,
   applyExpenseLinePartyTaxDefaults,
@@ -33,9 +32,9 @@ import { AccountsPayableVoucherHeaderPage } from "@/app/src/ui/modules/accounts-
 import { AccountsPayableVoucherNotFound } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/overview/AccountsPayableVoucherNotFound";
 import { openAccountsPayableVoucherPdf } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/reports/AccountsPayableVoucherPdf";
 import { AccountsPayableVoucherReportPreview } from "@/app/src/ui/modules/accounts-payable/accounts-payable-voucher/reports/AccountsPayableVoucherReportPreview";
-import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { TermsMaintenanceQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/terms-maintenance/TermsMaintenanceQuickAddDialog";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { ProjectMaintenanceDrawer } from "@/app/src/ui/modules/project-maintenance/ProjectMaintenanceDrawer";
 import { AppAdvancedDropdown, type AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
@@ -58,7 +57,6 @@ const PurchaseTaxCodeQuery = {
 import {
   createLookupTermOptions,
   createPartyOptions,
-  createProjectOptions,
   createTermOptions,
   findPayableAccount,
   formatPartyAddress,
@@ -76,11 +74,10 @@ import {
 export function AccountsPayableVoucherFormPage() {
   const page = useAccountsPayableVoucherFormPage();
   const partyStore = usePartyManagementStore();
-  const responsibilityCenterStore = useResponsibilityCenterStore();
   const termsMaintenanceStore = useTermsMaintenanceStore();
   const partyOptionsQuery = useAccountsPayableVoucherPartyOptions();
   const payableAccountOptionsQuery = useAccountsPayableVoucherPayableAccountOptions();
-  const projectOptionsQuery = useAccountsPayableVoucherResponsibilityCenterOptions();
+  const projectOptionsQuery = useProjectMaintenanceLookup();
   const termOptionsQuery = useAccountsPayableVoucherTermOptions();
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
   const [partyAddTarget, setPartyAddTarget] = useState<"header" | AccountsPayableVoucherPartyAddTarget | null>(null);
@@ -105,16 +102,17 @@ export function AccountsPayableVoucherFormPage() {
     [page.values.partyCode, page.values.partyName, partyRecords],
   );
   const projectOptions = useMemo<AppAdvancedDropdownOption[]>(
-    () => createProjectOptions(projectRecords, page.values.projectCode, page.values.projectName),
+    () =>
+      createProjectNameLookupOptions({
+        currentProjectCode: page.values.projectCode,
+        currentProjectName: page.values.projectName,
+        options: projectRecords,
+      }),
     [page.values.projectCode, page.values.projectName, projectRecords],
   );
   const termOptions = useMemo<AppAdvancedDropdownOption[]>(
     () => createTermOptions(createLookupTermOptions(termRecords), page.values.termId, page.values.terms),
     [page.values.termId, page.values.terms, termRecords],
-  );
-  const projectInitialValues = useMemo(
-    () => createProjectResponsibilityCenterInitialValues(responsibilityCenterStore.classifications, responsibilityCenterStore.types),
-    [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
   );
   if (page.needsRecord && page.isRecordLoading) {
     return (
@@ -184,9 +182,9 @@ export function AccountsPayableVoucherFormPage() {
     setPartyAddTarget(null);
   }
 
-  function handleCreateProject(project: ResponsibilityCenter) {
-    page.updateHeaderField("projectCode", project.code);
-    page.updateHeaderField("projectName", project.name);
+  function handleCreateProject(project: ProjectMaintenance) {
+    page.updateHeaderField("projectCode", project.projectCode);
+    page.updateHeaderField("projectName", project.projectName);
     setIsProjectNameDialogOpen(false);
   }
 
@@ -480,9 +478,9 @@ export function AccountsPayableVoucherFormPage() {
                   value={page.values.projectName}
                   readOnly={page.isReadonly}
                   addAction={
-                    !page.isReadonly && responsibilityCenterStore.permissions.canCreate
+                    !page.isReadonly
                       ? {
-                          label: "Add Project",
+                          label: "Add Project Name",
                           onClick: () => setIsProjectNameDialogOpen(true),
                         }
                       : undefined
@@ -560,8 +558,7 @@ export function AccountsPayableVoucherFormPage() {
         onSaved={handleCreateTerm}
       />
 
-      <ResponsibilityCenterDrawer
-        initialValues={projectInitialValues}
+      <ProjectMaintenanceDrawer
         isOpen={!page.isReadonly && isProjectNameDialogOpen}
         mode="add"
         onClose={() => setIsProjectNameDialogOpen(false)}

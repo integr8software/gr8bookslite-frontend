@@ -193,8 +193,9 @@ export function syncAccountsPayableVoucherExpenseTaxAmounts(line: AccountsPayabl
   const absoluteAmount = Math.abs(amount);
   const vatPercent = Number(line.vatPercent || 0);
   const ewtPercent = Number(line.ewtPercent || 0);
-  const vatAmount = roundCurrency(sign * ((absoluteAmount * vatPercent) / 100));
-  const ewtAmount = roundCurrency(sign * ((absoluteAmount * ewtPercent) / 100));
+  const taxBaseAmount = vatPercent === 12 ? absoluteAmount / 1.12 : absoluteAmount;
+  const vatAmount = roundCurrency(sign * (vatPercent === 12 ? taxBaseAmount * 0.12 : (absoluteAmount * vatPercent) / 100));
+  const ewtAmount = roundCurrency(sign * ((taxBaseAmount * ewtPercent) / 100));
   const netAmount = roundCurrency(sign * Math.max(absoluteAmount - Math.abs(vatAmount), 0));
   const totalAmountDue = roundCurrency(sign * Math.max(absoluteAmount - Math.abs(ewtAmount), 0));
 

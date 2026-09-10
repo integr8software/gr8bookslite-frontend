@@ -27,7 +27,9 @@ import type {
 import type {
   CreatePettyCashReplenishmentDto,
   PettyCashReplenishmentControllerFindAllV1Params,
+  PettyCashReplenishmentControllerFindCopyFromCandidatesV1Params,
   PettyCashReplenishmentControllerSuggestTransactionNumberV1Params,
+  PettyCashReplenishmentCopyFromCandidatesResponseDto,
   PettyCashReplenishmentListResponseDto,
   PettyCashReplenishmentResponseDto,
   TransactionNumberSuggestionResponseDto,
@@ -307,6 +309,99 @@ export const usePettyCashReplenishmentControllerCreateV1 = <TError = unknown,
       return useMutation(getPettyCashReplenishmentControllerCreateV1MutationOptions(options), queryClient);
     }
     /**
+ * @summary List available Petty Cash Replenishments for voucher Copy From
+ */
+export const pettyCashReplenishmentControllerFindCopyFromCandidatesV1 = (
+    params: PettyCashReplenishmentControllerFindCopyFromCandidatesV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<PettyCashReplenishmentCopyFromCandidatesResponseDto>(
+      {url: `/api/v1/cash-disbursement/petty-cash-replenishment/copy-from/candidates`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getPettyCashReplenishmentControllerFindCopyFromCandidatesV1QueryKey = (params?: PettyCashReplenishmentControllerFindCopyFromCandidatesV1Params,) => {
+    return [
+    `/api/v1/cash-disbursement/petty-cash-replenishment/copy-from/candidates`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getPettyCashReplenishmentControllerFindCopyFromCandidatesV1QueryOptions = <TData = Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>, TError = unknown>(params: PettyCashReplenishmentControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPettyCashReplenishmentControllerFindCopyFromCandidatesV1QueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>> = ({ signal }) => pettyCashReplenishmentControllerFindCopyFromCandidatesV1(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PettyCashReplenishmentControllerFindCopyFromCandidatesV1QueryResult = NonNullable<Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>>
+export type PettyCashReplenishmentControllerFindCopyFromCandidatesV1QueryError = unknown
+
+
+export function usePettyCashReplenishmentControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: PettyCashReplenishmentControllerFindCopyFromCandidatesV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePettyCashReplenishmentControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: PettyCashReplenishmentControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePettyCashReplenishmentControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: PettyCashReplenishmentControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List available Petty Cash Replenishments for voucher Copy From
+ */
+
+export function usePettyCashReplenishmentControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: PettyCashReplenishmentControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashReplenishmentControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPettyCashReplenishmentControllerFindCopyFromCandidatesV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
  * @summary Get Petty Cash Replenishment details by ID
  */
 export const pettyCashReplenishmentControllerFindOneV1 = (

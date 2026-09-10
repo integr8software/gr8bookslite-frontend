@@ -25,9 +25,11 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AdvanceToSupplierCopyFromCandidatesResponseDto,
   AdvanceToSupplierListResponseDto,
   AdvanceToSupplierResponseDto,
   AdvancesToSuppliersControllerFindAllV1Params,
+  AdvancesToSuppliersControllerFindCopyFromCandidatesV1Params,
   AdvancesToSuppliersControllerSuggestTransactionNumberV1Params,
   CreateAdvanceToSupplierDto,
   TransactionNumberSuggestionResponseDto,
@@ -307,6 +309,99 @@ export const useAdvancesToSuppliersControllerCreateV1 = <TError = unknown,
       return useMutation(getAdvancesToSuppliersControllerCreateV1MutationOptions(options), queryClient);
     }
     /**
+ * @summary List available Advances to Suppliers for voucher Copy From
+ */
+export const advancesToSuppliersControllerFindCopyFromCandidatesV1 = (
+    params: AdvancesToSuppliersControllerFindCopyFromCandidatesV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<AdvanceToSupplierCopyFromCandidatesResponseDto>(
+      {url: `/api/v1/cash-disbursement/advances-to-suppliers/copy-from/candidates`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getAdvancesToSuppliersControllerFindCopyFromCandidatesV1QueryKey = (params?: AdvancesToSuppliersControllerFindCopyFromCandidatesV1Params,) => {
+    return [
+    `/api/v1/cash-disbursement/advances-to-suppliers/copy-from/candidates`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getAdvancesToSuppliersControllerFindCopyFromCandidatesV1QueryOptions = <TData = Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>, TError = unknown>(params: AdvancesToSuppliersControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAdvancesToSuppliersControllerFindCopyFromCandidatesV1QueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>> = ({ signal }) => advancesToSuppliersControllerFindCopyFromCandidatesV1(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AdvancesToSuppliersControllerFindCopyFromCandidatesV1QueryResult = NonNullable<Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>>
+export type AdvancesToSuppliersControllerFindCopyFromCandidatesV1QueryError = unknown
+
+
+export function useAdvancesToSuppliersControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: AdvancesToSuppliersControllerFindCopyFromCandidatesV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdvancesToSuppliersControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: AdvancesToSuppliersControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAdvancesToSuppliersControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: AdvancesToSuppliersControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List available Advances to Suppliers for voucher Copy From
+ */
+
+export function useAdvancesToSuppliersControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: AdvancesToSuppliersControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof advancesToSuppliersControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAdvancesToSuppliersControllerFindCopyFromCandidatesV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
  * @summary Get Advances to Suppliers details by ID
  */
 export const advancesToSuppliersControllerFindOneV1 = (

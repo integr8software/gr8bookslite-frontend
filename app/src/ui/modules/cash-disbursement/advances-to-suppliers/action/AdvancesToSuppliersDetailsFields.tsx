@@ -5,6 +5,7 @@ import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLook
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
+import { PercentageNumberField } from "@/app/src/ui/shared/percentage/PercentageNumberField";
 import {
   TransactionField,
   TransactionFieldClassName,
@@ -79,7 +80,7 @@ export function AdvancesToSuppliersDetailsFields({
               value={page.values.accountCode}
               options={page.accountOptions}
               readOnly={page.isReadonly}
-              placeholder={page.isLookupLoading ? "Loading Default Accounts" : "Select Default Account Title"}
+              placeholder={page.isLookupLoading ? "Loading Disbursement Types" : "Select Disbursement Type Title"}
               searchPlaceholder="Search Default Account"
               onChange={(code, name) => {
                 const selectedAccount = page.accountOptions.find((option) => option.value === code) as
@@ -201,7 +202,6 @@ export function AdvancesToSuppliersDetailsFields({
           <TransactionTextField
             value={page.values.poReference}
             isReadonly
-            isRequired
             label="Purchase Order Reference"
             error={page.errors.poReference}
             onValueChange={(value) => page.updateField("poReference", value)}
@@ -220,10 +220,8 @@ export function AdvancesToSuppliersDetailsFields({
             />
           </TransactionField>
           <TransactionField label="Advance Payment (%)" error={page.errors.advancePaymentPercentage} isRequired>
-            <MoneyNumberField
+            <PercentageNumberField
               value={page.values.advancePaymentPercentage}
-              min="0"
-              max="100"
               readOnly={page.isReadonly || isFixedAmount}
               onValueChange={(value) => page.updateField("advancePaymentPercentage", value)}
               className={`${TransactionFieldClassName} text-right tabular-nums${isFixedAmount ? " transaction-readonly-placeholder" : ""}`}

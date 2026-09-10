@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentType, CSSProperties, ReactNode, SVGProps } from "react";
+import type { ComponentType, ReactNode, SVGProps } from "react";
 import { ReceiptText } from "lucide-react";
 import { joinClasses } from "@/app/src/utils/string.util";
 

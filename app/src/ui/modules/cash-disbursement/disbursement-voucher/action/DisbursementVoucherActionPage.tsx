@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo } from "react";
+import { Suspense } from "react";
 import type { ReactNode } from "react";
 import {
   DisbursementVoucherActionTabs,
@@ -8,17 +8,17 @@ import {
   DisbursementVoucherPaymentInformationErrorFields,
   DisbursementVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherConstants";
-import { createProjectResponsibilityCenterInitialValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { useDisbursementVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/disbursement-voucher/useDisbursementVoucherActionPage";
 import type {
   DisbursementVoucherActionMode,
   DisbursementVoucherActionPageState,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import { BankMasterfileDrawer } from "@/app/src/ui/modules/financial-maintenance/bank-masterfile/BankMasterfileDrawer";
-import { DefaultAccountDrawer } from "@/app/src/ui/modules/financial-maintenance/default-account/DefaultAccountDrawer";
+import { DisbursementTypeDrawer } from "@/app/src/ui/modules/financial-maintenance/disbursement-type/DisbursementTypeDrawer";
 import { PaymentTypeDrawer } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
+import { ProjectMaintenanceDrawer } from "@/app/src/ui/modules/project-maintenance/ProjectMaintenanceDrawer";
 import { DisbursementVoucherActionHeader } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherActionHeader";
 import { DisbursementVoucherBankInformationFields } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherBankInformationFields";
 import { getPaymentTypeDetailKind } from "@/app/src/ui/modules/cash-disbursement/disbursement-voucher/action/DisbursementVoucherPaymentFields";
@@ -202,7 +202,7 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
         totalCredit={voucherAction.totalCredit}
         totalDebit={voucherAction.totalDebit}
         onAddEntries={voucherAction.handleAddEntries}
-        onAddExpenseType={() => voucherAction.setIsDefaultAccountDrawerOpen(true)}
+        onAddExpenseType={() => voucherAction.setIsDisbursementTypeDrawerOpen(true)}
         onAddPartyName={() => voucherAction.setIsPartyNameDrawerOpen(true)}
         onAddResponsibilityCenter={voucherAction.handleOpenResponsibilityCenterDrawer}
         onClearEntries={voucherAction.handleClearEntries}
@@ -219,15 +219,6 @@ function DisbursementVoucherDetailsSection({ voucherAction }: { voucherAction: D
 }
 
 function DisbursementVoucherActionDialogs({ voucherAction }: { voucherAction: DisbursementVoucherActionPageState }) {
-  const projectInitialValues = useMemo(
-    () =>
-      createProjectResponsibilityCenterInitialValues(
-        voucherAction.responsibilityCenterStore.classifications,
-        voucherAction.responsibilityCenterStore.types,
-      ),
-    [voucherAction.responsibilityCenterStore.classifications, voucherAction.responsibilityCenterStore.types],
-  );
-
   return (
     <>
       <DisbursementVoucherReportPreview
@@ -255,12 +246,15 @@ function DisbursementVoucherActionDialogs({ voucherAction }: { voucherAction: Di
         onClose={() => voucherAction.setIsPartyNameDrawerOpen(false)}
         onCreateParty={voucherAction.handleCreateParty}
       />
-      <ResponsibilityCenterDrawer
-        initialValues={projectInitialValues}
+      <ProjectMaintenanceDrawer
         isOpen={!voucherAction.isReadonly && voucherAction.isProjectNameDrawerOpen}
         mode="add"
         onClose={() => voucherAction.setIsProjectNameDrawerOpen(false)}
-        onSaved={voucherAction.handleCreateProject}
+        onSaved={(project) => {
+          voucherAction.updateField("projectCode", project.projectCode);
+          voucherAction.updateField("costCenter", project.projectCode);
+          voucherAction.updateField("projectName", project.projectName);
+        }}
       />
       <ResponsibilityCenterDrawer
         isOpen={!voucherAction.isReadonly && voucherAction.isResponsibilityCenterDrawerOpen}
@@ -268,11 +262,12 @@ function DisbursementVoucherActionDialogs({ voucherAction }: { voucherAction: Di
         onClose={voucherAction.handleCloseResponsibilityCenterDrawer}
         onSaved={voucherAction.handleCreateResponsibilityCenter}
       />
-      <DefaultAccountDrawer
-        isOpen={!voucherAction.isReadonly && voucherAction.isDefaultAccountDrawerOpen}
+      <DisbursementTypeDrawer
+        isOpen={!voucherAction.isReadonly && voucherAction.isDisbursementTypeDrawerOpen}
+        kind="disbursement"
         mode="add"
         permissions={voucherAction.defaultAccountStore.permissions}
-        onClose={() => voucherAction.setIsDefaultAccountDrawerOpen(false)}
+        onClose={() => voucherAction.setIsDisbursementTypeDrawerOpen(false)}
       />
     </>
   );

@@ -27,6 +27,7 @@ import type {
 import type {
   CreateItemBasicInfoDto,
   ItemBasicInfoListResponseDto,
+  ItemBasicInfoOptionsResponseDto,
   ItemBasicInfoResponseDto,
   ItemPricingResponseDto,
   UpdateItemBasicInfoDto,
@@ -55,6 +56,9 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+/**
+ * @summary Get list of item basic info records
+ */
 export const itemsControllerFindAllV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -123,6 +127,9 @@ export function useItemsControllerFindAllV1<TData = Awaited<ReturnType<typeof it
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get list of item basic info records
+ */
 
 export function useItemsControllerFindAllV1<TData = Awaited<ReturnType<typeof itemsControllerFindAllV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindAllV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -141,6 +148,9 @@ export function useItemsControllerFindAllV1<TData = Awaited<ReturnType<typeof it
 
 
 
+/**
+ * @summary Create an item basic info record
+ */
 export const itemsControllerCreateV1 = (
     createItemBasicInfoDto: CreateItemBasicInfoDto,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -188,7 +198,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ItemsControllerCreateV1MutationBody = CreateItemBasicInfoDto
     export type ItemsControllerCreateV1MutationError = unknown
 
-    export const useItemsControllerCreateV1 = <TError = unknown,
+    /**
+ * @summary Create an item basic info record
+ */
+export const useItemsControllerCreateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof itemsControllerCreateV1>>, TError,{data: CreateItemBasicInfoDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof itemsControllerCreateV1>>,
@@ -198,7 +211,102 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getItemsControllerCreateV1MutationOptions(options), queryClient);
     }
-    export const itemsControllerFindOneV1 = (
+    /**
+ * @summary Get item options
+ */
+export const itemsControllerFindOptionsV1 = (
+
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<ItemBasicInfoOptionsResponseDto>(
+      {url: `/api/v1/maintenance/items/options`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getItemsControllerFindOptionsV1QueryKey = () => {
+    return [
+    `/api/v1/maintenance/items/options`
+    ] as const;
+    }
+
+
+export const getItemsControllerFindOptionsV1QueryOptions = <TData = Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getItemsControllerFindOptionsV1QueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>> = ({ signal }) => itemsControllerFindOptionsV1(requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ItemsControllerFindOptionsV1QueryResult = NonNullable<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>>
+export type ItemsControllerFindOptionsV1QueryError = unknown
+
+
+export function useItemsControllerFindOptionsV1<TData = Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>,
+          TError,
+          Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useItemsControllerFindOptionsV1<TData = Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>,
+          TError,
+          Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useItemsControllerFindOptionsV1<TData = Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get item options
+ */
+
+export function useItemsControllerFindOptionsV1<TData = Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getItemsControllerFindOptionsV1QueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Get item basic info record by id
+ */
+export const itemsControllerFindOneV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -266,6 +374,9 @@ export function useItemsControllerFindOneV1<TData = Awaited<ReturnType<typeof it
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get item basic info record by id
+ */
 
 export function useItemsControllerFindOneV1<TData = Awaited<ReturnType<typeof itemsControllerFindOneV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindOneV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -284,6 +395,9 @@ export function useItemsControllerFindOneV1<TData = Awaited<ReturnType<typeof it
 
 
 
+/**
+ * @summary Update an item basic info record
+ */
 export const itemsControllerUpdateV1 = (
     id: string,
     updateItemBasicInfoDto: UpdateItemBasicInfoDto,
@@ -332,7 +446,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ItemsControllerUpdateV1MutationBody = UpdateItemBasicInfoDto
     export type ItemsControllerUpdateV1MutationError = unknown
 
-    export const useItemsControllerUpdateV1 = <TError = unknown,
+    /**
+ * @summary Update an item basic info record
+ */
+export const useItemsControllerUpdateV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof itemsControllerUpdateV1>>, TError,{id: string;data: UpdateItemBasicInfoDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof itemsControllerUpdateV1>>,
@@ -342,7 +459,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getItemsControllerUpdateV1MutationOptions(options), queryClient);
     }
-    export const itemsControllerGetPricingV1 = (
+    /**
+ * @summary Get pricing details for an item
+ */
+export const itemsControllerGetPricingV1 = (
     id: string,
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
 ) => {
@@ -410,6 +530,9 @@ export function useItemsControllerGetPricingV1<TData = Awaited<ReturnType<typeof
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerGetPricingV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get pricing details for an item
+ */
 
 export function useItemsControllerGetPricingV1<TData = Awaited<ReturnType<typeof itemsControllerGetPricingV1>>, TError = unknown>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerGetPricingV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -428,6 +551,9 @@ export function useItemsControllerGetPricingV1<TData = Awaited<ReturnType<typeof
 
 
 
+/**
+ * @summary Upsert pricing details for an item
+ */
 export const itemsControllerUpsertPricingV1 = (
     id: string,
     upsertItemPricingDto: UpsertItemPricingDto,
@@ -476,7 +602,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ItemsControllerUpsertPricingV1MutationBody = UpsertItemPricingDto
     export type ItemsControllerUpsertPricingV1MutationError = unknown
 
-    export const useItemsControllerUpsertPricingV1 = <TError = unknown,
+    /**
+ * @summary Upsert pricing details for an item
+ */
+export const useItemsControllerUpsertPricingV1 = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof itemsControllerUpsertPricingV1>>, TError,{id: string;data: UpsertItemPricingDto}, TContext>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof itemsControllerUpsertPricingV1>>,

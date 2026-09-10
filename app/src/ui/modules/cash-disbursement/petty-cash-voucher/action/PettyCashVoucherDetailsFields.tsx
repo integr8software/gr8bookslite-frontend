@@ -2,11 +2,10 @@
 
 import { usePettyCashVoucherDetailsLookups } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherDetailsLookups";
 import type { PettyCashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
-import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
-import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { CurrencyExchangeRateRow } from "@/app/src/ui/shared/app/CurrencyExchangeRateRow";
-import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { AppLookupDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppLookupDropdown";
 import {
   TransactionField,
   TransactionFieldClassName,
@@ -15,24 +14,24 @@ import {
 import { formatExchangeRateInput } from "@/app/src/utils/number.util";
 
 export function PettyCashVoucherDetailsFields({
-  canAddParty = true,
-  canAddResponsibilityCenter = true,
   onOpenPartyDrawer,
+  onOpenProjectDrawer,
   onOpenResponsibilityCenterDrawer,
   page,
 }: {
-  canAddParty?: boolean;
-  canAddResponsibilityCenter?: boolean;
-  onOpenPartyDrawer?: () => void;
-  onOpenResponsibilityCenterDrawer?: () => void;
+  onOpenPartyDrawer: () => void;
+  onOpenProjectDrawer: () => void;
+  onOpenResponsibilityCenterDrawer: () => void;
   page: PettyCashVoucherActionPageState;
 }) {
   const {
     accountOptions,
     isAccountLookupLoading,
     isPartyLookupLoading,
+    isProjectLookupLoading,
     isResponsibilityCenterLookupLoading,
     partyOptions,
+    projectOptions,
     responsibilityCenterOptions,
   } = usePettyCashVoucherDetailsLookups(page.values);
 
@@ -44,22 +43,49 @@ export function PettyCashVoucherDetailsFields({
           <TransactionField label="Party Name" error={page.errors.partyName} isRequired>
             <AppLookupDropdown
               value={page.values.partyCode}
-              readOnly={page.isReadonly}
               options={partyOptions}
+              readOnly={page.isReadonly}
               placeholder="Select Party Name"
               searchPlaceholder="Search Party Name"
               emptyMessage={isPartyLookupLoading ? "Loading Party Name options..." : "No Party Name options found."}
-              addAction={
-                !page.isReadonly && canAddParty && onOpenPartyDrawer
-                  ? {
-                      label: "Add Party Name",
-                      onClick: onOpenPartyDrawer,
-                    }
-                  : undefined
-              }
+              addAction={!page.isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
               onChange={(code, name) => {
-                const selectedParty = partyOptions.find((option) => option.value === code || option.label === code);
-                page.handlePartyChange(code, name, selectedParty);
+                page.updateField("partyCode", code);
+                page.updateField("partyName", name);
+              }}
+            />
+          </TransactionField>
+
+          <TransactionField label="Responsibility Center">
+            <AppLookupDropdown
+              value={page.values.responsibilityCenterCode}
+              options={responsibilityCenterOptions}
+              readOnly={page.isReadonly}
+              placeholder="Select Responsibility Center"
+              searchPlaceholder="Search Responsibility Center"
+              emptyMessage={
+                isResponsibilityCenterLookupLoading ? "Loading Responsibility Center options..." : "No Responsibility Center options found."
+              }
+              addAction={!page.isReadonly ? { label: "Add Responsibility Center", onClick: onOpenResponsibilityCenterDrawer } : undefined}
+              onChange={(code, name) => {
+                page.updateField("responsibilityCenterCode", code);
+                page.updateField("responsibilityCenter", name);
+              }}
+            />
+          </TransactionField>
+
+          <TransactionField label="Project Name">
+            <AppLookupDropdown
+              value={page.values.projectCode}
+              options={projectOptions}
+              readOnly={page.isReadonly}
+              placeholder="Select Project Name"
+              searchPlaceholder="Search Project Name"
+              emptyMessage={isProjectLookupLoading ? "Loading Project Name options..." : "No Project Name options found."}
+              addAction={!page.isReadonly ? { label: "Add Project Name", onClick: onOpenProjectDrawer } : undefined}
+              onChange={(code, name) => {
+                page.updateField("projectCode", code);
+                page.updateField("projectName", name);
               }}
             />
           </TransactionField>
@@ -67,10 +93,10 @@ export function PettyCashVoucherDetailsFields({
           <TransactionField label="Default Account Title" error={page.errors.accountTitle} isRequired>
             <AppLookupDropdown
               value={page.values.accountCode}
-              readOnly={page.isReadonly}
               options={accountOptions}
-              placeholder="Select Default Account Title"
-              searchPlaceholder="Search Default Account Title"
+              readOnly={page.isReadonly}
+              placeholder="Select Default Account"
+              searchPlaceholder="Search Account"
               emptyMessage={isAccountLookupLoading ? "Loading Default Account options..." : "No Default Account options found."}
               onChange={(code, name) => {
                 page.updateField("accountCode", code);
@@ -79,34 +105,7 @@ export function PettyCashVoucherDetailsFields({
             />
           </TransactionField>
 
-          <TransactionField label="Responsibility Center">
-            <AppLookupDropdown
-              value={page.values.responsibilityCenterCode}
-              readOnly={page.isReadonly}
-              options={responsibilityCenterOptions}
-              placeholder="Select Responsibility Center"
-              searchPlaceholder="Search Responsibility Center"
-              emptyMessage={
-                isResponsibilityCenterLookupLoading
-                  ? "Loading Responsibility Center options..."
-                  : "No Responsibility Center options found."
-              }
-              addAction={
-                !page.isReadonly && canAddResponsibilityCenter && onOpenResponsibilityCenterDrawer
-                  ? {
-                      label: "Add Responsibility Center",
-                      onClick: onOpenResponsibilityCenterDrawer,
-                    }
-                  : undefined
-              }
-              onChange={(code, name) => {
-                page.updateField("responsibilityCenterCode", code);
-                page.updateField("responsibilityCenter", name);
-              }}
-            />
-          </TransactionField>
-
-          <TransactionField label="Remarks" error={page.errors.remarks}>
+          <TransactionField label="Remarks">
             <AppLimitedTextarea
               value={page.values.remarks}
               readOnly={page.isReadonly}
@@ -122,42 +121,49 @@ export function PettyCashVoucherDetailsFields({
         <div className="grid min-w-0 content-start gap-5">
           <TransactionTextField
             value={page.values.partyCode}
-            error={page.errors.partyCode}
-            isRequired
             isReadonly
+            isRequired
             label="Party Code"
+            error={page.errors.partyCode}
             onValueChange={(value) => page.updateField("partyCode", value)}
             placeholder="Party Code"
           />
 
           <TransactionTextField
-            value={page.values.accountCode}
-            error={page.errors.accountCode}
-            isRequired
-            isReadonly
-            label="Default Account Code"
-            onValueChange={(value) => page.updateField("accountCode", value)}
-            placeholder="Default Account Code"
-          />
-
-          <TransactionTextField
             value={page.values.responsibilityCenterCode}
-            error={page.errors.responsibilityCenterCode}
             isReadonly
             label="Responsibility Center Code"
             onValueChange={(value) => page.updateField("responsibilityCenterCode", value)}
             placeholder="Responsibility Center Code"
           />
 
+          <TransactionTextField
+            value={page.values.projectCode}
+            isReadonly
+            label="Project Code"
+            onValueChange={(value) => page.updateField("projectCode", value)}
+            placeholder="Project Code"
+          />
+
+          <TransactionTextField
+            value={page.values.accountCode}
+            isReadonly
+            isRequired
+            label="Default Account Code"
+            error={page.errors.accountCode}
+            onValueChange={(value) => page.updateField("accountCode", value)}
+            placeholder="Account Code"
+          />
+
           <CurrencyExchangeRateRow
             currencyLabel="Currency"
-            currencyControlId="petty-cash-voucher-currency"
+            currencyControlId="pcf-currency"
             currencyError={page.errors.currency}
-            exchangeRateControlId="petty-cash-voucher-exchange-rate"
+            exchangeRateControlId="pcf-exchange-rate"
             exchangeRateError={page.errors.exchangeRate}
             currencyControl={
               <AppAdvancedDropdown
-                id="petty-cash-voucher-currency"
+                id="pcf-currency"
                 className="w-full min-w-0"
                 value={page.values.currency}
                 readOnly={page.isReadonly}
@@ -171,7 +177,7 @@ export function PettyCashVoucherDetailsFields({
             }
             exchangeRateControl={
               <input
-                id="petty-cash-voucher-exchange-rate"
+                id="pcf-exchange-rate"
                 type="text"
                 inputMode="decimal"
                 value={page.values.exchangeRate}
@@ -183,48 +189,31 @@ export function PettyCashVoucherDetailsFields({
               />
             }
           />
-
-          <TransactionField label="Amount" error={page.errors.amount} isRequired>
-            <MoneyNumberField
-              value={page.values.amount}
-              min="0"
-              readOnly={page.isReadonly}
-              onValueChange={(value) => page.updateField("amount", value)}
-              className={`${TransactionFieldClassName} text-right tabular-nums`}
-              placeholder="0.00"
-            />
-          </TransactionField>
         </div>
 
         {/* Column 3: Transaction Identity & Status */}
         <div className="grid min-w-0 content-start gap-5">
           <TransactionTextField
             value={page.values.transactionNo}
-            error={page.errors.transactionNo}
-            isRequired
             isReadonly
+            isRequired
             label="PCV No."
+            error={page.errors.transactionNo}
             onValueChange={(value) => page.updateField("transactionNo", value)}
             placeholder="Auto Generated PCV Transaction Number"
           />
 
           <TransactionTextField
             value={page.values.documentDate}
-            error={page.errors.documentDate}
             isReadonly={page.isReadonly}
             isRequired
             label="PCV Date"
-            onValueChange={(value) => page.updateField("documentDate", value)}
+            error={page.errors.documentDate}
             type="date"
+            onValueChange={(value) => page.updateField("documentDate", value)}
           />
 
-          <TransactionTextField
-            value={page.values.status}
-            error={page.errors.status}
-            isReadonly
-            label="Status"
-            onValueChange={() => undefined}
-          />
+          <TransactionTextField value={page.values.status} isReadonly label="Status" onValueChange={() => undefined} />
         </div>
       </div>
     </section>

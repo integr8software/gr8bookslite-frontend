@@ -1,8 +1,5 @@
 export const PettyCashVoucherQueryKeys = {
-	all: ["petty-cash-voucher"] as const,
-	vouchers: () =>
-		[...PettyCashVoucherQueryKeys.all, "vouchers"] as const,
-	voucher: (recordId?: string) =>
-		[...PettyCashVoucherQueryKeys.all, "vouchers", recordId] as const,
+  all: ["petty-cash-voucher"] as const,
+  list: (filters?: unknown) => [...PettyCashVoucherQueryKeys.all, "list", filters] as const,
+  record: (recordId?: string) => [...PettyCashVoucherQueryKeys.all, recordId] as const,
 };
-

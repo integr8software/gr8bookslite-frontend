@@ -38,7 +38,7 @@ import {
   validateCashVoucherDetails,
   validateCashVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/cash-voucher/CashVoucherValidation";
-import { useDefaultAccountStore } from "@/app/src/hooks/modules/financial-maintenance/default-account/useDefaultAccount";
+import { useDisbursementTypeStore } from "@/app/src/hooks/modules/financial-maintenance/disbursement-type/useDisbursementType";
 import { useCashVoucherDefaultAccounts } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherDefaultAccounts";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
@@ -55,6 +55,7 @@ import type {
   CashVoucherRecord,
   CashVoucherPartyDropdownOption,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
+import { mergeUniqueTextValues } from "@/app/src/utils/string.util";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
@@ -82,8 +83,48 @@ import {
   moveCashVoucherEntryRow,
   removeCashVoucherEntryRow,
 } from "@/app/src/data/modules/cash-disbursement/cash-voucher/CashVoucherEntryRowData";
+import {
+  buildPaymentVoucherCopyFromRecords,
+  findPaymentVoucherCopyCandidates,
+  getEditablePaymentVoucherCopyEntries,
+  getPaymentVoucherCopiedDisburseAmount,
+  getPaymentVoucherCopyRatio,
+  PaymentVoucherCopyPrefixes,
+  scalePaymentVoucherCopyAmount,
+  validatePaymentVoucherCopySelection,
+} from "@/app/src/data/modules/cash-disbursement/shared/PaymentVoucherCopyFromData";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { CashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherQueryKeys";
+import {
+  fetchAccountsPayableVoucherCopyFromCandidates,
+  type AccountsPayableVoucherCopyFromCandidate,
+} from "@/app/src/services/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherApi";
+import { AccountsPayableVoucherQueryKeys } from "@/app/src/services/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherQueryKeys";
+import {
+  fetchAdvanceToSupplierCopyFromCandidates,
+  type AdvanceToSupplierCopyFromCandidate,
+} from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersApi";
+import { AdvancesToSuppliersQueryKeys } from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersQueryKeys";
+import {
+  fetchCashAdvanceCopyFromCandidates,
+  type CashAdvanceCopyFromCandidate,
+} from "@/app/src/services/modules/cash-disbursement/cash-advance/CashAdvanceApi";
+import { CashAdvanceQueryKeys } from "@/app/src/services/modules/cash-disbursement/cash-advance/CashAdvanceQueryKeys";
+import {
+  fetchPettyCashReplenishmentCopyFromCandidates,
+  type PettyCashReplenishmentCopyFromCandidate,
+} from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentApi";
+import { PettyCashReplenishmentQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentQueryKeys";
+import {
+  fetchRevolvingFundReplenishmentCopyFromCandidates,
+  type RevolvingFundReplenishmentCopyFromCandidate,
+} from "@/app/src/services/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentApi";
+import { RevolvingFundReplenishmentQueryKeys } from "@/app/src/services/modules/cash-disbursement/revolving-fund-replenishment/RevolvingFundReplenishmentQueryKeys";
+import {
+  fetchJournalVoucherCopyFromCandidates,
+  type JournalVoucherCopyFromCandidate,
+} from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherService";
+import { JournalVoucherQueryKeys } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherQueryKeys";
 import {
   createCashVoucherApi,
   fetchCashVoucherById,
@@ -91,6 +132,9 @@ import {
   updateCashVoucherApi,
   updateCashVoucherStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherApi";
+
+const CashVoucherCopyFromTarget = "cash-voucher";
+const BalancedEntryStatus = "Balanced";
 
 export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const router = useRouter();
@@ -111,7 +155,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const [errors, setErrors] = useState<CashVoucherFormErrors>({});
   const [pendingSubmitValues, setPendingSubmitValues] = useState<CashVoucherFormValues | null>(null);
   const [activeTab, setActiveTab] = useState<CashVoucherActionTab>("details");
-  const [isDefaultAccountDrawerOpen, setIsDefaultAccountDrawerOpen] = useState(false);
+  const [isDisbursementTypeDrawerOpen, setIsDisbursementTypeDrawerOpen] = useState(false);
   const [isPartyNameDrawerOpen, setIsPartyNameDrawerOpen] = useState(false);
   const [isProjectNameDrawerOpen, setIsProjectNameDrawerOpen] = useState(false);
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
@@ -124,10 +168,10 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const isSubmittingRef = useRef(false);
   const submitLockReleaseRef = useRef<null | (() => void)>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const defaultAccountStore = useDefaultAccountStore();
+  const defaultAccountStore = useDisbursementTypeStore(undefined, { kind: "disbursement" });
   const partyStore = usePartyManagementStore();
   const responsibilityCenterStore = useResponsibilityCenterStore();
-  const defaultAccounts = defaultAccountStore.defaultAccounts;
+  const defaultAccounts = defaultAccountStore.disbursementTypes;
   const taxCodesQuery = useAlphanumericTaxCodes();
   const taxDefaultAccountOptionsQuery = useTaxDefaultAccountOptionGroups();
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
@@ -197,7 +241,166 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       }))
       .sort((first, second) => first.name.localeCompare(second.name));
   }, [responsibilityCenterStore.centers]);
-  const copyFromRecords = useMemo(() => [], []);
+  const copyFromPartyName = values.partyName.trim();
+  const copyFromPartyCode = copyFromPartyName ? values.partyCode.trim() : "";
+  const copyFromCandidatesQuery = useQuery({
+    queryKey: AccountsPayableVoucherQueryKeys.copyFromCandidates(
+      CashVoucherCopyFromTarget,
+      activeCompanyId,
+      activeBranchId,
+      copyFromPartyCode,
+      copyFromPartyName,
+    ),
+    queryFn: () =>
+      fetchAccountsPayableVoucherCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        partyCode: copyFromPartyCode,
+        partyName: copyFromPartyName,
+        target: CashVoucherCopyFromTarget,
+      }),
+    enabled: activeCompanyId !== null,
+  });
+  const apvCopyFromCandidates = useMemo(() => copyFromCandidatesQuery.data ?? [], [copyFromCandidatesQuery.data]);
+  const advanceToSupplierCopyFromCandidatesQuery = useQuery({
+    queryKey: AdvancesToSuppliersQueryKeys.copyFromCandidates(
+      CashVoucherCopyFromTarget,
+      activeCompanyId,
+      activeBranchId,
+      copyFromPartyCode,
+      copyFromPartyName,
+    ),
+    queryFn: () =>
+      fetchAdvanceToSupplierCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        partyCode: copyFromPartyCode,
+        partyName: copyFromPartyName,
+        target: CashVoucherCopyFromTarget,
+      }),
+    enabled: activeCompanyId !== null,
+  });
+  const atsCopyFromCandidates = useMemo(
+    () => advanceToSupplierCopyFromCandidatesQuery.data ?? [],
+    [advanceToSupplierCopyFromCandidatesQuery.data],
+  );
+  const cashAdvanceCopyFromCandidatesQuery = useQuery({
+    queryKey: CashAdvanceQueryKeys.copyFromCandidates(
+      CashVoucherCopyFromTarget,
+      activeCompanyId,
+      activeBranchId,
+      copyFromPartyCode,
+      copyFromPartyName,
+    ),
+    queryFn: () =>
+      fetchCashAdvanceCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        partyCode: copyFromPartyCode,
+        partyName: copyFromPartyName,
+        target: CashVoucherCopyFromTarget,
+      }),
+    enabled: activeCompanyId !== null,
+  });
+  const cashAdvanceCopyFromCandidates = useMemo(
+    () => cashAdvanceCopyFromCandidatesQuery.data ?? [],
+    [cashAdvanceCopyFromCandidatesQuery.data],
+  );
+  const pettyCashReplenishmentCopyFromCandidatesQuery = useQuery({
+    queryKey: [
+      ...PettyCashReplenishmentQueryKeys.all,
+      "copy-from",
+      CashVoucherCopyFromTarget,
+      activeCompanyId,
+      activeBranchId,
+      copyFromPartyCode,
+      copyFromPartyName,
+    ],
+    queryFn: () =>
+      fetchPettyCashReplenishmentCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        partyCode: copyFromPartyCode,
+        partyName: copyFromPartyName,
+        target: CashVoucherCopyFromTarget,
+      }),
+    enabled: activeCompanyId !== null,
+  });
+  const pcrCopyFromCandidates = useMemo(
+    () => pettyCashReplenishmentCopyFromCandidatesQuery.data ?? [],
+    [pettyCashReplenishmentCopyFromCandidatesQuery.data],
+  );
+  const revolvingFundReplenishmentCopyFromCandidatesQuery = useQuery({
+    queryKey: [
+      ...RevolvingFundReplenishmentQueryKeys.all,
+      "copy-from",
+      CashVoucherCopyFromTarget,
+      activeCompanyId,
+      activeBranchId,
+      copyFromPartyCode,
+      copyFromPartyName,
+    ],
+    queryFn: () =>
+      fetchRevolvingFundReplenishmentCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        partyCode: copyFromPartyCode,
+        partyName: copyFromPartyName,
+        target: CashVoucherCopyFromTarget,
+      }),
+    enabled: activeCompanyId !== null,
+  });
+  const rfrCopyFromCandidates = useMemo(
+    () => revolvingFundReplenishmentCopyFromCandidatesQuery.data ?? [],
+    [revolvingFundReplenishmentCopyFromCandidatesQuery.data],
+  );
+  const journalVoucherCopyFromCandidatesQuery = useQuery({
+    queryKey: JournalVoucherQueryKeys.copyFromCandidates(
+      CashVoucherCopyFromTarget,
+      activeCompanyId,
+      activeBranchId,
+      copyFromPartyCode,
+      copyFromPartyName,
+    ),
+    queryFn: () =>
+      fetchJournalVoucherCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        partyCode: copyFromPartyCode,
+        partyName: copyFromPartyName,
+        target: CashVoucherCopyFromTarget,
+      }),
+    enabled: activeCompanyId !== null,
+  });
+  const journalVoucherCopyFromCandidates = useMemo(
+    () => journalVoucherCopyFromCandidatesQuery.data ?? [],
+    [journalVoucherCopyFromCandidatesQuery.data],
+  );
+  const copiedApvReferences = useMemo(
+    () =>
+      new Set(
+        values.lineEntries
+          .filter((entry) => !isGeneratedAccountingEntry(entry))
+          .map((entry) => entry.refId?.trim())
+          .filter((refId): refId is string => Boolean(refId)),
+      ),
+    [values.lineEntries],
+  );
+  const copyFromRecords = useMemo(
+    () =>
+      buildPaymentVoucherCopyFromRecords({
+        accountsPayableVouchers: apvCopyFromCandidates,
+        advancesToSuppliers: atsCopyFromCandidates,
+        cashAdvances: cashAdvanceCopyFromCandidates,
+        copiedReferences: copiedApvReferences,
+        journalVouchers: journalVoucherCopyFromCandidates,
+        pettyCashReplenishments: pcrCopyFromCandidates,
+        revolvingFundReplenishments: rfrCopyFromCandidates,
+      }),
+    [
+      apvCopyFromCandidates,
+      atsCopyFromCandidates,
+      cashAdvanceCopyFromCandidates,
+      copiedApvReferences,
+      journalVoucherCopyFromCandidates,
+      pcrCopyFromCandidates,
+      rfrCopyFromCandidates,
+    ],
+  );
 
   // Query single record if edit or view mode
   const recordQuery = useQuery({
@@ -254,7 +457,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         checkDate: (d.checkDate as string) || "",
         checkNo: (d.checkNo as string) || "",
         checkStatus: (d.checkStatus as string) || "",
-        status: "Balanced",
+        status: BalancedEntryStatus,
       };
     });
     const voucherGrossAmount =
@@ -354,26 +557,26 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
       return;
     }
 
-    setValues((current) => {
-      const needsUpdate = current.lineEntries.some(
-        (entry) => isPaymentCreditEntry(entry) && (!entry.accountCode || !entry.accountName),
-      );
-      if (!needsUpdate) {
-        return current;
-      }
+    queueMicrotask(() => {
+      setValues((current) => {
+        const needsUpdate = current.lineEntries.some((entry) => isPaymentCreditEntry(entry) && (!entry.accountCode || !entry.accountName));
+        if (!needsUpdate) {
+          return current;
+        }
 
-      return {
-        ...current,
-        lineEntries: current.lineEntries.map((entry) =>
-          isPaymentCreditEntry(entry) && (!entry.accountCode || !entry.accountName)
-            ? {
-                ...entry,
-                accountCode: cashOnHandAccount.accountCode,
-                accountName: cashOnHandAccount.accountName,
-              }
-            : entry,
-        ),
-      };
+        return {
+          ...current,
+          lineEntries: current.lineEntries.map((entry) =>
+            isPaymentCreditEntry(entry) && (!entry.accountCode || !entry.accountName)
+              ? {
+                  ...entry,
+                  accountCode: cashOnHandAccount.accountCode,
+                  accountName: cashOnHandAccount.accountName,
+                }
+              : entry,
+          ),
+        };
+      });
     });
   }, [cashOnHandAccount]);
 
@@ -385,7 +588,8 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   }, [mode]);
 
   const currentStatus = existingVoucher?.status ?? values.status;
-  const isReadonly = mode === CashVoucherActionModes.View || (mode === CashVoucherActionModes.Edit && !canEditCashVoucherStatus(currentStatus));
+  const isReadonly =
+    mode === CashVoucherActionModes.View || (mode === CashVoucherActionModes.Edit && !canEditCashVoucherStatus(currentStatus));
   const totalDebit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.debit, 0), [values.lineEntries]);
   const totalCredit = useMemo(() => values.lineEntries.reduce((sum, entry) => sum + entry.credit, 0), [values.lineEntries]);
   const isRecordMissing = mode !== CashVoucherActionModes.Add && !recordQuery.isLoading && !existingVoucher;
@@ -739,6 +943,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
 
     const valuesForSubmit = {
       ...values,
+      amount: getCashVoucherCopiedDisburseAmount(values.lineEntries).toFixed(2),
       status,
       transactionId: values.transactionId.trim(),
     };
@@ -772,8 +977,12 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         await updateCashVoucherApi(recordId, {
           branchUnitId: activeBranchId ?? undefined,
           voucherDate: pendingSubmitValues.voucherDate,
+          paymentDueDate: pendingSubmitValues.paymentDueDate,
           partyCode: pendingSubmitValues.partyCode,
           partyName: pendingSubmitValues.partyName,
+          referenceModule: pendingSubmitValues.referenceModule,
+          voucherReferenceNo: pendingSubmitValues.voucherReferenceNo,
+          invoiceReferenceNo: pendingSubmitValues.invoiceReferenceNo,
           costCenter: pendingSubmitValues.projectCode || pendingSubmitValues.costCenter,
           projectCode: pendingSubmitValues.projectCode || pendingSubmitValues.costCenter,
           projectName: pendingSubmitValues.projectName,
@@ -793,6 +1002,9 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
           voucherDate: pendingSubmitValues.voucherDate,
           partyCode: pendingSubmitValues.partyCode,
           partyName: pendingSubmitValues.partyName,
+          referenceModule: pendingSubmitValues.referenceModule,
+          voucherReferenceNo: pendingSubmitValues.voucherReferenceNo,
+          invoiceReferenceNo: pendingSubmitValues.invoiceReferenceNo,
           costCenter: pendingSubmitValues.projectCode || pendingSubmitValues.costCenter,
           projectCode: pendingSubmitValues.projectCode || pendingSubmitValues.costCenter,
           projectName: pendingSubmitValues.projectName,
@@ -857,8 +1069,707 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     }
   }
 
-  function handleCopyFrom() {
-    toast.error("Copy From records are not available yet.");
+  function handleCopyFrom(recordIds: string[]) {
+    if (isReadonly || recordIds.length === 0) {
+      return;
+    }
+
+    const selectedPcrs = findPaymentVoucherCopyCandidates(
+      pcrCopyFromCandidates,
+      PaymentVoucherCopyPrefixes.PettyCashReplenishment,
+      recordIds,
+    );
+    if (selectedPcrs.length > 0) {
+      copyFromPettyCashReplenishment(selectedPcrs);
+      return;
+    }
+
+    const selectedRfrs = findPaymentVoucherCopyCandidates(
+      rfrCopyFromCandidates,
+      PaymentVoucherCopyPrefixes.RevolvingFundReplenishment,
+      recordIds,
+    );
+    if (selectedRfrs.length > 0) {
+      copyFromRevolvingFundReplenishment(selectedRfrs);
+      return;
+    }
+
+    const selectedAts = findPaymentVoucherCopyCandidates(atsCopyFromCandidates, PaymentVoucherCopyPrefixes.AdvancesToSuppliers, recordIds);
+    if (selectedAts.length > 0) {
+      copyFromAdvancesToSuppliers(selectedAts);
+      return;
+    }
+
+    const selectedEmployeeAdvances = findPaymentVoucherCopyCandidates(
+      cashAdvanceCopyFromCandidates,
+      PaymentVoucherCopyPrefixes.CashAdvance,
+      recordIds,
+    );
+    if (selectedEmployeeAdvances.length > 0) {
+      copyFromEmployeeAdvances(selectedEmployeeAdvances);
+      return;
+    }
+
+    const selectedJournalVouchers = journalVoucherCopyFromCandidates.filter((record) => recordIds.includes(record.id));
+    if (selectedJournalVouchers.length > 0) {
+      copyFromJournalVouchers(selectedJournalVouchers);
+      return;
+    }
+
+    const selectedApvs = findPaymentVoucherCopyCandidates(
+      apvCopyFromCandidates,
+      PaymentVoucherCopyPrefixes.AccountsPayableVoucher,
+      recordIds,
+    );
+    if (selectedApvs.length === 0) {
+      toast.error("No valid Accounts Payable Voucher records selected.");
+      return;
+    }
+
+    const selectionError = validatePaymentVoucherCopySelection({
+      copiedReferences: copiedApvReferences,
+      duplicateMessage: "The selected Accounts Payable Voucher has already been added.",
+      mixedCurrencyMessage: (currency) => `All selected Accounts Payable Vouchers must have the same Currency ("${currency}").`,
+      mixedPartyMessage: (partyName) => `All selected Accounts Payable Vouchers must belong to the same Party ("${partyName}").`,
+      prefix: PaymentVoucherCopyPrefixes.AccountsPayableVoucher,
+      records: selectedApvs,
+    });
+    if (selectionError) {
+      toast.error(selectionError);
+      return;
+    }
+
+    const firstApv = selectedApvs[0];
+    const apvNos = selectedApvs.map((a) => a.transactionNo);
+    const apvReferences = apvNos.map((transactionNo) => `APV:${transactionNo}`);
+
+    const copiedEntries: CashVoucherLineEntry[] = selectedApvs.flatMap((apv: AccountsPayableVoucherCopyFromCandidate) => {
+      const payableAmount = Number(apv.availableAmount) || 0;
+      const refId = `APV:${apv.transactionNo}`;
+      const sourceDetails = apv.details && apv.details.length > 0 ? apv.details : [];
+
+      if (sourceDetails.length === 0) {
+        const responsibilityCenter = apv.projectCode || apv.projectName || "";
+        const particulars = `Payment for APV ${apv.transactionNo}`;
+
+        return [
+          createBlankCashVoucherLineEntry({
+            accountCode: apv.creditAccountCode || "20101010",
+            accountName: apv.creditAccountTitle || "Accounts Payable",
+            credit: 0,
+            debit: payableAmount,
+            ewtCode: "",
+            particulars,
+            partyCode: apv.partyCode,
+            partyName: apv.partyName,
+            refId,
+            remarks: particulars,
+            responsibilityCenter,
+            status: BalancedEntryStatus,
+            taxDetails: {
+              ...createTaxDetails(payableAmount, "0%"),
+              refId,
+              responsibilityCenter,
+            },
+            taxRate: "0%",
+            vatType: "",
+          }),
+        ];
+      }
+
+      const ratio = getPaymentVoucherCopyRatio(apv);
+
+      return sourceDetails.map((detail) => {
+        const grossAmount = scalePaymentVoucherCopyAmount(detail.amount, ratio, roundHydratedCashVoucherAmount);
+        const netAmount = scalePaymentVoucherCopyAmount(detail.netAmount, ratio, roundHydratedCashVoucherAmount);
+        const vatAmount = scalePaymentVoucherCopyAmount(detail.vatAmount, ratio, roundHydratedCashVoucherAmount);
+        const ewtAmount = scalePaymentVoucherCopyAmount(detail.ewtAmount, ratio, roundHydratedCashVoucherAmount);
+        const disburseAmount = scalePaymentVoucherCopyAmount(detail.totalAmountDue, ratio, roundHydratedCashVoucherAmount);
+        const responsibilityCenter = detail.responsibilityCenter || apv.projectCode || apv.projectName || "";
+        const particulars = detail.particulars || apv.remarks || `Payment for APV ${apv.transactionNo}`;
+        const vatCode = detail.vat || "";
+        const ewtCode = detail.ewt || "";
+
+        return createBlankCashVoucherLineEntry({
+          accountCode: detail.expenseAccountCode,
+          accountName: detail.expenseType,
+          credit: 0,
+          debit: netAmount,
+          ewtCode,
+          particulars,
+          partyCode: detail.partyCode || apv.partyCode,
+          partyName: detail.partyName || apv.partyName,
+          refId,
+          remarks: particulars,
+          responsibilityCenter,
+          status: BalancedEntryStatus,
+          taxDetails: {
+            ...createTaxDetails(grossAmount, "0%"),
+            amount: disburseAmount,
+            ewtAmount,
+            ewtCode,
+            ewtPercent: Number(detail.ewtPercent || 0),
+            grossAmount,
+            netAmount,
+            refId,
+            responsibilityCenter,
+            vatAmount,
+            vatCode,
+            vatPercent: Number(detail.vatPercent || 0),
+            vatType: vatCode,
+          },
+          taxRate: Number(detail.vatPercent || 0) > 0 ? `${Number(detail.vatPercent)}%` : "0%",
+          vatType: vatCode,
+        });
+      });
+    });
+
+    const nextRemarks =
+      values.remarks ||
+      selectedApvs
+        .map((a) => a.remarks)
+        .filter(Boolean)
+        .join("; ") ||
+      `Payment for APV ${apvNos.join(", ")}`;
+
+    setValues((current) => {
+      const nextPartyCode = current.partyCode || firstApv.partyCode || "";
+      const nextPartyName = current.partyName || firstApv.partyName || "";
+      const nextProjectCode = current.projectCode || firstApv.projectCode || "";
+      const nextProjectName = current.projectName || firstApv.projectName || "";
+      const nextCurrency = firstApv.currency || current.currency || "PHP";
+      const nextFxRate = String(firstApv.exchangeRate || current.fxRate || "1.00");
+      const nextVoucherRefNo = mergeUniqueTextValues(current.voucherReferenceNo, apvReferences);
+
+      const existingEditableEntries = getEditablePaymentVoucherCopyEntries(current.lineEntries, isGeneratedAccountingEntry);
+      const mergedEntries = existingEditableEntries.length > 0 ? [...existingEditableEntries, ...copiedEntries] : copiedEntries;
+      const automaticEntries = createAutomaticEntriesForPayment(mergedEntries);
+      const nextAmount = getCashVoucherCopiedDisburseAmount(mergedEntries);
+
+      return {
+        ...current,
+        amount: nextAmount.toFixed(2),
+        costCenter: nextProjectCode || current.costCenter,
+        currency: nextCurrency,
+        fxRate: nextFxRate,
+        lineEntries: automaticEntries,
+        partyCode: nextPartyCode,
+        partyName: nextPartyName,
+        projectCode: nextProjectCode,
+        projectName: nextProjectName,
+        referenceModule: "Accounts Payable Voucher",
+        remarks: nextRemarks,
+        taxDetails: createTaxDetails(nextAmount, "0%"),
+        taxRate: "0%",
+        voucherReferenceNo: nextVoucherRefNo,
+      };
+    });
+
+    setErrors((current) => ({
+      ...current,
+      amount: undefined,
+      lineEntries: undefined,
+      partyCode: undefined,
+      partyName: undefined,
+      voucherReferenceNo: undefined,
+    }));
+
+    toast.success(`Copied ${selectedApvs.length} Accounts Payable Voucher${selectedApvs.length > 1 ? "s" : ""}.`);
+  }
+
+  function copyFromJournalVouchers(selectedRecords: JournalVoucherCopyFromCandidate[]) {
+    const selectionError = validatePaymentVoucherCopySelection({
+      copiedReferences: copiedApvReferences,
+      duplicateMessage: "The selected Journal Voucher has already been added.",
+      mixedCurrencyMessage: (currency) => `All selected Journal Vouchers must have the same Currency ("${currency}").`,
+      mixedPartyMessage: (partyName) => `All selected Journal Vouchers must belong to the same Party ("${partyName}").`,
+      prefix: PaymentVoucherCopyPrefixes.JournalVoucher,
+      records: selectedRecords,
+    });
+    if (selectionError) {
+      toast.error(selectionError);
+      return;
+    }
+
+    const firstRecord = selectedRecords[0];
+    const copiedEntries = selectedRecords.map((record) =>
+      createBlankCashVoucherLineEntry({
+        accountCode: record.accountCode,
+        accountName: record.accountTitle,
+        credit: 0,
+        debit: record.availableAmount,
+        particulars: record.particulars || `Payment for ${record.id}`,
+        partyCode: record.partyCode ?? "",
+        partyName: record.partyName ?? "",
+        refId: record.id,
+        responsibilityCenter: record.responsibilityCenter ?? "",
+        status: BalancedEntryStatus,
+        taxDetails: {
+          ...createTaxDetails(record.availableAmount, "0%"),
+          amount: record.availableAmount,
+          grossAmount: record.availableAmount,
+          netAmount: record.availableAmount,
+          refId: record.id,
+          responsibilityCenter: record.responsibilityCenter ?? "",
+        },
+        taxRate: "0%",
+      }),
+    );
+
+    setValues((current) => {
+      const existingEditableEntries = getEditablePaymentVoucherCopyEntries(current.lineEntries, isGeneratedAccountingEntry);
+      const mergedEntries = existingEditableEntries.length > 0 ? [...existingEditableEntries, ...copiedEntries] : copiedEntries;
+      const automaticEntries = createAutomaticEntriesForPayment(mergedEntries);
+      const nextAmount = getPaymentVoucherCopiedDisburseAmount(mergedEntries, isGeneratedAccountingEntry, roundHydratedCashVoucherAmount);
+
+      return {
+        ...current,
+        amount: nextAmount.toFixed(2),
+        currency: firstRecord.currency || current.currency,
+        fxRate: String(firstRecord.exchangeRate || current.fxRate || "1.00"),
+        lineEntries: automaticEntries,
+        partyCode: firstRecord.partyCode || current.partyCode,
+        partyName: firstRecord.partyName || current.partyName,
+        referenceModule: "Journal Voucher",
+        remarks: firstRecord.particulars || current.remarks,
+        taxDetails: createTaxDetails(nextAmount, "0%"),
+        taxRate: "0%",
+        voucherReferenceNo: mergeUniqueTextValues(
+          current.voucherReferenceNo,
+          selectedRecords.map((record) => record.id),
+        ),
+      };
+    });
+    setErrors((current) => ({ ...current, amount: undefined, lineEntries: undefined, partyCode: undefined, partyName: undefined }));
+    toast.success(`Copied ${selectedRecords.length} Journal Voucher line${selectedRecords.length > 1 ? "s" : ""}.`);
+  }
+
+  function copyFromPettyCashReplenishment(selectedPcrs: PettyCashReplenishmentCopyFromCandidate[]) {
+    const selectionError = validatePaymentVoucherCopySelection({
+      copiedReferences: copiedApvReferences,
+      duplicateMessage: "The selected Petty Cash Replenishment has already been added.",
+      mixedCurrencyMessage: (currency) => `All selected Petty Cash Replenishments must have the same Currency ("${currency}").`,
+      mixedPartyMessage: (partyName) => `All selected Petty Cash Replenishments must belong to the same Party ("${partyName}").`,
+      prefix: PaymentVoucherCopyPrefixes.PettyCashReplenishment,
+      records: selectedPcrs,
+    });
+    if (selectionError) {
+      toast.error(selectionError);
+      return;
+    }
+
+    const firstPcr = selectedPcrs[0];
+    const pcrNos = selectedPcrs.map((pcr) => pcr.transactionNo);
+    const pcrReferences = pcrNos.map((transactionNo) => `PCR:${transactionNo}`);
+    const copiedEntries: CashVoucherLineEntry[] = selectedPcrs.flatMap((pcr) => {
+      const refId = `PCR:${pcr.transactionNo}`;
+      const sourceDetails = pcr.details && pcr.details.length > 0 ? pcr.details : [];
+      const ratio = getPaymentVoucherCopyRatio(pcr);
+
+      if (sourceDetails.length === 0) {
+        const disburseAmount = Number(pcr.availableAmount) || 0;
+        const particulars = `Payment for PCR ${pcr.transactionNo}`;
+        return [
+          createBlankCashVoucherLineEntry({
+            accountCode: pcr.creditAccountCode || "1010101000",
+            accountName: pcr.creditAccountTitle || "Petty Cash Fund",
+            credit: 0,
+            debit: disburseAmount,
+            particulars,
+            partyCode: pcr.partyCode,
+            partyName: pcr.partyName,
+            refId,
+            remarks: particulars,
+            responsibilityCenter: pcr.projectCode || pcr.projectName || "",
+            status: BalancedEntryStatus,
+            taxDetails: { ...createTaxDetails(disburseAmount, "0%"), amount: disburseAmount, refId },
+            taxRate: "0%",
+            vatType: "",
+          }),
+        ];
+      }
+
+      return sourceDetails.map((detail) => {
+        const grossAmount = scalePaymentVoucherCopyAmount(detail.amount, ratio, roundHydratedCashVoucherAmount);
+        const netAmount = scalePaymentVoucherCopyAmount(detail.netAmount, ratio, roundHydratedCashVoucherAmount);
+        const vatAmount = scalePaymentVoucherCopyAmount(detail.vatAmount, ratio, roundHydratedCashVoucherAmount);
+        const ewtAmount = scalePaymentVoucherCopyAmount(detail.ewtAmount, ratio, roundHydratedCashVoucherAmount);
+        const disburseAmount = scalePaymentVoucherCopyAmount(detail.disburseAmount, ratio, roundHydratedCashVoucherAmount);
+        const responsibilityCenter = detail.responsibilityCenter || pcr.projectCode || pcr.projectName || "";
+        const particulars = detail.particulars || pcr.remarks || `Payment for PCR ${pcr.transactionNo}`;
+        const vatCode = detail.vatType || "";
+        const ewtCode = detail.ewtCode || "";
+
+        return createBlankCashVoucherLineEntry({
+          accountCode: pcr.creditAccountCode || "1010101000",
+          accountName: pcr.creditAccountTitle || "Petty Cash Fund",
+          credit: 0,
+          debit: netAmount,
+          ewtCode,
+          particulars,
+          partyCode: detail.supplierCode || pcr.partyCode,
+          partyName: detail.supplierName || pcr.partyName,
+          refId,
+          remarks: particulars,
+          responsibilityCenter,
+          status: BalancedEntryStatus,
+          taxDetails: {
+            ...createTaxDetails(grossAmount, "0%"),
+            amount: disburseAmount,
+            ewtAmount,
+            ewtCode,
+            ewtPercent: Number(detail.ewtPercent || 0),
+            grossAmount,
+            netAmount,
+            refId,
+            responsibilityCenter,
+            vatAmount,
+            vatCode,
+            vatPercent: Number(detail.vatPercent || 0),
+            vatType: vatCode,
+          },
+          taxRate: Number(detail.vatPercent || 0) > 0 ? `${Number(detail.vatPercent)}%` : "0%",
+          vatType: vatCode,
+        });
+      });
+    });
+
+    setValues((current) => {
+      const existingEditableEntries = getEditablePaymentVoucherCopyEntries(current.lineEntries, isGeneratedAccountingEntry);
+      const mergedEntries = existingEditableEntries.length > 0 ? [...existingEditableEntries, ...copiedEntries] : copiedEntries;
+      const automaticEntries = createAutomaticEntriesForPayment(mergedEntries);
+      const nextAmount = getCashVoucherCopiedDisburseAmount(mergedEntries);
+
+      return {
+        ...current,
+        amount: nextAmount.toFixed(2),
+        costCenter: current.projectCode || firstPcr.projectCode || firstPcr.projectName || current.costCenter,
+        currency: firstPcr.currency || current.currency || "PHP",
+        fxRate: String(firstPcr.exchangeRate || current.fxRate || "1.00"),
+        lineEntries: automaticEntries,
+        partyCode: current.partyCode || firstPcr.partyCode || "",
+        partyName: current.partyName || firstPcr.partyName || "",
+        projectCode: current.projectCode || firstPcr.projectCode || "",
+        projectName: current.projectName || firstPcr.projectName || "",
+        referenceModule: "Petty Cash Replenishment",
+        remarks:
+          current.remarks ||
+          selectedPcrs
+            .map((pcr) => pcr.remarks)
+            .filter(Boolean)
+            .join("; ") ||
+          `Payment for PCR ${pcrNos.join(", ")}`,
+        taxDetails: createTaxDetails(nextAmount, "0%"),
+        taxRate: "0%",
+        voucherReferenceNo: mergeUniqueTextValues(current.voucherReferenceNo, pcrReferences),
+      };
+    });
+    setErrors((current) => ({
+      ...current,
+      amount: undefined,
+      lineEntries: undefined,
+      partyCode: undefined,
+      partyName: undefined,
+      voucherReferenceNo: undefined,
+    }));
+    toast.success(`Copied ${selectedPcrs.length} Petty Cash Replenishment${selectedPcrs.length > 1 ? "s" : ""}.`);
+  }
+
+  function copyFromRevolvingFundReplenishment(selectedRfrs: RevolvingFundReplenishmentCopyFromCandidate[]) {
+    const selectionError = validatePaymentVoucherCopySelection({
+      copiedReferences: copiedApvReferences,
+      duplicateMessage: "The selected Revolving Fund Replenishment has already been added.",
+      mixedCurrencyMessage: (currency) => `All selected Revolving Fund Replenishments must have the same Currency ("${currency}").`,
+      mixedPartyMessage: (partyName) => `All selected Revolving Fund Replenishments must belong to the same Party ("${partyName}").`,
+      prefix: PaymentVoucherCopyPrefixes.RevolvingFundReplenishment,
+      records: selectedRfrs,
+    });
+    if (selectionError) {
+      toast.error(selectionError);
+      return;
+    }
+
+    const firstRfr = selectedRfrs[0];
+    const rfrNos = selectedRfrs.map((rfr) => rfr.transactionNo);
+    const rfrReferences = rfrNos.map((transactionNo) => `RFR:${transactionNo}`);
+    const copiedEntries: CashVoucherLineEntry[] = selectedRfrs.flatMap((rfr) => {
+      const refId = `RFR:${rfr.transactionNo}`;
+      const sourceDetails = rfr.details && rfr.details.length > 0 ? rfr.details : [];
+      const ratio = getPaymentVoucherCopyRatio(rfr);
+
+      if (sourceDetails.length === 0) {
+        const disburseAmount = Number(rfr.availableAmount) || 0;
+        const particulars = `Payment for RFR ${rfr.transactionNo}`;
+        return [
+          createBlankCashVoucherLineEntry({
+            accountCode: rfr.creditAccountCode || "1010102000",
+            accountName: rfr.creditAccountTitle || "Revolving Fund",
+            credit: 0,
+            debit: disburseAmount,
+            particulars,
+            partyCode: rfr.partyCode,
+            partyName: rfr.partyName,
+            refId,
+            remarks: particulars,
+            responsibilityCenter: rfr.projectCode || rfr.projectName || "",
+            status: BalancedEntryStatus,
+            taxDetails: { ...createTaxDetails(disburseAmount, "0%"), amount: disburseAmount, refId },
+            taxRate: "0%",
+            vatType: "",
+          }),
+        ];
+      }
+
+      return sourceDetails.map((detail) => {
+        const grossAmount = scalePaymentVoucherCopyAmount(detail.amount, ratio, roundHydratedCashVoucherAmount);
+        const netAmount = scalePaymentVoucherCopyAmount(detail.netAmount, ratio, roundHydratedCashVoucherAmount);
+        const vatAmount = scalePaymentVoucherCopyAmount(detail.vatAmount, ratio, roundHydratedCashVoucherAmount);
+        const ewtAmount = scalePaymentVoucherCopyAmount(detail.ewtAmount, ratio, roundHydratedCashVoucherAmount);
+        const disburseAmount = scalePaymentVoucherCopyAmount(detail.disburseAmount, ratio, roundHydratedCashVoucherAmount);
+        const responsibilityCenter = detail.responsibilityCenter || rfr.projectCode || rfr.projectName || "";
+        const particulars = detail.particulars || rfr.remarks || `Payment for RFR ${rfr.transactionNo}`;
+        const vatCode = detail.vatType || "";
+        const ewtCode = detail.ewtCode || "";
+
+        return createBlankCashVoucherLineEntry({
+          accountCode: rfr.creditAccountCode || "1010102000",
+          accountName: rfr.creditAccountTitle || "Revolving Fund",
+          credit: 0,
+          debit: netAmount,
+          ewtCode,
+          particulars,
+          partyCode: detail.supplierCode || rfr.partyCode,
+          partyName: detail.supplierName || rfr.partyName,
+          refId,
+          remarks: particulars,
+          responsibilityCenter,
+          status: BalancedEntryStatus,
+          taxDetails: {
+            ...createTaxDetails(grossAmount, "0%"),
+            amount: disburseAmount,
+            ewtAmount,
+            ewtCode,
+            ewtPercent: Number(detail.ewtPercent || 0),
+            grossAmount,
+            netAmount,
+            refId,
+            responsibilityCenter,
+            vatAmount,
+            vatCode,
+            vatPercent: Number(detail.vatPercent || 0),
+            vatType: vatCode,
+          },
+          taxRate: Number(detail.vatPercent || 0) > 0 ? `${Number(detail.vatPercent)}%` : "0%",
+          vatType: vatCode,
+        });
+      });
+    });
+
+    setValues((current) => {
+      const existingEditableEntries = getEditablePaymentVoucherCopyEntries(current.lineEntries, isGeneratedAccountingEntry);
+      const mergedEntries = existingEditableEntries.length > 0 ? [...existingEditableEntries, ...copiedEntries] : copiedEntries;
+      const automaticEntries = createAutomaticEntriesForPayment(mergedEntries);
+      const nextAmount = getCashVoucherCopiedDisburseAmount(mergedEntries);
+
+      return {
+        ...current,
+        amount: nextAmount.toFixed(2),
+        costCenter: current.projectCode || firstRfr.projectCode || firstRfr.projectName || current.costCenter,
+        currency: firstRfr.currency || current.currency || "PHP",
+        fxRate: String(firstRfr.exchangeRate || current.fxRate || "1.00"),
+        lineEntries: automaticEntries,
+        partyCode: current.partyCode || firstRfr.partyCode || "",
+        partyName: current.partyName || firstRfr.partyName || "",
+        projectCode: current.projectCode || firstRfr.projectCode || "",
+        projectName: current.projectName || firstRfr.projectName || "",
+        referenceModule: "Revolving Fund Replenishment",
+        remarks:
+          current.remarks ||
+          selectedRfrs
+            .map((rfr) => rfr.remarks)
+            .filter(Boolean)
+            .join("; ") ||
+          `Payment for RFR ${rfrNos.join(", ")}`,
+        taxDetails: createTaxDetails(nextAmount, "0%"),
+        taxRate: "0%",
+        voucherReferenceNo: mergeUniqueTextValues(current.voucherReferenceNo, rfrReferences),
+      };
+    });
+    setErrors((current) => ({
+      ...current,
+      amount: undefined,
+      lineEntries: undefined,
+      partyCode: undefined,
+      partyName: undefined,
+      voucherReferenceNo: undefined,
+    }));
+    toast.success(`Copied ${selectedRfrs.length} Revolving Fund Replenishment${selectedRfrs.length > 1 ? "s" : ""}.`);
+  }
+
+  function copyFromEmployeeAdvances(selectedAdvances: CashAdvanceCopyFromCandidate[]) {
+    const selectionError = validatePaymentVoucherCopySelection({
+      copiedReferences: copiedApvReferences,
+      duplicateMessage: "The selected Employee Advance has already been added.",
+      getReferencePrefix: (advance) => advance.referencePrefix,
+      mixedCurrencyMessage: (currency) => `All selected Employee Advances must have the same Currency ("${currency}").`,
+      mixedPartyMessage: (partyName) => `All selected Employee Advances must belong to the same Party ("${partyName}").`,
+      prefix: PaymentVoucherCopyPrefixes.CashAdvance,
+      records: selectedAdvances,
+    });
+    if (selectionError) {
+      toast.error(selectionError);
+      return;
+    }
+
+    const firstAdvance = selectedAdvances[0];
+    const advanceReferences = selectedAdvances.map((advance) => `${advance.referencePrefix}:${advance.transactionNo}`);
+    const copiedEntries: CashVoucherLineEntry[] = selectedAdvances.map((advance) => {
+      const refId = `${advance.referencePrefix}:${advance.transactionNo}`;
+      const disburseAmount = Number(advance.availableAmount) || 0;
+      const particulars = advance.remarks || `Payment for ${advance.referencePrefix} ${advance.transactionNo}`;
+
+      return createBlankCashVoucherLineEntry({
+        accountCode: advance.details[0]?.accountCode || "1130-CA",
+        accountName: advance.details[0]?.accountTitle || "Employee Advance",
+        credit: 0,
+        debit: disburseAmount,
+        particulars,
+        partyCode: advance.partyCode,
+        partyName: advance.partyName,
+        refId,
+        remarks: particulars,
+        responsibilityCenter: advance.projectCode || advance.projectName || "",
+        status: BalancedEntryStatus,
+        taxDetails: { ...createTaxDetails(disburseAmount, "0%"), amount: disburseAmount, grossAmount: disburseAmount, refId },
+        taxRate: "0%",
+        vatType: "",
+      });
+    });
+
+    setValues((current) => {
+      const existingEditableEntries = getEditablePaymentVoucherCopyEntries(current.lineEntries, isGeneratedAccountingEntry);
+      const mergedEntries = existingEditableEntries.length > 0 ? [...existingEditableEntries, ...copiedEntries] : copiedEntries;
+      const automaticEntries = createAutomaticEntriesForPayment(mergedEntries);
+      const nextAmount = getCashVoucherCopiedDisburseAmount(mergedEntries);
+
+      return {
+        ...current,
+        amount: nextAmount.toFixed(2),
+        costCenter: current.projectCode || firstAdvance.projectCode || firstAdvance.projectName || current.costCenter,
+        currency: firstAdvance.currency || current.currency || "PHP",
+        fxRate: String(firstAdvance.exchangeRate || current.fxRate || "1.00"),
+        lineEntries: automaticEntries,
+        partyCode: current.partyCode || firstAdvance.partyCode || "",
+        partyName: current.partyName || firstAdvance.partyName || "",
+        projectCode: current.projectCode || firstAdvance.projectCode || "",
+        projectName: current.projectName || firstAdvance.projectName || "",
+        referenceModule: "Employee Advance",
+        remarks:
+          current.remarks ||
+          selectedAdvances
+            .map((advance) => advance.remarks)
+            .filter(Boolean)
+            .join("; ") ||
+          `Payment for Employee Advance ${selectedAdvances.map((advance) => advance.transactionNo).join(", ")}`,
+        taxDetails: createTaxDetails(nextAmount, "0%"),
+        taxRate: "0%",
+        voucherReferenceNo: mergeUniqueTextValues(current.voucherReferenceNo, advanceReferences),
+      };
+    });
+    setErrors((current) => ({
+      ...current,
+      amount: undefined,
+      lineEntries: undefined,
+      partyCode: undefined,
+      partyName: undefined,
+      voucherReferenceNo: undefined,
+    }));
+    toast.success(`Copied ${selectedAdvances.length} Employee Advance${selectedAdvances.length > 1 ? "s" : ""}.`);
+  }
+
+  function copyFromAdvancesToSuppliers(selectedAtsRecords: AdvanceToSupplierCopyFromCandidate[]) {
+    const selectionError = validatePaymentVoucherCopySelection({
+      copiedReferences: copiedApvReferences,
+      duplicateMessage: "The selected Advances to Suppliers record has already been added.",
+      mixedCurrencyMessage: (currency) => `All selected Advances to Suppliers records must have the same Currency ("${currency}").`,
+      mixedPartyMessage: (partyName) => `All selected Advances to Suppliers records must belong to the same Party ("${partyName}").`,
+      prefix: PaymentVoucherCopyPrefixes.AdvancesToSuppliers,
+      records: selectedAtsRecords,
+    });
+    if (selectionError) {
+      toast.error(selectionError);
+      return;
+    }
+
+    const firstAts = selectedAtsRecords[0];
+    const atsNos = selectedAtsRecords.map((ats) => ats.transactionNo);
+    const atsReferences = atsNos.map((transactionNo) => `ATS:${transactionNo}`);
+    const copiedEntries: CashVoucherLineEntry[] = selectedAtsRecords.flatMap((ats) => {
+      const refId = `ATS:${ats.transactionNo}`;
+      const sourceDetails = ats.details && ats.details.length > 0 ? ats.details : [];
+
+      return sourceDetails.map((detail) => {
+        const disburseAmount = Number(detail.consumptionAmount || detail.amount || ats.availableAmount || 0);
+        const particulars = detail.particulars || ats.remarks || `Payment for ATS ${ats.transactionNo}`;
+
+        return createBlankCashVoucherLineEntry({
+          accountCode: detail.accountCode || "104-100",
+          accountName: detail.accountTitle || "Advances to Suppliers",
+          credit: 0,
+          debit: disburseAmount,
+          particulars,
+          partyCode: ats.partyCode,
+          partyName: ats.partyName,
+          refId,
+          remarks: particulars,
+          responsibilityCenter: detail.responsibilityCenter || ats.projectCode || ats.projectName || "",
+          status: BalancedEntryStatus,
+          taxDetails: { ...createTaxDetails(disburseAmount, "0%"), amount: disburseAmount, grossAmount: disburseAmount, refId },
+          taxRate: "0%",
+          vatType: "",
+        });
+      });
+    });
+
+    setValues((current) => {
+      const existingEditableEntries = getEditablePaymentVoucherCopyEntries(current.lineEntries, isGeneratedAccountingEntry);
+      const mergedEntries = existingEditableEntries.length > 0 ? [...existingEditableEntries, ...copiedEntries] : copiedEntries;
+      const automaticEntries = createAutomaticEntriesForPayment(mergedEntries);
+      const nextAmount = getCashVoucherCopiedDisburseAmount(mergedEntries);
+
+      return {
+        ...current,
+        amount: nextAmount.toFixed(2),
+        costCenter: current.projectCode || firstAts.projectCode || firstAts.projectName || current.costCenter,
+        currency: firstAts.currency || current.currency || "PHP",
+        fxRate: String(firstAts.exchangeRate || current.fxRate || "1.00"),
+        lineEntries: automaticEntries,
+        partyCode: current.partyCode || firstAts.partyCode || "",
+        partyName: current.partyName || firstAts.partyName || "",
+        projectCode: current.projectCode || firstAts.projectCode || "",
+        projectName: current.projectName || firstAts.projectName || "",
+        referenceModule: "Advances to Suppliers",
+        remarks:
+          current.remarks ||
+          selectedAtsRecords
+            .map((ats) => ats.remarks)
+            .filter(Boolean)
+            .join("; ") ||
+          `Payment for ATS ${atsNos.join(", ")}`,
+        taxDetails: createTaxDetails(nextAmount, "0%"),
+        taxRate: "0%",
+        voucherReferenceNo: mergeUniqueTextValues(current.voucherReferenceNo, atsReferences),
+      };
+    });
+    setErrors((current) => ({
+      ...current,
+      amount: undefined,
+      lineEntries: undefined,
+      partyCode: undefined,
+      partyName: undefined,
+      voucherReferenceNo: undefined,
+    }));
+    toast.success(`Copied ${selectedAtsRecords.length} Advances to Suppliers record${selectedAtsRecords.length > 1 ? "s" : ""}.`);
   }
 
   function handleCreateParty(record: Parameters<typeof getPartyDisplayName>[0]) {
@@ -909,7 +1820,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     defaultAccountStore,
     errors,
     existingVoucher,
-    isDefaultAccountDrawerOpen,
+    isDisbursementTypeDrawerOpen,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isLoading: recordQuery.isLoading,
     isPartyNameDrawerOpen,
@@ -948,7 +1859,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     handleUpdateEntryFields,
     handleUpdateStatus,
     setActiveTab,
-    setIsDefaultAccountDrawerOpen,
+    setIsDisbursementTypeDrawerOpen,
     setIsPartyNameDrawerOpen,
     setIsProjectNameDrawerOpen,
     setIsReportPreviewOpen,
@@ -1153,3 +2064,6 @@ function clearAccountingGridSession() {
   }
 }
 
+function getCashVoucherCopiedDisburseAmount(entries: CashVoucherLineEntry[]) {
+  return getPaymentVoucherCopiedDisburseAmount(entries, isGeneratedAccountingEntry, roundHydratedCashVoucherAmount);
+}

@@ -28,6 +28,9 @@ import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOpti
 import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/terms-maintenance/useTermDropdownOptions";
 import { usePartyManagementAccountOptions } from "@/app/src/hooks/modules/party-management/usePartyManagementAccountOptions";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartsOfAccounts";
+import { useResponsibilityCenterLookup } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenterLookup";
+import { usePaymentTypeLookup } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentTypeLookup";
+import { useBankAccountLookup } from "@/app/src/hooks/modules/financial-maintenance/bank-masterfile/useBankAccountLookup";
 import { useTransactionNumberSetupStore } from "@/app/src/hooks/modules/system-administration/transaction-number-setup/useTransactionNumberSetup";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { usePartyTaxDefaultOptions } from "@/app/src/hooks/shared/tax/useTaxOptions";
@@ -114,6 +117,54 @@ export function PartyManagementDrawer({
     [accountingValues, isAutoPartyCode, partyCodePreview],
   );
   const taxDefaults = usePartyTaxDefaultOptions();
+  const responsibilityCenterQuery = useResponsibilityCenterLookup();
+  const paymentTypeQuery = usePaymentTypeLookup();
+  const bankAccountQuery = useBankAccountLookup();
+
+  const responsibilityCenterOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
+    return (responsibilityCenterQuery.data ?? []).map((center) => ({
+      label: center.code,
+      name: center.name,
+      value: String(center.id ?? center.code ?? ""),
+      description: center.typeName ? String(center.typeName) : center.description ? String(center.description) : undefined,
+    }));
+  }, [responsibilityCenterQuery.data]);
+
+  const paymentTypeOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
+    return (paymentTypeQuery.data ?? []).map((type) => ({
+      label: type.label || type.name,
+      name: type.name,
+      value: String(type.id ?? type.value ?? ""),
+      description: type.description ? String(type.description) : undefined,
+    }));
+  }, [paymentTypeQuery.data]);
+
+  const bankOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
+    const banks = new Map<string, AppAdvancedDropdownOption>();
+
+    (bankAccountQuery.data ?? []).forEach((bank) => {
+      const bankName = (bank.bankName || bank.name || "").trim();
+      if (bankName && !banks.has(bankName)) {
+        banks.set(bankName, {
+          label: bankName,
+          name: bankName,
+          value: bankName,
+          description: bank.accountName ? `${bank.accountName}` : undefined,
+        });
+      }
+    });
+
+    if (values.defaultBank && !banks.has(values.defaultBank)) {
+      banks.set(values.defaultBank, {
+        label: values.defaultBank,
+        name: values.defaultBank,
+        value: values.defaultBank,
+      });
+    }
+
+    return Array.from(banks.values());
+  }, [bankAccountQuery.data, values.defaultBank]);
+
   const chartAccountById = useMemo(
     () => new Map(chartAccounts.flatAccounts.map(({ account }) => [account.id, account])),
     [chartAccounts.flatAccounts],
@@ -476,6 +527,39 @@ export function PartyManagementDrawer({
     }));
   }
 
+  function selectResponsibilityCenter(value: string | string[]) {
+    const centerId = getSingleSelectedValue(value);
+    const center = responsibilityCenterQuery.data?.find(
+      (item) => item.id === centerId || item.code === centerId,
+    );
+    setValues((current) => ({
+      ...current,
+      defaultResponsibilityCenterId: centerId,
+      defaultResponsibilityCenterName: center?.name ?? "",
+    }));
+    setErrors((current) => ({ ...current, defaultResponsibilityCenterId: undefined }));
+  }
+
+  function selectPaymentType(value: string | string[]) {
+    const paymentTypeId = getSingleSelectedValue(value);
+    const paymentType = paymentTypeQuery.data?.find((item) => item.id === paymentTypeId);
+    setValues((current) => ({
+      ...current,
+      defaultPaymentTypeId: paymentTypeId,
+      defaultPaymentTypeName: paymentType?.name ?? "",
+    }));
+    setErrors((current) => ({ ...current, defaultPaymentTypeId: undefined }));
+  }
+
+  function selectBank(value: string | string[]) {
+    const bankName = getSingleSelectedValue(value);
+    setValues((current) => ({
+      ...current,
+      defaultBank: bankName,
+    }));
+    setErrors((current) => ({ ...current, defaultBank: undefined }));
+  }
+
   function validateBeforeSubmit() {
     const nextErrors = validatePartyInformationForm(effectiveValues);
 
@@ -551,6 +635,9 @@ export function PartyManagementDrawer({
           taxDefaultOptionsLoading={taxDefaults.isLoading}
           taxDefaultOptions={taxDefaults.options}
           termOptions={termDropdown.options}
+          responsibilityCenterOptions={responsibilityCenterOptions}
+          paymentTypeOptions={paymentTypeOptions}
+          bankOptions={bankOptions}
           values={effectiveValues}
           syncedAddressSources={syncedAddressSources}
           canAddAccountTitle={chartAccounts.permissions.canCreate}
@@ -567,6 +654,9 @@ export function PartyManagementDrawer({
           onSelectCityMunicipality={selectCityMunicipality}
           onSelectProvince={selectProvince}
           onSelectTerm={selectTerm}
+          onSelectResponsibilityCenter={selectResponsibilityCenter}
+          onSelectPaymentType={selectPaymentType}
+          onSelectBank={selectBank}
           onUpdateField={updateField}
         />
       </form>

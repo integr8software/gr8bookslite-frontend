@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   createAccountingChartAccountOptions,
-  createDefaultAccountExpenseOptions,
   getAccountingPartyFallbackValue,
   isGeneratedAccountingEntry,
 } from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherAccountingEntryData";
@@ -18,6 +17,7 @@ import {
 } from "@/app/src/data/shared/tax/TaxData";
 import { FetchChartAccountsTree } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsQueryKeys";
+import { usePostingAccountLookup } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartOfAccountsLookup";
 import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import { useTaxDefaultAccountOptionGroups } from "@/app/src/hooks/shared/tax/useTaxOptions";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
@@ -27,13 +27,14 @@ import type {
   DisbursementVoucherPartyDropdownOption,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { ChartAccount } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
+import type { PostingAccountLookupOption } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartOfAccountsLookupTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 
 const ActiveChartAccountStatus = "Active";
 
 type DisbursementVoucherEntryLookupOptions = {
   activeCompanyId: number | null;
-  defaultAccounts: Parameters<typeof createDefaultAccountExpenseOptions>[0];
+  defaultAccounts: unknown[];
   entries: DisbursementLineEntry[];
   livePartyOptions: DisbursementVoucherPartyDropdownOption[];
   liveResponsibilityCenterOptions: AppAdvancedDropdownOption[];
@@ -41,7 +42,6 @@ type DisbursementVoucherEntryLookupOptions = {
 
 export function useDisbursementVoucherEntryLookups({
   activeCompanyId,
-  defaultAccounts,
   entries,
   livePartyOptions,
   liveResponsibilityCenterOptions,
@@ -51,6 +51,7 @@ export function useDisbursementVoucherEntryLookups({
     queryFn: FetchChartAccountsTree,
     staleTime: 60_000,
   });
+  const postingAccountsQuery = usePostingAccountLookup({}, { enabled: activeCompanyId !== null });
   const taxCodesQuery = useAlphanumericTaxCodes();
   const taxDefaultAccountOptionsQuery = useTaxDefaultAccountOptionGroups();
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
@@ -71,7 +72,10 @@ export function useDisbursementVoucherEntryLookups({
 
   const liveChartAccounts = useMemo(() => createSpecificChartAccountOptions(chartAccountsQuery.data ?? []), [chartAccountsQuery.data]);
   const chartAccounts = useMemo(() => createAccountingChartAccountOptions(entries, liveChartAccounts), [entries, liveChartAccounts]);
-  const expenseAccounts = useMemo(() => createDefaultAccountExpenseOptions(defaultAccounts), [defaultAccounts]);
+  const expenseAccounts = useMemo(
+    () => createPostingAccountOptions(postingAccountsQuery.data ?? []),
+    [postingAccountsQuery.data],
+  );
   const expenseRows = useMemo(() => entries.filter((entry) => !isGeneratedAccountingEntry(entry)), [entries]);
 
   const partyOptions = useMemo<DisbursementVoucherPartyDropdownOption[]>(() => {
@@ -93,10 +97,17 @@ export function useDisbursementVoucherEntryLookups({
         return;
       }
 
+      const matchingOption = options.find(
+        (opt) =>
+          opt.name.toLowerCase() === currentPartyName.toLowerCase() ||
+          (entry.partyCode && opt.value === entry.partyCode) ||
+          (entry.partyCode && opt.label === entry.partyCode),
+      );
+
       customValues.add(value);
       customOptions.push({
-        description: "Copied entry party",
-        label: entry.partyCode ?? "",
+        description: matchingOption?.description ?? "",
+        label: entry.partyCode ?? matchingOption?.label ?? "",
         name: currentPartyName,
         value,
       });
@@ -189,4 +200,19 @@ function createSpecificChartAccountOptions(accounts: ChartAccount[]): ModuleChar
       ...childOptions,
     ];
   });
+}
+
+function createPostingAccountOptions(accounts: PostingAccountLookupOption[]): ModuleChartAccount[] {
+  return accounts.map((account) => ({
+    accountCategory: "SPECIFIC",
+    accountName: account.accountTitle,
+    accountNumber: account.accountCode,
+    accountType: String(account.accountType ?? ""),
+    description: account.description || account.accountTitle,
+    id: account.accountId,
+    normalBalance: account.accountNature === "CREDIT" ? "Credit" : "Debit",
+    statementGroup: "",
+    statementSection: "",
+    status: "Active",
+  }));
 }

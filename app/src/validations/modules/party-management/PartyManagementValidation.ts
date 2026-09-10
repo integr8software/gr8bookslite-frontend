@@ -13,7 +13,16 @@ import { isAtcCodeLike } from "@/app/src/data/shared/tax/AtcCode";
 import type { PartyInformationFormErrors, PartyInformationFormValues } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 
 const PhilippineContactNumberPattern = /^\+63 \d{3} \d{3} \d{4}$/;
-const PhilippineTinPattern = /^\d{3}-\d{3}-\d{3}-\d{3}$/;
+export const PhilippineTinPattern = /^\d{3}-\d{3}-\d{3}-\d{3}$/;
+export const PartyInformationInvalidTinMessage = "Enter a valid TIN in the format 000-000-000-000.";
+
+export function validateTin(value?: string | null): string | undefined {
+  const trimmed = value?.trim() ?? "";
+  if (!trimmed) {
+    return undefined;
+  }
+  return PhilippineTinPattern.test(trimmed) ? undefined : PartyInformationInvalidTinMessage;
+}
 
 export const PartyInformationRequiredFieldsToastMessage = "Please fill up the required party fields.";
 
@@ -100,7 +109,7 @@ export const PartyInformationFormSchema = z
       .string()
       .trim()
       .refine((value) => !value || PhilippineTinPattern.test(value), {
-        message: "Enter a valid TIN in the format 000-000-000-000.",
+        message: PartyInformationInvalidTinMessage,
       }),
     atcCode: z.string().trim(),
     defaultPurchaseInputVatTaxSourceKey: z.string().trim(),

@@ -44,6 +44,8 @@ export function mapPurchaseRequestResponse(response: PurchaseRequestResponseDto)
       vendorAddress: response.vendorAddress ?? "",
       remarks: response.remarks ?? "",
       forDepartment: response.forDepartment ?? "",
+      responsibilityCenterId: "",
+      responsibilityCenter: response.forDepartment ?? "",
       items: response.items.map((item) => ({
         id: item.id,
         itemId: item.itemId ?? "",
@@ -104,7 +106,7 @@ function toPurchaseRequestPayload(values: PurchaseRequestFormValues, branchUnitI
     projectName: values.projectName.trim() || null,
     currency: values.currency,
     exchangeRate: Number(values.exchangeRate) || 1,
-    forDepartment: values.forDepartment.trim() || null,
+    forDepartment: values.responsibilityCenter.trim() || values.forDepartment.trim() || null,
     bomNo: values.bomNo.trim() || null,
     remarks: values.remarks.trim() || null,
     items: values.items.map((item) => ({

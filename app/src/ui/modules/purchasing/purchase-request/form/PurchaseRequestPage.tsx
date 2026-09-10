@@ -4,7 +4,10 @@ import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { PurchaseRequestHref } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
-import { createProjectResponsibilityCenterInitialValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
+import {
+  ResponsibilityCenterInitialFormValues,
+  createProjectResponsibilityCenterInitialValues,
+} from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
@@ -34,6 +37,7 @@ function PurchaseRequestActionPageInner() {
   const responsibilityCenterStore = useResponsibilityCenterStore();
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
+  const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
   const partyOptions = useMemo(() => createPartyOptions(partyStore.records), [partyStore.records]);
   const projectOptions = useMemo(
     () =>
@@ -44,9 +48,22 @@ function PurchaseRequestActionPageInner() {
       }),
     [page.values.projectCode, page.values.projectName, responsibilityCenterStore.centers],
   );
+  const responsibilityCenterOptions = useMemo(
+    () =>
+      createHeaderResponsibilityCenterOptions({
+        currentCenterId: page.values.responsibilityCenterId,
+        currentCenterName: page.values.responsibilityCenter || page.values.forDepartment,
+        records: responsibilityCenterStore.centers,
+      }),
+    [page.values.responsibilityCenterId, page.values.responsibilityCenter, page.values.forDepartment, responsibilityCenterStore.centers],
+  );
   const projectInitialValues = useMemo(
     () => createProjectResponsibilityCenterInitialValues(responsibilityCenterStore.classifications, responsibilityCenterStore.types),
     [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
+  );
+  const responsibilityCenterInitialValues = useMemo(
+    () => ResponsibilityCenterInitialFormValues,
+    [],
   );
 
   if (page.needsRecord && !page.existingRequest) {
@@ -61,9 +78,10 @@ function PurchaseRequestActionPageInner() {
 
     if (selectedParty) {
       page.updateField("vendorAddress", formatPartyAddress(getPurchaseRequestPartyAddress(selectedParty)));
-      if (selectedParty.purchaseType) {
-        page.updateField("purchaseType", selectedParty.purchaseType);
-      }
+      page.updateField("purchaseType", selectedParty.purchaseType || "");
+    } else {
+      page.updateField("vendorAddress", "");
+      page.updateField("purchaseType", "");
     }
   }
 
@@ -76,6 +94,11 @@ function PurchaseRequestActionPageInner() {
     page.updateField("projectCode", project.code);
     page.updateField("projectName", project.name);
     setIsProjectDrawerOpen(false);
+  }
+
+  function updateCreatedResponsibilityCenter(center: ResponsibilityCenter) {
+    page.updateResponsibilityCenter(center.id, center.name);
+    setIsResponsibilityCenterDrawerOpen(false);
   }
 
   return (
@@ -95,15 +118,22 @@ function PurchaseRequestActionPageInner() {
           isReadonly={page.isReadonly}
           partyOptions={partyOptions}
           projectOptions={projectOptions}
+          responsibilityCenterOptions={responsibilityCenterOptions}
           values={page.values}
           onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
           onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
+          onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
           onSelectParty={updateSelectedParty}
           onSelectProject={updateSelectedProject}
+          onSelectResponsibilityCenter={page.updateResponsibilityCenter}
           onUpdateField={page.updateField}
         />
         <PurchaseRequestEntrySection
           accountingRows={page.values.accountingEntries}
+          defaultResponsibilityCenter={{
+            id: page.values.responsibilityCenterId,
+            name: page.values.responsibilityCenter,
+          }}
           error={page.errors.items}
           itemDescriptionOptions={page.itemDescriptionOptions}
           isReadonly={page.isReadonly}
@@ -128,9 +158,7 @@ function PurchaseRequestActionPageInner() {
           page.updateField("vceCode", record.partyCodeNo);
           page.updateField("vceName", getPartyDisplayName(record));
           page.updateField("vendorAddress", formatPartyAddress(getPurchaseRequestPartyAddress(record)));
-          if (record.purchaseType) {
-            page.updateField("purchaseType", record.purchaseType);
-          }
+          page.updateField("purchaseType", record.purchaseType || "");
           setIsPartyDrawerOpen(false);
         }}
       />
@@ -140,6 +168,13 @@ function PurchaseRequestActionPageInner() {
         mode="add"
         onClose={() => setIsProjectDrawerOpen(false)}
         onSaved={updateCreatedProject}
+      />
+      <ResponsibilityCenterDrawer
+        initialValues={responsibilityCenterInitialValues}
+        isOpen={!page.isReadonly && isResponsibilityCenterDrawerOpen}
+        mode="add"
+        onClose={() => setIsResponsibilityCenterDrawerOpen(false)}
+        onSaved={updateCreatedResponsibilityCenter}
       />
     </section>
   );
@@ -239,3 +274,49 @@ function formatPartyAddress(address?: PartyAddress | null) {
     .filter(Boolean)
     .join(", ");
 }
+
+function createHeaderResponsibilityCenterOptions({
+  currentCenterId,
+  currentCenterName,
+  records,
+}: {
+  currentCenterId?: string;
+  currentCenterName?: string;
+  records: ResponsibilityCenter[];
+}): AppAdvancedDropdownOption[] {
+  const options: AppAdvancedDropdownOption[] = records
+    .filter((record) => record.status === "Active" && record.code.trim())
+    .map((record) => ({
+      description: `${record.category} · ${record.financialType}`,
+      label: record.code,
+      name: record.name,
+      selectedDetails: record.code,
+      value: record.id,
+    }));
+
+  if (currentCenterId && !options.some((option) => option.value === currentCenterId)) {
+    options.unshift({
+      description: "Current Responsibility Center",
+      label: currentCenterName || currentCenterId,
+      name: currentCenterName || currentCenterId,
+      selectedDetails: currentCenterId,
+      value: currentCenterId,
+    });
+  } else if (!currentCenterId && currentCenterName?.trim()) {
+    const matched = options.find(
+      (option) => option.name.trim().toLowerCase() === currentCenterName.trim().toLowerCase(),
+    );
+    if (!matched) {
+      options.unshift({
+        description: "Current Responsibility Center",
+        label: currentCenterName,
+        name: currentCenterName,
+        selectedDetails: currentCenterName,
+        value: currentCenterName,
+      });
+    }
+  }
+
+  return options;
+}
+

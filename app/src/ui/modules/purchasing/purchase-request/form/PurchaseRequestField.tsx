@@ -1,5 +1,9 @@
 import {
+  PurchaseRequestAddResponsibilityCenterLabel,
   PurchaseRequestCurrencyOptions,
+  PurchaseRequestResponsibilityCenterLabel,
+  PurchaseRequestResponsibilityCenterPlaceholder,
+  PurchaseRequestResponsibilityCenterSearchPlaceholder,
   PurchaseRequestStatusOptions,
   PurchaseRequestTypeOptions,
 } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
@@ -26,11 +30,14 @@ type PurchaseRequestSupplierFieldsProps = {
   isReadonly: boolean;
   partyOptions: AppAdvancedDropdownOption[];
   projectOptions: AppAdvancedDropdownOption[];
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   values: PurchaseRequestFormValues;
   onOpenPartyDrawer: () => void;
   onOpenProjectDrawer: () => void;
+  onOpenResponsibilityCenterDrawer: () => void;
   onSelectParty: (partyCode: string, partyName: string) => void;
   onSelectProject: (projectCode: string, projectName: string) => void;
+  onSelectResponsibilityCenter: (centerId: string, centerName: string) => void;
   onUpdateField: PurchaseRequestFieldUpdater<PurchaseRequestFormValues>;
 };
 
@@ -38,11 +45,14 @@ export function PurchaseRequestSupplierFields({
   isReadonly,
   onOpenPartyDrawer,
   onOpenProjectDrawer,
+  onOpenResponsibilityCenterDrawer,
   onSelectParty,
   onSelectProject,
+  onSelectResponsibilityCenter,
   onUpdateField,
   partyOptions,
   projectOptions,
+  responsibilityCenterOptions,
   values,
 }: PurchaseRequestSupplierFieldsProps) {
   return (
@@ -147,13 +157,28 @@ export function PurchaseRequestSupplierFields({
             }
           />
         </PurchaseRequestFieldShell>
-        <PurchaseRequestTextField
-          id="purchase-request-for-department"
-          label="For Department"
-          readOnly={isReadonly}
-          value={values.forDepartment}
-          onChange={(value) => onUpdateField("forDepartment", value)}
-        />
+        <PurchaseRequestFieldShell
+          controlId="purchase-request-responsibility-center"
+          label={PurchaseRequestResponsibilityCenterLabel}
+        >
+          <AppLookupDropdown
+            id="purchase-request-responsibility-center"
+            value={values.responsibilityCenterId || values.responsibilityCenter}
+            readOnly={isReadonly}
+            options={responsibilityCenterOptions}
+            placeholder={PurchaseRequestResponsibilityCenterPlaceholder}
+            searchPlaceholder={PurchaseRequestResponsibilityCenterSearchPlaceholder}
+            addAction={
+              !isReadonly
+                ? {
+                    label: PurchaseRequestAddResponsibilityCenterLabel,
+                    onClick: onOpenResponsibilityCenterDrawer,
+                  }
+                : undefined
+            }
+            onChange={onSelectResponsibilityCenter}
+          />
+        </PurchaseRequestFieldShell>
       </div>
 
       <div className="grid min-w-0 content-start gap-4 2xl:col-start-3">

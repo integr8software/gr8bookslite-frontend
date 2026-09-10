@@ -52,6 +52,8 @@ export const PurchaseRequestFormValidationSchema = z
 			.finite()
 			.positive("Enter a valid exchange rate."),
 		forDepartment: z.string(),
+		responsibilityCenterId: z.string().optional().default(""),
+		responsibilityCenter: z.string().optional().default(""),
 		items: z.array(PurchaseRequestItemValidationSchema),
 		logoFileName: z.string(),
 		logoImageUrl: z.string(),

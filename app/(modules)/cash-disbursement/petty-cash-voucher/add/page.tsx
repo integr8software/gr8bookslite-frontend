@@ -13,5 +13,3 @@ export const metadata: Metadata = {
 export default function CashDisbursementPettyCashVoucherAddPage() {
   return <PettyCashVoucherActionPage mode={PettyCashVoucherActionModes.Add} />;
 }
-
-

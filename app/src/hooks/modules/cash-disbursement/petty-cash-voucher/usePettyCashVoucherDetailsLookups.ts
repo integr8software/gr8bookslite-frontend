@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
+import { createProjectCodeLookupOptions } from "@/app/src/data/modules/project-maintenance/ProjectMaintenanceLookupData";
 import { usePartyLookup } from "@/app/src/hooks/modules/party-management/usePartyLookup";
 import { usePostingAccountLookup } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartOfAccountsLookup";
 import { useResponsibilityCenterLookup } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenterLookup";
+import { useProjectMaintenanceLookup } from "@/app/src/hooks/modules/project-maintenance/useProjectMaintenance";
 import type { PettyCashVoucherFormValues } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import type { PartyLookupOption } from "@/app/src/types/modules/party-management/PartyLookupTypes";
 import type { PostingAccountLookupOption } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartOfAccountsLookupTypes";
@@ -11,20 +13,25 @@ import type { ResponsibilityCenterLookupOption } from "@/app/src/types/modules/f
 
 export type PettyCashVoucherLookupValues = Pick<
   PettyCashVoucherFormValues,
-  "accountCode" | "accountTitle" | "partyCode" | "partyName" | "responsibilityCenterCode" | "responsibilityCenter"
+  | "accountCode"
+  | "accountTitle"
+  | "partyCode"
+  | "partyName"
+  | "projectCode"
+  | "projectName"
+  | "responsibilityCenter"
+  | "responsibilityCenterCode"
 >;
 
 export function usePettyCashVoucherDetailsLookups(values: PettyCashVoucherLookupValues) {
   const partyQuery = usePartyLookup();
   const accountQuery = usePostingAccountLookup();
   const responsibilityCenterQuery = useResponsibilityCenterLookup();
+  const projectQuery = useProjectMaintenanceLookup();
 
   const partyOptions = useMemo<PartyLookupOption[]>(() => {
     const options = [...(partyQuery.data ?? [])];
-    if (
-      values.partyCode &&
-      !options.some((opt) => opt.value === values.partyCode || opt.label === values.partyCode)
-    ) {
+    if (values.partyCode && !options.some((opt) => opt.value === values.partyCode || opt.label === values.partyCode)) {
       options.unshift({
         partyId: values.partyCode,
         partyCode: values.partyCode,
@@ -40,10 +47,7 @@ export function usePettyCashVoucherDetailsLookups(values: PettyCashVoucherLookup
 
   const accountOptions = useMemo<PostingAccountLookupOption[]>(() => {
     const options = [...(accountQuery.data ?? [])];
-    if (
-      values.accountCode &&
-      !options.some((opt) => opt.value === values.accountCode || opt.label === values.accountCode)
-    ) {
+    if (values.accountCode && !options.some((opt) => opt.value === values.accountCode || opt.label === values.accountCode)) {
       options.unshift({
         accountId: values.accountCode,
         accountCode: values.accountCode,
@@ -58,15 +62,11 @@ export function usePettyCashVoucherDetailsLookups(values: PettyCashVoucherLookup
   }, [accountQuery.data, values.accountCode, values.accountTitle]);
 
   const responsibilityCenterOptions = useMemo<ResponsibilityCenterLookupOption[]>(() => {
-    const base = (responsibilityCenterQuery.data ?? []).filter(
-      (opt) => !opt.name?.toLowerCase().includes("project"),
-    );
+    const base = (responsibilityCenterQuery.data ?? []).filter((opt) => !opt.name?.toLowerCase().includes("project"));
     const options = [...base];
     if (
       values.responsibilityCenterCode &&
-      !options.some(
-        (opt) => opt.value === values.responsibilityCenterCode || opt.label === values.responsibilityCenterCode,
-      )
+      !options.some((opt) => opt.value === values.responsibilityCenterCode || opt.label === values.responsibilityCenterCode)
     ) {
       options.unshift({
         centerId: values.responsibilityCenterCode,
@@ -80,12 +80,24 @@ export function usePettyCashVoucherDetailsLookups(values: PettyCashVoucherLookup
     return options;
   }, [responsibilityCenterQuery.data, values.responsibilityCenter, values.responsibilityCenterCode]);
 
+  const projectOptions = useMemo(
+    () =>
+      createProjectCodeLookupOptions({
+        currentProjectCode: values.projectCode,
+        currentProjectName: values.projectName,
+        options: projectQuery.data ?? [],
+      }),
+    [projectQuery.data, values.projectCode, values.projectName],
+  );
+
   return {
     accountOptions,
     isAccountLookupLoading: accountQuery.isLoading,
     isPartyLookupLoading: partyQuery.isLoading,
+    isProjectLookupLoading: projectQuery.isLoading,
     isResponsibilityCenterLookupLoading: responsibilityCenterQuery.isLoading,
     partyOptions,
+    projectOptions,
     responsibilityCenterOptions,
   };
 }

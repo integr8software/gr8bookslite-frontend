@@ -138,11 +138,6 @@ export const MaintenanceSpotlightTutorialConfigs: readonly MaintenanceSpotlightT
     label: "Petty Cash Voucher",
   },
   {
-    href: "/cash-disbursement/petty-cash-fund",
-    addMode: "none",
-    label: "Petty Cash Fund",
-  },
-  {
     href: "/cash-disbursement/petty-cash-replenishment",
     addMode: "none",
     label: "Petty Cash Replenishment",

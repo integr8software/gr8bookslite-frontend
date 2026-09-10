@@ -69,6 +69,7 @@ export const AccountsPayableVoucherStatusOptions: AccountsPayableVoucherStatus[]
   "Draft",
   "Disapproved",
   "Cancelled",
+  "Closed",
 ];
 
 export const AccountsPayableVoucherStatusFilters = ["all", ...AccountsPayableVoucherStatusOptions] as const;
@@ -155,7 +156,7 @@ export const AccountsPayableVoucherExpenseColumnLabels: Record<AccountsPayableVo
   particulars: "Particulars",
   amount: "Gross Amount",
   vatAmount: "VAT Amount",
-  netAmount: "Net Amount",
+  netAmount: "Net of VAT",
   ewtAmount: "EWT Amount",
   totalAmountDue: "Total Payable",
   partyCode: "Party Code",

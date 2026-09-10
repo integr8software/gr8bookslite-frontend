@@ -97,7 +97,7 @@ export function AccountsPayableVoucherExpenseTable({
     () => mergeLookupAccountOptions(expenseTypeOptionsQuery.data ?? [], page.values.expenseLines.map(createExpenseLineLookupAccount)),
     [expenseTypeOptionsQuery.data, page.values.expenseLines],
   );
-  const expenseTypeEmptyMessage = getLookupAccountEmptyMessage(expenseTypeOptionsQuery, "No default-account expense types found.");
+  const expenseTypeEmptyMessage = getLookupAccountEmptyMessage(expenseTypeOptionsQuery, "No disbursement types found.");
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);

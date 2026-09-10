@@ -2,93 +2,110 @@ import type { TransactionAttachment } from "@/app/src/types/shared/transaction-s
 import type { usePettyCashVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherActionPage";
 import type { usePettyCashVoucherOverviewPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherOverviewPage";
 
-export type PettyCashVoucherStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
-
+export type PettyCashVoucherStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 export type PettyCashVoucherFormStatus = "Open" | PettyCashVoucherStatus;
+export type PettyCashVoucherActionMode = "add" | "edit" | "view";
+export type PettyCashVoucherActionTab = "details" | "attachments";
+export type PettyCashVoucherConfirmationAction = "save" | "draft" | "approve" | "disapprove" | "cancel";
+export type PettyCashVoucherActionPageState = ReturnType<typeof usePettyCashVoucherActionPage>;
 
-export type PettyCashVoucherVATable = "False" | "True";
+export type PettyCashVoucherOpenResponsibilityCenterDrawerHandler = (rowId: string) => void;
+export type PettyCashVoucherOpenSupplierDrawerHandler = (rowId: string) => void;
+export type PettyCashVoucherEntrySectionProps = {
+  page: PettyCashVoucherActionPageState;
+  onOpenResponsibilityCenterDrawer?: PettyCashVoucherOpenResponsibilityCenterDrawerHandler;
+  onOpenSupplierDrawer?: PettyCashVoucherOpenSupplierDrawerHandler;
+};
+export type PettyCashVoucherDetailEntryTableProps = PettyCashVoucherEntrySectionProps;
+export type PettyCashVoucherAccountingEntryTableProps = { page: PettyCashVoucherActionPageState };
+export type PettyCashVoucherOverviewPageState = ReturnType<typeof usePettyCashVoucherOverviewPage>;
+export type PettyCashVoucherEntryTab = "items" | "accounting";
+
+export type PettyCashVoucherItem = {
+  id: string;
+  date: string;
+  supplierCode: string;
+  supplierName: string;
+  orNo: string;
+  tinNo: string;
+  particulars: string;
+  remarks?: string;
+  amount: string;
+  netAmount: string;
+  vatPercent: string;
+  vatAmount: string;
+  ewtCode: string;
+  ewtPercent: string;
+  ewtAmount: string;
+  disburseAmount: string;
+  type: string;
+  vatType: string;
+  grossAmount: string;
+  responsibilityCenterCode: string;
+  responsibilityCenterName: string;
+};
+
+export type PettyCashVoucherItemColumnId = Exclude<keyof PettyCashVoucherItem, "id" | "remarks">;
+
+export type PettyCashVoucherFormValues = {
+  transactionNo: string;
+  documentDate: string;
+  status: PettyCashVoucherFormStatus;
+  partyCode: string;
+  partyName: string;
+  responsibilityCenter: string;
+  responsibilityCenterCode: string;
+  currency: string;
+  exchangeRate: string;
+  accountCode: string;
+  accountTitle: string;
+  projectCode: string;
+  projectName: string;
+  remarks: string;
+  items: PettyCashVoucherItem[];
+  attachments: TransactionAttachment[];
+};
+
+export type PettyCashVoucherAccountingEntry = {
+  id: string;
+  accountCode: string;
+  accountTitle: string;
+  debit: string;
+  credit: string;
+  partyCode: string;
+  partyName: string;
+  particulars: string;
+  remarks?: string;
+};
+
+export type PettyCashVoucherAccountingColumnId = Exclude<keyof PettyCashVoucherAccountingEntry, "id" | "remarks">;
 
 export type PettyCashVoucherRecord = {
   id: string;
-  voucherNo: string;
+  transactionNo: string;
+  documentDate: string;
   partyCode: string;
   partyName: string;
   accountCode: string;
   accountTitle: string;
-  amount: number;
-  disburseAmount: number;
-  documentDate: string;
-  currency?: string;
-  exchangeRate?: string;
-  remarks: string;
-  createdBy: string;
-  dateCreated: string;
-  updatedBy: string;
-  dateModified: string;
-  status: PettyCashVoucherStatus;
-  vatType?: string;
-  vatable?: PettyCashVoucherVATable;
-  vatRate?: string;
-  vatAmount?: number;
-  ewtCode?: string;
-  ewtRate?: string;
-  ewtAmount?: number;
-  netAmount?: number;
   responsibilityCenter?: string;
   responsibilityCenterCode?: string;
+  projectCode?: string;
+  projectName?: string;
+  currency?: string;
+  exchangeRate?: string;
+  amount: number;
+  disburseAmount: number;
+  remarks: string;
+  status: PettyCashVoucherStatus;
+  createdBy: string;
+  createdAt: string;
+  updatedBy: string;
+  updatedAt: string;
+  items?: PettyCashVoucherItem[];
   attachments?: TransactionAttachment[];
   formValues?: PettyCashVoucherFormValues;
 };
 
-export type PettyCashVoucherFormValues = {
-  accountCode: string;
-  accountTitle: string;
-  amount: string;
-  attachments: TransactionAttachment[];
-  documentDate: string;
-  currency: string;
-  exchangeRate: string;
-  ewtCode: string;
-  ewtRate: string;
-  ewtAmount: string;
-  netAmount: string;
-  remarks: string;
-  responsibilityCenter: string;
-  responsibilityCenterCode: string;
-  status: PettyCashVoucherFormStatus;
-  transactionNo: string;
-  vatType: string;
-  vatable?: PettyCashVoucherVATable;
-  vatRate: string;
-  vatAmount: string;
-  partyCode: string;
-  partyName: string;
-};
-
-export type PettyCashVoucherFormErrors = Partial<Record<keyof PettyCashVoucherFormValues, string>>;
-
-export type PettyCashVoucherTextFieldName = {
-  [TKey in keyof PettyCashVoucherFormValues]: PettyCashVoucherFormValues[TKey] extends string ? TKey : never;
-}[keyof PettyCashVoucherFormValues];
-
-export type PettyCashVoucherActionMode = "add" | "edit" | "view";
-
-export type PettyCashVoucherActionTab = "details" | "attachments";
-
-export type PettyCashVoucherConfirmation = { action: "submit" | "draft" } | { action: "status"; status: PettyCashVoucherStatus };
-
-export type PettyCashVoucherActionPageState = ReturnType<typeof usePettyCashVoucherActionPage>;
-export type PettyCashVoucherOverviewPageState = ReturnType<typeof usePettyCashVoucherOverviewPage>;
-
-export type PettyCashVoucherActionPageOptions = {
-  existingVoucher?: PettyCashVoucherRecord;
-  mode: PettyCashVoucherActionMode;
-  onSaved?: () => void;
-};
-
-export type PettyCashVoucherUpdateStatusHandler = (record: PettyCashVoucherRecord, status: PettyCashVoucherStatus) => void | Promise<void>;
-
-export type PettyCashVoucherRecordActionsProps = {
-  onUpdateStatus: PettyCashVoucherUpdateStatusHandler;
-  record: PettyCashVoucherRecord;
-};
+export type PettyCashVoucherFormErrors = Partial<Record<keyof PettyCashVoucherFormValues | "items", string>>;
+export type PettyCashVoucherUpdateStatusHandler = (record: PettyCashVoucherRecord, status: PettyCashVoucherStatus) => void;

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   AdvancesToSuppliersActionModes,
@@ -13,11 +14,7 @@ import {
   createAdvancesToSuppliersFormValues,
   formatAdvancesToSuppliersAmount,
 } from "@/app/src/data/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersData";
-import {
-  getPurchaseOrderParty,
-  getPurchaseOrderTotals,
-  loadPurchaseOrders,
-} from "@/app/src/data/modules/purchasing/purchase-order/PurchaseOrderData";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
@@ -30,7 +27,15 @@ import {
   submitAdvancesToSuppliersApprovalApi,
   updateAdvancesToSuppliersApi,
   updateAdvancesToSuppliersStatusApi,
-} from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersService";
+} from "@/app/src/services/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersApi";
+import { fetchPurchaseOrderCopyFromCandidates } from "@/app/src/services/modules/purchasing/purchase-order/PurchaseOrderApi";
+import { PurchaseOrderQueryKeys } from "@/app/src/services/modules/purchasing/purchase-order/PurchaseOrderQueryKeys";
+import {
+  buildCashDisbursementCopyRecordSet,
+  findPaymentVoucherCopyCandidates,
+  PaymentVoucherCopyPrefixes,
+} from "@/app/src/data/modules/cash-disbursement/shared/PaymentVoucherCopyFromData";
+import { formatCopyReference, normalizeReference } from "@/app/src/utils/reference.util";
 import type {
   AdvancesToSuppliersActionMode,
   AdvancesToSuppliersActionTab,
@@ -39,7 +44,6 @@ import type {
   AdvancesToSuppliersRecord,
   AdvancesToSuppliersStatus,
 } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
-import type { AppCopyFromRecord } from "@/app/src/types/shared/transaction-setup/AppCopyFromTypes";
 import { validateAdvancesToSuppliersForm } from "@/app/src/validations/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersValidation";
 
 export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSuppliersActionMode; onSaved?: () => void }) {
@@ -47,6 +51,8 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   const params = useParams<{ recordId?: string }>();
   const { mode } = options;
   const recordId = params.recordId;
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
   const [record, setRecord] = useState<AdvancesToSuppliersRecord | null>(null);
   const [values, setValues] = useState<AdvancesToSuppliersFormValues>(() =>
     createAdvancesToSuppliersFormValues(undefined, "", transactionCurrency.baseCurrencyCode),
@@ -58,17 +64,13 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   const isSubmittingRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(mode !== AdvancesToSuppliersActionModes.Add && Boolean(recordId));
-  const {
-    accountOptions,
-    isLookupLoading,
-    partyOptions,
-    projectOptions,
-    responsibilityCenterOptions,
-  } = useAdvancesToSuppliersDetailsLookups(values);
+  const { accountOptions, isLookupLoading, partyOptions, projectOptions, responsibilityCenterOptions } =
+    useAdvancesToSuppliersDetailsLookups(values);
   const isReadonly = mode === AdvancesToSuppliersActionModes.View;
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
-  const isDirty = mode === AdvancesToSuppliersActionModes.Add ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
+  const isDirty =
+    mode === AdvancesToSuppliersActionModes.Add ? hasModuleDraftChanges(values, initialValues, ["transactionNo"]) : rawIsDirty;
   const draft = useModuleDraft({
     enabled: !isReadonly,
     initialValues,
@@ -94,7 +96,6 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
       // Keep the current add form if the number endpoint is temporarily unavailable.
     }
   }
-
 
   useEffect(() => {
     if (mode !== AdvancesToSuppliersActionModes.Add) return;
@@ -130,24 +131,33 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
       isMounted = false;
     };
   }, [mode, recordId, transactionCurrency.baseCurrencyCode]);
-  const purchaseOrderCopyRecords = useMemo<AppCopyFromRecord[]>(
+  const purchaseOrderCopyCandidatesQuery = useQuery({
+    queryKey: PurchaseOrderQueryKeys.copyFromCandidates("advances-to-suppliers", activeCompanyId, activeBranchId, values.partyCode),
+    queryFn: () =>
+      fetchPurchaseOrderCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        partyCode: values.partyCode,
+      }),
+    enabled: mode === AdvancesToSuppliersActionModes.Add && activeCompanyId != null,
+  });
+  const purchaseOrderCopyCandidates = useMemo(() => purchaseOrderCopyCandidatesQuery.data ?? [], [purchaseOrderCopyCandidatesQuery.data]);
+  const purchaseOrderCopyRecords = useMemo(
     () =>
-      loadPurchaseOrders()
-        .filter((order) => order.status !== AdvancesToSuppliersStatuses.Cancelled)
-        .map((order) => {
-          const party = getPurchaseOrderParty(order);
-
-          return {
-            amount: String(getPurchaseOrderTotals(order).netAmount),
-            documentDate: order.documentDate,
-            id: order.id,
-            partyName: party.partyName,
-            remarks: order.remarks || order.prNo,
-            source: "Purchase Order",
-            sourceNo: order.transNo,
-          };
-        }),
-    [],
+      buildCashDisbursementCopyRecordSet({
+        candidates: purchaseOrderCopyCandidates.map((order) => ({
+          ...order,
+          availableGrossAmount: order.availableAmount,
+        })),
+        copiedReferences: new Set(),
+        getRemarks: (order) => order.remarks ?? "",
+        isAlreadyAdded: (order) => {
+          const reference = formatCopyReference(PaymentVoucherCopyPrefixes.PurchaseOrder, order.transactionNo);
+          return normalizeReference(values.poReference) === normalizeReference(reference);
+        },
+        prefix: PaymentVoucherCopyPrefixes.PurchaseOrder,
+        source: "Purchase Order",
+      }),
+    [purchaseOrderCopyCandidates, values.poReference],
   );
 
   useEffect(() => {
@@ -226,15 +236,24 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
   function copyFromPurchaseOrder(recordIds: string[]) {
     if (isReadonly) return;
 
-    const order = loadPurchaseOrders().find((item) => recordIds.includes(item.id));
+    const order = findPaymentVoucherCopyCandidates(
+      purchaseOrderCopyCandidates,
+      PaymentVoucherCopyPrefixes.PurchaseOrder,
+      recordIds,
+    )[0];
 
     if (!order) {
       toast.error("No purchase order was selected.");
       return;
     }
 
-    const totalPoAmount = formatAdvancesToSuppliersAmount(getPurchaseOrderTotals(order).netAmount);
-    const party = getPurchaseOrderParty(order);
+    const reference = formatCopyReference(PaymentVoucherCopyPrefixes.PurchaseOrder, order.transactionNo);
+    if (normalizeReference(values.poReference) === normalizeReference(reference)) {
+      toast.error("This Purchase Order is already selected.");
+      return;
+    }
+
+    const totalPoAmount = formatAdvancesToSuppliersAmount(order.amount);
     hasEditedCurrencyRef.current = true;
     setValues((current) => {
       const isPercentage = current.advancePaymentType === "Percentage";
@@ -247,13 +266,14 @@ export function useAdvancesToSuppliersActionPage(options: { mode: AdvancesToSupp
 
       return {
         ...current,
-        partyCode: party.partyCode || current.partyCode,
-        partyName: party.partyName || current.partyName,
+        partyId: order.partyId ?? current.partyId,
+        partyCode: order.partyCode || current.partyCode,
+        partyName: order.partyName || current.partyName,
         projectCode: order.projectCode || current.projectCode,
         projectName: order.projectName || current.projectName,
         currency: order.currency || current.currency,
         exchangeRate: formatLoadedExchangeRate(order.exchangeRate || 1),
-        poReference: order.transNo,
+        poReference: reference,
         totalPoAmount,
         advancePaymentAmount,
         advancePaymentPercentage,

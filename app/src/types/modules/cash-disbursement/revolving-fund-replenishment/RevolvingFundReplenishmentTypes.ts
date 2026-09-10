@@ -2,7 +2,7 @@ import type { TransactionAttachment } from "@/app/src/types/shared/transaction-s
 import type { useRevolvingFundReplenishmentActionPage } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund-replenishment/useRevolvingFundReplenishmentActionPage";
 import type { useRevolvingFundReplenishmentOverviewPage } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund-replenishment/useRevolvingFundReplenishmentOverviewPage";
 
-export type RevolvingFundReplenishmentStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
+export type RevolvingFundReplenishmentStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 export type RevolvingFundReplenishmentFormStatus = "Open" | RevolvingFundReplenishmentStatus;
 export type RevolvingFundReplenishmentActionMode = "add" | "edit" | "view";
 export type RevolvingFundReplenishmentActionTab = "details" | "attachments";
@@ -65,6 +65,7 @@ export type RevolvingFundReplenishmentDetailEntryColumnsParams = {
   supplierOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
   vatOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
   ewtOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
+  taxCodes?: import("@/app/src/types/shared/tax/AlphanumericTaxCodeTypes").AlphanumericTaxCode[];
   responsibilityCenterOptions?: import("@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes").AppAdvancedDropdownOption[];
   onOpenSupplierDrawer?: RevolvingFundReplenishmentOpenSupplierDrawerHandler;
 };

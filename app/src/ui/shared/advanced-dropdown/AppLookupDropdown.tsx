@@ -19,7 +19,7 @@ export function AppLookupDropdown({
 			id={id}
 			onChange={(nextValue) => {
 				const idOrCode = String(nextValue);
-				const option = options.find((item) => item.value === idOrCode);
+				const option = options.find((item) => item.value === idOrCode || item.label === idOrCode);
 
 				onChange(idOrCode, option?.name ?? "");
 			}}

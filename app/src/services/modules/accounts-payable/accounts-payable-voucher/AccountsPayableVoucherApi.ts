@@ -1,8 +1,13 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
-import type { CreateAccountsPayableVoucherDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type {
+  AccountsPayableVoucherControllerFindCopyFromCandidatesV1Params,
+  AccountsPayableVoucherCopyFromCandidateDto,
+  CreateAccountsPayableVoucherDto,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import {
   accountsPayableVoucherControllerCreateV1,
   accountsPayableVoucherControllerFindAllV1,
+  accountsPayableVoucherControllerFindCopyFromCandidatesV1,
   accountsPayableVoucherControllerFindOneV1,
   accountsPayableVoucherControllerFindPartyOptionsV1,
   accountsPayableVoucherControllerFindPayableAccountOptionsV1,
@@ -12,6 +17,7 @@ import {
   accountsPayableVoucherControllerUpdateStatusV1,
   accountsPayableVoucherControllerUpdateV1,
 } from "@/app/src/generated/api/accounts-payable-voucher/accounts-payable-voucher";
+import { fetchDisbursementTypeOptions } from "@/app/src/services/modules/financial-maintenance/disbursement-type/DisbursementTypeApi";
 import type {
   AccountsPayableVoucherFormValues,
   AccountsPayableVoucherLookupAccount,
@@ -154,9 +160,9 @@ type AccountsPayableVoucherAccountOptionsResponse = {
 const AccountsPayableVoucherLookupApiPath = "/accounts-payable/accounts-payable-voucher/lookups";
 
 const StatusFromApi: Record<string, AccountsPayableVoucherStatus> = {
-  APPROVED: "For Approval",
+  APPROVED: "Posted",
+  CLOSED: "Closed",
   CANCELLED: "Cancelled",
-  CLOSED: "Posted",
   DISAPPROVED: "Disapproved",
   DRAFT: "Draft",
   FOR_APPROVAL: "For Approval",
@@ -165,10 +171,11 @@ const StatusFromApi: Record<string, AccountsPayableVoucherStatus> = {
 
 const StatusToApi: Record<AccountsPayableVoucherStatus, ApiAccountsPayableVoucherStatus> = {
   Cancelled: "CANCELLED",
+  Closed: "CLOSED",
   Disapproved: "DISAPPROVED",
   Draft: "DRAFT",
-  "For Approval": "APPROVED",
-  Posted: "CLOSED",
+  "For Approval": "FOR_APPROVAL",
+  Posted: "POSTED",
 };
 
 const PayableTypeFromApi: Record<string, AccountsPayableVoucherPayableType> = {
@@ -188,7 +195,7 @@ const PayableTypeToApi: Record<AccountsPayableVoucherPayableType, ApiAccountsPay
 };
 
 export async function fetchAccountsPayableVouchers(query: AccountsPayableVoucherListQuery = {}): Promise<AccountsPayableVoucherListData> {
-  const response = await accountsPayableVoucherControllerFindAllV1(
+  const response = (await accountsPayableVoucherControllerFindAllV1(
     cleanQueryParams({
       amountFrom: query.amountFrom,
       amountTo: query.amountTo,
@@ -202,7 +209,7 @@ export async function fetchAccountsPayableVouchers(query: AccountsPayableVoucher
       sortDirection: query.sortDirection ?? "desc",
       status: query.status && query.status !== "all" ? mapStatusToApi(query.status) : undefined,
     }),
-  ) as unknown as ApiApvListResponse;
+  )) as unknown as ApiApvListResponse;
 
   return {
     pagination: response.pagination,
@@ -216,12 +223,12 @@ export async function fetchAccountsPayableVoucher(
   id: string,
   query: Pick<AccountsPayableVoucherListQuery, "branchUnitId"> = {},
 ): Promise<AccountsPayableVoucherRecord> {
-  const response = await accountsPayableVoucherControllerFindOneV1(
+  const response = (await accountsPayableVoucherControllerFindOneV1(
     id,
     cleanQueryParams({
       branchUnitId: query.branchUnitId,
     }),
-  ) as unknown as ApiApvSingleResponse;
+  )) as unknown as ApiApvSingleResponse;
 
   return mapApiAccountsPayableVoucher(response.voucher);
 }
@@ -229,14 +236,16 @@ export async function fetchAccountsPayableVoucher(
 export async function fetchAccountsPayableVoucherNumberSuggestion(
   branchUnitId?: number | null,
 ): Promise<AccountsPayableVoucherNumberSuggestion> {
-  const response = await accountsPayableVoucherControllerSuggestTransactionNumberV1(cleanQueryParams({ branchUnitId })) as unknown as AccountsPayableVoucherNumberSuggestion;
+  const response = (await accountsPayableVoucherControllerSuggestTransactionNumberV1(
+    cleanQueryParams({ branchUnitId }),
+  )) as unknown as AccountsPayableVoucherNumberSuggestion;
 
   return response;
 }
 
 export async function fetchAccountsPayableVoucherPartyOptions() {
   try {
-    const response = await accountsPayableVoucherControllerFindPartyOptionsV1() as unknown as ApiApvPartyOptionsResponse;
+    const response = (await accountsPayableVoucherControllerFindPartyOptionsV1()) as unknown as ApiApvPartyOptionsResponse;
 
     if (response.parties.length > 0) {
       return response.parties;
@@ -249,23 +258,33 @@ export async function fetchAccountsPayableVoucherPartyOptions() {
 }
 
 export async function fetchAccountsPayableVoucherTermOptions() {
-  const response = await accountsPayableVoucherControllerFindTermOptionsV1() as unknown as ApiApvTermOptionsResponse;
+  const response = (await accountsPayableVoucherControllerFindTermOptionsV1()) as unknown as ApiApvTermOptionsResponse;
 
   return response.terms;
 }
 
 export async function fetchAccountsPayableVoucherResponsibilityCenterOptions() {
-  const response = await accountsPayableVoucherControllerFindResponsibilityCenterOptionsV1() as unknown as ApiApvResponsibilityCenterOptionsResponse;
+  const response =
+    (await accountsPayableVoucherControllerFindResponsibilityCenterOptionsV1()) as unknown as ApiApvResponsibilityCenterOptionsResponse;
 
   return response.responsibilityCenters;
 }
 
 export async function fetchAccountsPayableVoucherExpenseTypeOptions() {
-  const response = await ApiClient.get<AccountsPayableVoucherAccountOptionsResponse>(
-    `${AccountsPayableVoucherLookupApiPath}/expense-types`,
-  );
+  const options = await fetchDisbursementTypeOptions("disbursement");
 
-  return response.data.accounts;
+  return options.map((option): AccountsPayableVoucherLookupAccount => ({
+    id: option.chartAccountId ?? option.id,
+    accountCategory: option.accountType ?? "Expenses",
+    accountName: option.accountTitle ?? option.defaultAccountName,
+    accountNumber: option.accountCode ?? "",
+    accountType: option.accountType ?? "Expenses",
+    description: option.description || option.defaultAccountName,
+    normalBalance: option.accountNature === "CREDIT" ? "Credit" : "Debit",
+    statementGroup: "Income Statement",
+    statementSection: option.accountType ?? "Expenses",
+    status: option.status === "ACTIVE" ? "Active" : "Inactive",
+  }));
 }
 
 export async function fetchAccountsPayableVoucherPostingAccountOptions() {
@@ -277,9 +296,33 @@ export async function fetchAccountsPayableVoucherPostingAccountOptions() {
 }
 
 export async function fetchAccountsPayableVoucherPayableAccountOptions() {
-  const response = await accountsPayableVoucherControllerFindPayableAccountOptionsV1() as unknown as ApiApvPayableAccountOptionsResponse;
+  const response = (await accountsPayableVoucherControllerFindPayableAccountOptionsV1()) as unknown as ApiApvPayableAccountOptionsResponse;
 
   return response;
+}
+
+export type AccountsPayableVoucherCopyFromCandidate = AccountsPayableVoucherCopyFromCandidateDto;
+
+export async function fetchAccountsPayableVoucherCopyFromCandidates(query: {
+  branchUnitId?: number | null;
+  limit?: number;
+  page?: number;
+  partyCode?: string | null;
+  partyName?: string | null;
+  target: "cash-voucher" | "disbursement-voucher";
+}) {
+  const response = await accountsPayableVoucherControllerFindCopyFromCandidatesV1(
+    cleanQueryParams({
+      branchUnitId: query.branchUnitId,
+      limit: query.limit ?? 100,
+      page: query.page ?? 1,
+      partyCode: query.partyCode,
+      partyName: query.partyName,
+      target: query.target,
+    }) as AccountsPayableVoucherControllerFindCopyFromCandidatesV1Params,
+  );
+
+  return response.records;
 }
 
 async function fetchAccountsPayableVoucherSharedPartyOptions() {
@@ -418,7 +461,9 @@ export async function createAccountsPayableVoucher(
   values: AccountsPayableVoucherFormValues,
   branchUnitId?: number | null,
 ): Promise<AccountsPayableVoucherRecord> {
-  const response = await accountsPayableVoucherControllerCreateV1(toApiAccountsPayableVoucherPayload(values, branchUnitId)) as unknown as ApiApvSingleResponse;
+  const response = (await accountsPayableVoucherControllerCreateV1(
+    toApiAccountsPayableVoucherPayload(values, branchUnitId),
+  )) as unknown as ApiApvSingleResponse;
 
   return mapApiAccountsPayableVoucher(response.voucher);
 }
@@ -427,7 +472,10 @@ export async function updateAccountsPayableVoucher(
   record: AccountsPayableVoucherRecord,
   branchUnitId?: number | null,
 ): Promise<AccountsPayableVoucherRecord> {
-  const response = await accountsPayableVoucherControllerUpdateV1(record.id, toApiAccountsPayableVoucherPayload(record, branchUnitId)) as unknown as ApiApvSingleResponse;
+  const response = (await accountsPayableVoucherControllerUpdateV1(
+    record.id,
+    toApiAccountsPayableVoucherPayload(record, branchUnitId),
+  )) as unknown as ApiApvSingleResponse;
 
   return mapApiAccountsPayableVoucher(response.voucher);
 }
@@ -436,9 +484,11 @@ export async function updateAccountsPayableVoucherStatus(input: {
   recordId: string;
   status: AccountsPayableVoucherStatus;
 }): Promise<AccountsPayableVoucherRecord> {
-  const response = await accountsPayableVoucherControllerUpdateStatusV1(input.recordId, {
-    status: mapStatusToApi(input.status) as import("@/app/src/generated/api/gR8BooksNeoAPI.schemas").UpdateAccountsPayableVoucherStatusDtoStatus,
-  }) as unknown as ApiApvSingleResponse;
+  const response = (await accountsPayableVoucherControllerUpdateStatusV1(input.recordId, {
+    status: mapStatusToApi(
+      input.status,
+    ) as import("@/app/src/generated/api/gR8BooksNeoAPI.schemas").UpdateAccountsPayableVoucherStatusDtoStatus,
+  })) as unknown as ApiApvSingleResponse;
 
   return mapApiAccountsPayableVoucher(response.voucher);
 }
@@ -543,14 +593,14 @@ function toApiAccountsPayableVoucherPayload(
 
   return {
     amount: toNumber(values.amount),
-    branchUnitId: (branchUnitId ?? values.branchUnitId) ?? undefined,
+    branchUnitId: branchUnitId ?? values.branchUnitId ?? undefined,
     contactNo: cleanOptional(values.contactNo),
     contactPerson: cleanOptional(values.contactPerson),
     creditAccountCode: values.creditAccountCode.trim(),
-    creditAccountId: cleanOptional(values.creditAccountId),
+    creditAccountId: cleanOptionalPositiveIntegerId(values.creditAccountId),
     creditAccountTitle: values.creditAccountTitle.trim(),
     currency: currencyCode,
-    details: values.expenseLines.map((line) => ({
+    details: values.expenseLines.filter(accountsPayableVoucherExpenseLineHasPayloadData).map((line, index) => ({
       amount: toNumber(line.amount),
       currencyCode: cleanOptional(line.currencyCode) ?? currencyCode,
       ewt: cleanOptional(line.ewt),
@@ -558,9 +608,9 @@ function toApiAccountsPayableVoucherPayload(
       ewtPercent: toNumber(line.ewtPercent),
       exchangeRate: toExchangeRate(line.exchangeRate ?? exchangeRate),
       expenseAccountCode: line.expenseAccountCode.trim(),
-      expenseAccountId: cleanOptional(line.expenseAccountId),
+      expenseAccountId: cleanOptionalPositiveIntegerId(line.expenseAccountId),
       expenseType: line.expenseType.trim(),
-      lineNumber: line.lineNumber,
+      lineNumber: index + 1,
       netAmount: toNumber(line.netAmount),
       particulars: cleanOptionalWithFallback(line.particulars, remarks),
       partyCode: cleanOptional(line.partyCode),
@@ -579,7 +629,7 @@ function toApiAccountsPayableVoucherPayload(
     exchangeRate,
     journalEntries: values.accountingEntries.map((entry) => ({
       accountCode: entry.accountCode.trim(),
-      accountId: cleanOptional(entry.accountId),
+      accountId: cleanOptionalPositiveIntegerId(entry.accountId),
       accountTitle: entry.accountTitle.trim(),
       atcCode: cleanOptional(entry.atcCode),
       credit: toNumber(entry.credit),
@@ -626,8 +676,33 @@ function cleanOptional(value?: string | null) {
   return normalized || null;
 }
 
+function cleanOptionalPositiveIntegerId(value?: string | null) {
+  const normalized = value?.trim() ?? "";
+
+  return /^\d+$/.test(normalized) && Number(normalized) > 0 ? normalized : null;
+}
+
 function cleanOptionalWithFallback(value: string | null | undefined, fallback: string | null) {
   return cleanOptional(value) ?? fallback;
+}
+
+function accountsPayableVoucherExpenseLineHasPayloadData(line: AccountsPayableVoucherFormValues["expenseLines"][number]) {
+  return (
+    line.expenseAccountCode.trim() !== "" ||
+    line.expenseType.trim() !== "" ||
+    line.particulars.trim() !== "" ||
+    line.partyCode.trim() !== "" ||
+    line.partyName.trim() !== "" ||
+    line.referenceNo.trim() !== "" ||
+    line.responsibilityCenter.trim() !== "" ||
+    line.vat.trim() !== "" ||
+    line.ewt.trim() !== "" ||
+    hasNonZeroAmount(line.amount) ||
+    hasNonZeroAmount(line.netAmount) ||
+    hasNonZeroAmount(line.totalAmountDue) ||
+    hasNonZeroAmount(line.vatAmount) ||
+    hasNonZeroAmount(line.ewtAmount)
+  );
 }
 
 function getParticularsWithRemarksFallback(particulars: string | null | undefined, remarks: string) {
@@ -680,4 +755,8 @@ function toNumber(value: number | string | null | undefined, fallback = 0) {
   const numberValue = Number(value);
 
   return Number.isFinite(numberValue) ? numberValue : fallback;
+}
+
+function hasNonZeroAmount(value: number | string | null | undefined) {
+  return Math.abs(toNumber(value)) > 0;
 }

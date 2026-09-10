@@ -58,7 +58,7 @@ function createRevolvingFundPdfDefinition(values: RevolvingFundFormValues): TDoc
               "EWT Code",
               "EWT Rate",
               "EWT Amount",
-              "Net Amount",
+              "Net of VAT",
               "Particulars",
             ],
             ...itemRows,

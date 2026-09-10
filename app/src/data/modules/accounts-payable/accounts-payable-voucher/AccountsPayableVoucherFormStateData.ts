@@ -8,7 +8,6 @@ import {
   AccountsPayableVoucherAccountingDebitSide,
   AccountsPayableVoucherEwtTaxLabel,
   AccountsPayableVoucherInputVatTaxLabel,
-  AccountsPayableVoucherPurchaseTransactionType,
 } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import {
   accountsPayableVoucherExpenseLineHasItem,
@@ -51,6 +50,10 @@ const ManualInputVatAccountingEntryIdPrefix = "apv-entry-manual-input-vat-";
 const ManualEwtAccountingEntryIdPrefix = "apv-entry-manual-ewt-";
 const ManualDefaultPayableAccountingEntryId = "apv-entry-manual-default-payable";
 const AccountsPayableVoucherAddMode = "add" as const;
+const TaxAccountingAccountFallbackIds: Partial<Record<keyof TaxDefinitionDefaultAccountIds, string>> = {
+  expandedWithholdingTaxAccountId: "expanded-withholding-tax",
+  inputTaxAccountId: "input-vat-tax-payable",
+};
 
 export function getActionMode(pathname: string): AccountsPayableVoucherActionMode {
   if (pathname.includes("/view/")) {
@@ -293,7 +296,7 @@ export function createManualInputVatAccountingEntry(
   }
 
   const inputVatAccount = getTaxAccountingAccount("inputTaxAccountId", taxAccountingContext);
-  const vatAmount = getManualAccountingTaxAmount(sourceEntry, vatPercent);
+  const vatAmount = getManualAccountingTaxAmount(sourceEntry, vatPercent, vatPercent);
   const vatEntryAmounts = getSignedAccountingEntryAmounts(vatAmount, AccountsPayableVoucherAccountingDebitSide);
 
   return createAccountsPayableVoucherAccountingEntry(sourceEntry.lineNumber + 1, {
@@ -325,7 +328,8 @@ export function createManualEwtAccountingEntry(
   }
 
   const ewtAccount = getTaxAccountingAccount("expandedWithholdingTaxAccountId", taxAccountingContext);
-  const ewtAmount = getManualAccountingTaxAmount(sourceEntry, ewtPercent);
+  const vatPercent = getManualAccountingVatPercent(sourceEntry.vatType, taxAccountingContext);
+  const ewtAmount = getManualAccountingTaxAmount(sourceEntry, ewtPercent, vatPercent);
   const ewtEntryAmounts = getSignedAccountingEntryAmounts(ewtAmount, AccountsPayableVoucherAccountingCreditSide);
 
   return createAccountsPayableVoucherAccountingEntry(sourceEntry.lineNumber + 1, {
@@ -513,7 +517,15 @@ export function getExpenseVatType(line: AccountsPayableVoucherExpenseLine, conte
 
 export function getTaxAccountingAccount(field: keyof TaxDefinitionDefaultAccountIds, context: AccountsPayableVoucherTaxAccountingContext) {
   const accountId = context.defaultAccountIds[field];
-  const account = accountId ? findModuleChartAccount(accountId, context.accountOptions) : undefined;
+  const fallbackAccountId = TaxAccountingAccountFallbackIds[field];
+  const configuredAccount = accountId
+    ? (findModuleChartAccount(accountId, context.accountOptions) ?? findModuleChartAccount(accountId))
+    : undefined;
+  const fallbackAccount = fallbackAccountId
+    ? (findModuleChartAccount(fallbackAccountId, context.accountOptions) ?? findModuleChartAccount(fallbackAccountId))
+    : undefined;
+  const account = configuredAccount ?? fallbackAccount;
+
   return {
     accountId: account?.id,
     accountCode: account?.accountNumber ?? "",
@@ -649,8 +661,14 @@ export function getManualAccountingEwtPercent(atcCode: string, context: Accounts
   return taxCode ? Number(taxCode.taxRate || 0) : getExplicitEwtPercent(atcValue);
 }
 
-export function getManualAccountingTaxAmount(sourceEntry: AccountsPayableVoucherAccountingEntry, taxPercent: number) {
-  return roundAccountingAmount((getManualAccountingEntryAmount(sourceEntry) * taxPercent) / 100);
+export function getManualAccountingTaxAmount(
+  sourceEntry: AccountsPayableVoucherAccountingEntry,
+  taxPercent: number,
+  vatPercent = 0,
+) {
+  const amount = getManualAccountingEntryAmount(sourceEntry);
+  const taxBaseAmount = vatPercent === 12 ? amount / 1.12 : amount;
+  return roundAccountingAmount(vatPercent === 12 && taxPercent === 12 ? taxBaseAmount * 0.12 : (taxBaseAmount * taxPercent) / 100);
 }
 
 export function getManualAccountingEntryAmount(entry: AccountsPayableVoucherAccountingEntry | null | undefined) {

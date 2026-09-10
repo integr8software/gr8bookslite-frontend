@@ -77,10 +77,11 @@ export function PettyCashReplenishmentActionHeader({
             <ReportPreviewAction onPreview={onPreview} />
             {page.mode === "add" ? (
               <AppCopyFromDropdown
-                records={page.pettyCashFundCopyFromRecords}
-                selectionMode="single"
-                sources={["Petty Cash Fund"]}
-                onApply={page.copyFromPettyCashFund}
+                enableSourceSearch
+                records={page.pettyCashVoucherCopyFromRecords}
+                selectionMode="multiple"
+                sources={["Petty Cash Voucher"]}
+                onApply={page.copyFromPettyCashVoucher}
               />
             ) : null}
             {page.mode !== "add" ? <PettyCashReplenishmentActionHistory record={page.record} /> : null}
@@ -145,9 +146,7 @@ export function PettyCashReplenishmentActionHeader({
                     : `This will mark ${transactionNo} as cancelled.`
           }
           confirmLabel={
-            confirmation === "save" && !isSaveAction
-              ? "Update"
-              : PettyCashReplenishmentConfirmationDialogConfirmLabels[confirmation]
+            confirmation === "save" && !isSaveAction ? "Update" : PettyCashReplenishmentConfirmationDialogConfirmLabels[confirmation]
           }
           cancelLabel="Cancel"
           iconTone={confirmation === "save" ? (isSaveAction ? "save" : "update") : confirmation === "draft" ? "save" : undefined}

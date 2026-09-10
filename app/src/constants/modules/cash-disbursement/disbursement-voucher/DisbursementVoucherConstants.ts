@@ -58,14 +58,10 @@ export const DisbursementVoucherCopySources: DisbursementVoucherCopySource[] = [
   "Accounts Payable Voucher",
   "Advances to Suppliers",
   "Cash Advance",
-  "Cash Advance Liquidation",
-  "Cash Advance Multiple Entry",
-  "Cash Advance Multiple Entry Liquidation",
-  "Petty Cash Fund",
+  "Petty Cash Voucher",
   "Petty Cash Replenishment",
   "Revolving Fund",
   "Revolving Fund Replenishment",
-  "Revolving Fund Return",
   "Purchase Order",
   "Purchase Journal",
   "Receiving Report",
@@ -134,10 +130,7 @@ export const DisbursementVoucherRecordStatuses = [
   DisbursementVoucherStatuses.Cancelled,
 ] as const satisfies readonly DisbursementVoucherStatus[];
 
-export const DisbursementVoucherStatusFilters = [
-  DisbursementVoucherAllStatusFilter,
-  ...DisbursementVoucherRecordStatuses,
-] as const;
+export const DisbursementVoucherStatusFilters = [DisbursementVoucherAllStatusFilter, ...DisbursementVoucherRecordStatuses] as const;
 
 export const DisbursementVoucherStatusFilterOptions = [
   { label: "All statuses", value: DisbursementVoucherAllStatusFilter },

@@ -89,6 +89,12 @@ export const PartyInformationFormSchema = z
       ),
     termId: z.string().trim(),
     termName: z.string().trim(),
+    defaultResponsibilityCenterId: z.string().trim(),
+    defaultResponsibilityCenterName: z.string().trim(),
+    defaultPaymentTypeId: z.string().trim(),
+    defaultPaymentTypeName: z.string().trim(),
+    defaultBank: z.string().trim(),
+    defaultBankAccountNo: z.string().trim(),
     tin: z
       .string()
       .trim()

@@ -5,7 +5,7 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 import type { useCashVoucherPreviewTable } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucher";
 import type { useCashVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherActionPage";
 
-export type CashVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
+export type CashVoucherStatus = "Open" | "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 
 export type CashVoucherDisplayStatus = CashVoucherStatus;
 export type CashVoucherPreviewTableState = ReturnType<typeof useCashVoucherPreviewTable>;
@@ -69,7 +69,7 @@ export type CashVoucherCopySource =
   | "Cash Advance Liquidation"
   | "Cash Advance Multiple Entry"
   | "Cash Advance Multiple Entry Liquidation"
-  | "Petty Cash Fund"
+  | "Petty Cash Voucher"
   | "Petty Cash Replenishment"
   | "Revolving Fund"
   | "Revolving Fund Replenishment"
@@ -299,13 +299,7 @@ export type CashVoucherAccountingGridSession = {
 };
 
 export type CashVoucherFormErrors = Partial<
-  Record<
-    | keyof Omit<CashVoucherFormValues, "lineEntries" | "attachments">
-    | "attachments"
-    | "lineEntries"
-    | "entryDraft",
-    string
-  >
+  Record<keyof Omit<CashVoucherFormValues, "lineEntries" | "attachments"> | "attachments" | "lineEntries" | "entryDraft", string>
 >;
 
 export type CashVoucherCopyFromRecord = {
@@ -379,13 +373,13 @@ export type CashVoucherGeneratedAccountOptions = {
   withholdingTaxAccount?: CashVoucherGeneratedAccount | null;
 };
 
-export type CashVoucherDefaultAccount = {
+export type CashVoucherDisbursementType = {
   accountId: string;
   accountCode: string;
   accountTitle: string;
 };
 
 export type CashVoucherDefaultAccounts = {
-  defaultCashAccount: CashVoucherDefaultAccount;
-  creditAccount?: CashVoucherDefaultAccount;
+  defaultCashAccount: CashVoucherDisbursementType;
+  creditAccount?: CashVoucherDisbursementType;
 };

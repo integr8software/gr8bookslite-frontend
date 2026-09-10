@@ -5,25 +5,19 @@ import { joinClasses, moduleAccentClassNames } from "@/app/src/ui/shared/module/
 import { formatCurrency } from "@/app/src/utils/currency.util";
 import { formatDate } from "@/app/src/utils/date.util";
 
-export function renderPettyCashVoucherTableCell(
-  columnId: string,
-  record: PettyCashVoucherRecord,
-  renderActions: () => ReactNode,
-) {
-  if (columnId === "voucherNo") {
-    return <span className={joinClasses("font-semibold", moduleAccentClassNames.iconText)}>{record.voucherNo}</span>;
+export function renderPettyCashVoucherTableCell(columnId: string, record: PettyCashVoucherRecord, renderActions: () => ReactNode) {
+  if (columnId === "transactionNo") {
+    return <span className={joinClasses("font-semibold", moduleAccentClassNames.iconText)}>{record.transactionNo}</span>;
   }
   if (columnId === "amount" || columnId === "disburseAmount") {
     return <span className="font-semibold tabular-nums">{formatCurrency(record[columnId])}</span>;
   }
-  if (columnId === "currency") return record.currency ?? "PHP";
-  if (columnId === "exchangeRate") return record.exchangeRate ?? "1.00";
-  if (columnId === "documentDate") return formatDate(record.documentDate, { emptyValue: "" });
-  if (columnId === "dateCreated") return formatDate(record.dateCreated, { emptyValue: "" });
-  if (columnId === "dateModified") return formatDate(record.dateModified, { emptyValue: "" });
+  if (columnId === "documentDate" || columnId === "createdAt" || columnId === "updatedAt") {
+    return formatDate(record[columnId], { emptyValue: "" });
+  }
   if (columnId === "status") {
-    return <span className="inline-flex w-full justify-center"><ModuleStatusBadge status={record.status} /></span>;
+    return <div className="flex w-full justify-center"><ModuleStatusBadge status={record.status} /></div>;
   }
   if (columnId === "actions") return renderActions();
-  return null;
+  return undefined;
 }

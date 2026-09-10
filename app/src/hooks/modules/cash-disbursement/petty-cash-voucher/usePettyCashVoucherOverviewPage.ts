@@ -2,19 +2,23 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createColumnHelper, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import {
+  createColumnHelper,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+  type PaginationState,
+  type SortingState,
+  type VisibilityState,
+} from "@tanstack/react-table";
 import { ReceiptText } from "lucide-react";
 import toast from "react-hot-toast";
-import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
-import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
-import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
-import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import {
-  PettyCashVoucherColumnLabels,
   PettyCashVoucherAllStatusFilter,
+  PettyCashVoucherColumnLabels,
   PettyCashVoucherDefaultColumnVisibility,
   PettyCashVoucherRecordStatuses,
-  PettyCashVoucherStatusFilters,
   PettyCashVoucherStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import { PettyCashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherQueryKeys";
@@ -22,9 +26,13 @@ import type {
   PettyCashVoucherRecord,
   PettyCashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
-import { parseAmount } from "@/app/src/utils/number.util";
+import type { AmountRangeValue } from "@/app/src/ui/shared/amount-range-picker/AmountRangePicker";
+import type { DateRangeValue } from "@/app/src/ui/shared/date-range-picker/DateRangePicker";
+import { getModuleStatusMetricIcon, getModuleStatusMetricIconClassName } from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import type { ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { formatPartOfTotalPercentage } from "@/app/src/utils/percentage.util";
 import { TransactionOverviewColumnWidths } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
+import { parseAmount } from "@/app/src/utils/number.util";
 import {
   deletePettyCashVoucherApi,
   fetchPettyCashVoucherList,
@@ -35,33 +43,30 @@ const columnHelper = createColumnHelper<PettyCashVoucherRecord>();
 
 export function usePettyCashVoucherOverviewPage() {
   const queryClient = useQueryClient();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<typeof PettyCashVoucherAllStatusFilter | PettyCashVoucherStatus>(
-    PettyCashVoucherAllStatusFilter,
-  );
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>(PettyCashVoucherAllStatusFilter);
   const [dateRange, setDateRange] = useState<DateRangeValue>({ from: "", to: "" });
   const [amountRange, setAmountRange] = useState<AmountRangeValue>({ from: "", to: "" });
-  const [columnVisibility, setColumnVisibility] = useState(() => PettyCashVoucherDefaultColumnVisibility);
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => PettyCashVoucherDefaultColumnVisibility);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
 
   const amountFrom = parseAmount(amountRange.from);
   const amountTo = parseAmount(amountRange.to);
 
-  const vouchersQuery = useQuery({
-    queryKey: [
-      ...PettyCashVoucherQueryKeys.vouchers(),
-      {
-        search: searchQuery,
-        status: statusFilter,
-        startDate: dateRange.from || undefined,
-        endDate: dateRange.to || undefined,
-        amountFrom: amountFrom !== null ? amountFrom : undefined,
-        amountTo: amountTo !== null ? amountTo : undefined,
-      },
-    ],
+  const fundQuery = useQuery({
+    queryKey: PettyCashVoucherQueryKeys.list({
+      query,
+      statusFilter,
+      startDate: dateRange.from || undefined,
+      endDate: dateRange.to || undefined,
+      amountFrom: amountFrom !== null ? amountFrom : undefined,
+      amountTo: amountTo !== null ? amountTo : undefined,
+    }),
     queryFn: async () => {
       const res = await fetchPettyCashVoucherList({
-        search: searchQuery || undefined,
+        search: query || undefined,
         status: statusFilter !== PettyCashVoucherAllStatusFilter ? statusFilter : undefined,
         startDate: dateRange.from || undefined,
         endDate: dateRange.to || undefined,
@@ -73,27 +78,27 @@ export function usePettyCashVoucherOverviewPage() {
     },
   });
 
-  const vouchers = useMemo(() => vouchersQuery.data?.data ?? [], [vouchersQuery.data?.data]);
+  const records = useMemo(() => fundQuery.data?.data ?? [], [fundQuery.data?.data]);
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ status, voucherId }: { status: PettyCashVoucherStatus; voucherId: string }) => {
-      return await updatePettyCashVoucherStatusApi(voucherId, status);
+    mutationFn: async ({ id, status }: { id: string; status: PettyCashVoucherStatus }) => {
+      return await updatePettyCashVoucherStatusApi(id, status);
     },
     onSuccess: (_, { status }) => {
-      queryClient.invalidateQueries({ queryKey: PettyCashVoucherQueryKeys.vouchers() });
+      queryClient.invalidateQueries({ queryKey: PettyCashVoucherQueryKeys.all });
       toast.success(`Petty Cash Voucher marked as ${status}.`);
     },
     onError: () => {
-      toast.error("Could not update the Petty Cash Voucher status. Please try again.");
+      toast.error("Could not update the Petty Cash Voucher status.");
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (voucherId: string) => {
-      return await deletePettyCashVoucherApi(voucherId);
+    mutationFn: async (id: string) => {
+      return await deletePettyCashVoucherApi(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PettyCashVoucherQueryKeys.vouchers() });
+      queryClient.invalidateQueries({ queryKey: PettyCashVoucherQueryKeys.all });
       toast.success("Petty Cash Voucher deleted successfully.");
     },
     onError: () => {
@@ -103,10 +108,10 @@ export function usePettyCashVoucherOverviewPage() {
 
   const columns = useMemo(
     () => [
-      columnHelper.accessor("voucherNo", {
-        header: PettyCashVoucherColumnLabels.voucherNo,
+      columnHelper.accessor("transactionNo", {
+        header: PettyCashVoucherColumnLabels.transactionNo,
         size: TransactionOverviewColumnWidths.transactionNumber,
-        meta: { label: PettyCashVoucherColumnLabels.voucherNo },
+        meta: { label: PettyCashVoucherColumnLabels.transactionNo },
       }),
       columnHelper.accessor("documentDate", {
         header: PettyCashVoucherColumnLabels.documentDate,
@@ -153,20 +158,20 @@ export function usePettyCashVoucherOverviewPage() {
         size: TransactionOverviewColumnWidths.auditUser,
         meta: { label: PettyCashVoucherColumnLabels.createdBy },
       }),
-      columnHelper.accessor("dateCreated", {
-        header: PettyCashVoucherColumnLabels.dateCreated,
+      columnHelper.accessor("createdAt", {
+        header: PettyCashVoucherColumnLabels.createdAt,
         size: TransactionOverviewColumnWidths.auditDate,
-        meta: { label: PettyCashVoucherColumnLabels.dateCreated },
+        meta: { label: PettyCashVoucherColumnLabels.createdAt },
       }),
       columnHelper.accessor("updatedBy", {
         header: PettyCashVoucherColumnLabels.updatedBy,
         size: TransactionOverviewColumnWidths.auditUser,
         meta: { label: PettyCashVoucherColumnLabels.updatedBy },
       }),
-      columnHelper.accessor("dateModified", {
-        header: PettyCashVoucherColumnLabels.dateModified,
+      columnHelper.accessor("updatedAt", {
+        header: PettyCashVoucherColumnLabels.updatedAt,
         size: TransactionOverviewColumnWidths.auditDate,
-        meta: { label: PettyCashVoucherColumnLabels.dateModified },
+        meta: { label: PettyCashVoucherColumnLabels.updatedAt },
       }),
       columnHelper.accessor("status", {
         header: PettyCashVoucherColumnLabels.status,
@@ -185,22 +190,24 @@ export function usePettyCashVoucherOverviewPage() {
 
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table owns the table state lifecycle.
   const table = useReactTable({
-    data: vouchers,
+    data: records,
     columns,
-    initialState: {
-      columnVisibility: PettyCashVoucherDefaultColumnVisibility,
-    },
-    state: { columnVisibility },
+    initialState: { columnVisibility: PettyCashVoucherDefaultColumnVisibility },
+    state: { columnVisibility, pagination, sorting },
     onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination,
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   });
 
   const statisticCards = useMemo<ModuleStatisticCardItem[]>(() => {
-    const totalCount = vouchers.length;
+    const total = records.length;
     return [
       {
         label: "Total Entries",
-        value: totalCount,
+        value: total,
         icon: ReceiptText,
         tone: "violet",
         summary: "All time",
@@ -208,7 +215,7 @@ export function usePettyCashVoucherOverviewPage() {
         onClick: () => setStatusFilter(PettyCashVoucherAllStatusFilter),
       },
       ...PettyCashVoucherRecordStatuses.map((status) => {
-        const count = vouchers.filter((v) => v.status === status).length;
+        const count = records.filter((item) => item.status === status).length;
         const tone =
           status === PettyCashVoucherStatuses.Posted
             ? ("emerald" as const)
@@ -226,53 +233,45 @@ export function usePettyCashVoucherOverviewPage() {
           icon: getModuleStatusMetricIcon(status),
           iconClassName: getModuleStatusMetricIconClassName(status),
           tone,
-          summary: formatPartOfTotalPercentage(count, totalCount),
+          summary: formatPartOfTotalPercentage(count, total),
           isActive: statusFilter === status,
           onClick: () => setStatusFilter(status),
         };
       }),
     ];
-  }, [statusFilter, vouchers]);
+  }, [records, statusFilter]);
 
   const onUpdateStatus = (record: PettyCashVoucherRecord, status: PettyCashVoucherStatus) => {
-    updateStatusMutation.mutate({ status, voucherId: record.id });
+    updateStatusMutation.mutate({ id: record.id, status });
+  };
+
+  const onDeleteRecord = (record: PettyCashVoucherRecord) => {
+    deleteMutation.mutate(record.id);
   };
 
   const refreshRecords = () => {
-    vouchersQuery.refetch();
+    fundQuery.refetch();
   };
 
   return {
     amountRange,
-    columns,
     dateRange,
-    filteredVouchers: vouchers,
-    handleUpdateStatus: onUpdateStatus,
-    hasActiveFilters: Boolean(
-      searchQuery ||
-      statusFilter !== PettyCashVoucherAllStatusFilter ||
-      dateRange.from ||
-      dateRange.to ||
-      amountRange.from ||
-      amountRange.to,
-    ),
-    isLoading: vouchersQuery.isLoading,
+    filteredRecords: records,
+    isLoading: fundQuery.isLoading,
     isUpdatingStatus: updateStatusMutation.isPending || deleteMutation.isPending,
     lastSyncedAt,
-    onDeleteRecord: (record: PettyCashVoucherRecord) => deleteMutation.mutate(record.id),
+    onDeleteRecord,
     onUpdateStatus,
     updateStatus: onUpdateStatus,
+    query,
     refreshRecords,
-    searchQuery,
     setAmountRange,
     setDateRange,
-    setSearchQuery,
+    setQuery,
     setStatusFilter,
     statisticCards,
     statistics: statisticCards,
     statusFilter,
-    statusOptions: PettyCashVoucherStatusFilters,
     table,
-    updateStatusMutation,
   };
 }

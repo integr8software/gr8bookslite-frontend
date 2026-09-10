@@ -8,7 +8,10 @@ import {
   InitialAppDisbursementTypeRecords,
   type AppDisbursementTypeRecord,
 } from "@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog";
-import { useAcknowledgementReceiptActionForm } from "@/app/src/hooks/modules/cash-receipt/acknowledgement-receipt/useAcknowledgementReceipt";
+import {
+  useAcknowledgementReceiptActionForm,
+  useAcknowledgementReceiptJournalVoucherCopyFrom,
+} from "@/app/src/hooks/modules/cash-receipt/acknowledgement-receipt/useAcknowledgementReceipt";
 import type { AcknowledgementReceiptModuleConfig } from "@/app/src/hooks/modules/cash-receipt/acknowledgement-receipt/useAcknowledgementReceipt";
 import {
   AcknowledgementReceiptActionTabs,
@@ -79,6 +82,12 @@ export function AcknowledgementReceiptActionPage<TReceipt>({
   const isReadonly = mode === "view";
   const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
   const [activeTab, setActiveTab] = useState<AcknowledgementReceiptActionTab>("details");
+  const journalVoucherCopyFrom = useAcknowledgementReceiptJournalVoucherCopyFrom(isReadonly);
+  const journalVoucherCopyFromRecords = journalVoucherCopyFrom.records;
+  const copyFromRecordsWithJournalVoucher = [...(copyFromRecords ?? []), ...journalVoucherCopyFromRecords];
+  const copyFromSourcesWithJournalVoucher = copyFromSources?.includes(journalVoucherCopyFrom.source)
+    ? copyFromSources
+    : [...(copyFromSources ?? []), journalVoucherCopyFrom.source];
   const receiptForm = useAcknowledgementReceiptActionForm(
     mode,
     recordId,
@@ -87,7 +96,7 @@ export function AcknowledgementReceiptActionPage<TReceipt>({
     },
     {
       api,
-      copyFromRecords,
+      copyFromRecords: copyFromRecordsWithJournalVoucher,
       receiptLabel: receiptLabel.toLowerCase(),
       storageKey,
     },
@@ -125,8 +134,8 @@ export function AcknowledgementReceiptActionPage<TReceipt>({
       <section className="grid gap-5">
         <AcknowledgementReceiptActionHeader
           baseHref={baseHref}
-          copyFromRecords={copyFromRecords}
-          copyFromSources={copyFromSources}
+          copyFromRecords={copyFromRecordsWithJournalVoucher}
+          copyFromSources={copyFromSourcesWithJournalVoucher}
           mode={mode}
           recordId={recordId}
           receiptLabel={receiptLabel}
@@ -141,6 +150,16 @@ export function AcknowledgementReceiptActionPage<TReceipt>({
           tabs={AcknowledgementReceiptActionTabs}
           onTabChange={setActiveTab}
         />
+        {journalVoucherCopyFrom.isError ? (
+          <div role="alert" className="rounded-md border border-coralpink/30 bg-coralpink/5 px-3 py-2 text-sm font-semibold text-coralpink">
+            {journalVoucherCopyFrom.error instanceof Error
+              ? journalVoucherCopyFrom.error.message
+              : "Could not load Journal Voucher Copy From records."}
+          </div>
+        ) : null}
+        {!journalVoucherCopyFrom.isLoading && journalVoucherCopyFrom.isEmpty && copyFromRecordsWithJournalVoucher.length === 0 ? (
+          <p className="text-sm font-medium text-darknavy/60">No Journal Voucher Copy From records found.</p>
+        ) : null}
         {activeTab === "details" ? (
           <>
             <AcknowledgementReceiptDetailsForm

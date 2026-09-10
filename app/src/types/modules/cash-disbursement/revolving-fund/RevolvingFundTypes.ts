@@ -2,7 +2,7 @@ import type { TransactionAttachment } from "@/app/src/types/shared/transaction-s
 import type { useRevolvingFundActionPage } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund/useRevolvingFundActionPage";
 import type { useRevolvingFundOverviewPage } from "@/app/src/hooks/modules/cash-disbursement/revolving-fund/useRevolvingFundOverviewPage";
 
-export type RevolvingFundStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
+export type RevolvingFundStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 export type RevolvingFundFormStatus = "Open" | RevolvingFundStatus;
 export type RevolvingFundActionMode = "add" | "edit" | "view";
 export type RevolvingFundActionTab = "details" | "attachments";

@@ -18,7 +18,6 @@ const AdvancesToSuppliersSchema = z.object({
   partyName: z.string().min(1, "Party Name is required."),
   accountCode: z.string().min(1, "Default Account Code is required."),
   accountTitle: z.string().min(1, "Default Account Title is required."),
-  poReference: z.string().min(1, "PO Reference is required."),
 });
 
 export function validateAdvancesToSuppliersForm(values: AdvancesToSuppliersFormValues): AdvancesToSuppliersFormErrors {

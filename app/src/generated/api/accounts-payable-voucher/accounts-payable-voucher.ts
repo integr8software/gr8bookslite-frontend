@@ -26,8 +26,10 @@ import type {
 
 import type {
   AccountsPayableVoucherControllerFindAllV1Params,
+  AccountsPayableVoucherControllerFindCopyFromCandidatesV1Params,
   AccountsPayableVoucherControllerFindOneV1Params,
   AccountsPayableVoucherControllerSuggestTransactionNumberV1Params,
+  AccountsPayableVoucherCopyFromCandidatesResponseDto,
   CreateAccountsPayableVoucherDto,
   UpdateAccountsPayableVoucherDto,
   UpdateAccountsPayableVoucherStatusDto
@@ -716,6 +718,9 @@ export function useAccountsPayableVoucherControllerFindPostingAccountOptionsV1<T
 
 
 
+/**
+ * @summary Get accounts payable voucher payable account options
+ */
 export const accountsPayableVoucherControllerFindPayableAccountOptionsV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -784,6 +789,9 @@ export function useAccountsPayableVoucherControllerFindPayableAccountOptionsV1<T
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof accountsPayableVoucherControllerFindPayableAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get accounts payable voucher payable account options
+ */
 
 export function useAccountsPayableVoucherControllerFindPayableAccountOptionsV1<TData = Awaited<ReturnType<typeof accountsPayableVoucherControllerFindPayableAccountOptionsV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof accountsPayableVoucherControllerFindPayableAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
@@ -791,6 +799,93 @@ export function useAccountsPayableVoucherControllerFindPayableAccountOptionsV1<T
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getAccountsPayableVoucherControllerFindPayableAccountOptionsV1QueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const accountsPayableVoucherControllerFindCopyFromCandidatesV1 = (
+    params: AccountsPayableVoucherControllerFindCopyFromCandidatesV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<AccountsPayableVoucherCopyFromCandidatesResponseDto>(
+      {url: `/api/v1/accounts-payable/accounts-payable-voucher/copy-from/candidates`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getAccountsPayableVoucherControllerFindCopyFromCandidatesV1QueryKey = (params?: AccountsPayableVoucherControllerFindCopyFromCandidatesV1Params,) => {
+    return [
+    `/api/v1/accounts-payable/accounts-payable-voucher/copy-from/candidates`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getAccountsPayableVoucherControllerFindCopyFromCandidatesV1QueryOptions = <TData = Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(params: AccountsPayableVoucherControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAccountsPayableVoucherControllerFindCopyFromCandidatesV1QueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>> = ({ signal }) => accountsPayableVoucherControllerFindCopyFromCandidatesV1(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AccountsPayableVoucherControllerFindCopyFromCandidatesV1QueryResult = NonNullable<Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>>
+export type AccountsPayableVoucherControllerFindCopyFromCandidatesV1QueryError = unknown
+
+
+export function useAccountsPayableVoucherControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: AccountsPayableVoucherControllerFindCopyFromCandidatesV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAccountsPayableVoucherControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: AccountsPayableVoucherControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAccountsPayableVoucherControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: AccountsPayableVoucherControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useAccountsPayableVoucherControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: AccountsPayableVoucherControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof accountsPayableVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAccountsPayableVoucherControllerFindCopyFromCandidatesV1QueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

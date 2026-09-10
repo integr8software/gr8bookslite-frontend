@@ -15,6 +15,9 @@ import { PartyInformationDetailsFields } from "@/app/src/ui/modules/party-manage
 import { PartyInformationNotFound } from "@/app/src/ui/modules/party-management/PartyInformationNotFound";
 import { ChartAccountQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartAccountQuickAddDialog";
 import { TermsMaintenanceQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/terms-maintenance/TermsMaintenanceQuickAddDialog";
+import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
+import { PaymentTypeDrawer } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeDrawer";
+import { BankMasterfileDrawer } from "@/app/src/ui/modules/financial-maintenance/bank-masterfile/BankMasterfileDrawer";
 import { PartyAccountingAccountFieldLabels } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 
 const PartyManagementFormId = "party-management-form";
@@ -34,6 +37,9 @@ function PartyManagementFormPageInner() {
   const [accountTitleDialog, setAccountTitleDialog] =
     useState<ChartAccountQuickAddDialogState>(null);
   const [isTermDialogOpen, setIsTermDialogOpen] = useState(false);
+  const [isRcDialogOpen, setIsRcDialogOpen] = useState(false);
+  const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
+  const [isBankDialogOpen, setIsBankDialogOpen] = useState(false);
   const {
     closeDialog: closeSaveDialog,
     isConfirmSubmitPending,
@@ -103,12 +109,21 @@ function PartyManagementFormPageInner() {
           taxDefaultOptionsLoading={page.taxDefaultOptionsLoading}
           taxDefaultOptions={page.taxDefaultOptions}
           termOptions={page.termOptions}
+          responsibilityCenterOptions={page.responsibilityCenterOptions}
+          paymentTypeOptions={page.paymentTypeOptions}
+          bankOptions={page.bankOptions}
           values={page.values}
           syncedAddressSources={page.syncedAddressSources}
           canAddAccountTitle={chartAccounts.permissions.canCreate}
           canAddTerm={page.termPermissions.canCreate}
+          canAddResponsibilityCenter
+          canAddPaymentType
+          canAddBank
           onAddAccountTitle={openAccountTitleDialog}
           onAddTerm={() => setIsTermDialogOpen(true)}
+          onAddResponsibilityCenter={() => setIsRcDialogOpen(true)}
+          onAddPaymentType={() => setIsPaymentTypeDialogOpen(true)}
+          onAddBank={() => setIsBankDialogOpen(true)}
           onAddressInputChange={page.handleAddressInputChange}
           onCopyAddress={page.copyAddress}
           onInputChange={page.handleInputChange}
@@ -119,6 +134,9 @@ function PartyManagementFormPageInner() {
           onSelectCityMunicipality={page.selectCityMunicipality}
           onSelectProvince={page.selectProvince}
           onSelectTerm={page.selectTerm}
+          onSelectResponsibilityCenter={page.selectResponsibilityCenter}
+          onSelectPaymentType={page.selectPaymentType}
+          onSelectBank={page.selectBank}
           onUpdateField={page.updateField}
         />
       </form>
@@ -176,6 +194,34 @@ function PartyManagementFormPageInner() {
           page.setSelectedTerm(term.id, term.name);
           void page.refreshTermOptions();
           setIsTermDialogOpen(false);
+        }}
+      />
+      <ResponsibilityCenterDrawer
+        isOpen={isRcDialogOpen}
+        mode="add"
+        onClose={() => setIsRcDialogOpen(false)}
+        onSaved={(savedCenter) => {
+          if (savedCenter) {
+            page.selectResponsibilityCenter(savedCenter.id);
+          }
+          void page.refreshResponsibilityCenters();
+          setIsRcDialogOpen(false);
+        }}
+      />
+      <PaymentTypeDrawer
+        isOpen={isPaymentTypeDialogOpen}
+        mode="add"
+        onClose={() => {
+          void page.refreshPaymentTypes();
+          setIsPaymentTypeDialogOpen(false);
+        }}
+      />
+      <BankMasterfileDrawer
+        isOpen={isBankDialogOpen}
+        mode="add"
+        onClose={() => {
+          void page.refreshBankAccounts();
+          setIsBankDialogOpen(false);
         }}
       />
     </>

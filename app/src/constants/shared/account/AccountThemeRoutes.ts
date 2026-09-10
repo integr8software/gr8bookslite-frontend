@@ -16,6 +16,7 @@ export const AccountThemeRoutePrefixes = [
   "/maintenance",
   "/others",
   "/party-management",
+  "/project-maintenance",
   "/profile",
   "/purchasing",
   "/reports",

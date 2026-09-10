@@ -182,10 +182,12 @@ const statusIconByStatus = {
   Draft: Clock3,
   "For Approval": CheckCircle2,
   Posted: PackageCheck,
+  Closed: PackageCheck,
 } satisfies Record<AccountsPayableVoucherStatus, typeof CheckCircle2>;
 
 const statusClassNameByStatus = {
   Cancelled: "bg-darknavy/10 text-darknavy/70",
+  Closed: "bg-darknavy/10 text-darknavy/70",
   Disapproved: "bg-coralpink/15 text-coralpink",
   Draft: "bg-offwhite text-darknavy/70",
   "For Approval": "bg-citron/25 text-darknavy",

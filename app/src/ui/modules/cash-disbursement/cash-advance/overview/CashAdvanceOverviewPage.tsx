@@ -8,18 +8,21 @@ import {
   CashAdvanceAddLink,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import { getTransactionOverviewTableMinWidthClassName } from "@/app/src/constants/shared/module/TransactionOverviewConstants";
-import { useCashAdvanceStore, useCashAdvanceTable } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
+import {
+  useCashAdvanceStore,
+  useCashAdvanceTable,
+} from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
+import { CashAdvanceRecordActions } from "@/app/src/ui/modules/cash-disbursement/cash-advance/overview/CashAdvanceRecordActions";
 import { CashAdvanceTableToolbar } from "@/app/src/ui/modules/cash-disbursement/cash-advance/overview/CashAdvanceTableToolbar";
 import { renderCashAdvanceTableCell } from "@/app/src/ui/modules/cash-disbursement/cash-advance/overview/CashAdvanceTableCell";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleStatisticCards } from "@/app/src/ui/shared/module/ModuleStatisticCards";
 import { ModuleTable } from "@/app/src/ui/shared/module/module-table/ModuleTable";
 import { getColumnMetaClassName, joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
-import { CashAdvanceRecordActions } from "@/app/src/ui/modules/cash-disbursement/cash-advance/overview/CashAdvanceRecordActions";
 
 export function CashAdvanceOverviewPage() {
-  const { advances, isLoading, lastSyncedAt, refreshRecords, updateAdvanceStatus } = useCashAdvanceStore();
-  const tableState = useCashAdvanceTable(advances);
+  const { entries, isLoading, lastSyncedAt, refreshRecords, updateEntryStatus } = useCashAdvanceStore();
+  const tableState = useCashAdvanceTable(entries);
 
   return (
     <section className="grid gap-5">
@@ -27,7 +30,7 @@ export function CashAdvanceOverviewPage() {
         variant="panel"
         title="Cash Advance"
         titleAs="h1"
-        description="Search cash advance records, review status, and open the matching add, view, or edit form."
+        description="Search Cash Advance records and open add, view, or edit forms."
         eyebrow={
           <>
             <ReceiptText className="h-3.5 w-3.5" aria-hidden="true" />
@@ -51,14 +54,14 @@ export function CashAdvanceOverviewPage() {
       <div className="overflow-hidden rounded-lg border border-darknavy/10 bg-white shadow-sm" data-spotlight-id="maintenance-table">
         <ModuleTable
           variant="embedded"
-          emptyDescription="Try another Cash Advance No., Remarks, Date Range, Amount Range, or Status."
+          emptyDescription="Try another Cash Advance No., remarks, date range, amount range, or status."
           emptyIcon={<Search className="h-5 w-5" aria-hidden="true" />}
           emptyTitle="No Cash Advance Transaction Found"
           minWidthClassName={getTransactionOverviewTableMinWidthClassName(tableState.table.getVisibleLeafColumns().length)}
           paginationLabel="entries"
           paginationStorageKey={CashAdvanceTablePaginationStorageKey}
-          lastSyncedAt={lastSyncedAt}
           isLoading={isLoading}
+          lastSyncedAt={lastSyncedAt}
           table={tableState.table}
           tableTitle="Cash Advances"
           useColumnSizing
@@ -66,12 +69,9 @@ export function CashAdvanceOverviewPage() {
           renderRow={(row) => (
             <tr key={row.id} className="module-table-row border-b border-darknavy/8 text-darknavy last:border-b-0">
               {row.getVisibleCells().map((cell) => (
-                <td
-                  key={cell.id}
-                  className={joinClasses("px-4 py-4 align-middle text-sm text-darknavy", getColumnMetaClassName(cell.column.columnDef.meta))}
-                >
+                <td key={cell.id} className={joinClasses("px-4 py-4 align-middle text-sm text-darknavy", getColumnMetaClassName(cell.column.columnDef.meta))}>
                   {renderCashAdvanceTableCell(cell.column.id, row.original, () => (
-                    <CashAdvanceRecordActions record={row.original} onUpdateStatus={updateAdvanceStatus} />
+                    <CashAdvanceRecordActions record={row.original} onUpdateStatus={updateEntryStatus} />
                   )) ?? flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}
@@ -82,4 +82,3 @@ export function CashAdvanceOverviewPage() {
     </section>
   );
 }
-

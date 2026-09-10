@@ -1,6 +1,7 @@
 import type { ChangeEventHandler, ReactNode } from "react";
 import type { Row, Table } from "@tanstack/react-table";
 import type { AddressAutocompleteDetails, AddressAutocompleteItem } from "@/app/src/types/shared/address/AddressTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type { ModuleTabItem } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import type { PartyTaxDefaultOptions } from "@/app/src/types/shared/tax/TaxTypes";
 
@@ -72,6 +73,12 @@ export type PartyInformationRecord = {
   cashAdvanceLimit?: string;
   termId: string;
   termName: string;
+  defaultResponsibilityCenterId?: string;
+  defaultResponsibilityCenterName?: string;
+  defaultPaymentTypeId?: string;
+  defaultPaymentTypeName?: string;
+  defaultBank?: string;
+  defaultBankAccountNo?: string;
   tin: string;
   atcCode: string;
   defaultPurchaseInputVatTaxSourceKey: string;
@@ -120,6 +127,12 @@ export type PartyInformationFormValues = {
   cashAdvanceLimit: string;
   termId: string;
   termName: string;
+  defaultResponsibilityCenterId: string;
+  defaultResponsibilityCenterName: string;
+  defaultPaymentTypeId: string;
+  defaultPaymentTypeName: string;
+  defaultBank: string;
+  defaultBankAccountNo: string;
   tin: string;
   atcCode: string;
   defaultPurchaseInputVatTaxSourceKey: string;
@@ -172,6 +185,10 @@ export type PartyInformationFormErrors = Partial<{
   employeePayableAccount: string;
   cashAdvanceLimit: string;
   termId: string;
+  defaultResponsibilityCenterId: string;
+  defaultPaymentTypeId: string;
+  defaultBank: string;
+  defaultBankAccountNo: string;
   tin: string;
   contactPerson: string;
   email: string;
@@ -181,7 +198,12 @@ export type PartyInformationFormErrors = Partial<{
 
 export type PartyInformationActionMode = "add" | "edit" | "view";
 
-export type PartyInformationTabId = "accounting-information" | "basic-information" | "contact-information" | "tax-information";
+export type PartyInformationTabId =
+  | "accounting-information"
+  | "bank-information"
+  | "basic-information"
+  | "contact-information"
+  | "tax-information";
 
 export type PartyInformationTab = ModuleTabItem<PartyInformationTabId> & {
   content: ReactNode;
@@ -304,12 +326,21 @@ export type PartyInformationDetailsFieldsProps = {
   taxDefaultOptionsLoading?: boolean;
   taxDefaultOptions: PartyTaxDefaultOptions;
   termOptions: PartyAddressDropdownOption[];
+  responsibilityCenterOptions?: AppAdvancedDropdownOption[];
+  paymentTypeOptions?: AppAdvancedDropdownOption[];
+  bankOptions?: AppAdvancedDropdownOption[];
   values: PartyInformationFormValues;
   syncedAddressSources?: Record<string, string>;
   canAddAccountTitle?: boolean;
   canAddTerm?: boolean;
+  canAddResponsibilityCenter?: boolean;
+  canAddPaymentType?: boolean;
+  canAddBank?: boolean;
   onAddAccountTitle?: (field: PartyAccountingAccountField) => void;
   onAddTerm?: () => void;
+  onAddResponsibilityCenter?: () => void;
+  onAddPaymentType?: () => void;
+  onAddBank?: () => void;
   onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
   onCopyAddress: (sourceAddressId: string, targetAddressId: string) => void;
   onInputChange: ChangeEventHandler<HTMLInputElement | HTMLSelectElement>;
@@ -321,6 +352,9 @@ export type PartyInformationDetailsFieldsProps = {
   onSelectProvince: (value: string | string[], addressId?: string) => void;
   onUpdateField: PartyInformationFieldUpdateHandler;
   onSelectTerm: (value: string | string[]) => void;
+  onSelectResponsibilityCenter?: (value: string | string[]) => void;
+  onSelectPaymentType?: (value: string | string[]) => void;
+  onSelectBank?: (value: string | string[]) => void;
 };
 
 export type PartyAddressContainerProps = {
@@ -496,7 +530,11 @@ export type PartyImportColumnId =
   | "vendorAdvanceAccount"
   | "employeeAdvanceAccount"
   | "employeePayableAccount"
-  | "cashAdvanceLimit";
+  | "cashAdvanceLimit"
+  | "defaultResponsibilityCenterName"
+  | "defaultPaymentTypeName"
+  | "defaultBank"
+  | "defaultBankAccountNo";
 
 export type PartyImportColumnHeader = {
   className: string;

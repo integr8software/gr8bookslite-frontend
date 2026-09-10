@@ -4,11 +4,11 @@ import { TransactionFileAttachmentFields } from "@/app/src/ui/shared/transaction
 export function PettyCashVoucherFileAttachmentFields({ page }: { page: PettyCashVoucherActionPageState }) {
   return (
     <TransactionFileAttachmentFields
-      attachments={page.values.attachments}
-      inputId="petty-cash-voucher-file-attachments"
+      inputId="petty-cash-voucher-attachments"
       inputName="pettyCashVoucherAttachments"
+      uploadTitle="Upload Petty Cash Voucher Documents"
+      attachments={page.values.attachments}
       isReadonly={page.isReadonly}
-      uploadTitle="Attach Petty Cash Voucher Files"
       onAttachmentsChange={(attachments) => page.updateField("attachments", attachments)}
     />
   );

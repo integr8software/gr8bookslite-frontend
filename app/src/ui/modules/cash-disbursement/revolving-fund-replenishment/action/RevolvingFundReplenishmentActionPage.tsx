@@ -20,6 +20,7 @@ import { RevolvingFundReplenishmentReportPreview } from "@/app/src/ui/modules/ca
 import { openRevolvingFundReplenishmentPdf } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/reports/RevolvingFundReplenishmentPdf";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
+import { ProjectMaintenanceDrawer } from "@/app/src/ui/modules/project-maintenance/ProjectMaintenanceDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 export function RevolvingFundReplenishmentActionPage({ mode }: { mode: RevolvingFundReplenishmentActionMode }) {
@@ -72,10 +73,7 @@ export function RevolvingFundReplenishmentActionPage({ mode }: { mode: Revolving
               onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
               onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
             />
-            <RevolvingFundReplenishmentEntrySection
-              page={page}
-              onOpenSupplierDrawer={handleOpenSupplierDrawer}
-            />
+            <RevolvingFundReplenishmentEntrySection page={page} onOpenSupplierDrawer={handleOpenSupplierDrawer} />
           </>
         ) : (
           <RevolvingFundReplenishmentFileAttachmentFields page={page} />
@@ -113,14 +111,13 @@ export function RevolvingFundReplenishmentActionPage({ mode }: { mode: Revolving
           setIsResponsibilityCenterDrawerOpen(false);
         }}
       />
-      <ResponsibilityCenterDrawer
+      <ProjectMaintenanceDrawer
         isOpen={!page.isReadonly && isProjectDrawerOpen}
         mode="add"
         onClose={() => setIsProjectDrawerOpen(false)}
-        onSaved={(center) => {
-          page.updateField("projectCode", center.code);
-          page.updateField("projectName", center.name);
-          setIsProjectDrawerOpen(false);
+        onSaved={(project) => {
+          page.updateField("projectCode", project.projectCode);
+          page.updateField("projectName", project.projectName);
         }}
       />
       <RevolvingFundReplenishmentReportPreview

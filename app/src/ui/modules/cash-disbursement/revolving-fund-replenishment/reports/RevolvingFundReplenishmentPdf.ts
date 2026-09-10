@@ -56,7 +56,7 @@ function createPdfDefinition(values: RevolvingFundReplenishmentFormValues): TDoc
               "Supplier Code",
               "Supplier Name",
               "Amount",
-              "Net Amount",
+              "Net of VAT",
               "VAT Type",
               "VAT Rate",
               "VAT Amount",

@@ -99,6 +99,7 @@ export function RevolvingFundDetailEntryTable({
         supplierOptions,
         vatOptions,
         ewtOptions,
+        taxCodes,
         responsibilityCenterOptions,
         onOpenResponsibilityCenterDrawer,
         onOpenSupplierDrawer,
@@ -112,6 +113,7 @@ export function RevolvingFundDetailEntryTable({
       page,
       responsibilityCenterOptions,
       supplierOptions,
+      taxCodes,
       vatOptions,
     ],
   );

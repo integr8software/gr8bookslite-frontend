@@ -1,7 +1,4 @@
 import {
-  defaultAccountControllerFindOptionsByTypeV1,
-} from "@/app/src/generated/api/default-account/default-account";
-import {
   disbursementVoucherControllerCreateV1,
   disbursementVoucherControllerFindAllV1,
   disbursementVoucherControllerFindOneV1,
@@ -13,7 +10,7 @@ import {
 import type {
   CreateDisbursementVoucherDto,
   CreateDisbursementVoucherDtoStatus,
-  DefaultAccountOptionResponseDto,
+  DisbursementTypeOptionResponseDto,
   DisbursementVoucherControllerFindAllV1Params,
   DisbursementVoucherListResponseDto,
   DisbursementVoucherRecordResponseDto,
@@ -28,6 +25,9 @@ import type {
   DisbursementVoucherPaymentDetails,
   DisbursementAttachment,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { fetchDisbursementTypeOptions } from "@/app/src/services/modules/financial-maintenance/disbursement-type/DisbursementTypeApi";
 
 type ApiDisbursementVoucherStatus = CreateDisbursementVoucherDtoStatus | UpdateDisbursementVoucherDtoStatus | string;
 type ApiDisbursementVoucherLineAmountSource = Partial<DisbursementLineEntry> & {
@@ -86,10 +86,16 @@ export async function fetchNextDisbursementVoucherTransactionNo(branchUnitId?: n
   return response.transactionNo;
 }
 
-export async function fetchDisbursementVoucherExpenseAccountOptions(): Promise<DefaultAccountOptionResponseDto[]> {
-  const response = await defaultAccountControllerFindOptionsByTypeV1("expense", { status: "ACTIVE" });
+export async function fetchDisbursementVoucherExpenseAccountOptions(): Promise<DisbursementTypeOptionResponseDto[]> {
+  return fetchDisbursementTypeOptions("disbursement");
+}
 
-  return response.options;
+export async function fetchDisbursementVoucherAccountTitleOptions(): Promise<ModuleChartAccount[]> {
+  const response = await ApiClient.get<CashDisbursementAccountTitleOptionsResponse>(
+    "/cash-disbursement/disbursement-voucher/account-title-options",
+  );
+
+  return (response.data.accounts ?? []).map(mapAccountTitleOption);
 }
 
 export async function createDisbursementVoucherApi(payload: {
@@ -236,7 +242,10 @@ export async function updateDisbursementVoucherApi(
   return mapDisbursementVoucherResponseFromApi(response);
 }
 
-export async function updateDisbursementVoucherStatusApi(id: string, status: DisbursementVoucherStatus): Promise<DisbursementVoucherRecord> {
+export async function updateDisbursementVoucherStatusApi(
+  id: string,
+  status: DisbursementVoucherStatus,
+): Promise<DisbursementVoucherRecord> {
   const response = await disbursementVoucherControllerUpdateStatusV1(id, {
     status: mapDisbursementVoucherStatusToApi(status),
   });
@@ -260,16 +269,13 @@ function mapDisbursementVoucherRecordFromApi(record: DisbursementVoucherRecordRe
   const rawDetails = (rawRecord.lineEntries ?? rawRecord.details ?? []) as ApiDisbursementVoucherLineAmountSource[];
   const displayAmount = getDisbursementVoucherDisplayGrossAmount(record);
   const sourceDetails = rawDetails.filter((detail) => !isGeneratedDisbursementVoucherApiLine(detail));
-  const computedDisburseAmount = sourceDetails.reduce(
-    (sum, detail) => sum + getDisbursementVoucherApiLineDisburseAmount(detail),
-    0,
-  );
+  const computedDisburseAmount = sourceDetails.reduce((sum, detail) => sum + getDisbursementVoucherApiLineDisburseAmount(detail), 0);
   const disburseAmount =
     rawRecord.disburseAmount != null && Number(rawRecord.disburseAmount) > 0
       ? roundDisbursementVoucherApiAmount(Number(rawRecord.disburseAmount))
       : computedDisburseAmount > 0
         ? roundDisbursementVoucherApiAmount(computedDisburseAmount)
-        : (record.amount || displayAmount);
+        : record.amount || displayAmount;
   return {
     ...record,
     transactionId: record.id,
@@ -376,7 +382,10 @@ function createApiTaxDetails(amount: number) {
 }
 
 function getDisbursementVoucherDisplayGrossAmount(record: DisbursementVoucherRecordResponseDto) {
-  const rawRecord = record as DisbursementVoucherRecordResponseDto & { lineEntries?: ApiDisbursementVoucherLineAmountSource[]; details?: ApiDisbursementVoucherLineAmountSource[] };
+  const rawRecord = record as DisbursementVoucherRecordResponseDto & {
+    lineEntries?: ApiDisbursementVoucherLineAmountSource[];
+    details?: ApiDisbursementVoucherLineAmountSource[];
+  };
   const sourceRows = (rawRecord.lineEntries ?? rawRecord.details ?? []).filter((entry) => !isGeneratedDisbursementVoucherApiLine(entry));
   const grossAmount = sourceRows.reduce((sum, entry) => sum + getDisbursementVoucherApiLineGrossAmount(entry), 0);
 
@@ -421,7 +430,9 @@ function getDisbursementVoucherApiLineDisburseAmount(entry: ApiDisbursementVouch
 
 function isGeneratedDisbursementVoucherApiLine(entry: ApiDisbursementVoucherLineAmountSource) {
   const id = String(entry.id ?? "");
-  const accountName = String(entry.accountName || entry.accountTitle || "").trim().toLowerCase();
+  const accountName = String(entry.accountName || entry.accountTitle || "")
+    .trim()
+    .toLowerCase();
   const debit = Number(entry.debit || 0);
   const credit = Number(entry.credit || 0);
 
@@ -451,6 +462,7 @@ function mapDisbursementVoucherStatusFromApi(status: string): DisbursementVouche
   const statusMap: Record<string, DisbursementVoucherStatus> = {
     APPROVED: "Posted",
     CANCELLED: "Cancelled",
+    CLOSED: "Closed",
     DISAPPROVED: "Disapproved",
     DRAFT: "Draft",
     FOR_APPROVAL: "For Approval",
@@ -463,6 +475,7 @@ function mapDisbursementVoucherStatusFromApi(status: string): DisbursementVouche
 function mapDisbursementVoucherStatusToApi(status: string): ApiDisbursementVoucherStatus {
   const statusMap: Record<string, ApiDisbursementVoucherStatus> = {
     Cancelled: "CANCELLED",
+    Closed: "CLOSED",
     Disapproved: "DISAPPROVED",
     Draft: "DRAFT",
     "For Approval": "FOR_APPROVAL",
@@ -505,4 +518,45 @@ function cleanOptional(value?: string | null) {
   const trimmed = value?.trim();
 
   return trimmed ? trimmed : undefined;
+}
+
+type CashDisbursementAccountTitleOptionsResponse = {
+  accounts: CashDisbursementAccountTitleOption[];
+};
+
+type CashDisbursementAccountTitleOption = {
+  id: string;
+  accountCode: string;
+  accountTitle: string;
+  accountType?: string | null;
+  accountNature?: string | null;
+  status?: string | null;
+};
+
+function mapAccountTitleOption(account: CashDisbursementAccountTitleOption): ModuleChartAccount {
+  const accountType = mapChartAccountType(account.accountType);
+  const accountNature = account.accountNature ?? "DEBIT";
+
+  return {
+    accountCategory: accountNature,
+    accountName: account.accountTitle,
+    accountNumber: account.accountCode,
+    accountType,
+    description: account.accountTitle,
+    id: account.id,
+    normalBalance: accountNature === "CREDIT" ? "Credit" : "Debit",
+    statementGroup: accountType === "Expenses" ? "Income Statement" : "Balance Sheet",
+    statementSection: accountNature,
+    status: account.status === "INACTIVE" ? "Inactive" : "Active",
+  };
+}
+
+function mapChartAccountType(accountType?: string | null) {
+  if (accountType === "EXPENSE") return "Expenses";
+  if (accountType === "ASSET") return "Assets";
+  if (accountType === "LIABILITY") return "Liabilities";
+  if (accountType === "REVENUE") return "Revenues";
+  if (accountType === "EQUITY") return "Equity";
+
+  return accountType ?? "";
 }

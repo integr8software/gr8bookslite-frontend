@@ -27,7 +27,9 @@ import type {
 import type {
   CreatePettyCashVoucherDto,
   PettyCashVoucherControllerFindAllV1Params,
+  PettyCashVoucherControllerFindCopyFromCandidatesV1Params,
   PettyCashVoucherControllerSuggestTransactionNumberV1Params,
+  PettyCashVoucherCopyFromCandidatesResponseDto,
   PettyCashVoucherListResponseDto,
   PettyCashVoucherResponseDto,
   TransactionNumberSuggestionResponseDto,
@@ -307,6 +309,99 @@ export const usePettyCashVoucherControllerCreateV1 = <TError = unknown,
       return useMutation(getPettyCashVoucherControllerCreateV1MutationOptions(options), queryClient);
     }
     /**
+ * @summary List available Petty Cash Vouchers for Petty Cash Replenishment Copy From
+ */
+export const pettyCashVoucherControllerFindCopyFromCandidatesV1 = (
+    params?: PettyCashVoucherControllerFindCopyFromCandidatesV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<PettyCashVoucherCopyFromCandidatesResponseDto>(
+      {url: `/api/v1/cash-disbursement/petty-cash-voucher/copy-from/candidates`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getPettyCashVoucherControllerFindCopyFromCandidatesV1QueryKey = (params?: PettyCashVoucherControllerFindCopyFromCandidatesV1Params,) => {
+    return [
+    `/api/v1/cash-disbursement/petty-cash-voucher/copy-from/candidates`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getPettyCashVoucherControllerFindCopyFromCandidatesV1QueryOptions = <TData = Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(params?: PettyCashVoucherControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPettyCashVoucherControllerFindCopyFromCandidatesV1QueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>> = ({ signal }) => pettyCashVoucherControllerFindCopyFromCandidatesV1(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PettyCashVoucherControllerFindCopyFromCandidatesV1QueryResult = NonNullable<Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>>
+export type PettyCashVoucherControllerFindCopyFromCandidatesV1QueryError = unknown
+
+
+export function usePettyCashVoucherControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: undefined |  PettyCashVoucherControllerFindCopyFromCandidatesV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePettyCashVoucherControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params?: PettyCashVoucherControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePettyCashVoucherControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params?: PettyCashVoucherControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List available Petty Cash Vouchers for Petty Cash Replenishment Copy From
+ */
+
+export function usePettyCashVoucherControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params?: PettyCashVoucherControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof pettyCashVoucherControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPettyCashVoucherControllerFindCopyFromCandidatesV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
  * @summary Get Petty Cash Voucher details by ID
  */
 export const pettyCashVoucherControllerFindOneV1 = (

@@ -24,6 +24,7 @@ export function createRevolvingFundReplenishmentLineColumns({
   page,
   responsibilityCenterOptions = [],
   supplierOptions = [],
+  taxCodes = [],
   vatOptions = [],
 }: RevolvingFundReplenishmentDetailEntryColumnsParams): Record<
   RevolvingFundReplenishmentEntryColumnId,
@@ -93,7 +94,7 @@ export function createRevolvingFundReplenishmentLineColumns({
           const ewtCode = id === "ewtCode" ? value : row.ewtCode;
           page.updateEntry(row.id, {
             [id]: value,
-            ...calculateRevolvingFundReplenishmentEntryTaxFields(row.amount, vatType, ewtCode),
+            ...calculateRevolvingFundReplenishmentEntryTaxFields(row.amount, vatType, ewtCode, taxCodes),
           });
         }}
       />
@@ -150,7 +151,7 @@ export function createRevolvingFundReplenishmentLineColumns({
               supplierName: selectedSupplier?.name ?? String(value),
               vatType,
               ewtCode,
-              ...calculateRevolvingFundReplenishmentEntryTaxFields(row.amount, vatType, ewtCode),
+              ...calculateRevolvingFundReplenishmentEntryTaxFields(row.amount, vatType, ewtCode, taxCodes),
             });
           }}
         />
@@ -159,7 +160,7 @@ export function createRevolvingFundReplenishmentLineColumns({
     amount: money("amount", (row, value) =>
       page.updateEntry(row.id, {
         amount: value,
-        ...calculateRevolvingFundReplenishmentEntryTaxFields(value, row.vatType, row.ewtCode),
+        ...calculateRevolvingFundReplenishmentEntryTaxFields(value, row.vatType, row.ewtCode, taxCodes),
       }),
     ),
     netAmount: calculatedMoney("netAmount"),

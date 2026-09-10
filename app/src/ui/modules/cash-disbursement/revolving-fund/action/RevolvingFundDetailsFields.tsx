@@ -64,9 +64,7 @@ export function RevolvingFundDetailsFields({
               placeholder="Select Responsibility Center"
               searchPlaceholder="Search Responsibility Center"
               emptyMessage={
-                isResponsibilityCenterLookupLoading
-                  ? "Loading Responsibility Center options..."
-                  : "No Responsibility Center options found."
+                isResponsibilityCenterLookupLoading ? "Loading Responsibility Center options..." : "No Responsibility Center options found."
               }
               addAction={!page.isReadonly ? { label: "Add Responsibility Center", onClick: onOpenResponsibilityCenterDrawer } : undefined}
               onChange={(code, name) => {
@@ -82,9 +80,9 @@ export function RevolvingFundDetailsFields({
               options={projectOptions}
               readOnly={page.isReadonly}
               placeholder="Select Project Name"
-              searchPlaceholder="Search Project"
-              emptyMessage={isProjectLookupLoading ? "Loading Project options..." : "No Project options found."}
-              addAction={!page.isReadonly ? { label: "Add Project", onClick: onOpenProjectDrawer } : undefined}
+              searchPlaceholder="Search Project Name"
+              emptyMessage={isProjectLookupLoading ? "Loading Project Name options..." : "No Project Name options found."}
+              addAction={!page.isReadonly ? { label: "Add Project Name", onClick: onOpenProjectDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("projectCode", code);
                 page.updateField("projectName", name);

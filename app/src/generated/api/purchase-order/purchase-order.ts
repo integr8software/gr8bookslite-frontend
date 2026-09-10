@@ -28,6 +28,8 @@ import type {
   CreatePurchaseOrderDto,
   PurchaseOrderContainerResponseDto,
   PurchaseOrderControllerFindAllV1Params,
+  PurchaseOrderControllerFindCopyFromCandidatesV1Params,
+  PurchaseOrderCopyFromCandidatesResponseDto,
   PurchaseOrderListResponseDto,
   UpdatePurchaseOrderDto
 } from '../gR8BooksNeoAPI.schemas';
@@ -53,6 +55,99 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+/**
+ * @summary List available Purchase Orders for Advances to Suppliers Copy From
+ */
+export const purchaseOrderControllerFindCopyFromCandidatesV1 = (
+    params?: PurchaseOrderControllerFindCopyFromCandidatesV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<PurchaseOrderCopyFromCandidatesResponseDto>(
+      {url: `/api/v1/purchasing/purchase-order/copy-from/candidates`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getPurchaseOrderControllerFindCopyFromCandidatesV1QueryKey = (params?: PurchaseOrderControllerFindCopyFromCandidatesV1Params,) => {
+    return [
+    `/api/v1/purchasing/purchase-order/copy-from/candidates`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getPurchaseOrderControllerFindCopyFromCandidatesV1QueryOptions = <TData = Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>, TError = unknown>(params?: PurchaseOrderControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getPurchaseOrderControllerFindCopyFromCandidatesV1QueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>> = ({ signal }) => purchaseOrderControllerFindCopyFromCandidatesV1(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type PurchaseOrderControllerFindCopyFromCandidatesV1QueryResult = NonNullable<Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>>
+export type PurchaseOrderControllerFindCopyFromCandidatesV1QueryError = unknown
+
+
+export function usePurchaseOrderControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: undefined |  PurchaseOrderControllerFindCopyFromCandidatesV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePurchaseOrderControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params?: PurchaseOrderControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function usePurchaseOrderControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params?: PurchaseOrderControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List available Purchase Orders for Advances to Suppliers Copy From
+ */
+
+export function usePurchaseOrderControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params?: PurchaseOrderControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof purchaseOrderControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getPurchaseOrderControllerFindCopyFromCandidatesV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 /**
  * @summary List purchase orders

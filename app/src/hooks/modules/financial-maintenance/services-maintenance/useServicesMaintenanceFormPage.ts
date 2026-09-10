@@ -15,8 +15,8 @@ import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleAct
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { FetchNextChartAccountCode } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsApi";
 import { ChartsOfAccountsQueryKeys } from "@/app/src/services/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsQueryKeys";
-import { fetchDefaultAccountExpenseParentOptions } from "@/app/src/services/modules/financial-maintenance/default-account/DefaultAccountApi";
-import { DefaultAccountQueryKeys } from "@/app/src/services/modules/financial-maintenance/default-account/DefaultAccountQueryKeys";
+import { fetchDisbursementTypeExpenseParentOptions } from "@/app/src/services/modules/financial-maintenance/disbursement-type/DisbursementTypeApi";
+import { DisbursementTypeQueryKeys } from "@/app/src/services/modules/financial-maintenance/disbursement-type/DisbursementTypeQueryKeys";
 import type {
   ServicesMaintenanceAccountSetupMode,
   ServicesMaintenanceFormErrors,
@@ -42,8 +42,8 @@ export function useServicesMaintenanceFormPage(options: ServicesMaintenanceFormP
   const authProfileQuery = useAuthProfileQuery({ accessToken });
   const companyId = authProfileQuery.data?.activeCompanyId ?? null;
   const expenseParentOptionsQuery = useQuery({
-    queryKey: DefaultAccountQueryKeys.expenseParentOptions(companyId),
-    queryFn: fetchDefaultAccountExpenseParentOptions,
+    queryKey: DisbursementTypeQueryKeys.expenseParentOptions(companyId, "disbursement"),
+    queryFn: () => fetchDisbursementTypeExpenseParentOptions("disbursement"),
     enabled: Boolean(companyId),
     retry: false,
   });

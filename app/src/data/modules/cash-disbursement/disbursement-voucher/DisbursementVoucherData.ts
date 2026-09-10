@@ -352,7 +352,8 @@ export function createTaxDetails(amount: number, taxRate: string): DisbursementT
   const sign = roundedAmount < 0 ? -1 : 1;
   const absoluteAmount = Math.abs(roundedAmount);
   const vatPercent = parseTaxPercent(taxRate);
-  const vatAmount = roundCurrency(sign * ((absoluteAmount * vatPercent) / 100));
+  const taxBaseAmount = vatPercent === 12 ? absoluteAmount / 1.12 : absoluteAmount;
+  const vatAmount = roundCurrency(sign * (vatPercent === 12 ? taxBaseAmount * 0.12 : (absoluteAmount * vatPercent) / 100));
   const ewtAmount = 0;
   const netAmount = roundCurrency(sign * Math.max(absoluteAmount - Math.abs(vatAmount), 0));
   const totalPayable = roundCurrency(sign * Math.max(absoluteAmount - Math.abs(ewtAmount), 0));
@@ -381,8 +382,9 @@ export function syncTaxDetailsAmount(currentTaxDetails: DisbursementTaxDetails |
   const absoluteAmount = Math.abs(roundedAmount);
   const baseTaxDetails = currentTaxDetails ?? createTaxDetails(amount, taxRate);
   const vatPercent = baseTaxDetails.vatCode || baseTaxDetails.vatPercent > 0 ? baseTaxDetails.vatPercent : parseTaxPercent(taxRate);
-  const vatAmount = roundCurrency(sign * ((absoluteAmount * vatPercent) / 100));
-  const ewtAmount = roundCurrency(sign * ((absoluteAmount * baseTaxDetails.ewtPercent) / 100));
+  const taxBaseAmount = vatPercent === 12 ? absoluteAmount / 1.12 : absoluteAmount;
+  const vatAmount = roundCurrency(sign * (vatPercent === 12 ? taxBaseAmount * 0.12 : (absoluteAmount * vatPercent) / 100));
+  const ewtAmount = roundCurrency(sign * ((taxBaseAmount * baseTaxDetails.ewtPercent) / 100));
   const netAmount = roundCurrency(sign * Math.max(absoluteAmount - Math.abs(vatAmount), 0));
   const totalPayable = roundCurrency(sign * Math.max(absoluteAmount - Math.abs(ewtAmount), 0));
 
@@ -904,8 +906,9 @@ function createDisbursementTaxDetails({
   const roundedAmount = roundCurrency(amount);
   const sign = roundedAmount < 0 ? -1 : 1;
   const absoluteAmount = Math.abs(roundedAmount);
-  const vatAmount = roundCurrency(sign * ((absoluteAmount * vatPercent) / 100));
-  const ewtAmount = roundCurrency(sign * ((absoluteAmount * ewtPercent) / 100));
+  const taxBaseAmount = vatPercent === 12 ? absoluteAmount / 1.12 : absoluteAmount;
+  const vatAmount = roundCurrency(sign * (vatPercent === 12 ? taxBaseAmount * 0.12 : (absoluteAmount * vatPercent) / 100));
+  const ewtAmount = roundCurrency(sign * ((taxBaseAmount * ewtPercent) / 100));
 
   return {
     code: "",

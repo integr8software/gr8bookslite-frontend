@@ -10,6 +10,7 @@ import {
   type PaginationState,
   type SortingState,
 } from "@tanstack/react-table";
+import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   applyCopyFromRecordsToAcknowledgementReceiptForm,
@@ -20,7 +21,14 @@ import {
   syncAcknowledgementReceiptCheckDetails,
 } from "@/app/src/data/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptData";
 import { AcknowledgementReceiptStatusFilters } from "@/app/src/constants/modules/cash-receipt/acknowledgement-receipt/AcknowledgementReceiptConstants";
+import {
+  buildJournalVoucherCopyFromRecords,
+  JournalVoucherCopyFromSource,
+} from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherCopyFromData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { fetchJournalVoucherCopyFromCandidates } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherService";
+import { JournalVoucherQueryKeys } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherQueryKeys";
 import type {
   AcknowledgementReceiptActionMode,
   AcknowledgementReceiptCopyFromRecord,
@@ -297,6 +305,33 @@ export function useAcknowledgementReceiptActionForm<TReceipt = Parameters<typeof
     updateField,
     updateLineEntries,
     values,
+  };
+}
+
+export function useAcknowledgementReceiptJournalVoucherCopyFrom(isReadonly: boolean) {
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const query = useQuery({
+    queryKey: JournalVoucherQueryKeys.copyFromCandidates("acknowledgement-receipt", activeCompanyId, activeBranchId),
+    queryFn: () =>
+      fetchJournalVoucherCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        target: "acknowledgement-receipt",
+      }),
+    enabled: activeCompanyId !== null && activeBranchId !== null && !isReadonly,
+  });
+  const records = useMemo(
+    () => buildJournalVoucherCopyFromRecords(query.data ?? []) as AcknowledgementReceiptCopyFromRecord[],
+    [query.data],
+  );
+
+  return {
+    error: query.error,
+    isEmpty: query.isSuccess && records.length === 0,
+    isError: query.isError,
+    isLoading: query.isLoading,
+    records,
+    source: JournalVoucherCopyFromSource,
   };
 }
 

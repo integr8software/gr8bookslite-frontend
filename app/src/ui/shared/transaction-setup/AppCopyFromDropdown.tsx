@@ -430,7 +430,7 @@ export function AppCopyFromSourceDialog({
       {
         accessorKey: "sourceNo",
         header: "Transaction No",
-        size: 190,
+        size: 150,
       },
       {
         accessorKey: "documentDate",
@@ -443,15 +443,16 @@ export function AppCopyFromSourceDialog({
         size: 190,
       },
       {
-        accessorKey: "remarks",
-        header: "Remarks",
-        size: 240,
-      },
-      {
         accessorKey: "amount",
         header: "Amount",
         size: 160,
-        meta: { className: "text-right tabular-nums" },
+        meta: { className: "text-right tabular-nums [&>div]:justify-end" },
+      },
+      {
+        accessorKey: "remarks",
+        header: "Remarks",
+        size: 240,
+        meta: { className: "text-right [&>div]:justify-end" },
       },
     ],
     [disabledIds, onToggleBatch, onToggleRecord, selectedIds, selectionMode],
@@ -588,10 +589,10 @@ export function AppCopyFromSourceDialog({
               </td>
               <td>{formatCopyFromDate(original.documentDate)}</td>
               <td>{formatCopyFromText(original.partyName)}</td>
+              <td className="text-right font-semibold tabular-nums text-darknavy">{formatCopyFromTableAmount(original.amount)}</td>
               <td className="max-w-md text-darknavy/65">
                 <span className="line-clamp-2">{formatCopyFromText(original.remarks)}</span>
               </td>
-              <td className="text-right font-semibold tabular-nums text-darknavy">{formatCopyFromTableAmount(original.amount)}</td>
             </tr>
           );
         }}

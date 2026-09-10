@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { DefaultAccountOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type { DisbursementTypeOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type { PaymentTypeRecord as AppPaymentTypeRecord } from "@/app/src/types/modules/financial-maintenance/payment-type/PaymentTypeTypes";
 import type { ModuleDataEntryClearAction, ModuleDataEntryColumn } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
@@ -12,7 +12,7 @@ import type {
   DisbursementVoucherFormErrors,
   DisbursementVoucherPartyDropdownOption,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
+import type { DisbursementType } from "@/app/src/types/modules/financial-maintenance/disbursement-type/DisbursementTypeTypes";
 
 export type DisbursementEntryColumnId =
   | "accountCode"
@@ -61,7 +61,7 @@ export type VoucherDataEntryProps = {
   canAddPartyName: boolean;
   canAddResponsibilityCenter: boolean;
   chartAccountOptions?: AppAdvancedDropdownOption[];
-  defaultAccounts: DefaultAccount[] | DefaultAccountOptionResponseDto[];
+  defaultAccounts: DisbursementType[] | DisbursementTypeOptionResponseDto[];
   entries: DisbursementLineEntry[];
   errors: DisbursementVoucherFormErrors;
   isReadonly: boolean;

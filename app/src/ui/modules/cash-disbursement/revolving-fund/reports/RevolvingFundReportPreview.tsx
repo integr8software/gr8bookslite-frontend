@@ -56,7 +56,7 @@ export function RevolvingFundReportPreview({
                 <th className="px-3 py-2 text-left">EWT Code</th>
                 <th className="px-3 py-2 text-right">EWT Rate</th>
                 <th className="px-3 py-2 text-right">EWT Amount</th>
-                <th className="px-3 py-2 text-right">Net Amount</th>
+                <th className="px-3 py-2 text-right">Net of VAT</th>
                 <th className="px-3 py-2 text-left">Particulars</th>
               </tr>
             </thead>

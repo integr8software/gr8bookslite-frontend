@@ -27,7 +27,9 @@ import type {
 import type {
   CreateRevolvingFundReplenishmentDto,
   RevolvingFundReplenishmentControllerFindAllV1Params,
+  RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Params,
   RevolvingFundReplenishmentControllerSuggestTransactionNumberV1Params,
+  RevolvingFundReplenishmentCopyFromCandidatesResponseDto,
   RevolvingFundReplenishmentListResponseDto,
   RevolvingFundReplenishmentResponseDto,
   TransactionNumberSuggestionResponseDto,
@@ -307,6 +309,99 @@ export const useRevolvingFundReplenishmentControllerCreateV1 = <TError = unknown
       return useMutation(getRevolvingFundReplenishmentControllerCreateV1MutationOptions(options), queryClient);
     }
     /**
+ * @summary List available Revolving Fund Replenishments for voucher Copy From
+ */
+export const revolvingFundReplenishmentControllerFindCopyFromCandidatesV1 = (
+    params: RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<RevolvingFundReplenishmentCopyFromCandidatesResponseDto>(
+      {url: `/api/v1/cash-disbursement/revolving-fund-replenishment/copy-from/candidates`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getRevolvingFundReplenishmentControllerFindCopyFromCandidatesV1QueryKey = (params?: RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Params,) => {
+    return [
+    `/api/v1/cash-disbursement/revolving-fund-replenishment/copy-from/candidates`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getRevolvingFundReplenishmentControllerFindCopyFromCandidatesV1QueryOptions = <TData = Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>, TError = unknown>(params: RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getRevolvingFundReplenishmentControllerFindCopyFromCandidatesV1QueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>> = ({ signal }) => revolvingFundReplenishmentControllerFindCopyFromCandidatesV1(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1QueryResult = NonNullable<Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>>
+export type RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1QueryError = unknown
+
+
+export function useRevolvingFundReplenishmentControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRevolvingFundReplenishmentControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>,
+          TError,
+          Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRevolvingFundReplenishmentControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List available Revolving Fund Replenishments for voucher Copy From
+ */
+
+export function useRevolvingFundReplenishmentControllerFindCopyFromCandidatesV1<TData = Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>, TError = unknown>(
+ params: RevolvingFundReplenishmentControllerFindCopyFromCandidatesV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof revolvingFundReplenishmentControllerFindCopyFromCandidatesV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getRevolvingFundReplenishmentControllerFindCopyFromCandidatesV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
  * @summary Get Revolving Fund Replenishment details by ID
  */
 export const revolvingFundReplenishmentControllerFindOneV1 = (

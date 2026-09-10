@@ -1,4 +1,11 @@
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import {
+  journalVoucherControllerFindCopyFromCandidatesV1,
+} from "@/app/src/generated/api/journal-voucher/journal-voucher";
+import type {
+  JournalVoucherControllerFindCopyFromCandidatesV1Params,
+  JournalVoucherCopyFromCandidateDto,
+} from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
   JournalVoucherLookups,
   JournalVoucherRecord,
@@ -53,6 +60,15 @@ export type JournalVoucherNumberSuggestion = {
   sequenceId: number;
   transactionNo: string;
 };
+
+export type JournalVoucherCopyFromCandidate = JournalVoucherCopyFromCandidateDto;
+
+export type JournalVoucherCopyFromTarget =
+  | "official-receipt"
+  | "acknowledgement-receipt"
+  | "accounts-payable-voucher"
+  | "cash-voucher"
+  | "disbursement-voucher";
 
 type ApiJournalVoucherStatus = "DRAFT" | "FOR_APPROVAL" | "POSTED" | "DISAPPROVED" | "CANCELLED";
 
@@ -184,6 +200,26 @@ export async function fetchJournalVoucherLookups(): Promise<JournalVoucherLookup
     responsibilityCenters: response.data.responsibilityCenters ?? [],
     taxCodes: response.data.taxCodes ?? [],
   };
+}
+
+export async function fetchJournalVoucherCopyFromCandidates(query: {
+  branchUnitId?: number | null;
+  partyCode?: string | null;
+  partyName?: string | null;
+  target: JournalVoucherCopyFromTarget;
+}): Promise<JournalVoucherCopyFromCandidate[]> {
+  const response = await journalVoucherControllerFindCopyFromCandidatesV1(
+    cleanQueryParams({
+      branchUnitId: query.branchUnitId,
+      limit: 100,
+      page: 1,
+      partyCode: query.partyCode,
+      partyName: query.partyName,
+      target: query.target,
+    }) as JournalVoucherControllerFindCopyFromCandidatesV1Params,
+  );
+
+  return response.records;
 }
 
 export async function createJournalVoucher(record: JournalVoucherRecord, branchUnitId?: number | null) {

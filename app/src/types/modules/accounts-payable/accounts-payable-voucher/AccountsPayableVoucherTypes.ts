@@ -1,4 +1,4 @@
-export type AccountsPayableVoucherStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled";
+export type AccountsPayableVoucherStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 
 export type AccountsPayableVoucherPayableType =
   "Trade Payable" | "Non-Trade Payable" | "Employee Payable" | "Tax Payable" | "Accrued Payable";

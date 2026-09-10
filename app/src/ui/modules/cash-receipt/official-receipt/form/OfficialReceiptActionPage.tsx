@@ -4,27 +4,22 @@ import dynamic from "next/dynamic";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   InitialAppDisbursementTypeRecords,
   type AppDisbursementTypeRecord,
 } from "@/app/src/ui/shared/transaction-setup/AppDisbursementTypeDialog";
-import { useOfficialReceiptActionForm } from "@/app/src/hooks/modules/cash-receipt/official-receipt/useOfficialReceipt";
+import {
+  useOfficialReceiptActionForm,
+  useOfficialReceiptJournalVoucherCopyFrom,
+} from "@/app/src/hooks/modules/cash-receipt/official-receipt/useOfficialReceipt";
 import type { OfficialReceiptModuleConfig } from "@/app/src/hooks/modules/cash-receipt/official-receipt/useOfficialReceipt";
 import {
   OfficialReceiptActionTabs,
   OfficialReceiptHref,
 } from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
-import {
-  buildJournalVoucherCopyFromRecords,
-  JournalVoucherCopyFromSource,
-} from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherCopyFromData";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType";
-import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
-import { fetchJournalVoucherCopyFromCandidates } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherService";
-import { JournalVoucherQueryKeys } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherQueryKeys";
 import type {
   OfficialReceiptActionMode,
   OfficialReceiptActionTab,
@@ -57,8 +52,11 @@ const AppDisbursementTypeDialog = dynamic(
   { ssr: false },
 );
 
-type OfficialReceiptActionPageProps<TReceipt = Parameters<typeof useOfficialReceiptActionForm>[3] extends OfficialReceiptModuleConfig<infer TConfigReceipt> ? TConfigReceipt : never> =
-  OfficialReceiptModuleConfig<TReceipt> & {
+type OfficialReceiptActionPageProps<
+  TReceipt = Parameters<typeof useOfficialReceiptActionForm>[3] extends OfficialReceiptModuleConfig<infer TConfigReceipt>
+    ? TConfigReceipt
+    : never,
+> = OfficialReceiptModuleConfig<TReceipt> & {
   baseHref?: string;
   copyFromRecords?: OfficialReceiptCopyFromRecord[];
   copyFromSources?: string[];
@@ -84,24 +82,12 @@ export function OfficialReceiptActionPage<TReceipt>({
   const isReadonly = mode === "view";
   const recordId = typeof params.recordId === "string" ? params.recordId : undefined;
   const [activeTab, setActiveTab] = useState<OfficialReceiptActionTab>("details");
-  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
-  const activeBranchId = useAppStore((state) => state.activeBranchId);
-  const journalVoucherCopyFromCandidatesQuery = useQuery({
-    queryKey: JournalVoucherQueryKeys.copyFromCandidates("official-receipt", activeCompanyId, activeBranchId),
-    queryFn: () =>
-      fetchJournalVoucherCopyFromCandidates({
-        branchUnitId: activeBranchId,
-        target: "official-receipt",
-      }),
-    enabled: activeCompanyId !== null && activeBranchId !== null && !isReadonly,
-  });
-  const journalVoucherCopyFromRecords = buildJournalVoucherCopyFromRecords(
-    journalVoucherCopyFromCandidatesQuery.data ?? [],
-  ) as OfficialReceiptCopyFromRecord[];
+  const journalVoucherCopyFrom = useOfficialReceiptJournalVoucherCopyFrom(isReadonly);
+  const journalVoucherCopyFromRecords = journalVoucherCopyFrom.records;
   const copyFromRecordsWithJournalVoucher = [...(copyFromRecords ?? []), ...journalVoucherCopyFromRecords];
-  const copyFromSourcesWithJournalVoucher = copyFromSources?.includes(JournalVoucherCopyFromSource)
+  const copyFromSourcesWithJournalVoucher = copyFromSources?.includes(journalVoucherCopyFrom.source)
     ? copyFromSources
-    : [...(copyFromSources ?? []), JournalVoucherCopyFromSource];
+    : [...(copyFromSources ?? []), journalVoucherCopyFrom.source];
   const receiptForm = useOfficialReceiptActionForm(
     mode,
     recordId,
@@ -123,10 +109,7 @@ export function OfficialReceiptActionPage<TReceipt>({
   const [isCollectionTypeDialogOpen, setIsCollectionTypeDialogOpen] = useState(false);
   const [collectionTypeRecords, setCollectionTypeRecords] = useState(InitialAppDisbursementTypeRecords);
   const partyOptions = useMemo(() => createPartyOptions(partyStore.records), [partyStore.records]);
-  const paymentTypeOptions = useMemo(
-    () => createPaymentTypeOptions(paymentTypeStore.paymentTypes),
-    [paymentTypeStore.paymentTypes],
-  );
+  const paymentTypeOptions = useMemo(() => createPaymentTypeOptions(paymentTypeStore.paymentTypes), [paymentTypeStore.paymentTypes]);
 
   if (receiptForm.isNotFound) {
     return notFoundFallback ?? <OfficialReceiptNotFound />;
@@ -166,6 +149,16 @@ export function OfficialReceiptActionPage<TReceipt>({
           tabs={OfficialReceiptActionTabs}
           onTabChange={setActiveTab}
         />
+        {journalVoucherCopyFrom.isError ? (
+          <div role="alert" className="rounded-md border border-coralpink/30 bg-coralpink/5 px-3 py-2 text-sm font-semibold text-coralpink">
+            {journalVoucherCopyFrom.error instanceof Error
+              ? journalVoucherCopyFrom.error.message
+              : "Could not load Journal Voucher Copy From records."}
+          </div>
+        ) : null}
+        {!journalVoucherCopyFrom.isLoading && journalVoucherCopyFrom.isEmpty && copyFromRecordsWithJournalVoucher.length === 0 ? (
+          <p className="text-sm font-medium text-darknavy/60">No Journal Voucher Copy From records found.</p>
+        ) : null}
         {activeTab === "details" ? (
           <>
             <OfficialReceiptDetailsForm

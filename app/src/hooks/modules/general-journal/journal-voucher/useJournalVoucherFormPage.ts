@@ -32,6 +32,7 @@ import {
   useJournalVoucherStore,
 } from "@/app/src/hooks/modules/general-journal/journal-voucher/useJournalVoucher";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { JournalVoucherQueryKeys } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherQueryKeys";
 import { fetchCashVoucherList } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherApi";
 import { fetchDisbursementVoucherList } from "@/app/src/services/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherApi";
 import { FetchMultiCurrencyRates } from "@/app/src/services/modules/system-administration/multi-currency-setup/MultiCurrencySetupService";
@@ -86,12 +87,12 @@ export function useJournalVoucherFormPage() {
   );
   const totals = useMemo(() => getJournalVoucherTotals(displayValues.lines), [displayValues.lines]);
   const cashVoucherCopyFromQuery = useQuery({
-    queryKey: ["journal-voucher", "copy-from", "cash-voucher", activeCompanyId, activeBranchId],
+    queryKey: JournalVoucherQueryKeys.paymentVoucherCopyFromCandidates("cash-voucher", activeCompanyId, activeBranchId),
     queryFn: () => fetchCashVoucherList({ branchUnitId: activeBranchId ?? undefined, limit: 500, status: "Posted" }),
     enabled: activeCompanyId !== null && activeBranchId !== null && !isReadonly,
   });
   const disbursementVoucherCopyFromQuery = useQuery({
-    queryKey: ["journal-voucher", "copy-from", "disbursement-voucher", activeCompanyId, activeBranchId],
+    queryKey: JournalVoucherQueryKeys.paymentVoucherCopyFromCandidates("disbursement-voucher", activeCompanyId, activeBranchId),
     queryFn: () => fetchDisbursementVoucherList({ branchUnitId: activeBranchId ?? undefined, limit: 500, status: "Posted" }),
     enabled: activeCompanyId !== null && activeBranchId !== null && !isReadonly,
   });
@@ -544,7 +545,8 @@ function syncJournalVoucherWithGeneratedTaxLines(
     const normalizedSourceLine = normalizeJournalVoucherSourceLineTaxValues(sourceLine, taxAccountingContext.taxCodes);
     const generatedLines = createJournalVoucherGeneratedTaxLines(values, normalizedSourceLine, taxAccountingContext);
     const vatLine = generatedLines.find(
-      (line) => line.id.startsWith(JournalVoucherGeneratedInputVatLineIdPrefix) || line.id.startsWith(JournalVoucherGeneratedOutputVatLineIdPrefix),
+      (line) =>
+        line.id.startsWith(JournalVoucherGeneratedInputVatLineIdPrefix) || line.id.startsWith(JournalVoucherGeneratedOutputVatLineIdPrefix),
     );
 
     nextLines.push(deductJournalVoucherVatAmountFromSourceLine(normalizedSourceLine, vatLine), ...generatedLines);
@@ -577,20 +579,16 @@ function ensureJournalVoucherTrailingBlankSourceLineForGeneratedTaxes(
   };
 }
 
-function journalVoucherHasGeneratedTaxLines(
-  values: JournalVoucherFormValues,
-  taxAccountingContext: JournalVoucherTaxAccountingContext,
-) {
+function journalVoucherHasGeneratedTaxLines(values: JournalVoucherFormValues, taxAccountingContext: JournalVoucherTaxAccountingContext) {
   if (taxAccountingContext.taxCodes.length === 0) {
     return false;
   }
 
-  return getJournalVoucherTaxSourceLines(values.lines)
-    .some((line) => {
-      const normalizedLine = normalizeJournalVoucherSourceLineTaxValues(line, taxAccountingContext.taxCodes);
+  return getJournalVoucherTaxSourceLines(values.lines).some((line) => {
+    const normalizedLine = normalizeJournalVoucherSourceLineTaxValues(line, taxAccountingContext.taxCodes);
 
-      return createJournalVoucherGeneratedTaxLines(values, normalizedLine, taxAccountingContext).length > 0;
-    });
+    return createJournalVoucherGeneratedTaxLines(values, normalizedLine, taxAccountingContext).length > 0;
+  });
 }
 
 function createJournalVoucherGeneratedTaxLines(
@@ -839,7 +837,9 @@ function deductJournalVoucherVatAmountFromSourceLine(sourceLine: JournalVoucherL
 
   return {
     ...sourceLine,
-    [sourceSide]: roundJournalVoucherAccountingAmount(Math.max(Number(sourceLine[sourceSide] || 0) - getJournalVoucherLineAmount(vatLine), 0)),
+    [sourceSide]: roundJournalVoucherAccountingAmount(
+      Math.max(Number(sourceLine[sourceSide] || 0) - getJournalVoucherLineAmount(vatLine), 0),
+    ),
   };
 }
 
@@ -940,7 +940,11 @@ function roundJournalVoucherAccountingAmount(value: number) {
 }
 
 function normalizeJournalVoucherAccountText(value: string) {
-  return value.trim().toLowerCase().replace(/[^a-z0-9]+/gu, " ").trim();
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/gu, " ")
+    .trim();
 }
 
 function getActionMode(pathname: string): JournalVoucherActionMode {

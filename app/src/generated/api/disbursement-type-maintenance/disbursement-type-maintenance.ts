@@ -27,6 +27,7 @@ import type {
 import type {
   CreateChartAccountDto,
   CreateDisbursementTypeTemplateDto,
+  DisbursementTypeAccountOptionsResponseDto,
   DisbursementTypeContainerResponseDto,
   DisbursementTypeControllerFindAllV1Params,
   DisbursementTypeControllerFindOptionsV1Params,
@@ -391,6 +392,98 @@ export function useDisbursementTypeControllerFindExpenseParentOptionsV1<TData = 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getDisbursementTypeControllerFindExpenseParentOptionsV1QueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Get disbursement type expense account options
+ */
+export const disbursementTypeControllerFindAccountOptionsV1 = (
+
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<DisbursementTypeAccountOptionsResponseDto>(
+      {url: `/api/v1/maintenance/financial-management/disbursement-types/account-options`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getDisbursementTypeControllerFindAccountOptionsV1QueryKey = () => {
+    return [
+    `/api/v1/maintenance/financial-management/disbursement-types/account-options`
+    ] as const;
+    }
+
+
+export const getDisbursementTypeControllerFindAccountOptionsV1QueryOptions = <TData = Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDisbursementTypeControllerFindAccountOptionsV1QueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>> = ({ signal }) => disbursementTypeControllerFindAccountOptionsV1(requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DisbursementTypeControllerFindAccountOptionsV1QueryResult = NonNullable<Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>>
+export type DisbursementTypeControllerFindAccountOptionsV1QueryError = unknown
+
+
+export function useDisbursementTypeControllerFindAccountOptionsV1<TData = Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>,
+          TError,
+          Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDisbursementTypeControllerFindAccountOptionsV1<TData = Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>,
+          TError,
+          Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDisbursementTypeControllerFindAccountOptionsV1<TData = Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get disbursement type expense account options
+ */
+
+export function useDisbursementTypeControllerFindAccountOptionsV1<TData = Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof disbursementTypeControllerFindAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDisbursementTypeControllerFindAccountOptionsV1QueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

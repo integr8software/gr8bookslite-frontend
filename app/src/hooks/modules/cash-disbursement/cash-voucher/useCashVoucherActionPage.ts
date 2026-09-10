@@ -133,6 +133,9 @@ import {
   updateCashVoucherStatusApi,
 } from "@/app/src/services/modules/cash-disbursement/cash-voucher/CashVoucherApi";
 
+const CashVoucherCopyFromTarget = "cash-voucher";
+const BalancedEntryStatus = "Balanced";
+
 export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const router = useRouter();
   const params = useParams<{ recordId?: string }>();
@@ -242,7 +245,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const copyFromPartyCode = copyFromPartyName ? values.partyCode.trim() : "";
   const copyFromCandidatesQuery = useQuery({
     queryKey: AccountsPayableVoucherQueryKeys.copyFromCandidates(
-      "cash-voucher",
+      CashVoucherCopyFromTarget,
       activeCompanyId,
       activeBranchId,
       copyFromPartyCode,
@@ -253,14 +256,14 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         branchUnitId: activeBranchId,
         partyCode: copyFromPartyCode,
         partyName: copyFromPartyName,
-        target: "cash-voucher",
+        target: CashVoucherCopyFromTarget,
       }),
     enabled: activeCompanyId !== null,
   });
   const apvCopyFromCandidates = useMemo(() => copyFromCandidatesQuery.data ?? [], [copyFromCandidatesQuery.data]);
   const advanceToSupplierCopyFromCandidatesQuery = useQuery({
     queryKey: AdvancesToSuppliersQueryKeys.copyFromCandidates(
-      "cash-voucher",
+      CashVoucherCopyFromTarget,
       activeCompanyId,
       activeBranchId,
       copyFromPartyCode,
@@ -271,7 +274,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         branchUnitId: activeBranchId,
         partyCode: copyFromPartyCode,
         partyName: copyFromPartyName,
-        target: "cash-voucher",
+        target: CashVoucherCopyFromTarget,
       }),
     enabled: activeCompanyId !== null,
   });
@@ -281,7 +284,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   );
   const cashAdvanceCopyFromCandidatesQuery = useQuery({
     queryKey: CashAdvanceQueryKeys.copyFromCandidates(
-      "cash-voucher",
+      CashVoucherCopyFromTarget,
       activeCompanyId,
       activeBranchId,
       copyFromPartyCode,
@@ -292,7 +295,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         branchUnitId: activeBranchId,
         partyCode: copyFromPartyCode,
         partyName: copyFromPartyName,
-        target: "cash-voucher",
+        target: CashVoucherCopyFromTarget,
       }),
     enabled: activeCompanyId !== null,
   });
@@ -304,7 +307,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     queryKey: [
       ...PettyCashReplenishmentQueryKeys.all,
       "copy-from",
-      "cash-voucher",
+      CashVoucherCopyFromTarget,
       activeCompanyId,
       activeBranchId,
       copyFromPartyCode,
@@ -315,7 +318,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         branchUnitId: activeBranchId,
         partyCode: copyFromPartyCode,
         partyName: copyFromPartyName,
-        target: "cash-voucher",
+        target: CashVoucherCopyFromTarget,
       }),
     enabled: activeCompanyId !== null,
   });
@@ -327,7 +330,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     queryKey: [
       ...RevolvingFundReplenishmentQueryKeys.all,
       "copy-from",
-      "cash-voucher",
+      CashVoucherCopyFromTarget,
       activeCompanyId,
       activeBranchId,
       copyFromPartyCode,
@@ -338,7 +341,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         branchUnitId: activeBranchId,
         partyCode: copyFromPartyCode,
         partyName: copyFromPartyName,
-        target: "cash-voucher",
+        target: CashVoucherCopyFromTarget,
       }),
     enabled: activeCompanyId !== null,
   });
@@ -348,7 +351,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   );
   const journalVoucherCopyFromCandidatesQuery = useQuery({
     queryKey: JournalVoucherQueryKeys.copyFromCandidates(
-      "cash-voucher",
+      CashVoucherCopyFromTarget,
       activeCompanyId,
       activeBranchId,
       copyFromPartyCode,
@@ -359,7 +362,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         branchUnitId: activeBranchId,
         partyCode: copyFromPartyCode,
         partyName: copyFromPartyName,
-        target: "cash-voucher",
+        target: CashVoucherCopyFromTarget,
       }),
     enabled: activeCompanyId !== null,
   });
@@ -454,7 +457,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         checkDate: (d.checkDate as string) || "",
         checkNo: (d.checkNo as string) || "",
         checkStatus: (d.checkStatus as string) || "",
-        status: "Balanced",
+        status: BalancedEntryStatus,
       };
     });
     const voucherGrossAmount =
@@ -1162,7 +1165,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
             refId,
             remarks: particulars,
             responsibilityCenter,
-            status: "Balanced",
+            status: BalancedEntryStatus,
             taxDetails: {
               ...createTaxDetails(payableAmount, "0%"),
               refId,
@@ -1199,7 +1202,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
           refId,
           remarks: particulars,
           responsibilityCenter,
-          status: "Balanced",
+          status: BalancedEntryStatus,
           taxDetails: {
             ...createTaxDetails(grossAmount, "0%"),
             amount: disburseAmount,
@@ -1300,7 +1303,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         partyName: record.partyName ?? "",
         refId: record.id,
         responsibilityCenter: record.responsibilityCenter ?? "",
-        status: "Balanced",
+        status: BalancedEntryStatus,
         taxDetails: {
           ...createTaxDetails(record.availableAmount, "0%"),
           amount: record.availableAmount,
@@ -1378,7 +1381,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
             refId,
             remarks: particulars,
             responsibilityCenter: pcr.projectCode || pcr.projectName || "",
-            status: "Balanced",
+            status: BalancedEntryStatus,
             taxDetails: { ...createTaxDetails(disburseAmount, "0%"), amount: disburseAmount, refId },
             taxRate: "0%",
             vatType: "",
@@ -1409,7 +1412,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
           refId,
           remarks: particulars,
           responsibilityCenter,
-          status: "Balanced",
+          status: BalancedEntryStatus,
           taxDetails: {
             ...createTaxDetails(grossAmount, "0%"),
             amount: disburseAmount,
@@ -1509,7 +1512,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
             refId,
             remarks: particulars,
             responsibilityCenter: rfr.projectCode || rfr.projectName || "",
-            status: "Balanced",
+            status: BalancedEntryStatus,
             taxDetails: { ...createTaxDetails(disburseAmount, "0%"), amount: disburseAmount, refId },
             taxRate: "0%",
             vatType: "",
@@ -1540,7 +1543,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
           refId,
           remarks: particulars,
           responsibilityCenter,
-          status: "Balanced",
+          status: BalancedEntryStatus,
           taxDetails: {
             ...createTaxDetails(grossAmount, "0%"),
             amount: disburseAmount,
@@ -1636,7 +1639,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
         refId,
         remarks: particulars,
         responsibilityCenter: advance.projectCode || advance.projectName || "",
-        status: "Balanced",
+        status: BalancedEntryStatus,
         taxDetails: { ...createTaxDetails(disburseAmount, "0%"), amount: disburseAmount, grossAmount: disburseAmount, refId },
         taxRate: "0%",
         vatType: "",
@@ -1720,7 +1723,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
           refId,
           remarks: particulars,
           responsibilityCenter: detail.responsibilityCenter || ats.projectCode || ats.projectName || "",
-          status: "Balanced",
+          status: BalancedEntryStatus,
           taxDetails: { ...createTaxDetails(disburseAmount, "0%"), amount: disburseAmount, grossAmount: disburseAmount, refId },
           taxRate: "0%",
           vatType: "",

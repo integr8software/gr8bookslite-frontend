@@ -32,6 +32,12 @@ type PartyLookupBackendItem = {
   vendorAdvanceAccount?: string;
   employeeAdvanceAccount?: string;
   employeePayableAccount?: string;
+  defaultResponsibilityCenterId?: string;
+  defaultResponsibilityCenterName?: string;
+  defaultPaymentTypeId?: string;
+  defaultPaymentTypeName?: string;
+  defaultBank?: string;
+  defaultBankAccountNo?: string;
   accountingAccounts?: {
     employeeAdvanceAccount?: {
       id?: string;

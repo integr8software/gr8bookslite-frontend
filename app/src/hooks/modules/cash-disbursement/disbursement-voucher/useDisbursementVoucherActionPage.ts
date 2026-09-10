@@ -136,6 +136,9 @@ import {
   validatePaymentVoucherCopySelection,
 } from "@/app/src/data/modules/cash-disbursement/shared/PaymentVoucherCopyFromData";
 
+const DisbursementVoucherCopyFromTarget = "disbursement-voucher";
+const BalancedEntryStatus = "Balanced";
+
 export function useDisbursementVoucherActionPage(mode: DisbursementVoucherActionMode) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -216,7 +219,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const copyFromPartyCode = copyFromPartyName ? values.partyCode.trim() : "";
   const copyFromCandidatesQuery = useQuery({
     queryKey: AccountsPayableVoucherQueryKeys.copyFromCandidates(
-      "disbursement-voucher",
+      DisbursementVoucherCopyFromTarget,
       activeCompanyId,
       activeBranchId,
       copyFromPartyCode,
@@ -227,14 +230,14 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         branchUnitId: activeBranchId,
         partyCode: copyFromPartyCode,
         partyName: copyFromPartyName,
-        target: "disbursement-voucher",
+        target: DisbursementVoucherCopyFromTarget,
       }),
     enabled: activeCompanyId !== null,
   });
   const apvCopyFromCandidates = useMemo(() => copyFromCandidatesQuery.data ?? [], [copyFromCandidatesQuery.data]);
   const advanceToSupplierCopyFromCandidatesQuery = useQuery({
     queryKey: AdvancesToSuppliersQueryKeys.copyFromCandidates(
-      "disbursement-voucher",
+      DisbursementVoucherCopyFromTarget,
       activeCompanyId,
       activeBranchId,
       copyFromPartyCode,
@@ -245,7 +248,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         branchUnitId: activeBranchId,
         partyCode: copyFromPartyCode,
         partyName: copyFromPartyName,
-        target: "disbursement-voucher",
+        target: DisbursementVoucherCopyFromTarget,
       }),
     enabled: activeCompanyId !== null,
   });
@@ -255,7 +258,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   );
   const cashAdvanceCopyFromCandidatesQuery = useQuery({
     queryKey: CashAdvanceQueryKeys.copyFromCandidates(
-      "disbursement-voucher",
+      DisbursementVoucherCopyFromTarget,
       activeCompanyId,
       activeBranchId,
       copyFromPartyCode,
@@ -266,7 +269,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         branchUnitId: activeBranchId,
         partyCode: copyFromPartyCode,
         partyName: copyFromPartyName,
-        target: "disbursement-voucher",
+        target: DisbursementVoucherCopyFromTarget,
       }),
     enabled: activeCompanyId !== null,
   });
@@ -278,7 +281,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     queryKey: [
       ...PettyCashReplenishmentQueryKeys.all,
       "copy-from",
-      "disbursement-voucher",
+      DisbursementVoucherCopyFromTarget,
       activeCompanyId,
       activeBranchId,
       copyFromPartyCode,
@@ -289,7 +292,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         branchUnitId: activeBranchId,
         partyCode: copyFromPartyCode,
         partyName: copyFromPartyName,
-        target: "disbursement-voucher",
+        target: DisbursementVoucherCopyFromTarget,
       }),
     enabled: activeCompanyId !== null,
   });
@@ -301,7 +304,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     queryKey: [
       ...RevolvingFundReplenishmentQueryKeys.all,
       "copy-from",
-      "disbursement-voucher",
+      DisbursementVoucherCopyFromTarget,
       activeCompanyId,
       activeBranchId,
       copyFromPartyCode,
@@ -312,7 +315,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         branchUnitId: activeBranchId,
         partyCode: copyFromPartyCode,
         partyName: copyFromPartyName,
-        target: "disbursement-voucher",
+        target: DisbursementVoucherCopyFromTarget,
       }),
     enabled: activeCompanyId !== null,
   });
@@ -332,7 +335,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   );
   const journalVoucherCopyFromCandidatesQuery = useQuery({
     queryKey: JournalVoucherQueryKeys.copyFromCandidates(
-      "disbursement-voucher",
+      DisbursementVoucherCopyFromTarget,
       activeCompanyId,
       activeBranchId,
       copyFromPartyCode,
@@ -343,7 +346,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         branchUnitId: activeBranchId,
         partyCode: copyFromPartyCode,
         partyName: copyFromPartyName,
-        target: "disbursement-voucher",
+        target: DisbursementVoucherCopyFromTarget,
       }),
     enabled: activeCompanyId !== null,
   });
@@ -475,7 +478,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         checkDate: (d.checkDate as string) || "",
         checkNo: (d.checkNo as string) || "",
         checkStatus: (d.checkStatus as string) || "",
-        status: "Balanced",
+        status: BalancedEntryStatus,
       };
     });
 
@@ -1268,7 +1271,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
             refId,
             remarks: particulars,
             responsibilityCenter,
-            status: "Balanced",
+            status: BalancedEntryStatus,
             taxDetails: {
               ...createTaxDetails(payableAmount, "0%"),
               refId,
@@ -1305,7 +1308,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
           refId,
           remarks: particulars,
           responsibilityCenter,
-          status: "Balanced",
+          status: BalancedEntryStatus,
           taxDetails: {
             ...createTaxDetails(grossAmount, "0%"),
             amount: disburseAmount,
@@ -1410,7 +1413,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         partyName: record.partyName ?? "",
         refId: record.id,
         responsibilityCenter: record.responsibilityCenter ?? "",
-        status: "Balanced",
+        status: BalancedEntryStatus,
         taxDetails: {
           ...createTaxDetails(record.availableAmount, "0%"),
           amount: record.availableAmount,
@@ -1427,7 +1430,11 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
       const existingEditableEntries = getEditablePaymentVoucherCopyEntries(current.lineEntries, isGeneratedAccountingEntry);
       const mergedEntries = existingEditableEntries.length > 0 ? [...existingEditableEntries, ...copiedEntries] : copiedEntries;
       const automaticEntries = createAutomaticEntriesForPayment(mergedEntries);
-      const nextAmount = getPaymentVoucherCopiedDisburseAmount(mergedEntries, isGeneratedAccountingEntry, roundHydratedDisbursementVoucherAmount);
+      const nextAmount = getPaymentVoucherCopiedDisburseAmount(
+        mergedEntries,
+        isGeneratedAccountingEntry,
+        roundHydratedDisbursementVoucherAmount,
+      );
 
       return {
         ...current,
@@ -1488,7 +1495,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
             refId,
             remarks: particulars,
             responsibilityCenter: pcr.projectCode || pcr.projectName || "",
-            status: "Balanced",
+            status: BalancedEntryStatus,
             taxDetails: { ...createTaxDetails(disburseAmount, "0%"), amount: disburseAmount, refId },
             taxRate: "0%",
             vatType: "",
@@ -1519,7 +1526,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
           refId,
           remarks: particulars,
           responsibilityCenter,
-          status: "Balanced",
+          status: BalancedEntryStatus,
           taxDetails: {
             ...createTaxDetails(grossAmount, "0%"),
             amount: disburseAmount,
@@ -1623,7 +1630,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
             refId,
             remarks: particulars,
             responsibilityCenter: rfr.projectCode || rfr.projectName || "",
-            status: "Balanced",
+            status: BalancedEntryStatus,
             taxDetails: { ...createTaxDetails(disburseAmount, "0%"), amount: disburseAmount, refId },
             taxRate: "0%",
             vatType: "",
@@ -1654,7 +1661,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
           refId,
           remarks: particulars,
           responsibilityCenter,
-          status: "Balanced",
+          status: BalancedEntryStatus,
           taxDetails: {
             ...createTaxDetails(grossAmount, "0%"),
             amount: disburseAmount,
@@ -1754,7 +1761,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
         refId,
         remarks: particulars,
         responsibilityCenter: advance.projectCode || advance.projectName || "",
-        status: "Balanced",
+        status: BalancedEntryStatus,
         taxDetails: { ...createTaxDetails(disburseAmount, "0%"), amount: disburseAmount, grossAmount: disburseAmount, refId },
         taxRate: "0%",
         vatType: "",
@@ -1838,7 +1845,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
           refId,
           remarks: particulars,
           responsibilityCenter: detail.responsibilityCenter || ats.projectCode || ats.projectName || "",
-          status: "Balanced",
+          status: BalancedEntryStatus,
           taxDetails: { ...createTaxDetails(disburseAmount, "0%"), amount: disburseAmount, grossAmount: disburseAmount, refId },
           taxRate: "0%",
           vatType: "",

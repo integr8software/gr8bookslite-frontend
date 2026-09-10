@@ -10,6 +10,7 @@ import {
   type PaginationState,
   type SortingState,
 } from "@tanstack/react-table";
+import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   applyCopyFromRecordsToOfficialReceiptForm,
@@ -20,7 +21,14 @@ import {
   syncOfficialReceiptCheckDetails,
 } from "@/app/src/data/modules/cash-receipt/official-receipt/OfficialReceiptData";
 import { OfficialReceiptStatusFilters } from "@/app/src/constants/modules/cash-receipt/official-receipt/OfficialReceiptConstants";
+import {
+  buildJournalVoucherCopyFromRecords,
+  JournalVoucherCopyFromSource,
+} from "@/app/src/data/modules/general-journal/journal-voucher/JournalVoucherCopyFromData";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
+import { fetchJournalVoucherCopyFromCandidates } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherService";
+import { JournalVoucherQueryKeys } from "@/app/src/services/modules/general-journal/journal-voucher/JournalVoucherQueryKeys";
 import type {
   OfficialReceiptActionMode,
   OfficialReceiptCopyFromRecord,
@@ -80,10 +88,7 @@ export type OfficialReceiptModuleConfig<TReceipt = Parameters<typeof mapApiOffic
   storageKey?: string;
 };
 
-export function useOfficialReceiptStore<
-  TSelected = OfficialReceiptStoreState,
-  TReceipt = Parameters<typeof mapApiOfficialReceipt>[0],
->(
+export function useOfficialReceiptStore<TSelected = OfficialReceiptStoreState, TReceipt = Parameters<typeof mapApiOfficialReceipt>[0]>(
   selector?: (state: OfficialReceiptStoreState) => TSelected,
   config: OfficialReceiptModuleConfig<TReceipt> = {},
 ) {
@@ -117,7 +122,7 @@ export function useOfficialReceiptStore<
     return () => {
       isMounted = false;
     };
-  }, [receiptLabel]);
+  }, [api, receiptLabel]);
 
   const updateReceiptStatus = useCallback(
     (receipt: OfficialReceiptRecord, status: OfficialReceiptStatus) => {
@@ -188,7 +193,7 @@ export function useOfficialReceiptActionForm<TReceipt = Parameters<typeof mapApi
     return () => {
       isMounted = false;
     };
-  }, [mode, receiptLabel, recordId]);
+  }, [api, mode, receiptLabel, recordId]);
 
   function updateField<Key extends keyof OfficialReceiptFormValues>(key: Key, value: OfficialReceiptFormValues[Key]) {
     setValues((current) => {
@@ -198,9 +203,7 @@ export function useOfficialReceiptActionForm<TReceipt = Parameters<typeof mapApi
         return syncOfficialReceiptPartyDetails(nextValues);
       }
 
-      return isCheckDetailField(key)
-        ? syncOfficialReceiptCheckDetails(nextValues)
-        : nextValues;
+      return isCheckDetailField(key) ? syncOfficialReceiptCheckDetails(nextValues) : nextValues;
     });
   }
 
@@ -287,13 +290,35 @@ export function useOfficialReceiptActionForm<TReceipt = Parameters<typeof mapApi
   };
 }
 
+export function useOfficialReceiptJournalVoucherCopyFrom(isReadonly: boolean) {
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+  const activeBranchId = useAppStore((state) => state.activeBranchId);
+  const query = useQuery({
+    queryKey: JournalVoucherQueryKeys.copyFromCandidates("official-receipt", activeCompanyId, activeBranchId),
+    queryFn: () =>
+      fetchJournalVoucherCopyFromCandidates({
+        branchUnitId: activeBranchId,
+        target: "official-receipt",
+      }),
+    enabled: activeCompanyId !== null && activeBranchId !== null && !isReadonly,
+  });
+  const records = useMemo(() => buildJournalVoucherCopyFromRecords(query.data ?? []) as OfficialReceiptCopyFromRecord[], [query.data]);
+
+  return {
+    error: query.error,
+    isEmpty: query.isSuccess && records.length === 0,
+    isError: query.isError,
+    isLoading: query.isLoading,
+    records,
+    source: JournalVoucherCopyFromSource,
+  };
+}
+
 function isCheckDetailField(key: keyof OfficialReceiptFormValues) {
   return key === "bankName" || key === "checkDate" || key === "checkNo";
 }
 
-function syncOfficialReceiptPartyDetails(
-  values: OfficialReceiptFormValues,
-): OfficialReceiptFormValues {
+function syncOfficialReceiptPartyDetails(values: OfficialReceiptFormValues): OfficialReceiptFormValues {
   return {
     ...values,
     lineEntries: values.lineEntries.map((entry) => ({

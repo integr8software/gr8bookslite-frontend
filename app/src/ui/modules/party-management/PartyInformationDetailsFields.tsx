@@ -27,6 +27,7 @@ import type {
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import type { PartyTaxDefaultClassificationKey } from "@/app/src/types/shared/tax/TaxTypes";
 import { isPartyEntityTypeWithholdingDefaultEnabled } from "@/app/src/data/modules/party-management/PartyManagementData";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { ChartAccountDropdown } from "@/app/src/ui/shared/advanced-dropdown/ChartAccountDropdown";
 import { MoneyNumberField } from "@/app/src/ui/shared/money/MoneyNumberField";
@@ -39,6 +40,7 @@ import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOpt
 const PartyInformationTabOrder: readonly PartyInformationTabId[] = [
   "basic-information",
   "contact-information",
+  "bank-information",
   "tax-information",
   "accounting-information",
 ];
@@ -54,12 +56,21 @@ export function PartyInformationDetailsFields({
   taxDefaultOptionsLoading = false,
   taxDefaultOptions,
   termOptions,
+  responsibilityCenterOptions,
+  paymentTypeOptions,
+  bankOptions,
   values,
   syncedAddressSources,
   canAddAccountTitle,
   canAddTerm,
+  canAddResponsibilityCenter,
+  canAddPaymentType,
+  canAddBank,
   onAddAccountTitle,
   onAddTerm,
+  onAddResponsibilityCenter,
+  onAddPaymentType,
+  onAddBank,
   onAddressInputChange,
   onCopyAddress,
   onInputChange,
@@ -71,6 +82,9 @@ export function PartyInformationDetailsFields({
   onSelectProvince,
   onUpdateField,
   onSelectTerm,
+  onSelectResponsibilityCenter,
+  onSelectPaymentType,
+  onSelectBank,
 }: PartyInformationDetailsFieldsProps) {
   const [activeTab, setActiveTab] = useState<PartyInformationTabId>("basic-information");
   const isPartyTypeSelected = values.partyTypes.length > 0;
@@ -129,6 +143,11 @@ export function PartyInformationDetailsFields({
     "cityMunicipalityCode",
     "barangayCode",
   ]);
+  const bankErrorCount = countErrors(errors, [
+    "defaultPaymentTypeId",
+    "defaultBank",
+    "defaultBankAccountNo",
+  ]);
   const taxErrorCount = countErrors(errors, [
     "tin",
     "defaultPurchaseInputVatTaxSourceKey",
@@ -141,6 +160,7 @@ export function PartyInformationDetailsFields({
   ]);
   const accountingErrorCount = countErrors(errors, [
     "termId",
+    "defaultResponsibilityCenterId",
     "defaultReceivableAccount",
     "customerAdvanceAccount",
     "defaultPayableAccount",
@@ -154,12 +174,13 @@ export function PartyInformationDetailsFields({
       ({
         "basic-information": basicErrorCount,
         "contact-information": contactErrorCount,
+        "bank-information": bankErrorCount,
         "tax-information": taxErrorCount,
         "accounting-information": accountingErrorCount,
       }) satisfies Record<PartyInformationTabId, number>,
-    [accountingErrorCount, basicErrorCount, contactErrorCount, taxErrorCount],
+    [accountingErrorCount, bankErrorCount, basicErrorCount, contactErrorCount, taxErrorCount],
   );
-  const totalErrorCount = basicErrorCount + contactErrorCount + taxErrorCount + accountingErrorCount;
+  const totalErrorCount = basicErrorCount + contactErrorCount + bankErrorCount + taxErrorCount + accountingErrorCount;
   const previousTotalErrorCountRef = useRef(totalErrorCount);
 
   useEffect(() => {
@@ -482,6 +503,75 @@ export function PartyInformationDetailsFields({
       ),
     },
     {
+      id: "bank-information",
+      label: "Bank Information",
+      badge: bankErrorCount,
+      badgeTone: bankErrorCount > 0 ? "error" : "info",
+      content: (
+        <div className="grid gap-5">
+          <div className="grid gap-4 md:grid-cols-3">
+            <Field label="Default Payment Type" error={errors.defaultPaymentTypeId}>
+              <AppAdvancedDropdown
+                addAction={
+                  canAddPaymentType && onAddPaymentType
+                    ? {
+                        disabled: isDetailsDisabled,
+                        label: "Add Payment Type",
+                        onClick: onAddPaymentType,
+                      }
+                    : undefined
+                }
+                disabled={isDetailsDisabled}
+                emptyMessage="No matching payment type found."
+                options={paymentTypeOptions ?? []}
+                placeholder="--Select Payment Type--"
+                searchPlaceholder="Search Payment Type"
+                value={values.defaultPaymentTypeId}
+                onChange={
+                  onSelectPaymentType ??
+                  ((val) => onUpdateField("defaultPaymentTypeId", getSingleSelectedValue(val)))
+                }
+              />
+            </Field>
+            <Field label="Default Bank" error={errors.defaultBank}>
+              <AppAdvancedDropdown
+                addAction={
+                  canAddBank && onAddBank
+                    ? {
+                        disabled: isDetailsDisabled,
+                        label: "Add Bank",
+                        onClick: onAddBank,
+                      }
+                    : undefined
+                }
+                disabled={isDetailsDisabled}
+                emptyMessage="No matching bank found."
+                options={bankOptions ?? []}
+                placeholder="--Select Bank--"
+                searchPlaceholder="Search Bank"
+                value={values.defaultBank}
+                onChange={
+                  onSelectBank ??
+                  ((val) => onUpdateField("defaultBank", getSingleSelectedValue(val)))
+                }
+              />
+            </Field>
+            <Field label="Default Bank Account No." error={errors.defaultBankAccountNo}>
+              <input
+                name="defaultBankAccountNo"
+                value={values.defaultBankAccountNo}
+                onChange={onInputChange}
+                readOnly={isReadonly}
+                disabled={isDetailsDisabled}
+                className={PartyManagementFieldClassName}
+                placeholder="Enter bank account no."
+              />
+            </Field>
+          </div>
+        </div>
+      ),
+    },
+    {
       id: "tax-information",
       label: "Tax Information",
       badge: taxErrorCount,
@@ -600,13 +690,17 @@ export function PartyInformationDetailsFields({
           <AccountFields
             accountOptions={accountOptions}
             canAddAccountTitle={canAddAccountTitle}
+            canAddResponsibilityCenter={canAddResponsibilityCenter}
             canAddTerm={canAddTerm}
             disabled={isDetailsDisabled}
             errors={errors}
+            responsibilityCenterOptions={responsibilityCenterOptions}
             termOptions={termOptions}
             values={values}
             onAddAccountTitle={onAddAccountTitle}
+            onAddResponsibilityCenter={onAddResponsibilityCenter}
             onAddTerm={onAddTerm}
+            onSelectResponsibilityCenter={onSelectResponsibilityCenter}
             onSelectTerm={onSelectTerm}
             onUpdateField={onUpdateField}
           />
@@ -701,25 +795,33 @@ function getTaxDefaultEmptyMessage(loadState: TaxDefaultLoadState) {
 function AccountFields({
   accountOptions,
   canAddAccountTitle,
+  canAddResponsibilityCenter,
   canAddTerm,
   disabled,
   errors,
+  responsibilityCenterOptions,
   termOptions,
   values,
   onAddAccountTitle,
+  onAddResponsibilityCenter,
   onAddTerm,
+  onSelectResponsibilityCenter,
   onSelectTerm,
   onUpdateField,
 }: {
   accountOptions: PartyAccountingAccountOptions;
   canAddAccountTitle?: boolean;
+  canAddResponsibilityCenter?: boolean;
   canAddTerm?: boolean;
   disabled: boolean;
   errors: PartyInformationFormErrors;
+  responsibilityCenterOptions?: AppAdvancedDropdownOption[];
   termOptions: PartyInformationDetailsFieldsProps["termOptions"];
   values: PartyInformationFormValues;
   onAddAccountTitle?: PartyInformationDetailsFieldsProps["onAddAccountTitle"];
+  onAddResponsibilityCenter?: PartyInformationDetailsFieldsProps["onAddResponsibilityCenter"];
   onAddTerm?: PartyInformationDetailsFieldsProps["onAddTerm"];
+  onSelectResponsibilityCenter?: PartyInformationDetailsFieldsProps["onSelectResponsibilityCenter"];
   onSelectTerm: PartyInformationDetailsFieldsProps["onSelectTerm"];
   onUpdateField: PartyInformationFieldUpdateHandler;
 }) {
@@ -833,6 +935,29 @@ function AccountFields({
           searchPlaceholder="Search Terms"
           value={values.termId}
           onChange={onSelectTerm}
+        />
+      </Field>
+      <Field label="Default Responsibility Center" error={errors.defaultResponsibilityCenterId}>
+        <AppAdvancedDropdown
+          addAction={
+            canAddResponsibilityCenter && onAddResponsibilityCenter
+              ? {
+                  disabled,
+                  label: "Add Responsibility Center",
+                  onClick: onAddResponsibilityCenter,
+                }
+              : undefined
+          }
+          disabled={disabled}
+          emptyMessage="No matching responsibility center found."
+          options={responsibilityCenterOptions ?? []}
+          placeholder="--Select Responsibility Center--"
+          searchPlaceholder="Search Responsibility Center"
+          value={values.defaultResponsibilityCenterId}
+          onChange={
+            onSelectResponsibilityCenter ??
+            ((val) => onUpdateField("defaultResponsibilityCenterId", getSingleSelectedValue(val)))
+          }
         />
       </Field>
     </div>

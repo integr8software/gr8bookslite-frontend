@@ -3905,6 +3905,12 @@ export interface PartyResponseDto {
   accountingAccounts: PartyAccountingAccountsResponseDto;
   termId: string;
   termName: string;
+  defaultResponsibilityCenterId: string;
+  defaultResponsibilityCenterName: string;
+  defaultPaymentTypeId: string;
+  defaultPaymentTypeName: string;
+  defaultBank: string;
+  defaultBankAccountNo: string;
   tin: string;
   atcCode: string;
   defaultPurchaseInputVatTaxSourceKey: string;
@@ -4081,6 +4087,12 @@ export interface PartyOptionResponseDto {
   accountingAccounts?: PartyAccountingAccountsResponseDto;
   termId?: string;
   termName?: string;
+  defaultResponsibilityCenterId?: string;
+  defaultResponsibilityCenterName?: string;
+  defaultPaymentTypeId?: string;
+  defaultPaymentTypeName?: string;
+  defaultBank?: string;
+  defaultBankAccountNo?: string;
   tin?: string;
   atcCode?: string;
   defaultPurchaseInputVatTaxSourceKey?: string;
@@ -4288,6 +4300,20 @@ export interface CreatePartyDto {
   cashAdvanceLimit?: number | null;
   /** @nullable */
   termId?: string | null;
+  /** @nullable */
+  defaultResponsibilityCenterId?: string | null;
+  /** @nullable */
+  defaultPaymentTypeId?: string | null;
+  /**
+     * @maxLength 150
+     * @nullable
+     */
+  defaultBank?: string | null;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  defaultBankAccountNo?: string | null;
   /**
      * @nullable
      * @pattern ^\d{3}-\d{3}-\d{3}-\d{3}$
@@ -4503,6 +4529,20 @@ export interface UpdatePartyDto {
   cashAdvanceLimit?: number | null;
   /** @nullable */
   termId?: string | null;
+  /** @nullable */
+  defaultResponsibilityCenterId?: string | null;
+  /** @nullable */
+  defaultPaymentTypeId?: string | null;
+  /**
+     * @maxLength 150
+     * @nullable
+     */
+  defaultBank?: string | null;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  defaultBankAccountNo?: string | null;
   /**
      * @nullable
      * @pattern ^\d{3}-\d{3}-\d{3}-\d{3}$
@@ -5028,6 +5068,23 @@ export interface DisbursementTypeExpenseParentOptionsResponseDto {
   options: DisbursementTypeExpenseParentOptionResponseDto[];
 }
 
+export interface DisbursementTypeAccountOptionResponseDto {
+  id: string;
+  accountNumber: string;
+  accountName: string;
+  accountType: string;
+  statementGroup: string;
+  statementSection: string;
+  normalBalance: string;
+  accountCategory: string;
+  description: string;
+  status: string;
+}
+
+export interface DisbursementTypeAccountOptionsResponseDto {
+  accounts: DisbursementTypeAccountOptionResponseDto[];
+}
+
 export interface CreateDefaultAccountExpenseSubAccountResponseDto {
   id: string;
 }
@@ -5067,6 +5124,7 @@ export interface CreateDisbursementTypeTemplateDto {
   description?: string;
   status?: CreateDisbursementTypeTemplateDtoStatus;
   expenseParentCoaId?: string;
+  expenseCoaId?: string;
 }
 
 export interface SaveDisbursementTypeResponseDto {
@@ -5099,6 +5157,7 @@ export interface UpdateDisbursementTypeTemplateDto {
   description?: string;
   status?: UpdateDisbursementTypeTemplateDtoStatus;
   expenseParentCoaId?: string;
+  expenseCoaId?: string;
 }
 
 export type UpdateDisbursementTypeTemplateStatusDtoStatus = typeof UpdateDisbursementTypeTemplateStatusDtoStatus[keyof typeof UpdateDisbursementTypeTemplateStatusDtoStatus];
@@ -17633,20 +17692,32 @@ export const TermsMaintenanceControllerFindOptionsV1DateMode = {
 
 export type ProjectMaintenanceControllerFindAllV1Params = {
 /**
+ * Search across project code, project name, or description
  * @maxLength 120
  */
 search?: string;
+/**
+ * Project status filter
+ */
 status?: ProjectMaintenanceControllerFindAllV1Status;
 /**
+ * Page number
  * @minimum 1
  */
 page?: number;
 /**
+ * Items per page
  * @minimum 1
  * @maximum 500
  */
 limit?: number;
+/**
+ * Field to sort by
+ */
 sortBy?: ProjectMaintenanceControllerFindAllV1SortBy;
+/**
+ * Sort direction
+ */
 sortDirection?: ProjectMaintenanceControllerFindAllV1SortDirection;
 };
 
@@ -17679,20 +17750,32 @@ export const ProjectMaintenanceControllerFindAllV1SortDirection = {
 
 export type ProjectMaintenanceControllerFindOptionsV1Params = {
 /**
+ * Search across project code, project name, or description
  * @maxLength 120
  */
 search?: string;
+/**
+ * Project status filter
+ */
 status?: ProjectMaintenanceControllerFindOptionsV1Status;
 /**
+ * Page number
  * @minimum 1
  */
 page?: number;
 /**
+ * Items per page
  * @minimum 1
  * @maximum 500
  */
 limit?: number;
+/**
+ * Field to sort by
+ */
 sortBy?: ProjectMaintenanceControllerFindOptionsV1SortBy;
+/**
+ * Sort direction
+ */
 sortDirection?: ProjectMaintenanceControllerFindOptionsV1SortDirection;
 };
 
@@ -18290,21 +18373,36 @@ export const BankMasterfileControllerFindOptionsV1SortDirection = {
 
 export type DisbursementTypeControllerFindAllV1Params = {
 /**
+ * Search across disbursement type name, description, or generated account
  * @maxLength 120
  */
 search?: string;
+/**
+ * Default account template type filter
+ */
 type?: DisbursementTypeControllerFindAllV1Type;
+/**
+ * Disbursement type status filter
+ */
 status?: DisbursementTypeControllerFindAllV1Status;
 /**
+ * Page number
  * @minimum 1
  */
 page?: number;
 /**
+ * Items per page
  * @minimum 1
  * @maximum 500
  */
 limit?: number;
+/**
+ * Field to sort by
+ */
 sortBy?: DisbursementTypeControllerFindAllV1SortBy;
+/**
+ * Sort direction
+ */
 sortDirection?: DisbursementTypeControllerFindAllV1SortDirection;
 };
 
@@ -18347,9 +18445,13 @@ export const DisbursementTypeControllerFindAllV1SortDirection = {
 
 export type DisbursementTypeControllerFindOptionsV1Params = {
 /**
+ * Search across disbursement type name, description, or generated expense account
  * @maxLength 120
  */
 search?: string;
+/**
+ * Disbursement type status filter
+ */
 status?: DisbursementTypeControllerFindOptionsV1Status;
 };
 
@@ -18363,21 +18465,36 @@ export const DisbursementTypeControllerFindOptionsV1Status = {
 
 export type CollectionTypeControllerFindAllV1Params = {
 /**
+ * Search across collection type name, description, or generated account
  * @maxLength 120
  */
 search?: string;
+/**
+ * Default account template type filter
+ */
 type?: CollectionTypeControllerFindAllV1Type;
+/**
+ * Collection type status filter
+ */
 status?: CollectionTypeControllerFindAllV1Status;
 /**
+ * Page number
  * @minimum 1
  */
 page?: number;
 /**
+ * Items per page
  * @minimum 1
  * @maximum 500
  */
 limit?: number;
+/**
+ * Field to sort by
+ */
 sortBy?: CollectionTypeControllerFindAllV1SortBy;
+/**
+ * Sort direction
+ */
 sortDirection?: CollectionTypeControllerFindAllV1SortDirection;
 };
 
@@ -18420,9 +18537,13 @@ export const CollectionTypeControllerFindAllV1SortDirection = {
 
 export type CollectionTypeControllerFindOptionsV1Params = {
 /**
+ * Search across collection type name, description, or generated revenue account
  * @maxLength 120
  */
 search?: string;
+/**
+ * Collection type status filter
+ */
 status?: CollectionTypeControllerFindOptionsV1Status;
 };
 
@@ -19516,32 +19637,42 @@ export const AccountsPayableVoucherControllerSuggestTransactionNumberV1SortDirec
 } as const;
 
 export type AccountsPayableVoucherControllerFindCopyFromCandidatesV1Params = {
+/**
+ * Target voucher that will consume the APV balance
+ */
 target: AccountsPayableVoucherControllerFindCopyFromCandidatesV1Target;
 /**
+ * Search across transaction number, party, account, or remarks
  * @maxLength 120
  */
 search?: string;
 /**
+ * Branch unit ID filter
  * @minimum 1
  */
 branchUnitId?: number;
 /**
+ * Party primary key ID filter
  * @maxLength 40
  */
 partyId?: string;
 /**
+ * Party code filter
  * @maxLength 80
  */
 partyCode?: string;
 /**
+ * Party name filter
  * @maxLength 160
  */
 partyName?: string;
 /**
+ * Page number
  * @minimum 1
  */
 page?: number;
 /**
+ * Items per page
  * @minimum 1
  * @maximum 500
  */
@@ -19747,28 +19878,37 @@ export const JournalVoucherControllerSuggestTransactionNumberV1SortDirection = {
 } as const;
 
 export type JournalVoucherControllerFindCopyFromCandidatesV1Params = {
+/**
+ * Target module that will consume the Journal Voucher line balance
+ */
 target: JournalVoucherControllerFindCopyFromCandidatesV1Target;
 /**
+ * Search across JV number, account, party, or particulars
  * @maxLength 120
  */
 search?: string;
 /**
+ * Branch unit ID filter
  * @minimum 1
  */
 branchUnitId?: number;
 /**
+ * Party code filter
  * @maxLength 80
  */
 partyCode?: string;
 /**
+ * Party name filter
  * @maxLength 160
  */
 partyName?: string;
 /**
+ * Page number
  * @minimum 1
  */
 page?: number;
 /**
+ * Items per page
  * @minimum 1
  * @maximum 500
  */
@@ -21316,32 +21456,42 @@ branchUnitId?: number;
 };
 
 export type CashAdvanceControllerFindCopyFromCandidatesV1Params = {
+/**
+ * Target voucher that will consume the cash advance balance
+ */
 target: CashAdvanceControllerFindCopyFromCandidatesV1Target;
 /**
+ * Search across transaction number, employee, or remarks
  * @maxLength 120
  */
 search?: string;
 /**
+ * Branch unit ID filter
  * @minimum 1
  */
 branchUnitId?: number;
 /**
+ * Party primary key ID filter
  * @maxLength 40
  */
 partyId?: string;
 /**
+ * Party code filter
  * @maxLength 80
  */
 partyCode?: string;
 /**
+ * Party name filter
  * @maxLength 160
  */
 partyName?: string;
 /**
+ * Page number
  * @minimum 1
  */
 page?: number;
 /**
+ * Items per page
  * @minimum 1
  * @maximum 500
  */

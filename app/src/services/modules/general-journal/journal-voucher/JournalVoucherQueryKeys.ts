@@ -18,5 +18,10 @@ export const JournalVoucherQueryKeys = {
     partyCode?: string | null,
     partyName?: string | null,
   ) => [...JournalVoucherQueryKeys.all(companyId, branchUnitId), "copy-from", target, partyCode ?? "", partyName ?? ""] as const,
+  paymentVoucherCopyFromCandidates: (
+    source: "cash-voucher" | "disbursement-voucher",
+    companyId?: number | null,
+    branchUnitId?: number | null,
+  ) => [...JournalVoucherQueryKeys.all(companyId, branchUnitId), "copy-from", source] as const,
   records: (companyId?: number | null, branchUnitId?: number | null) => JournalVoucherQueryKeys.list(companyId, branchUnitId),
 };

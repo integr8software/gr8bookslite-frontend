@@ -218,6 +218,12 @@ function mapApiParty(party: PartyResponseDto): PartyInformationRecord {
     cashAdvanceLimit: party.cashAdvanceLimit ?? "",
     termId: party.termId ?? "",
     termName: party.termName ?? "",
+    defaultResponsibilityCenterId: party.defaultResponsibilityCenterId ?? "",
+    defaultResponsibilityCenterName: party.defaultResponsibilityCenterName ?? "",
+    defaultPaymentTypeId: party.defaultPaymentTypeId ?? "",
+    defaultPaymentTypeName: party.defaultPaymentTypeName ?? "",
+    defaultBank: party.defaultBank ?? "",
+    defaultBankAccountNo: party.defaultBankAccountNo ?? "",
     tin: party.tin ?? "",
     atcCode: party.atcCode ?? "",
     defaultPurchaseInputVatTaxSourceKey: party.defaultPurchaseInputVatTaxSourceKey ?? "",
@@ -291,6 +297,10 @@ function toApiPartyPayload(record: PartyInformationRecord, options: { branchUnit
     cashAdvanceLimit:
       record.partyTypes.includes(EmployeePartyType) && record.cashAdvanceLimit ? parseMoneyNumberInput(record.cashAdvanceLimit) : null,
     termId: normalizeOptionalText(record.termId),
+    defaultResponsibilityCenterId: normalizeOptionalText(record.defaultResponsibilityCenterId),
+    defaultPaymentTypeId: normalizeOptionalText(record.defaultPaymentTypeId),
+    defaultBank: normalizeOptionalText(record.defaultBank),
+    defaultBankAccountNo: normalizeOptionalText(record.defaultBankAccountNo),
     tin: normalizeOptionalText(record.tin),
     atcCode: normalizeOptionalText(record.atcCode),
     defaultPurchaseInputVatTaxSourceKey: record.partyTypes.includes(VendorPartyType)

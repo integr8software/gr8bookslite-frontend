@@ -718,6 +718,9 @@ export function useAccountsPayableVoucherControllerFindPostingAccountOptionsV1<T
 
 
 
+/**
+ * @summary Get accounts payable voucher payable account options
+ */
 export const accountsPayableVoucherControllerFindPayableAccountOptionsV1 = (
 
  options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
@@ -786,6 +789,9 @@ export function useAccountsPayableVoucherControllerFindPayableAccountOptionsV1<T
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof accountsPayableVoucherControllerFindPayableAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get accounts payable voucher payable account options
+ */
 
 export function useAccountsPayableVoucherControllerFindPayableAccountOptionsV1<TData = Awaited<ReturnType<typeof accountsPayableVoucherControllerFindPayableAccountOptionsV1>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof accountsPayableVoucherControllerFindPayableAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}

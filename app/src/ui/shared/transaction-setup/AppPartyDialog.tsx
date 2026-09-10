@@ -36,6 +36,7 @@ import { PartyInformationDetailsFields } from "@/app/src/ui/modules/party-manage
 import {
   PartyInformationRequiredFieldsToastMessage,
   validatePartyInformationForm,
+  validateTin,
 } from "@/app/src/validations/modules/party-management/PartyManagementValidation";
 import type { AddressAutocompleteDetails, AddressAutocompleteItem } from "@/app/src/types/shared/address/AddressTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
@@ -177,7 +178,10 @@ function AppPartyDialogContent({
         [field]: value,
       };
     });
-    setErrors((current) => ({ ...current, [field]: undefined }));
+    setErrors((current) => ({
+      ...current,
+      [field]: field === "tin" && typeof value === "string" ? validateTin(value) : undefined,
+    }));
   }
 
   function updateAddressField(field: keyof PartyAddress, value: string, addressId?: string) {

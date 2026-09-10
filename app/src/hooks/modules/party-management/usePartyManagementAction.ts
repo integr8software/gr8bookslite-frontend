@@ -45,6 +45,7 @@ import type {
 import {
   PartyInformationRequiredFieldsToastMessage,
   validatePartyInformationForm,
+  validateTin,
 } from "@/app/src/validations/modules/party-management/PartyManagementValidation";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
@@ -257,7 +258,10 @@ export function usePartyManagementAction() {
           : {}),
       };
     });
-    setErrors((current) => ({ ...current, [field]: undefined }));
+    setErrors((current) => ({
+      ...current,
+      [field]: field === "tin" && typeof value === "string" ? validateTin(value) : undefined,
+    }));
   }
 
   function updateAddressField(field: keyof PartyAddress, value: string, addressId?: string) {

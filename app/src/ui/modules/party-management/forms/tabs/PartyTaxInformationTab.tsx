@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, type ChangeEvent } from "react";
 import { PartyManagementFieldClassName } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import {
   getSingleSelectedValue,
@@ -13,6 +14,7 @@ import type {
 } from "@/app/src/types/modules/party-management/PartyInformationTabsTypes";
 import { Field } from "@/app/src/ui/modules/party-management/forms/PartyInformationField";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
+import { validateTin } from "@/app/src/validations/modules/party-management/PartyManagementValidation";
 
 export function PartyTaxInformationTab({
   errors,
@@ -26,16 +28,32 @@ export function PartyTaxInformationTab({
   isDetailsDisabled,
   showWithholdingDefaults,
 }: PartyTaxInformationTabProps) {
+  const [isTouched, setIsTouched] = useState(false);
+  const activeTinError =
+    isTouched || Boolean(errors.tin)
+      ? validateTin(values.tin)
+      : errors.tin;
+
+  function handleTinChange(event: ChangeEvent<HTMLInputElement>) {
+    setIsTouched(true);
+    onInputChange(event);
+  }
+
+  function handleTinBlur() {
+    setIsTouched(true);
+  }
+
   return (
     <div className="grid gap-5">
       <div className="grid gap-4 lg:grid-cols-2">
-        <Field label="Tax Identification Number (TIN)" error={errors.tin}>
+        <Field label="Tax Identification Number (TIN)" error={activeTinError}>
           <input
             name="tin"
             inputMode="numeric"
             maxLength={15}
             value={values.tin}
-            onChange={onInputChange}
+            onChange={handleTinChange}
+            onBlur={handleTinBlur}
             readOnly={isReadonly}
             disabled={isDetailsDisabled}
             className={PartyManagementFieldClassName}

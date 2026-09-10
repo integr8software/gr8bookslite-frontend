@@ -5,7 +5,10 @@ import toast from "react-hot-toast";
 import { Plus, Users, X } from "lucide-react";
 import { DefaultPhilippineContactNumber, FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
-import { PartyDefaultNationality } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
+import {
+  PartyDefaultNationality,
+  PartyTypeOptions,
+} from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import {
   PartyInformationInitialFormValues,
   applyPartyDefaultAccountingAccounts,
@@ -49,6 +52,8 @@ type AppPartyDialogProps = {
   onSelect: (record: PartyInformationRecord) => void;
 };
 
+const MemberPartyType: PartyType = "Member";
+
 const PartyTypeCardCopy: Record<PartyType, { description: string; title: string }> = {
   Vendor: {
     title: "Add Vendor",
@@ -62,7 +67,7 @@ const PartyTypeCardCopy: Record<PartyType, { description: string; title: string 
     title: "Add Employee",
     description: "Create an employee party profile for reimbursements, payroll-linked entries, and advances.",
   },
-  Member: {
+  [MemberPartyType]: {
     title: "Add Member",
     description: "Create a member party profile with home address, identity, and tax details.",
   },
@@ -238,7 +243,7 @@ function AppPartyDialogContent({
       return {
         ...current,
         partyTypes: nextPartyTypes,
-        nationality: nextPartyTypes.includes("Member") && !current.nationality ? PartyDefaultNationality : current.nationality,
+        nationality: nextPartyTypes.includes(MemberPartyType) && !current.nationality ? PartyDefaultNationality : current.nationality,
         addresses: clearAddressRolesForPartyTypes(current.addresses, nextPartyTypes, current.classification),
         defaultReceivableAccount: accountingAccounts.defaultReceivableAccount,
         customerAdvanceAccount: accountingAccounts.customerAdvanceAccount,
@@ -372,7 +377,7 @@ function AppPartyDialogContent({
   }
 
   function handlePartyTypeChange(nextPartyType: PartyType) {
-    const classification = nextPartyType === "Employee" || nextPartyType === "Member" ? "Individual" : "Non-Individual";
+    const classification = nextPartyType === "Employee" || nextPartyType === MemberPartyType ? "Individual" : "Non-Individual";
 
     setPartyType(nextPartyType);
     setValues((current) => {
@@ -392,7 +397,7 @@ function AppPartyDialogContent({
         honorific: "",
         gender: "",
         civilStatus: "",
-        nationality: nextPartyType === "Member" ? PartyDefaultNationality : "",
+        nationality: nextPartyType === MemberPartyType ? PartyDefaultNationality : "",
         atcCode: "",
         defaultPurchaseInputVatTaxSourceKey: "",
         defaultPurchaseEwtTaxSourceKey: "",
@@ -486,7 +491,7 @@ function AppPartyDialogContent({
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
-                {(["Vendor", "Customer", "Employee", "Member"] as const).map((currentType) => (
+                {PartyTypeOptions.map((currentType) => (
                   <button
                     key={currentType}
                     type="button"
@@ -555,7 +560,7 @@ function createDialogInitialValues(
   partyType: PartyType,
   defaultAccounts: PartyDefaultAccountingAccountIds,
 ): PartyInformationFormValues {
-  const isIndividual = partyType === "Employee" || partyType === "Member";
+  const isIndividual = partyType === "Employee" || partyType === MemberPartyType;
   const classification = isIndividual ? "Individual" : "Non-Individual";
 
   return {
@@ -563,7 +568,7 @@ function createDialogInitialValues(
     classification,
     addresses: clearAddressRolesForPartyTypes(PartyInformationInitialFormValues.addresses, [partyType], classification),
     contactNo: DefaultPhilippineContactNumber,
-    nationality: partyType === "Member" ? PartyDefaultNationality : "",
+    nationality: partyType === MemberPartyType ? PartyDefaultNationality : "",
     partyCodeNo: createNextPartyCode(records),
     partyTypes: [partyType],
   };

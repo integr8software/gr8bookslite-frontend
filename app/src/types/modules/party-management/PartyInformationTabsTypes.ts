@@ -57,92 +57,82 @@ export type PartyAccountingFieldsProps = {
   onUpdateField: PartyInformationFieldUpdateHandler;
 };
 
-export type PartyBasicInformationTabProps = Pick<
+export type PartyTabCommonProps = Pick<
   ReturnType<typeof usePartyInformationTabs>,
-  | "errors"
-  | "isClassificationSelected"
-  | "isPartyCodeReadonly"
-  | "isReadonly"
-  | "values"
-  | "onInputChange"
-  | "onPartyTypesChange"
-  | "onUpdateField"
-  | "isDetailsDisabled"
-  | "showBusinessNameFields"
-  | "showPersonalInfoFields"
-  | "showMemberRegistrationDate"
-  | "isMember"
-  | "showPartyEntityTypeField"
-  | "partyTypeSelectOptions"
-  | "partyEntityTypeSelectOptions"
-  | "honorificOptions"
+  "errors" | "isDetailsDisabled" | "onUpdateField" | "values"
 >;
 
-export type PartyContactInformationTabProps = Pick<
-  ReturnType<typeof usePartyInformationTabs>,
-  | "errors"
-  | "isReadonly"
-  | "values"
-  | "syncedAddressSources"
-  | "onAddressInputChange"
-  | "onCopyAddress"
-  | "onInputChange"
-  | "onSelectBarangay"
-  | "onSelectAutocompleteAddress"
-  | "onSyncAutocompleteAddressDetails"
-  | "onSelectCityMunicipality"
-  | "onSelectProvince"
-  | "onUpdateField"
-  | "isDetailsDisabled"
->;
+export type PartyBasicInformationTabProps = PartyTabCommonProps &
+  Pick<
+    ReturnType<typeof usePartyInformationTabs>,
+    | "isClassificationSelected"
+    | "isPartyCodeReadonly"
+    | "isReadonly"
+    | "onInputChange"
+    | "onPartyTypesChange"
+    | "showBusinessNameFields"
+    | "showPersonalInfoFields"
+    | "showMemberRegistrationDate"
+    | "isMember"
+    | "showPartyEntityTypeField"
+    | "partyTypeSelectOptions"
+    | "partyEntityTypeSelectOptions"
+    | "honorificOptions"
+  >;
 
-export type PartyBankInformationTabProps = Pick<
-  ReturnType<typeof usePartyInformationTabs>,
-  | "errors"
-  | "isReadonly"
-  | "paymentTypeOptions"
-  | "bankOptions"
-  | "values"
-  | "canAddPaymentType"
-  | "canAddBank"
-  | "onAddPaymentType"
-  | "onAddBank"
-  | "onInputChange"
-  | "onUpdateField"
-  | "onSelectPaymentType"
-  | "onSelectBank"
-  | "isDetailsDisabled"
->;
+export type PartyContactInformationTabProps = PartyTabCommonProps &
+  Pick<
+    ReturnType<typeof usePartyInformationTabs>,
+    | "isReadonly"
+    | "syncedAddressSources"
+    | "onAddressInputChange"
+    | "onCopyAddress"
+    | "onInputChange"
+    | "onSelectBarangay"
+    | "onSelectAutocompleteAddress"
+    | "onSyncAutocompleteAddressDetails"
+    | "onSelectCityMunicipality"
+    | "onSelectProvince"
+  >;
 
-export type PartyTaxInformationTabProps = Pick<
-  ReturnType<typeof usePartyInformationTabs>,
-  | "errors"
-  | "isReadonly"
-  | "taxDefaultOptionsError"
-  | "taxDefaultOptionsLoading"
-  | "taxDefaultOptions"
-  | "values"
-  | "onInputChange"
-  | "onUpdateField"
-  | "isDetailsDisabled"
-  | "showWithholdingDefaults"
->;
+export type PartyBankInformationTabProps = PartyTabCommonProps &
+  Pick<
+    ReturnType<typeof usePartyInformationTabs>,
+    | "isReadonly"
+    | "paymentTypeOptions"
+    | "bankOptions"
+    | "canAddPaymentType"
+    | "canAddBank"
+    | "onAddPaymentType"
+    | "onAddBank"
+    | "onInputChange"
+    | "onSelectPaymentType"
+    | "onSelectBank"
+  >;
 
-export type PartyAccountingInformationTabProps = Pick<
-  ReturnType<typeof usePartyInformationTabs>,
-  | "accountOptions"
-  | "errors"
-  | "termOptions"
-  | "responsibilityCenterOptions"
-  | "values"
-  | "canAddAccountTitle"
-  | "canAddTerm"
-  | "canAddResponsibilityCenter"
-  | "onAddAccountTitle"
-  | "onAddTerm"
-  | "onAddResponsibilityCenter"
-  | "onUpdateField"
-  | "onSelectTerm"
-  | "onSelectResponsibilityCenter"
-  | "isDetailsDisabled"
->;
+export type PartyTaxInformationTabProps = PartyTabCommonProps &
+  Pick<
+    ReturnType<typeof usePartyInformationTabs>,
+    | "isReadonly"
+    | "taxDefaultOptionsError"
+    | "taxDefaultOptionsLoading"
+    | "taxDefaultOptions"
+    | "onInputChange"
+    | "showWithholdingDefaults"
+  >;
+
+export type PartyAccountingInformationTabProps = PartyTabCommonProps &
+  Pick<
+    ReturnType<typeof usePartyInformationTabs>,
+    | "accountOptions"
+    | "termOptions"
+    | "responsibilityCenterOptions"
+    | "canAddAccountTitle"
+    | "canAddTerm"
+    | "canAddResponsibilityCenter"
+    | "onAddAccountTitle"
+    | "onAddTerm"
+    | "onAddResponsibilityCenter"
+    | "onSelectTerm"
+    | "onSelectResponsibilityCenter"
+  >;

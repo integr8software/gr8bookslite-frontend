@@ -1,4 +1,7 @@
-import { PartyInformationExportColumns } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
+import {
+  PartyInformationExportColumns,
+  PartyManagementAllFilter,
+} from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import type {
   PartyClassification,
   PartyInformationStatus,
@@ -46,34 +49,34 @@ export function PartyInformationTableFilters({
       <ModuleTableFilterSelect
         label="Classification"
         value={classificationFilter}
-        options={["All", ...classificationOptions].map((option) => ({
+        options={[PartyManagementAllFilter, ...classificationOptions].map((option) => ({
           label: option,
           value: option,
         }))}
         onChange={(value) =>
-          onClassificationFilterChange(value as PartyClassification | "All")
+          onClassificationFilterChange(value as PartyClassification | typeof PartyManagementAllFilter)
         }
       />
       <ModuleTableFilterSelect
         label="Party Type"
         value={partyTypeFilter}
-        options={["All", ...partyTypeOptions].map((option) => ({
+        options={[PartyManagementAllFilter, ...partyTypeOptions].map((option) => ({
           label: option,
           value: option,
         }))}
         onChange={(value) =>
-          onPartyTypeFilterChange(value as PartyType | "All")
+          onPartyTypeFilterChange(value as PartyType | typeof PartyManagementAllFilter)
         }
       />
       <ModuleTableFilterSelect
         label="Status"
         value={statusFilter}
-        options={["All", ...statusOptions].map((option) => ({
+        options={[PartyManagementAllFilter, ...statusOptions].map((option) => ({
           label: option,
           value: option,
         }))}
         onChange={(value) =>
-          onStatusFilterChange(value as PartyInformationStatus | "All")
+          onStatusFilterChange(value as PartyInformationStatus | typeof PartyManagementAllFilter)
         }
       />
       <ModuleTableColumnVisibilityButton table={table} />

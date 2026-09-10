@@ -1,20 +1,23 @@
+import { ProjectMaintenanceTypeOptions } from "@/app/src/constants/modules/project-maintenance/ProjectMaintenanceConstants";
 import type { ProjectMaintenanceFieldsProps } from "@/app/src/types/modules/project-maintenance/ProjectMaintenanceTypes";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { AppLimitedTextarea } from "@/app/src/ui/shared/app/AppLimitedTextarea";
 import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
 
-export function ProjectMaintenanceFields({ errors, isReadonly, values, onInputChange, onStatusChange }: ProjectMaintenanceFieldsProps) {
+export function ProjectMaintenanceFields({
+  errors,
+  isReadonly,
+  values,
+  onInputChange,
+  onStatusChange,
+  onTypeChange,
+}: ProjectMaintenanceFieldsProps) {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <FormField label="Project Code" error={errors.projectCode}>
-        <input
-          name="projectCode"
-          value={values.projectCode}
-          onChange={onInputChange}
-          readOnly={isReadonly}
-          placeholder="Enter Project Code..."
-        />
+        <input name="projectCode" value={values.projectCode} readOnly placeholder="Auto-generated" />
       </FormField>
 
       <FormField label="Project Name" error={errors.projectName} required>
@@ -24,6 +27,16 @@ export function ProjectMaintenanceFields({ errors, isReadonly, values, onInputCh
           onChange={onInputChange}
           readOnly={isReadonly}
           placeholder="Enter Project Name..."
+        />
+      </FormField>
+
+      <FormField label="Type" error={errors.type} required>
+        <AppAdvancedDropdown
+          value={values.type}
+          readOnly={isReadonly}
+          options={ProjectMaintenanceTypeOptions.map((type) => ({ name: type, value: type }))}
+          placeholder="Select Type"
+          onChange={(value) => onTypeChange(String(value) as typeof values.type)}
         />
       </FormField>
 

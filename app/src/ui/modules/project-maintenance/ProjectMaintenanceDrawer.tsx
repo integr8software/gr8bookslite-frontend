@@ -71,6 +71,7 @@ function ProjectMaintenanceDrawerPanel({ initialValues, isOpen, mode, onClose, o
           values={page.values}
           onInputChange={page.handleInputChange}
           onStatusChange={page.handleStatusChange}
+          onTypeChange={page.handleTypeChange}
         />
       </form>
     </ModuleDrawer>

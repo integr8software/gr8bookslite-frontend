@@ -3,6 +3,7 @@ import type { ProjectMaintenance, ProjectMaintenanceFormValues } from "@/app/src
 export const ProjectMaintenanceInitialFormValues: ProjectMaintenanceFormValues = {
   projectCode: "",
   projectName: "",
+  type: "Department",
   description: "",
   status: "Active",
 };
@@ -11,6 +12,7 @@ export function createProjectMaintenanceFormValues(project: ProjectMaintenance):
   return {
     projectCode: project.projectCode ?? "",
     projectName: project.projectName ?? "",
+    type: project.type ?? "Department",
     description: project.description ?? "",
     status: project.status ?? "Active",
   };
@@ -21,6 +23,7 @@ export function updateProjectMaintenanceFromForm(project: ProjectMaintenance, va
     ...project,
     projectCode: values.projectCode.trim(),
     projectName: values.projectName.trim(),
+    type: values.type,
     description: values.description.trim(),
     status: values.status,
   };

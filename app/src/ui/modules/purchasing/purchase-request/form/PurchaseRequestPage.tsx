@@ -4,15 +4,16 @@ import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { PurchaseRequestHref } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
-import { createProjectResponsibilityCenterInitialValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
+import { createProjectCodeLookupOptions } from "@/app/src/data/modules/project-maintenance/ProjectMaintenanceLookupData";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
-import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
+import { useProjectMaintenanceLookup } from "@/app/src/hooks/modules/project-maintenance/useProjectMaintenance";
 import type { PartyAddress, PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
+import type { ProjectMaintenance } from "@/app/src/types/modules/project-maintenance/ProjectMaintenanceTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { usePurchaseRequestFormPage } from "@/app/src/hooks/modules/purchasing/purchase-request/usePurchaseRequestFormPage";
-import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
+import { ProjectMaintenanceDrawer } from "@/app/src/ui/modules/project-maintenance/ProjectMaintenanceDrawer";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/dialogs/PartyManagementDrawer";
 import { PurchaseRequestDetailsForm } from "@/app/src/ui/modules/purchasing/purchase-request/form/PurchaseRequestFieldContent";
@@ -32,21 +33,18 @@ function PurchaseRequestActionPageInner() {
   const page = usePurchaseRequestFormPage();
   const partyStore = usePartyManagementStore();
   const responsibilityCenterStore = useResponsibilityCenterStore();
+  const projectOptionsQuery = useProjectMaintenanceLookup();
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const partyOptions = useMemo(() => createPartyOptions(partyStore.records), [partyStore.records]);
   const projectOptions = useMemo(
     () =>
-      createProjectOptions({
+      createProjectCodeLookupOptions({
         currentProjectCode: page.values.projectCode,
         currentProjectName: page.values.projectName,
-        records: responsibilityCenterStore.centers,
+        options: projectOptionsQuery.data ?? [],
       }),
-    [page.values.projectCode, page.values.projectName, responsibilityCenterStore.centers],
-  );
-  const projectInitialValues = useMemo(
-    () => createProjectResponsibilityCenterInitialValues(responsibilityCenterStore.classifications, responsibilityCenterStore.types),
-    [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
+    [page.values.projectCode, page.values.projectName, projectOptionsQuery.data],
   );
 
   if (page.needsRecord && !page.existingRequest) {
@@ -72,9 +70,9 @@ function PurchaseRequestActionPageInner() {
     page.updateField("projectName", projectName);
   }
 
-  function updateCreatedProject(project: ResponsibilityCenter) {
-    page.updateField("projectCode", project.code);
-    page.updateField("projectName", project.name);
+  function updateCreatedProject(project: ProjectMaintenance) {
+    page.updateField("projectCode", project.projectCode || project.projectName);
+    page.updateField("projectName", project.projectName);
     setIsProjectDrawerOpen(false);
   }
 
@@ -134,8 +132,7 @@ function PurchaseRequestActionPageInner() {
           setIsPartyDrawerOpen(false);
         }}
       />
-      <ResponsibilityCenterDrawer
-        initialValues={projectInitialValues}
+      <ProjectMaintenanceDrawer
         isOpen={!page.isReadonly && isProjectDrawerOpen}
         mode="add"
         onClose={() => setIsProjectDrawerOpen(false)}
@@ -186,38 +183,6 @@ function createPartyOptions(records: PartyInformationRecord[]): AppAdvancedDropd
       selectedDetails: record.partyCodeNo,
       value: record.partyCodeNo,
     }));
-}
-
-function createProjectOptions({
-  currentProjectCode,
-  currentProjectName,
-  records,
-}: {
-  currentProjectCode: string;
-  currentProjectName: string;
-  records: ResponsibilityCenter[];
-}): AppAdvancedDropdownOption[] {
-  const options: AppAdvancedDropdownOption[] = records
-    .filter((record) => record.status === "Active" && record.category === "Project" && record.code.trim())
-    .map((record) => ({
-      description: record.financialType,
-      label: record.code,
-      name: record.name,
-      selectedDetails: record.code,
-      value: record.code,
-    }));
-
-  if (currentProjectCode.trim() && !options.some((option) => option.value === currentProjectCode)) {
-    options.unshift({
-      description: "Current Project",
-      label: currentProjectCode,
-      name: currentProjectName || currentProjectCode,
-      selectedDetails: currentProjectCode,
-      value: currentProjectCode,
-    });
-  }
-
-  return options;
 }
 
 function getPurchaseRequestPartyAddress(record: PartyInformationRecord) {

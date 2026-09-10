@@ -9,7 +9,10 @@ import {
   createProjectMaintenanceFormValues,
   updateProjectMaintenanceFromForm,
 } from "@/app/src/data/modules/project-maintenance/ProjectMaintenanceData";
-import { useProjectMaintenanceStore } from "@/app/src/hooks/modules/project-maintenance/useProjectMaintenance";
+import {
+  useProjectMaintenanceNextCode,
+  useProjectMaintenanceStore,
+} from "@/app/src/hooks/modules/project-maintenance/useProjectMaintenance";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import type {
@@ -29,6 +32,7 @@ export function useProjectMaintenanceFormPage(options: ProjectMaintenanceFormPag
     refetchOnMount: false,
   });
   const mode = options.mode ?? getActionMode(pathname);
+  const nextCodeQuery = useProjectMaintenanceNextCode(mode === "add" && (options.isOpen ?? true));
   const existingProject = options.existingProject ?? projects.find((project) => project.id === params.recordId);
   const isReadonly = mode === "view";
   const initialValues: ProjectMaintenanceFormValues = options.initialValues
@@ -43,6 +47,7 @@ export function useProjectMaintenanceFormPage(options: ProjectMaintenanceFormPag
   const isSubmittingRef = useRef(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const nextStatus: ProjectMaintenanceStatus = existingProject?.status === "Active" ? "Inactive" : "Active";
+  const displayedValues = mode === "add" && nextCodeQuery.data ? { ...values, projectCode: nextCodeQuery.data } : values;
 
   const draft = useModuleDraft({
     enabled: (options.isOpen ?? true) && !isReadonly,
@@ -53,7 +58,7 @@ export function useProjectMaintenanceFormPage(options: ProjectMaintenanceFormPag
       recordId: params.recordId ?? existingProject?.id,
     }),
     setValues,
-    values,
+    values: displayedValues,
   });
 
   function updateField(field: keyof ProjectMaintenanceFormValues, value: ProjectMaintenanceFormValues[keyof ProjectMaintenanceFormValues]) {
@@ -177,6 +182,7 @@ export function useProjectMaintenanceFormPage(options: ProjectMaintenanceFormPag
     handleConfirmStatusChange,
     handleInputChange,
     handleStatusChange: (status: ProjectMaintenanceFormValues["status"]) => updateField("status", status),
+    handleTypeChange: (type: ProjectMaintenanceFormValues["type"]) => updateField("type", type),
     handleSubmit,
     isStatusDialogOpen,
     isSubmitting,

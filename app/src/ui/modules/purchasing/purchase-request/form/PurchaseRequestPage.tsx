@@ -14,7 +14,7 @@ import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-
 import { usePurchaseRequestFormPage } from "@/app/src/hooks/modules/purchasing/purchase-request/usePurchaseRequestFormPage";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/dialogs/PartyManagementDrawer";
 import { PurchaseRequestDetailsForm } from "@/app/src/ui/modules/purchasing/purchase-request/form/PurchaseRequestFieldContent";
 import { PurchaseRequestFormHeader } from "@/app/src/ui/modules/purchasing/purchase-request/form/PurchaseRequestPageHeader";
 import { PurchaseRequestEntrySection } from "@/app/src/ui/modules/purchasing/purchase-request/entries/PurchaseRequestEntrySection";
@@ -45,11 +45,7 @@ function PurchaseRequestActionPageInner() {
     [page.values.projectCode, page.values.projectName, responsibilityCenterStore.centers],
   );
   const projectInitialValues = useMemo(
-    () =>
-      createProjectResponsibilityCenterInitialValues(
-        responsibilityCenterStore.classifications,
-        responsibilityCenterStore.types,
-      ),
+    () => createProjectResponsibilityCenterInitialValues(responsibilityCenterStore.classifications, responsibilityCenterStore.types),
     [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
   );
 
@@ -65,6 +61,9 @@ function PurchaseRequestActionPageInner() {
 
     if (selectedParty) {
       page.updateField("vendorAddress", formatPartyAddress(getPurchaseRequestPartyAddress(selectedParty)));
+      if (selectedParty.purchaseType) {
+        page.updateField("purchaseType", selectedParty.purchaseType);
+      }
     }
   }
 
@@ -129,6 +128,9 @@ function PurchaseRequestActionPageInner() {
           page.updateField("vceCode", record.partyCodeNo);
           page.updateField("vceName", getPartyDisplayName(record));
           page.updateField("vendorAddress", formatPartyAddress(getPurchaseRequestPartyAddress(record)));
+          if (record.purchaseType) {
+            page.updateField("purchaseType", record.purchaseType);
+          }
           setIsPartyDrawerOpen(false);
         }}
       />
@@ -205,10 +207,7 @@ function createProjectOptions({
       value: record.code,
     }));
 
-  if (
-    currentProjectCode.trim() &&
-    !options.some((option) => option.value === currentProjectCode)
-  ) {
+  if (currentProjectCode.trim() && !options.some((option) => option.value === currentProjectCode)) {
     options.unshift({
       description: "Current Project",
       label: currentProjectCode,
@@ -235,14 +234,7 @@ function formatPartyAddress(address?: PartyAddress | null) {
     return "";
   }
 
-  return [
-    address.addressLine1,
-    address.addressLine2,
-    address.barangay,
-    address.cityMunicipality,
-    address.province,
-    address.region,
-  ]
+  return [address.addressLine1, address.addressLine2, address.barangay, address.cityMunicipality, address.province, address.region]
     .map((part) => part.trim())
     .filter(Boolean)
     .join(", ");

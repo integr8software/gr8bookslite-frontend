@@ -18,7 +18,7 @@ import { PettyCashReplenishmentEntrySection } from "@/app/src/ui/modules/cash-di
 import { PettyCashReplenishmentNotFound } from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/action/PettyCashReplenishmentNotFound";
 import { PettyCashReplenishmentReportPreview } from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/reports/PettyCashReplenishmentReportPreview";
 import { openPettyCashReplenishmentPdf } from "@/app/src/ui/modules/cash-disbursement/petty-cash-replenishment/reports/PettyCashReplenishmentPdf";
-import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/dialogs/PartyManagementDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ProjectMaintenanceDrawer } from "@/app/src/ui/modules/project-maintenance/ProjectMaintenanceDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";

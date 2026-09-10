@@ -17,7 +17,7 @@ import { AdvancesToSuppliersDetailsFields } from "@/app/src/ui/modules/cash-disb
 import { AdvancesToSuppliersNotFound } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/action/AdvancesToSuppliersNotFound";
 import { AdvancesToSuppliersReportPreview } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/reports/AdvancesToSuppliersReportPreview";
 import { openAdvancesToSuppliersPdf } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/reports/AdvancesToSuppliersPdf";
-import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/dialogs/PartyManagementDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 

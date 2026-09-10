@@ -18,7 +18,7 @@ import { RevolvingFundReplenishmentEntrySection } from "@/app/src/ui/modules/cas
 import { RevolvingFundReplenishmentNotFound } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/action/RevolvingFundReplenishmentNotFound";
 import { RevolvingFundReplenishmentReportPreview } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/reports/RevolvingFundReplenishmentReportPreview";
 import { openRevolvingFundReplenishmentPdf } from "@/app/src/ui/modules/cash-disbursement/revolving-fund-replenishment/reports/RevolvingFundReplenishmentPdf";
-import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/dialogs/PartyManagementDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ProjectMaintenanceDrawer } from "@/app/src/ui/modules/project-maintenance/ProjectMaintenanceDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";

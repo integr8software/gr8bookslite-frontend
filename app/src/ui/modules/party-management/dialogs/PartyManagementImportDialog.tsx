@@ -1,13 +1,5 @@
 "use client";
 
-import { AlertCircle } from "lucide-react";
-import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
-import {
-  getModuleImportDataColumnWidth,
-  ModuleImportFixedColumnsWidth,
-  ModuleImportRowNumberColumnWidth,
-  ModuleImportSelectionColumnWidth,
-} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import {
   PartyImportAcceptedFileExtensions,
   PartyImportAcceptedFileLabel,
@@ -16,12 +8,20 @@ import {
   PartyImportPreviewColumnCount,
   PartyImportPreviewGridLabel,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
+import { AppMaxFileUploadSizeLabel } from "@/app/src/constants/shared/app/AppConstants";
+import {
+  getModuleImportDataColumnWidth,
+  ModuleImportFixedColumnsWidth,
+  ModuleImportRowNumberColumnWidth,
+  ModuleImportSelectionColumnWidth,
+} from "@/app/src/constants/shared/module/ModuleImportConstants";
 import { downloadPartyImportTemplate, isPartyImportGridPasteTarget } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { usePartyManagementImportDialog } from "@/app/src/hooks/modules/party-management/usePartyManagementImportDialog";
 import type { PartyManagementImportDialogProps } from "@/app/src/types/modules/party-management/PartyManagementTypes";
+import { PartyManagementImportPreviewTableRow } from "@/app/src/ui/modules/party-management/dialogs/PartyManagementImportPreviewTableRow";
 import {
-  ModuleImportFooter,
   ModuleImportEmptyDropzone,
+  ModuleImportFooter,
   ModuleImportHeaderActions,
   ModuleImportPaginationBar,
   ModuleImportProgressPanel,
@@ -30,7 +30,7 @@ import {
 } from "@/app/src/ui/shared/module/ModuleImportControls";
 import { ModuleImportDialog } from "@/app/src/ui/shared/module/ModuleImportDialog";
 import { ModuleImportResizableColumnHeader } from "@/app/src/ui/shared/module/ModuleImportResizableColumnHeader";
-import { PartyManagementImportPreviewTableRow } from "@/app/src/ui/modules/party-management/PartyManagementImportPreviewTableRow";
+import { AlertCircle } from "lucide-react";
 
 export function PartyManagementImportDialog({ existingParties, isOpen, onClose, onImportParties }: PartyManagementImportDialogProps) {
   const importDialog = usePartyManagementImportDialog({

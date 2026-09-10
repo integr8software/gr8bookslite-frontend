@@ -1,0 +1,290 @@
+"use client";
+
+import {
+  PartyClassificationOptions,
+  PartyImportBillingAddressRole,
+  PartyImportDefaultAddressRole,
+  PartyImportDeliveryAddressRole,
+  PartyImportFieldOrder,
+  PartyImportHomeAddressRole,
+  PartyImportPreviewColumnCount,
+} from "@/app/src/constants/modules/party-management/PartyManagementConstants";
+import { partyImportRowHasErrors } from "@/app/src/data/modules/party-management/PartyManagementData";
+import type {
+  PartyImportColumnId,
+  PartyImportPreviewRow,
+} from "@/app/src/types/modules/party-management/PartyManagementTypes";
+import {
+  ModuleImportEditableCell,
+  ModuleImportEditableSelect,
+  ModuleImportRowNumberCell,
+} from "@/app/src/ui/shared/module/ModuleImportControls";
+import { joinClasses } from "@/app/src/ui/shared/module/module-table/utils";
+
+export function PartyManagementImportPreviewTableRow({
+  row,
+  isSelected,
+  onUpdateCell,
+  onPasteCell,
+  onMoveRow,
+  onToggleSelected,
+}: {
+  row: PartyImportPreviewRow;
+  isSelected: boolean;
+  onUpdateCell: (
+    rowId: string,
+    field: PartyImportColumnId,
+    value: string,
+  ) => void;
+  onPasteCell: (
+    rowId: string,
+    field: PartyImportColumnId,
+    text: string,
+  ) => void;
+  onToggleSelected: (rowId: string, isSelected: boolean) => void;
+  onMoveRow: (
+    sourceRowId: string,
+    targetRowId: string,
+    position: "before" | "after",
+  ) => void;
+}) {
+  const stickyCellBackground = isSelected
+    ? "bg-skyblue/10"
+    : partyImportRowHasErrors(row)
+      ? "bg-coralpink/[0.025]"
+      : "bg-white";
+
+  return (
+    <>
+      <tr
+        className={
+          isSelected
+            ? "bg-skyblue/10"
+            : partyImportRowHasErrors(row)
+              ? "bg-coralpink/[0.025]"
+              : undefined
+        }
+      >
+        <td
+          className={joinClasses(
+            "module-import-selection-column sticky left-0 z-20 text-center",
+            stickyCellBackground,
+          )}
+        >
+          <div className="flex items-center justify-center">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onClick={(event) => event.stopPropagation()}
+              onChange={(event) =>
+                onToggleSelected(row.id, event.target.checked)
+              }
+              aria-label={`Select row ${row.rowNumber}`}
+              className="h-4 w-4 rounded border-darknavy/20 text-skyblue focus:ring-skyblue/20"
+            />
+          </div>
+        </td>
+        <ModuleImportRowNumberCell
+          rowId={row.id}
+          rowNumber={row.rowNumber}
+          onMoveRow={onMoveRow}
+        />
+        {PartyImportFieldOrder.map((field) => (
+          <td
+            key={field}
+            className={joinClasses(
+              "px-3 py-2 align-middle",
+              field === PartyImportFieldOrder[0] &&
+                "module-import-first-data-column sticky z-10",
+              field === PartyImportFieldOrder[0] && stickyCellBackground,
+            )}
+          >
+            {field === "classification" ? (
+              <ModuleImportEditableSelect
+                value={row.party.classification}
+                errors={row.cellErrors.classification}
+                warnings={row.cellWarnings.classification}
+                options={PartyClassificationOptions}
+                onChange={(value) =>
+                  onUpdateCell(row.id, "classification", value)
+                }
+                onPaste={(text) => onPasteCell(row.id, "classification", text)}
+              />
+            ) : (
+              <ImportCell
+                row={row}
+                field={field}
+                onUpdateCell={onUpdateCell}
+                onPasteCell={onPasteCell}
+              />
+            )}
+          </td>
+        ))}
+      </tr>
+      {row.rowErrors.length > 0 ? (
+        <tr className={isSelected ? "bg-skyblue/10" : "bg-coralpink/[0.025]"}>
+          <td />
+          <td />
+          <td
+            colSpan={PartyImportPreviewColumnCount - 1}
+            className="px-3 pb-3 text-xs font-semibold text-coralpink"
+          >
+            {row.rowErrors.join(" ")}
+          </td>
+        </tr>
+      ) : null}
+    </>
+  );
+}
+
+function ImportCell({
+  row,
+  field,
+  onUpdateCell,
+  onPasteCell,
+}: {
+  row: PartyImportPreviewRow;
+  field: PartyImportColumnId;
+  onUpdateCell: (
+    rowId: string,
+    field: PartyImportColumnId,
+    value: string,
+  ) => void;
+  onPasteCell: (
+    rowId: string,
+    field: PartyImportColumnId,
+    text: string,
+  ) => void;
+}) {
+  return (
+    <ModuleImportEditableCell
+      value={getPartyImportCellValue(row, field)}
+      errors={row.cellErrors[field]}
+      warnings={row.cellWarnings[field]}
+      onChange={(value) => onUpdateCell(row.id, field, value)}
+      onPaste={(text) => onPasteCell(row.id, field, text)}
+    />
+  );
+}
+
+function getPartyImportCellValue(
+  row: PartyImportPreviewRow,
+  field: PartyImportColumnId,
+) {
+  if (field === "partyTypes") {
+    return row.party.partyTypes.join(", ");
+  }
+
+  if (isPartyImportAddressColumn(field)) {
+    return getPartyImportAddressValue(row, field);
+  }
+
+  return String(row.party[field] ?? "");
+}
+
+function getPartyImportAddressValue(
+  row: PartyImportPreviewRow,
+  field: PartyImportAddressColumnId,
+) {
+  const { property, role } = PartyImportAddressColumnMap[field];
+  const address =
+    role === PartyImportDefaultAddressRole
+      ? row.party.address
+      : row.party.addresses.find((candidate) =>
+          partyImportAddressHasRole(candidate, role),
+        );
+
+  return String(address?.[property] ?? "");
+}
+
+function partyImportAddressHasRole(
+  address: PartyImportPreviewRow["party"]["address"],
+  role: PartyImportAddressRole,
+) {
+  if (role === PartyImportBillingAddressRole) return address.isBilling;
+  if (role === PartyImportDeliveryAddressRole) return address.isDelivery;
+  if (role === PartyImportHomeAddressRole) return address.isHome;
+
+  return address.isDefault;
+}
+
+function isPartyImportAddressColumn(
+  field: PartyImportColumnId,
+): field is PartyImportAddressColumnId {
+  return field in PartyImportAddressColumnMap;
+}
+
+const PartyImportAddressColumnMap = {
+  addressLine1: {
+    property: "addressLine1",
+    role: PartyImportDefaultAddressRole,
+  },
+  addressLine2: {
+    property: "addressLine2",
+    role: PartyImportDefaultAddressRole,
+  },
+  barangay: { property: "barangay", role: PartyImportDefaultAddressRole },
+  cityMunicipality: {
+    property: "cityMunicipality",
+    role: PartyImportDefaultAddressRole,
+  },
+  province: { property: "province", role: PartyImportDefaultAddressRole },
+  homeAddressLine1: {
+    property: "addressLine1",
+    role: PartyImportHomeAddressRole,
+  },
+  homeAddressLine2: {
+    property: "addressLine2",
+    role: PartyImportHomeAddressRole,
+  },
+  homeBarangay: { property: "barangay", role: PartyImportHomeAddressRole },
+  homeCityMunicipality: {
+    property: "cityMunicipality",
+    role: PartyImportHomeAddressRole,
+  },
+  homeProvince: { property: "province", role: PartyImportHomeAddressRole },
+  billingAddressLine1: {
+    property: "addressLine1",
+    role: PartyImportBillingAddressRole,
+  },
+  billingAddressLine2: {
+    property: "addressLine2",
+    role: PartyImportBillingAddressRole,
+  },
+  billingBarangay: {
+    property: "barangay",
+    role: PartyImportBillingAddressRole,
+  },
+  billingCityMunicipality: {
+    property: "cityMunicipality",
+    role: PartyImportBillingAddressRole,
+  },
+  billingProvince: {
+    property: "province",
+    role: PartyImportBillingAddressRole,
+  },
+  deliveryAddressLine1: {
+    property: "addressLine1",
+    role: PartyImportDeliveryAddressRole,
+  },
+  deliveryAddressLine2: {
+    property: "addressLine2",
+    role: PartyImportDeliveryAddressRole,
+  },
+  deliveryBarangay: {
+    property: "barangay",
+    role: PartyImportDeliveryAddressRole,
+  },
+  deliveryCityMunicipality: {
+    property: "cityMunicipality",
+    role: PartyImportDeliveryAddressRole,
+  },
+  deliveryProvince: {
+    property: "province",
+    role: PartyImportDeliveryAddressRole,
+  },
+} as const;
+
+type PartyImportAddressColumnId = keyof typeof PartyImportAddressColumnMap;
+type PartyImportAddressRole =
+  (typeof PartyImportAddressColumnMap)[PartyImportAddressColumnId]["role"];

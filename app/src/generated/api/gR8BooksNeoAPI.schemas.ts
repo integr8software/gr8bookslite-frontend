@@ -3899,6 +3899,7 @@ export interface PartyResponseDto {
   customerAdvanceAccount: string;
   defaultPayableAccount: string;
   vendorAdvanceAccount: string;
+  purchaseType: string;
   employeeAdvanceAccount: string;
   employeePayableAccount: string;
   cashAdvanceLimit: string;
@@ -4284,6 +4285,11 @@ export interface CreatePartyDto {
      */
   vendorAdvanceAccount?: string | null;
   /**
+     * @maxLength 50
+     * @nullable
+     */
+  purchaseType?: string | null;
+  /**
      * @maxLength 80
      * @nullable
      */
@@ -4512,6 +4518,11 @@ export interface UpdatePartyDto {
      * @nullable
      */
   vendorAdvanceAccount?: string | null;
+  /**
+     * @maxLength 50
+     * @nullable
+     */
+  purchaseType?: string | null;
   /**
      * @maxLength 80
      * @nullable

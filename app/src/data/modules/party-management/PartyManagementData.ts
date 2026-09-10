@@ -97,6 +97,7 @@ export const PartyInformationInitialFormValues: PartyInformationFormValues = {
   customerAdvanceAccount: "",
   defaultPayableAccount: "",
   vendorAdvanceAccount: "",
+  purchaseType: "",
   employeeAdvanceAccount: "",
   employeePayableAccount: "",
   cashAdvanceLimit: "",
@@ -161,6 +162,7 @@ export function createPartyInformationFormValues(
     customerAdvanceAccount: accountingAccounts.customerAdvanceAccount,
     defaultPayableAccount: accountingAccounts.defaultPayableAccount,
     vendorAdvanceAccount: accountingAccounts.vendorAdvanceAccount,
+    purchaseType: record.purchaseType ?? "",
     employeeAdvanceAccount: accountingAccounts.employeeAdvanceAccount,
     employeePayableAccount: accountingAccounts.employeePayableAccount,
     cashAdvanceLimit: record.cashAdvanceLimit ?? "",
@@ -239,6 +241,7 @@ export function createPartySubmitPayload(values: PartyInformationFormValues) {
     vendorAdvanceAccount: partyTypes.includes("Vendor")
       ? accountingAccounts.vendorAdvanceAccount
       : "",
+    purchaseType: partyTypes.includes("Vendor") ? values.purchaseType : "",
     employeeAdvanceAccount: partyTypes.includes("Employee")
       ? accountingAccounts.employeeAdvanceAccount
       : "",
@@ -354,6 +357,7 @@ export function createPartyInformationRecordFromTableRecord(
     updatedBy: record.updatedBy,
     updatedAt: record.updatedAt,
     vendorAdvanceAccount: record.vendorAdvanceAccount,
+    purchaseType: record.purchaseType,
   };
 }
 
@@ -464,6 +468,7 @@ export function createBlankPartyImportRow(rowNumber: number): PartyImportPreview
       customerAdvanceAccount: "",
       defaultPayableAccount: PartyDefaultAccountingAccounts.defaultPayableAccount,
       vendorAdvanceAccount: PartyDefaultAccountingAccounts.vendorAdvanceAccount,
+      purchaseType: "",
       employeeAdvanceAccount: "",
       employeePayableAccount: "",
       cashAdvanceLimit: "",
@@ -734,6 +739,7 @@ function createPartyImportPreviewRow(
     address,
     addresses,
     ...accountingAccounts,
+    purchaseType: "",
     cashAdvanceLimit: normalizedPartyTypes.includes("Employee")
       ? getImportedPartyValue(row, indexes.cashAdvanceLimit).replaceAll(",", "").trim()
       : "",
@@ -1327,6 +1333,7 @@ function normalizePartyRecordValues(
     vendorAdvanceAccount: partyTypes.includes("Vendor")
       ? accountingAccounts.vendorAdvanceAccount
       : "",
+    purchaseType: partyTypes.includes("Vendor") ? values.purchaseType : "",
     employeeAdvanceAccount: partyTypes.includes("Employee")
       ? accountingAccounts.employeeAdvanceAccount
       : "",

@@ -1,26 +1,132 @@
 "use client";
 
-import type { ChangeEventHandler, MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import {
   PartyManagementFieldClassName,
   PartyManagementFieldControlSelector,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
+import {
+  DefaultPhilippineContactNumber,
+  PhilippineContactNumberPlaceholder,
+} from "@/app/src/data/shared/contact/ContactData";
 import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOptions";
+import { useModuleFieldVisibility } from "@/app/src/hooks/shared/field-management/useCurrentModuleFieldManagement";
+import type { PartyContactInformationTabProps } from "@/app/src/types/modules/party-management/PartyInformationTabsTypes";
 import type {
+  PartyAddress,
   PartyAddressContainerProps,
   PartyAddressOptionSet,
-  PartyAddress,
   PartyInformationFormErrors,
   PartyProvinceOption,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
-import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
-import type { AddressAutocompleteDetails, AddressAutocompleteItem } from "@/app/src/types/shared/address/AddressTypes";
+import type {
+  AddressAutocompleteDetails,
+  AddressAutocompleteItem,
+} from "@/app/src/types/shared/address/AddressTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import { Field } from "@/app/src/ui/modules/party-management/forms/PartyInformationField";
 import { AppAddressAutocomplete } from "@/app/src/ui/shared/address/AppAddressAutocomplete";
+import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
-import { useModuleFieldVisibility } from "@/app/src/hooks/shared/field-management/useCurrentModuleFieldManagement";
+import type {
+  ChangeEventHandler,
+  MouseEvent as ReactMouseEvent,
+  ReactNode,
+} from "react";
 
-export function PartyAddressContainer({
+export function PartyContactInformationTab({
+  errors,
+  isReadonly,
+  values,
+  syncedAddressSources,
+  onAddressInputChange,
+  onCopyAddress,
+  onInputChange,
+  onSelectBarangay,
+  onSelectAutocompleteAddress,
+  onSyncAutocompleteAddressDetails,
+  onSelectCityMunicipality,
+  onSelectProvince,
+  onUpdateField,
+  isDetailsDisabled,
+}: PartyContactInformationTabProps) {
+  return (
+    <div className="grid gap-5">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Field label="Contact Person" error={errors.contactPerson}>
+          <input
+            name="contactPerson"
+            value={values.contactPerson}
+            onChange={onInputChange}
+            readOnly={isReadonly}
+            disabled={isDetailsDisabled}
+            className={PartyManagementFieldClassName}
+            placeholder="Contact person"
+          />
+        </Field>
+        <Field label="Email Address" error={errors.email}>
+          <input
+            name="email"
+            type="email"
+            value={values.email}
+            onChange={onInputChange}
+            readOnly={isReadonly}
+            disabled={isDetailsDisabled}
+            className={PartyManagementFieldClassName}
+            placeholder="name@example.com"
+          />
+        </Field>
+        <Field label="Mobile Number" error={errors.contactNo}>
+          <input
+            name="contactNo"
+            type="tel"
+            inputMode="numeric"
+            value={values.contactNo}
+            onChange={onInputChange}
+            onFocus={() => {
+              if (!values.contactNo) {
+                onUpdateField("contactNo", DefaultPhilippineContactNumber);
+              }
+            }}
+            readOnly={isReadonly}
+            disabled={isDetailsDisabled}
+            maxLength={16}
+            className={PartyManagementFieldClassName}
+            placeholder={PhilippineContactNumberPlaceholder}
+          />
+        </Field>
+        <Field label="Landline" error={errors.landline}>
+          <input
+            name="landline"
+            type="tel"
+            value={values.landline}
+            onChange={onInputChange}
+            readOnly={isReadonly}
+            disabled={isDetailsDisabled}
+            maxLength={40}
+            className={PartyManagementFieldClassName}
+            placeholder="(02) 8123 4567"
+          />
+        </Field>
+      </div>
+      <PartyAddressContainer
+        addresses={values.addresses}
+        disabled={isDetailsDisabled}
+        errors={errors}
+        partyTypes={values.partyTypes}
+        syncedAddressSources={syncedAddressSources}
+        onAddressInputChange={onAddressInputChange}
+        onCopyAddress={onCopyAddress}
+        onSelectBarangay={onSelectBarangay}
+        onSelectAutocompleteAddress={onSelectAutocompleteAddress}
+        onSyncAutocompleteAddressDetails={onSyncAutocompleteAddressDetails}
+        onSelectCityMunicipality={onSelectCityMunicipality}
+        onSelectProvince={onSelectProvince}
+      />
+    </div>
+  );
+}
+
+function PartyAddressContainer({
   addresses,
   disabled,
   errors,
@@ -63,20 +169,34 @@ export function PartyAddressContainer({
           title: "Delivery Address",
         }
       : null,
-  ].filter((section): section is { address: PartyAddress; key: string; title: string } => Boolean(section?.address));
+  ].filter(
+    (
+      section,
+    ): section is { address: PartyAddress; key: string; title: string } =>
+      Boolean(section?.address),
+  );
   const visibleAddressSections =
-    addressSections.length > 0 ? addressSections : [{ address: addresses[0]!, key: "default", title: "Address" }];
+    addressSections.length > 0
+      ? addressSections
+      : [{ address: addresses[0]!, key: "default", title: "Address" }];
 
   return (
     <div className="grid gap-6">
-      {errors.addresses ? <span className="text-xs font-medium text-coralpink">{errors.addresses}</span> : null}
+      {errors.addresses ? (
+        <span className="text-xs font-medium text-coralpink">
+          {errors.addresses}
+        </span>
+      ) : null}
       {visibleAddressSections.map((section) => (
         <AddressSection
           key={section.key}
           address={section.address}
           disabled={disabled}
           errors={errors}
-          sameAsOptions={getSameAsAddressOptions(visibleAddressSections, section.address.id)}
+          sameAsOptions={getSameAsAddressOptions(
+            visibleAddressSections,
+            section.address.id,
+          )}
           syncedSourceAddressId={syncedAddressSources[section.address.id] ?? ""}
           sectionKey={section.key}
           title={section.title}
@@ -118,11 +238,30 @@ function AddressSection({
   title: string;
   onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
   onCopyAddress: (sourceAddressId: string, targetAddressId: string) => void;
-  onSelectAutocompleteAddress: (address: AddressAutocompleteItem, details?: AddressAutocompleteDetails, addressId?: string) => void;
-  onSelectBarangay: (value: string | string[], addressId?: string, option?: AppAdvancedDropdownOption) => void;
-  onSelectCityMunicipality: (value: string | string[], addressId?: string, option?: AppAdvancedDropdownOption) => void;
-  onSelectProvince: (value: string | string[], addressId?: string, option?: PartyProvinceOption) => void;
-  onSyncAutocompleteAddressDetails?: (details: AddressAutocompleteDetails, addressId?: string) => void;
+  onSelectAutocompleteAddress: (
+    address: AddressAutocompleteItem,
+    details?: AddressAutocompleteDetails,
+    addressId?: string,
+  ) => void;
+  onSelectBarangay: (
+    value: string | string[],
+    addressId?: string,
+    option?: AppAdvancedDropdownOption,
+  ) => void;
+  onSelectCityMunicipality: (
+    value: string | string[],
+    addressId?: string,
+    option?: AppAdvancedDropdownOption,
+  ) => void;
+  onSelectProvince: (
+    value: string | string[],
+    addressId?: string,
+    option?: PartyProvinceOption,
+  ) => void;
+  onSyncAutocompleteAddressDetails?: (
+    details: AddressAutocompleteDetails,
+    addressId?: string,
+  ) => void;
 }) {
   const options = useAddressOptions({
     barangayCode: address.barangayCode,
@@ -169,7 +308,10 @@ function AddressSection({
   );
 }
 
-function findAddressByRole(addresses: PartyAddress[], role: "billing" | "delivery" | "home") {
+function findAddressByRole(
+  addresses: PartyAddress[],
+  role: "billing" | "delivery" | "home",
+) {
   return addresses.find((address) => {
     if (role === "billing") {
       return address.isBilling;
@@ -202,11 +344,30 @@ function AddressFields({
   options: PartyAddressOptionSet;
   sectionKey: string;
   onAddressInputChange: ChangeEventHandler<HTMLInputElement>;
-  onSelectAutocompleteAddress: (address: AddressAutocompleteItem, details?: AddressAutocompleteDetails, addressId?: string) => void;
-  onSelectBarangay: (value: string | string[], addressId?: string, option?: AppAdvancedDropdownOption) => void;
-  onSelectCityMunicipality: (value: string | string[], addressId?: string, option?: AppAdvancedDropdownOption) => void;
-  onSelectProvince: (value: string | string[], addressId?: string, option?: PartyProvinceOption) => void;
-  onSyncAutocompleteAddressDetails?: (details: AddressAutocompleteDetails, addressId?: string) => void;
+  onSelectAutocompleteAddress: (
+    address: AddressAutocompleteItem,
+    details?: AddressAutocompleteDetails,
+    addressId?: string,
+  ) => void;
+  onSelectBarangay: (
+    value: string | string[],
+    addressId?: string,
+    option?: AppAdvancedDropdownOption,
+  ) => void;
+  onSelectCityMunicipality: (
+    value: string | string[],
+    addressId?: string,
+    option?: AppAdvancedDropdownOption,
+  ) => void;
+  onSelectProvince: (
+    value: string | string[],
+    addressId?: string,
+    option?: PartyProvinceOption,
+  ) => void;
+  onSyncAutocompleteAddressDetails?: (
+    details: AddressAutocompleteDetails,
+    addressId?: string,
+  ) => void;
 }) {
   return (
     <div className="grid gap-4">
@@ -233,8 +394,12 @@ function AddressFields({
           required
           syncDetailsOnQueryChange
           value={address}
-          onDetailsChange={(details) => onSyncAutocompleteAddressDetails?.(details, address.id)}
-          onSelect={(selectedAddress, details) => onSelectAutocompleteAddress(selectedAddress, details, address.id)}
+          onDetailsChange={(details) =>
+            onSyncAutocompleteAddressDetails?.(details, address.id)
+          }
+          onSelect={(selectedAddress, details) =>
+            onSelectAutocompleteAddress(selectedAddress, details, address.id)
+          }
         />
       )}
       {!address.isForeign ? (
@@ -242,21 +407,41 @@ function AddressFields({
           <div className="grid gap-3 md:grid-cols-3">
             <AddressSelectField
               disabled={disabled || options.isProvincesLoading}
-              error={getRequiredAddressFieldError(errors.provinceCode, address.provinceCode)}
+              error={getRequiredAddressFieldError(
+                errors.provinceCode,
+                address.provinceCode,
+              )}
               label="Province"
               id={getAddressControlId(sectionKey, address.id, "provinceCode")}
               options={options.provinceOptions}
-              placeholder={options.isProvincesLoading ? "Loading provinces" : "--Select Province--"}
+              placeholder={
+                options.isProvincesLoading
+                  ? "Loading provinces"
+                  : "--Select Province--"
+              }
               required
               value={address.provinceCode}
               onChange={(value) => onSelectProvince(value, address.id)}
-              onSelectOption={(option) => onSelectProvince(option.value, address.id, option)}
+              onSelectOption={(option) =>
+                onSelectProvince(option.value, address.id, option)
+              }
             />
             <AddressSelectField
-              disabled={disabled || options.isCitiesMunicipalitiesLoading || !address.provinceCode}
-              error={getRequiredAddressFieldError(errors.cityMunicipalityCode, address.cityMunicipalityCode)}
+              disabled={
+                disabled ||
+                options.isCitiesMunicipalitiesLoading ||
+                !address.provinceCode
+              }
+              error={getRequiredAddressFieldError(
+                errors.cityMunicipalityCode,
+                address.cityMunicipalityCode,
+              )}
               label="City/Municipality"
-              id={getAddressControlId(sectionKey, address.id, "cityMunicipalityCode")}
+              id={getAddressControlId(
+                sectionKey,
+                address.id,
+                "cityMunicipalityCode",
+              )}
               options={options.cityMunicipalityOptions}
               placeholder={
                 !address.provinceCode
@@ -268,11 +453,20 @@ function AddressFields({
               required
               value={address.cityMunicipalityCode}
               onChange={(value) => onSelectCityMunicipality(value, address.id)}
-              onSelectOption={(option) => onSelectCityMunicipality(option.value, address.id, option)}
+              onSelectOption={(option) =>
+                onSelectCityMunicipality(option.value, address.id, option)
+              }
             />
             <AddressSelectField
-              disabled={disabled || options.isBarangaysLoading || !address.cityMunicipalityCode}
-              error={getRequiredAddressFieldError(errors.barangayCode, address.barangayCode)}
+              disabled={
+                disabled ||
+                options.isBarangaysLoading ||
+                !address.cityMunicipalityCode
+              }
+              error={getRequiredAddressFieldError(
+                errors.barangayCode,
+                address.barangayCode,
+              )}
               label="Barangay"
               id={getAddressControlId(sectionKey, address.id, "barangayCode")}
               options={options.barangayOptions}
@@ -286,7 +480,9 @@ function AddressFields({
               required
               value={address.barangayCode}
               onChange={(value) => onSelectBarangay(value, address.id)}
-              onSelectOption={(option) => onSelectBarangay(option.value, address.id, option)}
+              onSelectOption={(option) =>
+                onSelectBarangay(option.value, address.id, option)
+              }
             />
           </div>
           <div className="grid gap-3 md:grid-cols-2">
@@ -334,20 +530,34 @@ function getSameAsAddressOptions(
 
 function ReadOnlyAddressDisplay({ address }: { address: PartyAddress }) {
   return (
-    <Field label="Full Address">
-      <input value={formatFullAddress(address)} readOnly disabled className={PartyManagementFieldClassName} />
-    </Field>
+    <AddressField label="Full Address">
+      <input
+        value={formatFullAddress(address)}
+        readOnly
+        disabled
+        className={PartyManagementFieldClassName}
+      />
+    </AddressField>
   );
 }
 
 function formatFullAddress(address: PartyAddress) {
-  return [address.addressLine1, address.addressLine2, address.barangay, address.cityMunicipality, address.province]
+  return [
+    address.addressLine1,
+    address.addressLine2,
+    address.barangay,
+    address.cityMunicipality,
+    address.province,
+  ]
     .map((part) => part.trim())
     .filter(Boolean)
     .join(", ");
 }
 
-function getRequiredAddressFieldError(error: string | undefined, value: string) {
+function getRequiredAddressFieldError(
+  error: string | undefined,
+  value: string,
+) {
   return value.trim() ? undefined : error;
 }
 
@@ -377,7 +587,12 @@ function AddressSelectField({
   const labelId = `${id}-label`;
 
   return (
-    <Field label={label} labelId={labelId} error={error} required={required}>
+    <AddressField
+      label={label}
+      labelId={labelId}
+      error={error}
+      required={required}
+    >
       <AppAdvancedDropdown
         ariaLabelledBy={labelId}
         disabled={disabled}
@@ -389,7 +604,7 @@ function AddressSelectField({
         onChange={onChange}
         onSelectOption={onSelectOption}
       />
-    </Field>
+    </AddressField>
   );
 }
 
@@ -416,10 +631,16 @@ function AddressInput({
   value: string;
   onChange: ChangeEventHandler<HTMLInputElement>;
 }) {
-  const controlId = id ?? (addressId ? `party-address-${addressId}-${name}` : name);
+  const controlId =
+    id ?? (addressId ? `party-address-${addressId}-${name}` : name);
 
   return (
-    <Field label={label} htmlFor={controlId} error={error} required={required}>
+    <AddressField
+      label={label}
+      htmlFor={controlId}
+      error={error}
+      required={required}
+    >
       <input
         id={controlId}
         name={name}
@@ -432,11 +653,11 @@ function AddressInput({
         className={PartyManagementFieldClassName}
         placeholder={placeholder}
       />
-    </Field>
+    </AddressField>
   );
 }
 
-function Field({
+function AddressField({
   children,
   error,
   htmlFor,
@@ -460,13 +681,22 @@ function Field({
   function handleFieldMouseDown(event: ReactMouseEvent<HTMLDivElement>) {
     const target = event.target;
 
-    if (!(target instanceof Element) || target.closest(PartyManagementFieldControlSelector)) {
+    if (
+      !(target instanceof Element) ||
+      target.closest(PartyManagementFieldControlSelector)
+    ) {
       return;
     }
 
-    const control = event.currentTarget.querySelector<HTMLElement>(PartyManagementFieldControlSelector);
+    const control = event.currentTarget.querySelector<HTMLElement>(
+      PartyManagementFieldControlSelector,
+    );
 
-    if (!control || control.matches(":disabled") || control.getAttribute("aria-disabled") === "true") {
+    if (
+      !control ||
+      control.matches(":disabled") ||
+      control.getAttribute("aria-disabled") === "true"
+    ) {
       return;
     }
 
@@ -492,7 +722,11 @@ function Field({
   );
 }
 
-function getAddressControlId(sectionKey: string, addressId: string, fieldName: string) {
+function getAddressControlId(
+  sectionKey: string,
+  addressId: string,
+  fieldName: string,
+) {
   return `party-address-${sectionKey}-${addressId}-${fieldName}`;
 }
 
@@ -514,7 +748,9 @@ function SectionHeading({
   return (
     <div className="flex flex-wrap items-center gap-3">
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <h2 className="shrink-0 text-base font-semibold text-darknavy">{title}</h2>
+        <h2 className="shrink-0 text-base font-semibold text-darknavy">
+          {title}
+        </h2>
         <div className="h-px flex-1 bg-darknavy/10" aria-hidden="true" />
       </div>
       {sameAsOptions.length > 0 ? (

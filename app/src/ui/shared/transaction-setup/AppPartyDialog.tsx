@@ -3,12 +3,12 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import toast from "react-hot-toast";
 import { Plus, Users, X } from "lucide-react";
-import {
-  DefaultPhilippineContactNumber,
-  FormatPhilippineContactNumber,
-} from "@/app/src/data/shared/contact/ContactData";
+import { DefaultPhilippineContactNumber, FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
-import { PartyDefaultNationality } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
+import {
+  PartyDefaultNationality,
+  PartyTypeOptions,
+} from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import {
   PartyInformationInitialFormValues,
   applyPartyDefaultAccountingAccounts,
@@ -32,15 +32,12 @@ import type {
   PartyInformationRecord,
   PartyType,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
-import { PartyInformationDetailsFields } from "@/app/src/ui/modules/party-management/PartyInformationDetailsFields";
+import { PartyInformationDetailsFields } from "@/app/src/ui/modules/party-management/forms/PartyInformationDetailsFields";
 import {
   PartyInformationRequiredFieldsToastMessage,
   validatePartyInformationForm,
 } from "@/app/src/validations/modules/party-management/PartyManagementValidation";
-import type {
-  AddressAutocompleteDetails,
-  AddressAutocompleteItem,
-} from "@/app/src/types/shared/address/AddressTypes";
+import type { AddressAutocompleteDetails, AddressAutocompleteItem } from "@/app/src/types/shared/address/AddressTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 
 type ProvinceDropdownOption = AppAdvancedDropdownOption & {
@@ -55,6 +52,8 @@ type AppPartyDialogProps = {
   onSelect: (record: PartyInformationRecord) => void;
 };
 
+const MemberPartyType: PartyType = "Member";
+
 const PartyTypeCardCopy: Record<PartyType, { description: string; title: string }> = {
   Vendor: {
     title: "Add Vendor",
@@ -62,26 +61,19 @@ const PartyTypeCardCopy: Record<PartyType, { description: string; title: string 
   },
   Customer: {
     title: "Add Customer",
-    description:
-      "Create a customer party profile for billing, collections, and related transactions.",
+    description: "Create a customer party profile for billing, collections, and related transactions.",
   },
   Employee: {
     title: "Add Employee",
-    description:
-      "Create an employee party profile for reimbursements, payroll-linked entries, and advances.",
+    description: "Create an employee party profile for reimbursements, payroll-linked entries, and advances.",
   },
-  Member: {
+  [MemberPartyType]: {
     title: "Add Member",
     description: "Create a member party profile with home address, identity, and tax details.",
   },
 };
 
-export function AppPartyDialog({
-  isOpen,
-  suggestedPartyType = "Vendor",
-  onClose,
-  onSelect,
-}: AppPartyDialogProps) {
+export function AppPartyDialog({ isOpen, suggestedPartyType = "Vendor", onClose, onSelect }: AppPartyDialogProps) {
   const records = usePartyManagementStore((state) => state.records);
 
   if (!isOpen) {
@@ -123,12 +115,7 @@ function AppPartyDialogContent({
   const canSave = isClassificationSelected && values.partyTypes.length > 0;
   const dialogCopy = PartyTypeCardCopy[partyType];
   const effectiveValues = useMemo(
-    () =>
-      applyPartyDefaultAccountingAccounts(
-        values,
-        values.partyTypes,
-        partyAccountOptions.defaultAccounts,
-      ),
+    () => applyPartyDefaultAccountingAccounts(values, values.partyTypes, partyAccountOptions.defaultAccounts),
     [partyAccountOptions.defaultAccounts, values],
   );
 
@@ -146,19 +133,12 @@ function AppPartyDialogContent({
     };
   }, [onClose]);
 
-  function updateField<TKey extends keyof PartyInformationFormValues>(
-    field: TKey,
-    value: PartyInformationFormValues[TKey],
-  ) {
+  function updateField<TKey extends keyof PartyInformationFormValues>(field: TKey, value: PartyInformationFormValues[TKey]) {
     setValues((current) => {
       if (field === "classification") {
         const classification = value as PartyInformationFormValues["classification"];
         const partyTypes = normalizePartyTypesForClassification(current.partyTypes, classification);
-        const accountingAccounts = applyPartyDefaultAccountingAccounts(
-          current,
-          partyTypes,
-          partyAccountOptions.defaultAccounts,
-        );
+        const accountingAccounts = applyPartyDefaultAccountingAccounts(current, partyTypes, partyAccountOptions.defaultAccounts);
 
         return {
           ...current,
@@ -208,9 +188,7 @@ function AppPartyDialogContent({
     setValues((current) => ({
       ...current,
       addresses: current.addresses.map((address) =>
-        address.id === (addressId ?? current.activeAddressId)
-          ? { ...address, [field]: value }
-          : address,
+        address.id === (addressId ?? current.activeAddressId) ? { ...address, [field]: value } : address,
       ),
     }));
   }
@@ -228,11 +206,7 @@ function AppPartyDialogContent({
   }
 
   function handleAddressInputChange(event: ChangeEvent<HTMLInputElement>) {
-    updateAddressField(
-      event.target.name as keyof PartyAddress,
-      event.target.value,
-      event.currentTarget.dataset.addressId,
-    );
+    updateAddressField(event.target.name as keyof PartyAddress, event.target.value, event.currentTarget.dataset.addressId);
   }
 
   function copyAddress(sourceAddressId: string, targetAddressId: string) {
@@ -264,24 +238,13 @@ function AppPartyDialogContent({
     const nextPartyTypes = selectedValues.filter(isKnownPartyType);
 
     setValues((current) => {
-      const accountingAccounts = applyPartyDefaultAccountingAccounts(
-        current,
-        nextPartyTypes,
-        partyAccountOptions.defaultAccounts,
-      );
+      const accountingAccounts = applyPartyDefaultAccountingAccounts(current, nextPartyTypes, partyAccountOptions.defaultAccounts);
 
       return {
         ...current,
         partyTypes: nextPartyTypes,
-        nationality:
-          nextPartyTypes.includes("Member") && !current.nationality
-            ? PartyDefaultNationality
-            : current.nationality,
-        addresses: clearAddressRolesForPartyTypes(
-          current.addresses,
-          nextPartyTypes,
-          current.classification,
-        ),
+        nationality: nextPartyTypes.includes(MemberPartyType) && !current.nationality ? PartyDefaultNationality : current.nationality,
+        addresses: clearAddressRolesForPartyTypes(current.addresses, nextPartyTypes, current.classification),
         defaultReceivableAccount: accountingAccounts.defaultReceivableAccount,
         customerAdvanceAccount: accountingAccounts.customerAdvanceAccount,
         defaultPayableAccount: accountingAccounts.defaultPayableAccount,
@@ -293,11 +256,7 @@ function AppPartyDialogContent({
     setErrors((current) => ({ ...current, partyTypes: undefined }));
   }
 
-  function selectProvince(
-    value: string | string[],
-    addressId?: string,
-    selectedOption?: ProvinceDropdownOption,
-  ) {
+  function selectProvince(value: string | string[], addressId?: string, selectedOption?: ProvinceDropdownOption) {
     const code = getSingleSelectedValue(value);
     const option = selectedOption;
 
@@ -328,11 +287,7 @@ function AppPartyDialogContent({
     }));
   }
 
-  function selectAutocompleteAddress(
-    address: AddressAutocompleteItem,
-    details?: AddressAutocompleteDetails,
-    addressId?: string,
-  ) {
+  function selectAutocompleteAddress(address: AddressAutocompleteItem, details?: AddressAutocompleteDetails, addressId?: string) {
     setValues((current) => ({
       ...current,
       addresses: current.addresses.map((currentAddress) =>
@@ -377,11 +332,7 @@ function AppPartyDialogContent({
     }));
   }
 
-  function selectCityMunicipality(
-    value: string | string[],
-    addressId?: string,
-    selectedOption?: AppAdvancedDropdownOption,
-  ) {
+  function selectCityMunicipality(value: string | string[], addressId?: string, selectedOption?: AppAdvancedDropdownOption) {
     const code = getSingleSelectedValue(value);
     const option = selectedOption;
 
@@ -406,11 +357,7 @@ function AppPartyDialogContent({
     }));
   }
 
-  function selectBarangay(
-    value: string | string[],
-    addressId?: string,
-    selectedOption?: AppAdvancedDropdownOption,
-  ) {
+  function selectBarangay(value: string | string[], addressId?: string, selectedOption?: AppAdvancedDropdownOption) {
     const code = getSingleSelectedValue(value);
     const option = selectedOption;
 
@@ -430,17 +377,12 @@ function AppPartyDialogContent({
   }
 
   function handlePartyTypeChange(nextPartyType: PartyType) {
-    const classification =
-      nextPartyType === "Employee" || nextPartyType === "Member" ? "Individual" : "Non-Individual";
+    const classification = nextPartyType === "Employee" || nextPartyType === MemberPartyType ? "Individual" : "Non-Individual";
 
     setPartyType(nextPartyType);
     setValues((current) => {
       const nextPartyTypes = [nextPartyType];
-      const accountingAccounts = applyPartyDefaultAccountingAccounts(
-        current,
-        nextPartyTypes,
-        partyAccountOptions.defaultAccounts,
-      );
+      const accountingAccounts = applyPartyDefaultAccountingAccounts(current, nextPartyTypes, partyAccountOptions.defaultAccounts);
 
       return {
         ...current,
@@ -455,7 +397,7 @@ function AppPartyDialogContent({
         honorific: "",
         gender: "",
         civilStatus: "",
-        nationality: nextPartyType === "Member" ? PartyDefaultNationality : "",
+        nationality: nextPartyType === MemberPartyType ? PartyDefaultNationality : "",
         atcCode: "",
         defaultPurchaseInputVatTaxSourceKey: "",
         defaultPurchaseEwtTaxSourceKey: "",
@@ -464,11 +406,7 @@ function AppPartyDialogContent({
         defaultSalesOutputVatTaxSourceKey: "",
         defaultSalesCwtTaxSourceKey: "",
         defaultSalesWvatTaxSourceKey: "",
-        addresses: clearAddressRolesForPartyTypes(
-          current.addresses,
-          nextPartyTypes,
-          classification,
-        ),
+        addresses: clearAddressRolesForPartyTypes(current.addresses, nextPartyTypes, classification),
         defaultReceivableAccount: accountingAccounts.defaultReceivableAccount,
         customerAdvanceAccount: accountingAccounts.customerAdvanceAccount,
         defaultPayableAccount: accountingAccounts.defaultPayableAccount,
@@ -525,9 +463,7 @@ function AppPartyDialogContent({
       >
         <div className="flex items-start justify-between gap-4 border-b border-darknavy/10 bg-white px-6 py-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">
-              Party Name Setup
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-skyblue">Party Name Setup</p>
             <h2 id="party-dialog-title" className="mt-1 text-2xl font-semibold text-darknavy">
               {dialogCopy.title}
             </h2>
@@ -551,13 +487,11 @@ function AppPartyDialogContent({
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-darknavy">Party type</p>
-                  <p className="text-sm text-darknavy/55">
-                    Pick the profile type first, then complete the information below.
-                  </p>
+                  <p className="text-sm text-darknavy/55">Pick the profile type first, then complete the information below.</p>
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
-                {(["Vendor", "Customer", "Employee", "Member"] as const).map((currentType) => (
+                {PartyTypeOptions.map((currentType) => (
                   <button
                     key={currentType}
                     type="button"
@@ -626,23 +560,15 @@ function createDialogInitialValues(
   partyType: PartyType,
   defaultAccounts: PartyDefaultAccountingAccountIds,
 ): PartyInformationFormValues {
-  const isIndividual = partyType === "Employee" || partyType === "Member";
+  const isIndividual = partyType === "Employee" || partyType === MemberPartyType;
   const classification = isIndividual ? "Individual" : "Non-Individual";
 
   return {
-    ...applyPartyDefaultAccountingAccounts(
-      PartyInformationInitialFormValues,
-      [partyType],
-      defaultAccounts,
-    ),
+    ...applyPartyDefaultAccountingAccounts(PartyInformationInitialFormValues, [partyType], defaultAccounts),
     classification,
-    addresses: clearAddressRolesForPartyTypes(
-      PartyInformationInitialFormValues.addresses,
-      [partyType],
-      classification,
-    ),
+    addresses: clearAddressRolesForPartyTypes(PartyInformationInitialFormValues.addresses, [partyType], classification),
     contactNo: DefaultPhilippineContactNumber,
-    nationality: partyType === "Member" ? PartyDefaultNationality : "",
+    nationality: partyType === MemberPartyType ? PartyDefaultNationality : "",
     partyCodeNo: createNextPartyCode(records),
     partyTypes: [partyType],
   };
@@ -654,11 +580,7 @@ function createNextPartyCode(records: PartyInformationRecord[]) {
   return `PTY-${nextNumber.toString().padStart(4, "0")}`;
 }
 
-function copyAddressValues(
-  addresses: PartyAddress[],
-  sourceAddressId: string,
-  targetAddressId: string,
-) {
+function copyAddressValues(addresses: PartyAddress[], sourceAddressId: string, targetAddressId: string) {
   const sourceAddress = addresses.find((address) => address.id === sourceAddressId);
 
   if (!sourceAddress) {

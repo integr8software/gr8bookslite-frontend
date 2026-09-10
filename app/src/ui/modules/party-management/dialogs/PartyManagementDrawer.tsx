@@ -19,10 +19,7 @@ import {
   normalizePartyEntityTypeForClassification,
   normalizePartyTypesForClassification,
 } from "@/app/src/data/modules/party-management/PartyManagementData";
-import {
-  DefaultPhilippineContactNumber,
-  FormatPhilippineContactNumber,
-} from "@/app/src/data/shared/contact/ContactData";
+import { DefaultPhilippineContactNumber, FormatPhilippineContactNumber } from "@/app/src/data/shared/contact/ContactData";
 import { FormatTinNumber } from "@/app/src/data/shared/tax/TaxData";
 import { useAddressOptions } from "@/app/src/hooks/shared/address/useAddressOptions";
 import { useTermDropdownOptions } from "@/app/src/hooks/modules/financial-maintenance/terms-maintenance/useTermDropdownOptions";
@@ -56,7 +53,7 @@ import {
   validatePartyInformationForm,
 } from "@/app/src/validations/modules/party-management/PartyManagementValidation";
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
-import { PartyInformationDetailsFields } from "@/app/src/ui/modules/party-management/PartyInformationDetailsFields";
+import { PartyInformationDetailsFields } from "@/app/src/ui/modules/party-management/forms/PartyInformationDetailsFields";
 import { ChartAccountQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartAccountQuickAddDialog";
 import { TermsMaintenanceQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/terms-maintenance/TermsMaintenanceQuickAddDialog";
 import { todayDateValue } from "@/app/src/utils/date.util";
@@ -76,8 +73,8 @@ export function PartyManagementDrawer({
   suggestedPartyType,
   title = "Add Party",
 }: PartyManagementDrawerProps) {
-  const initialValues = useMemo<PartyInformationFormValues>(() =>
-    createPartyDrawerInitialValues(records, suggestedPartyType),
+  const initialValues = useMemo<PartyInformationFormValues>(
+    () => createPartyDrawerInitialValues(records, suggestedPartyType),
     [records, suggestedPartyType],
   );
   const [values, setValues] = useState<PartyInformationFormValues>(initialValues);
@@ -529,9 +526,7 @@ export function PartyManagementDrawer({
 
   function selectResponsibilityCenter(value: string | string[]) {
     const centerId = getSingleSelectedValue(value);
-    const center = responsibilityCenterQuery.data?.find(
-      (item) => item.id === centerId || item.code === centerId,
-    );
+    const center = responsibilityCenterQuery.data?.find((item) => item.id === centerId || item.code === centerId);
     setValues((current) => ({
       ...current,
       defaultResponsibilityCenterId: centerId,
@@ -692,10 +687,7 @@ type ChartAccountQuickAddDialogState = {
   parentAccount: ChartAccount;
 } | null;
 
-function createPartyDrawerInitialValues(
-  records: PartyInformationRecord[],
-  suggestedPartyType?: PartyType,
-): PartyInformationFormValues {
+function createPartyDrawerInitialValues(records: PartyInformationRecord[], suggestedPartyType?: PartyType): PartyInformationFormValues {
   const classification = suggestedPartyType
     ? suggestedPartyType === "Employee" || suggestedPartyType === "Member"
       ? "Individual"
@@ -705,11 +697,7 @@ function createPartyDrawerInitialValues(
 
   return {
     ...PartyInformationInitialFormValues,
-    addresses: clearAddressRolesForPartyTypes(
-      PartyInformationInitialFormValues.addresses,
-      partyTypes,
-      classification,
-    ),
+    addresses: clearAddressRolesForPartyTypes(PartyInformationInitialFormValues.addresses, partyTypes, classification),
     classification,
     contactNo: DefaultPhilippineContactNumber,
     nationality: suggestedPartyType === "Member" ? PartyDefaultNationality : "",

@@ -9,11 +9,14 @@ type PurchaseRequestDetailsFormProps = {
   isReadonly: boolean;
   partyOptions: AppAdvancedDropdownOption[];
   projectOptions: AppAdvancedDropdownOption[];
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
   values: PurchaseRequestFormValues;
   onOpenPartyDrawer: () => void;
   onOpenProjectDrawer: () => void;
+  onOpenResponsibilityCenterDrawer: () => void;
   onSelectParty: (partyCode: string, partyName: string) => void;
   onSelectProject: (projectCode: string, projectName: string) => void;
+  onSelectResponsibilityCenter: (centerId: string, centerName: string) => void;
   onUpdateField: PurchaseRequestFieldUpdater<PurchaseRequestFormValues>;
 };
 
@@ -21,11 +24,14 @@ export function PurchaseRequestDetailsForm({
   isReadonly,
   onOpenPartyDrawer,
   onOpenProjectDrawer,
+  onOpenResponsibilityCenterDrawer,
   onSelectParty,
   onSelectProject,
+  onSelectResponsibilityCenter,
   onUpdateField,
   partyOptions,
   projectOptions,
+  responsibilityCenterOptions,
   values,
 }: PurchaseRequestDetailsFormProps) {
   return (
@@ -34,11 +40,14 @@ export function PurchaseRequestDetailsForm({
         isReadonly={isReadonly}
         partyOptions={partyOptions}
         projectOptions={projectOptions}
+        responsibilityCenterOptions={responsibilityCenterOptions}
         values={values}
         onOpenPartyDrawer={onOpenPartyDrawer}
         onOpenProjectDrawer={onOpenProjectDrawer}
+        onOpenResponsibilityCenterDrawer={onOpenResponsibilityCenterDrawer}
         onSelectParty={onSelectParty}
         onSelectProject={onSelectProject}
+        onSelectResponsibilityCenter={onSelectResponsibilityCenter}
         onUpdateField={onUpdateField}
       />
     </section>

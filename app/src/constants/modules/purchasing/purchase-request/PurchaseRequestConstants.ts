@@ -28,3 +28,9 @@ export const PurchaseRequestFormPageCopy = {
     description: "Review request details and preview the printable purchase request.",
   },
 } as const;
+
+export const PurchaseRequestResponsibilityCenterLabel = "Responsibility Center";
+export const PurchaseRequestResponsibilityCenterPlaceholder = "Select Responsibility Center";
+export const PurchaseRequestResponsibilityCenterSearchPlaceholder = "Search Responsibility Center";
+export const PurchaseRequestAddResponsibilityCenterLabel = "Add Responsibility Center";
+

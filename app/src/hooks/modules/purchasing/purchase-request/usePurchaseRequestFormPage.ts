@@ -99,7 +99,7 @@ export function usePurchaseRequestFormPage() {
 
   const previewRecord = useMemo(() => createPurchaseRequestRecord(values, params.recordId ?? "preview"), [params.recordId, values]);
   const draft = useModuleDraft({
-    enabled: !isReadonly,
+    enabled: !isReadonly && mode !== "add",
     initialValues,
     key: createModuleDraftKey({
       mode,
@@ -109,6 +109,23 @@ export function usePurchaseRequestFormPage() {
     setValues,
     values,
   });
+
+  useEffect(() => {
+    if (mode === "add" && typeof window !== "undefined") {
+      try {
+        const toRemove: string[] = [];
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const key = window.localStorage.key(i);
+          if (key && key.includes("purchasing:purchase-request") && key.includes("add")) {
+            toRemove.push(key);
+          }
+        }
+        toRemove.forEach((k) => window.localStorage.removeItem(k));
+      } catch {
+        // Ignore localStorage error
+      }
+    }
+  }, [mode]);
 
   function updateField<TKey extends keyof PurchaseRequestFormValues>(field: TKey, value: PurchaseRequestFormValues[TKey]) {
     if (isReadonly) {
@@ -172,6 +189,30 @@ export function usePurchaseRequestFormPage() {
     setValues((current) => ({ ...current, accountingEntries }));
   }
 
+  function updateResponsibilityCenter(centerId: string, centerName: string) {
+    if (isReadonly) {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      responsibilityCenterId: centerId,
+      responsibilityCenter: centerName,
+      forDepartment: centerName,
+      items: current.items.map((item) => ({
+        ...item,
+        responsibilityCenterId: centerId,
+        responsibilityCenter: centerName,
+      })),
+    }));
+    setErrors((current) => ({
+      ...current,
+      responsibilityCenter: undefined,
+      responsibilityCenterId: undefined,
+      forDepartment: undefined,
+    }));
+  }
+
   function addItem() {
     if (isReadonly) {
       return;
@@ -179,7 +220,15 @@ export function usePurchaseRequestFormPage() {
 
     setValues((current) => ({
       ...current,
-      items: [...current.items, { ...emptyPurchaseRequestItem, id: createPurchaseRequestId("item") }],
+      items: [
+        ...current.items,
+        {
+          ...emptyPurchaseRequestItem,
+          id: createPurchaseRequestId("item"),
+          responsibilityCenterId: current.responsibilityCenterId || "",
+          responsibilityCenter: current.responsibilityCenter || "",
+        },
+      ],
     }));
     setErrors((current) => ({ ...current, items: undefined }));
   }
@@ -308,6 +357,7 @@ export function usePurchaseRequestFormPage() {
     updateAccountingEntries,
     updateItem,
     updateItems,
+    updateResponsibilityCenter,
     values,
   };
 }

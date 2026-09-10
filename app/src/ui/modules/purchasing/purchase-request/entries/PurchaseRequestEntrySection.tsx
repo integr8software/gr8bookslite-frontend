@@ -32,6 +32,7 @@ import {
 
 type PurchaseRequestEntrySectionProps = {
   accountingRows: PurchaseRequestAccountingEntry[];
+  defaultResponsibilityCenter?: { id: string; name: string };
   error?: string;
   itemDescriptionOptions: ItemRecord[];
   isReadonly: boolean;
@@ -45,6 +46,7 @@ type PurchaseRequestEntrySectionProps = {
 
 export function PurchaseRequestEntrySection({
   accountingRows,
+  defaultResponsibilityCenter,
   error,
   itemDescriptionOptions,
   isReadonly,
@@ -201,18 +203,21 @@ export function PurchaseRequestEntrySection({
   function addRows(count: number) {
     onRowsChange([
       ...rows,
-      ...Array.from({ length: count }, () => createBlankPurchaseRequestItem()),
+      ...Array.from({ length: count }, () =>
+        createBlankPurchaseRequestItem(defaultResponsibilityCenter),
+      ),
     ]);
   }
 
   function clearRows(action: ModuleDataEntryClearAction) {
+    const fallbackItem = createBlankPurchaseRequestItem(defaultResponsibilityCenter);
     if (action === "all") {
-      onRowsChange([createBlankPurchaseRequestItem()]);
+      onRowsChange([fallbackItem]);
       return;
     }
 
     const nextRows = rows.filter((row) => !shouldClearEntry(row, action, isServices));
-    onRowsChange(nextRows.length > 0 ? nextRows : [createBlankPurchaseRequestItem()]);
+    onRowsChange(nextRows.length > 0 ? nextRows : [fallbackItem]);
   }
 
   function duplicateRow(rowId: string) {
@@ -238,7 +243,7 @@ export function PurchaseRequestEntrySection({
     nextRows.splice(
       position === "above" ? rowIndex : rowIndex + 1,
       0,
-      createBlankPurchaseRequestItem(),
+      createBlankPurchaseRequestItem(defaultResponsibilityCenter),
     );
     onRowsChange(nextRows);
   }
@@ -260,7 +265,11 @@ export function PurchaseRequestEntrySection({
 
   function removeRow(rowId: string) {
     const nextRows = rows.filter((row) => row.id !== rowId);
-    onRowsChange(nextRows.length > 0 ? nextRows : [createBlankPurchaseRequestItem()]);
+    onRowsChange(
+      nextRows.length > 0
+        ? nextRows
+        : [createBlankPurchaseRequestItem(defaultResponsibilityCenter)],
+    );
   }
 
   return (
@@ -424,10 +433,14 @@ const EntryExportOptions = [
   { id: "pdf", label: "PDF", onSelect: () => undefined },
 ] satisfies ModuleDataEntryExportOption[];
 
-function createBlankPurchaseRequestItem(): PurchaseRequestItem {
+function createBlankPurchaseRequestItem(
+  defaultResponsibilityCenter?: { id: string; name: string },
+): PurchaseRequestItem {
   return {
     ...emptyPurchaseRequestItem,
     id: createPurchaseRequestId("item"),
+    responsibilityCenterId: defaultResponsibilityCenter?.id ?? "",
+    responsibilityCenter: defaultResponsibilityCenter?.name ?? "",
   };
 }
 

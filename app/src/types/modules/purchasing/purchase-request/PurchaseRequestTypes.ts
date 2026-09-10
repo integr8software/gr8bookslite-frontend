@@ -51,6 +51,8 @@ export type PurchaseRequestRecord = {
 	vendorAddress: string;
 	remarks: string;
 	forDepartment: string;
+	responsibilityCenterId: string;
+	responsibilityCenter: string;
 	preparedBy: string;
 	preparedByLabel: string;
 	preparedBySignatureFileName: string;

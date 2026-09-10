@@ -27,6 +27,7 @@ import type {
 import type {
   CreateItemBasicInfoDto,
   ItemBasicInfoListResponseDto,
+  ItemBasicInfoOptionsResponseDto,
   ItemBasicInfoResponseDto,
   ItemPricingResponseDto,
   UpdateItemBasicInfoDto,
@@ -211,6 +212,98 @@ export const useItemsControllerCreateV1 = <TError = unknown,
       return useMutation(getItemsControllerCreateV1MutationOptions(options), queryClient);
     }
     /**
+ * @summary Get item options
+ */
+export const itemsControllerFindOptionsV1 = (
+
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<ItemBasicInfoOptionsResponseDto>(
+      {url: `/api/v1/maintenance/items/options`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getItemsControllerFindOptionsV1QueryKey = () => {
+    return [
+    `/api/v1/maintenance/items/options`
+    ] as const;
+    }
+
+
+export const getItemsControllerFindOptionsV1QueryOptions = <TData = Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getItemsControllerFindOptionsV1QueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>> = ({ signal }) => itemsControllerFindOptionsV1(requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ItemsControllerFindOptionsV1QueryResult = NonNullable<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>>
+export type ItemsControllerFindOptionsV1QueryError = unknown
+
+
+export function useItemsControllerFindOptionsV1<TData = Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>,
+          TError,
+          Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useItemsControllerFindOptionsV1<TData = Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>,
+          TError,
+          Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useItemsControllerFindOptionsV1<TData = Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get item options
+ */
+
+export function useItemsControllerFindOptionsV1<TData = Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof itemsControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getItemsControllerFindOptionsV1QueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
  * @summary Get item basic info record by id
  */
 export const itemsControllerFindOneV1 = (

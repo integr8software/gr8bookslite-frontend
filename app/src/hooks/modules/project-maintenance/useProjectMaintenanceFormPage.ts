@@ -56,10 +56,7 @@ export function useProjectMaintenanceFormPage(options: ProjectMaintenanceFormPag
     values,
   });
 
-  function updateField(
-    field: keyof ProjectMaintenanceFormValues,
-    value: ProjectMaintenanceFormValues[keyof ProjectMaintenanceFormValues],
-  ) {
+  function updateField(field: keyof ProjectMaintenanceFormValues, value: ProjectMaintenanceFormValues[keyof ProjectMaintenanceFormValues]) {
     if (isReadonly) {
       return;
     }
@@ -125,16 +122,22 @@ export function useProjectMaintenanceFormPage(options: ProjectMaintenanceFormPag
 
   async function saveProject(releaseSubmitLock: () => void) {
     try {
-      if (mode === "edit" && existingProject) {
-        await updateProject(updateProjectMaintenanceFromForm(existingProject, values));
-      } else if (mode === "edit") {
+      const savedProject =
+        mode === "edit" && existingProject
+          ? await updateProject(updateProjectMaintenanceFromForm(existingProject, values))
+          : mode === "edit"
+            ? undefined
+            : await addProject(values);
+
+      if (!savedProject) {
         toast.error("Could not find the project record to update.");
         isSubmittingRef.current = false;
         setIsSubmitting(false);
         releaseSubmitLock();
         return;
-      } else {
-        await addProject(values);
+      }
+
+      if (mode === "add") {
         setValues(ProjectMaintenanceInitialFormValues);
         setErrors({});
       }
@@ -143,7 +146,7 @@ export function useProjectMaintenanceFormPage(options: ProjectMaintenanceFormPag
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
-      options.onSaved?.();
+      options.onSaved?.(savedProject);
       if (!options.onSaved) router.push(ProjectMaintenanceHref);
     } catch {
       isSubmittingRef.current = false;

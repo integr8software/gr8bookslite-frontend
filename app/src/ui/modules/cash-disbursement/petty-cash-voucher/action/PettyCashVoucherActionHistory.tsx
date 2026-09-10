@@ -1,26 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { FileClock } from "lucide-react";
+import { History } from "lucide-react";
 import { PettyCashVoucherStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
-import type { PettyCashVoucherActionPageState } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
-import type { PettyCashVoucherStatus } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
+import type { PettyCashVoucherRecord } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import type { ModuleHistoryEntry } from "@/app/src/types/shared/module/ModuleHistoryTypes";
-import { moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { ModuleHistoryDialog } from "@/app/src/ui/shared/module/ModuleHistoryDialog";
 
-export function PettyCashVoucherActionHistory({ page }: { page: PettyCashVoucherActionPageState }) {
+export function PettyCashVoucherActionHistory({ record }: { record?: PettyCashVoucherRecord }) {
   const [isOpen, setIsOpen] = useState(false);
-
   return (
     <>
-      <button type="button" onClick={() => setIsOpen(true)} className={moduleHeaderActionClassNames.secondary}>
-        <FileClock className="h-4 w-4" aria-hidden="true" />
+      <button
+        type="button"
+        disabled={!record}
+        onClick={() => setIsOpen(true)}
+        className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-darknavy/10 bg-white px-4 text-sm font-semibold text-darknavy/70 shadow-sm shadow-darknavy/5 transition hover:bg-skyblue/10 hover:text-darknavy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-skyblue/20 disabled:cursor-not-allowed disabled:opacity-45"
+      >
+        <History className="h-4 w-4" aria-hidden="true" />
         History
       </button>
       <ModuleHistoryDialog
         description="Status changes and major petty cash voucher events."
-        history={createPettyCashVoucherHistory(page)}
+        history={createPettyCashVoucherHistory(record)}
         isOpen={isOpen}
         title="Petty Cash Voucher History"
         onClose={() => setIsOpen(false)}
@@ -29,35 +31,27 @@ export function PettyCashVoucherActionHistory({ page }: { page: PettyCashVoucher
   );
 }
 
-function createPettyCashVoucherHistory(page: PettyCashVoucherActionPageState): ModuleHistoryEntry<PettyCashVoucherStatus>[] {
-  const record = page.existingVoucher;
-
-  if (!record) {
-    return [];
-  }
-
-  const currentStatus = page.values.status === PettyCashVoucherStatuses.Open ? record.status : page.values.status;
-  const history: ModuleHistoryEntry<PettyCashVoucherStatus>[] = [
+function createPettyCashVoucherHistory(record?: PettyCashVoucherRecord): ModuleHistoryEntry<PettyCashVoucherRecord["status"]>[] {
+  if (!record) return [];
+  const history: ModuleHistoryEntry<PettyCashVoucherRecord["status"]>[] = [
     {
-      action: "Voucher created",
+      action: "Created",
       actor: record.createdBy,
-      createdAt: record.dateCreated,
-      description: `${record.voucherNo} was created.`,
-      id: `${record.id}-created`,
+      createdAt: record.createdAt,
+      description: `${record.transactionNo} was created.`,
+      id: `pcf-history-${record.id}-created`,
       status: PettyCashVoucherStatuses.Draft,
     },
   ];
-
-  if (record.dateModified !== record.dateCreated || currentStatus !== PettyCashVoucherStatuses.Draft) {
+  if (record.updatedAt !== record.createdAt || record.status !== PettyCashVoucherStatuses.Draft) {
     history.push({
-      action: `Status changed to ${currentStatus}`,
+      action: "Updated",
       actor: record.updatedBy,
-      createdAt: record.dateModified,
-      description: `${record.voucherNo} is currently ${currentStatus}.`,
-      id: `${record.id}-updated`,
-      status: currentStatus,
+      createdAt: record.updatedAt,
+      description: `${record.transactionNo} is currently ${record.status}.`,
+      id: `pcf-history-${record.id}-updated`,
+      status: record.status,
     });
   }
-
   return history;
 }

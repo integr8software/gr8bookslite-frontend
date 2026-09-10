@@ -7,8 +7,9 @@ export type ProjectMaintenanceStatusFilter = "" | ProjectMaintenanceStatus;
 
 export type ProjectMaintenance = {
   id: string;
+  projectCode: string;
   projectName: string;
-  projectDescription: string;
+  description: string;
   status: ProjectMaintenanceStatus;
   createdBy?: string;
   createdAt?: string;
@@ -16,9 +17,22 @@ export type ProjectMaintenance = {
   updatedAt?: string;
 };
 
-export type ProjectMaintenanceFormValues = {
+export type ProjectMaintenanceLookupOption = {
+  id: string;
+  projectId: string;
+  projectCode: string;
   projectName: string;
-  projectDescription: string;
+  name: string;
+  label: string;
+  value: string;
+  description?: string;
+  status: ProjectMaintenanceStatus;
+};
+
+export type ProjectMaintenanceFormValues = {
+  projectCode: string;
+  projectName: string;
+  description: string;
   status: ProjectMaintenanceStatus;
 };
 
@@ -31,7 +45,7 @@ export type ProjectMaintenanceFormPageOptions = {
   initialValues?: ProjectMaintenanceFormValues;
   isOpen?: boolean;
   mode?: ProjectMaintenanceActionMode;
-  onSaved?: () => void;
+  onSaved?: (project: ProjectMaintenance) => void;
 };
 
 export type ProjectMaintenanceStoreOptions = {
@@ -49,6 +63,7 @@ export type ProjectMaintenanceDrawerProps = {
   isOpen: boolean;
   mode: ProjectMaintenanceActionMode;
   onClose: () => void;
+  onSaved?: (project: ProjectMaintenance) => void;
   project?: ProjectMaintenance;
 };
 
@@ -61,13 +76,7 @@ export type ProjectMaintenanceFieldsProps = {
 };
 
 export type ProjectMaintenanceTableColumnKey =
-  | "projectName"
-  | "projectDescription"
-  | "status"
-  | "createdBy"
-  | "createdAt"
-  | "updatedBy"
-  | "updatedAt";
+  "projectCode" | "projectName" | "description" | "status" | "createdBy" | "createdAt" | "updatedBy" | "updatedAt";
 
 export type ProjectMaintenancePermissions = {
   canView: boolean;

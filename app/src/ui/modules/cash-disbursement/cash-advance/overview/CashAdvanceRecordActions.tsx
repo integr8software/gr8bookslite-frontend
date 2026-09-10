@@ -8,8 +8,8 @@ import {
   canCancelCashAdvanceStatus,
   canDisapproveCashAdvanceStatus,
   canEditCashAdvanceStatus,
-  getCashAdvanceStatusDialogCopy,
   getCashAdvanceEditLink,
+  getCashAdvanceStatusDialogCopy,
   getCashAdvanceViewLink,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import type { CashAdvanceRecord, CashAdvanceStatus } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
@@ -29,42 +29,32 @@ export function CashAdvanceRecordActions({
   record: CashAdvanceRecord;
 }) {
   const [statusToConfirm, setStatusToConfirm] = useState<CashAdvanceStatus | null>(null);
-  const recordLabel = record.transNo;
   const status = record.status;
   const isPosted = status === CashAdvanceStatuses.Posted;
   const isDisapproved = status === CashAdvanceStatuses.Disapproved;
   const isCancelled = status === CashAdvanceStatuses.Cancelled;
   const approvalUndoStatus: CashAdvanceStatus = CashAdvanceStatuses.ForApproval;
-  const cancelStatus: CashAdvanceStatus = isCancelled ? CashAdvanceStatuses.Draft : CashAdvanceStatuses.Cancelled;
-  const statusDialogCopy = statusToConfirm ? getCashAdvanceStatusDialogCopy(statusToConfirm, recordLabel) : null;
+  const cancelStatus: CashAdvanceStatus = isCancelled
+    ? CashAdvanceStatuses.Draft
+    : CashAdvanceStatuses.Cancelled;
+  const statusDialogCopy = statusToConfirm
+    ? getCashAdvanceStatusDialogCopy(statusToConfirm, record.transNo, status)
+    : null;
   const canEdit = canEditCashAdvanceStatus(status);
   const items: ModuleActionMenuItem[] = [
     {
       disabled: !canApproveCashAdvanceStatus(status),
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () => {
-        if (isPosted) {
-          onUpdateStatus(record, approvalUndoStatus);
-          return;
-        }
-
-        setStatusToConfirm(CashAdvanceStatuses.Posted);
-      },
+      onSelect: () => setStatusToConfirm(isPosted ? approvalUndoStatus : CashAdvanceStatuses.Posted),
       type: "button",
     },
     {
       disabled: !canDisapproveCashAdvanceStatus(status),
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () => {
-        if (isDisapproved) {
-          onUpdateStatus(record, approvalUndoStatus);
-          return;
-        }
-
-        setStatusToConfirm(CashAdvanceStatuses.Disapproved);
-      },
+      onSelect: () =>
+        setStatusToConfirm(isDisapproved ? approvalUndoStatus : CashAdvanceStatuses.Disapproved),
       tone: isDisapproved ? "default" : "danger",
       type: "button",
     },
@@ -72,14 +62,7 @@ export function CashAdvanceRecordActions({
       disabled: !canCancelCashAdvanceStatus(status),
       icon: isCancelled ? Undo2 : Ban,
       label: isCancelled ? "Undo Cancelled" : "Cancel",
-      onSelect: () => {
-        if (isCancelled) {
-          onUpdateStatus(record, cancelStatus);
-          return;
-        }
-
-        setStatusToConfirm(CashAdvanceStatuses.Cancelled);
-      },
+      onSelect: () => setStatusToConfirm(cancelStatus),
       tone: isCancelled ? "default" : "danger",
       type: "button",
     },
@@ -91,7 +74,7 @@ export function CashAdvanceRecordActions({
         <ModuleTableActionLink
           href={getCashAdvanceViewLink(record.id)}
           icon={Eye}
-          label={`View cash advance ${recordLabel}`}
+          label={`View Cash Advance ${record.transNo}`}
           title="View"
           variant="view"
         />
@@ -99,7 +82,7 @@ export function CashAdvanceRecordActions({
           <ModuleTableActionLink
             href={getCashAdvanceEditLink(record.id)}
             icon={Edit3}
-            label={`Edit cash advance ${recordLabel}`}
+            label={`Edit Cash Advance ${record.transNo}`}
             title="Edit"
             variant="edit"
           />
@@ -107,7 +90,7 @@ export function CashAdvanceRecordActions({
           <ModuleTableActionButton
             disabled
             icon={Edit3}
-            label={`Edit cash advance ${recordLabel}`}
+            label={`Edit Cash Advance ${record.transNo}`}
             title="Edit"
             variant="edit"
           />
@@ -115,28 +98,27 @@ export function CashAdvanceRecordActions({
         <ModuleActionMenu
           className="[&>button]:h-9 [&>button]:w-9"
           items={items}
-          label={`More actions for cash advance ${recordLabel}`}
+          label={`More actions for Cash Advance ${record.transNo}`}
         />
       </ModuleTableActions>
+
       {statusDialogCopy ? (
         <AppDialog
-          isOpen
+          isOpen={statusToConfirm !== null}
           title={statusDialogCopy.title}
           description={statusDialogCopy.description}
-          cancelLabel="Keep Current Status"
           confirmLabel={statusDialogCopy.confirmLabel}
+          cancelLabel="Cancel"
           iconTone={statusDialogCopy.iconTone}
           pendingLabel={statusDialogCopy.pendingLabel}
           tone={statusDialogCopy.tone}
-          onCancel={() => setStatusToConfirm(null)}
           onConfirm={() => {
-            if (!statusToConfirm) {
-              return;
-            }
-
-            onUpdateStatus(record, statusToConfirm);
+            if (!statusToConfirm) return;
+            const targetStatus = statusToConfirm;
             setStatusToConfirm(null);
+            onUpdateStatus(record, targetStatus);
           }}
+          onCancel={() => setStatusToConfirm(null)}
         />
       ) : null}
     </>

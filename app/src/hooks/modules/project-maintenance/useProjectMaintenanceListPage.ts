@@ -27,7 +27,10 @@ export function useProjectMaintenanceListPage() {
         return true;
       }
 
-      return [project.projectName, project.projectDescription, project.status].join(" ").toLowerCase().includes(normalizedQuery);
+      return [project.projectCode, project.projectName, project.description, project.status]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedQuery);
     });
   }, [projects, query, statusFilter]);
 

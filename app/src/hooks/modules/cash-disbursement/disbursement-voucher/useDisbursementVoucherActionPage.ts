@@ -45,7 +45,7 @@ import {
 } from "@/app/src/validations/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherValidation";
 import { BankMasterfileStatuses } from "@/app/src/constants/modules/financial-maintenance/bank-masterfile/BankMasterfileConstants";
 import { useBankMasterfileStore } from "@/app/src/hooks/modules/financial-maintenance/bank-masterfile/useBankMasterfile";
-import { useDefaultAccountStore } from "@/app/src/hooks/modules/financial-maintenance/default-account/useDefaultAccount";
+import { useDisbursementTypeStore } from "@/app/src/hooks/modules/financial-maintenance/disbursement-type/useDisbursementType";
 import { usePaymentTypeStore } from "@/app/src/hooks/modules/financial-maintenance/payment-type/usePaymentType";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
@@ -175,7 +175,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const [pendingSubmitValues, setPendingSubmitValues] = useState<DisbursementVoucherFormValues | null>(null);
   const [activeTab, setActiveTab] = useState<DisbursementVoucherActionTab>("details");
   const [isBankMasterfileDrawerOpen, setIsBankMasterfileDrawerOpen] = useState(false);
-  const [isDefaultAccountDrawerOpen, setIsDefaultAccountDrawerOpen] = useState(false);
+  const [isDisbursementTypeDrawerOpen, setIsDisbursementTypeDrawerOpen] = useState(false);
   const [isPartyNameDrawerOpen, setIsPartyNameDrawerOpen] = useState(false);
   const [isPaymentTypeDrawerOpen, setIsPaymentTypeDrawerOpen] = useState(false);
   const [isProjectNameDrawerOpen, setIsProjectNameDrawerOpen] = useState(false);
@@ -190,11 +190,11 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
   const submitLockReleaseRef = useRef<null | (() => void)>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const bankMasterfileStore = useBankMasterfileStore();
-  const defaultAccountStore = useDefaultAccountStore();
+  const defaultAccountStore = useDisbursementTypeStore(undefined, { kind: "disbursement" });
   const paymentTypeStore = usePaymentTypeStore();
   const partyStore = usePartyManagementStore();
   const responsibilityCenterStore = useResponsibilityCenterStore();
-  const defaultAccounts = defaultAccountStore.defaultAccounts;
+  const defaultAccounts = defaultAccountStore.disbursementTypes;
   const taxCodesQuery = useAlphanumericTaxCodes();
   const taxDefaultAccountOptionsQuery = useTaxDefaultAccountOptionGroups();
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
@@ -1907,7 +1907,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     errors,
     existingVoucher,
     isBankMasterfileDrawerOpen,
-    isDefaultAccountDrawerOpen,
+    isDisbursementTypeDrawerOpen,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isPartyNameDrawerOpen,
     isPaymentTypeDrawerOpen,
@@ -1956,7 +1956,7 @@ export function useDisbursementVoucherActionPage(mode: DisbursementVoucherAction
     handleUpdateStatus,
     setActiveTab,
     setIsBankMasterfileDrawerOpen,
-    setIsDefaultAccountDrawerOpen,
+    setIsDisbursementTypeDrawerOpen,
     setIsPartyNameDrawerOpen,
     setIsPaymentTypeDrawerOpen,
     setIsProjectNameDrawerOpen,

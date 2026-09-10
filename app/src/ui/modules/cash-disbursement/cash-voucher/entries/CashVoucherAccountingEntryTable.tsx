@@ -17,12 +17,8 @@ import type {
   CashVoucherAccountingEntryTableProps,
   CashVoucherEntryColumnId,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherDataEntryTypes";
-import type { CashVoucherLineEntry } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
 import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import type {
-  ModuleDataEntryColumn,
-  ModuleDataEntryColumnOption,
-} from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import type { ModuleDataEntryColumnOption } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
 import { formatAmount } from "@/app/src/utils/currency.util";
 import { joinClasses } from "@/app/src/utils/string.util";
 

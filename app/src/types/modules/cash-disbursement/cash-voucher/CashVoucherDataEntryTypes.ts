@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
+import type { DisbursementType } from "@/app/src/types/modules/financial-maintenance/disbursement-type/DisbursementTypeTypes";
 import type { ModuleDataEntryClearAction, ModuleDataEntryColumn } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
@@ -56,7 +56,7 @@ export type VoucherDataEntryProps = {
   canAddExpenseType: boolean;
   canAddPartyName: boolean;
   canAddResponsibilityCenter: boolean;
-  defaultAccounts: DefaultAccount[];
+  defaultAccounts: DisbursementType[];
   entries: CashVoucherLineEntry[];
   errors: CashVoucherFormErrors;
   isReadonly: boolean;

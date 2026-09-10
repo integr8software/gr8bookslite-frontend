@@ -1,8 +1,5 @@
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
-import type {
-  ProjectMaintenance,
-  ProjectMaintenanceStatus,
-} from "@/app/src/types/modules/project-maintenance/ProjectMaintenanceTypes";
+import type { ProjectMaintenance, ProjectMaintenanceStatus } from "@/app/src/types/modules/project-maintenance/ProjectMaintenanceTypes";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
@@ -22,14 +19,19 @@ export const ProjectMaintenanceTablePaginationStorageKey = "maintenance:project-
 
 export const ProjectMaintenanceTableColumns = [
   {
-    key: "projectName",
-    label: "Project Name",
-    className: "w-[24%]",
+    key: "projectCode",
+    label: "Project Code",
+    className: "w-[14%]",
   },
   {
-    key: "projectDescription",
-    label: "Project Description",
-    className: "w-[30%]",
+    key: "projectName",
+    label: "Project Name",
+    className: "w-[22%]",
+  },
+  {
+    key: "description",
+    label: "Description",
+    className: "w-[28%]",
   },
   {
     key: "createdBy",
@@ -68,6 +70,7 @@ export const ProjectMaintenanceDefaultColumnOrder = ProjectMaintenanceTableColum
   "key" in column ? column.key : "actions",
 );
 export const ProjectMaintenanceDefaultColumnVisibility: VisibilityState = {
+  description: false,
   createdBy: false,
   createdAt: false,
   updatedBy: false,

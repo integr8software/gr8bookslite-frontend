@@ -1,90 +1,60 @@
 "use client";
 
+import { PettyCashVoucherActionModes } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
-  PettyCashVoucherActionModes,
-  PettyCashVoucherVATableOptions,
-} from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
-import {
-  calculatePettyCashVoucherTaxFields,
+  calculatePettyCashVoucherItemTaxFields,
+  calculatePettyCashVoucherTotals,
+  createBlankPettyCashVoucherItem,
   createPettyCashVoucherFormValues,
+  formatPettyCashVoucherAmount,
 } from "@/app/src/data/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherData";
-import { getPartyDefaultEwtCode, getPartyDefaultVatCode, type PartyTaxDefaults } from "@/app/src/data/shared/tax/PartyTaxDefaultsData";
-import {
-  fetchPettyCashVoucherById,
-  createPettyCashVoucherApi,
-  updatePettyCashVoucherApi,
-  updatePettyCashVoucherStatusApi,
-  fetchNextPettyCashVoucherNo,
-} from "@/app/src/services/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherApi";
-import { PettyCashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherQueryKeys";
 import type {
-  PettyCashVoucherActionTab,
   PettyCashVoucherActionMode,
+  PettyCashVoucherActionTab,
   PettyCashVoucherFormErrors,
   PettyCashVoucherFormValues,
+  PettyCashVoucherItem,
   PettyCashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { validatePettyCashVoucherForm } from "@/app/src/validations/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherValidation";
-import { useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
-import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
-import { useTaxDefaultAccountOptionGroups } from "@/app/src/hooks/shared/tax/useTaxOptions";
-import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
-import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
+import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { hasModuleDraftChanges } from "@/app/src/hooks/shared/module/useModuleDraftChanges";
-import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
-import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
-import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
-import { createEwtOptionsFromDefaultAccounts, createVatOptionsFromDefaultAccounts } from "@/app/src/data/shared/tax/TaxData";
+import {
+  createPettyCashVoucherApi,
+  fetchNextPettyCashVoucherNo,
+  fetchPettyCashVoucherById,
+  updatePettyCashVoucherApi,
+  updatePettyCashVoucherStatusApi,
+} from "@/app/src/services/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherApi";
+import { PettyCashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherQueryKeys";
 
 export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherActionMode; onSaved?: () => void }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const transactionCurrency = useTransactionCurrency();
-  const taxCodesQuery = useAlphanumericTaxCodes();
-  const taxDefaultAccountOptionsQuery = useTaxDefaultAccountOptionGroups();
-  const partyStore = usePartyManagementStore();
-  const responsibilityCenterStore = useResponsibilityCenterStore();
   const params = useParams<{ recordId?: string }>();
   const { mode } = options;
   const isReadonly = mode === PettyCashVoucherActionModes.View;
 
-  const voucherQuery = useQuery({
-    queryKey: [...PettyCashVoucherQueryKeys.vouchers(), params.recordId],
+  const recordQuery = useQuery({
+    queryKey: PettyCashVoucherQueryKeys.record(params.recordId),
     queryFn: () => fetchPettyCashVoucherById(params.recordId!),
     enabled: Boolean(params.recordId) && mode !== PettyCashVoucherActionModes.Add,
   });
 
-  const record = voucherQuery.data;
-  const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
-  const vatOptions = useMemo(
-    () =>
-      createVatOptionsFromDefaultAccounts(
-        taxDefaultAccountOptionsQuery.data?.find((group) => group.classification === "input-purchases")?.options ?? [],
-      ),
-    [taxDefaultAccountOptionsQuery.data],
-  );
-  const ewtOptions = useMemo(
-    () =>
-      createEwtOptionsFromDefaultAccounts(
-        taxDefaultAccountOptionsQuery.data?.find((group) => group.classification === "purchase-ewt")?.options ?? [],
-      ),
-    [taxDefaultAccountOptionsQuery.data],
-  );
-  const vatableOptions = useMemo(() => PettyCashVoucherVATableOptions.map((value) => ({ name: value, value })), []);
+  const record = recordQuery.data;
 
   const [values, setValues] = useState<PettyCashVoucherFormValues>(() =>
     createPettyCashVoucherFormValues(record, "", transactionCurrency.baseCurrencyCode),
   );
   const [errors, setErrors] = useState<PettyCashVoucherFormErrors>({});
   const [activeTab, setActiveTab] = useState<PettyCashVoucherActionTab>("details");
-  const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
-  const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
-  const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const hasEditedCurrencyRef = useRef(false);
   const [initialValues, setInitialValues] = useState(values);
   const rawIsDirty = JSON.stringify(values) !== JSON.stringify(initialValues);
@@ -105,13 +75,13 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
 
   useEffect(() => {
     if (record) {
-      const formVals = createPettyCashVoucherFormValues(record, record.voucherNo, record.currency || "PHP", taxCodes);
+      const formVals = createPettyCashVoucherFormValues(record, record.transactionNo, record.currency || "PHP");
       queueMicrotask(() => {
         setValues(formVals);
         setInitialValues(formVals);
       });
     }
-  }, [record, taxCodes]);
+  }, [record]);
 
   useEffect(() => {
     if (mode === PettyCashVoucherActionModes.Add) {
@@ -128,8 +98,13 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
     values,
   });
 
+  const totals = useMemo(() => calculatePettyCashVoucherTotals(values.items), [values.items]);
+
   useEffect(() => {
-    if (mode !== PettyCashVoucherActionModes.Add || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) return;
+    if (mode !== PettyCashVoucherActionModes.Add || !transactionCurrency.isBaseCurrencyResolved || hasEditedCurrencyRef.current) {
+      return;
+    }
+
     setValues((current) => ({
       ...current,
       currency: transactionCurrency.baseCurrencyCode,
@@ -144,53 +119,25 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
 
   function updateField<TKey extends keyof PettyCashVoucherFormValues>(field: TKey, value: PettyCashVoucherFormValues[TKey]) {
     if (isReadonly) return;
-    setValues((current) => {
-      const next = { ...current, [field]: value };
-      if (["amount", "vatType", "vatRate", "vatable", "ewtCode", "ewtRate"].includes(field)) {
-        return {
-          ...next,
-          ...calculatePettyCashVoucherTaxFields(next.amount, next.vatType, next.ewtCode),
-        };
-      }
-      return next;
-    });
+    setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
-  function handlePartyChange(partyCode: string, partyName: string, partyDefaults?: PartyTaxDefaults) {
+  function calculateItem(item: PettyCashVoucherItem): PettyCashVoucherItem {
+    const taxFields = calculatePettyCashVoucherItemTaxFields(item.amount, item.vatType, item.ewtCode);
+    return { ...item, ...taxFields };
+  }
+
+  function updateItem(rowId: string, updates: Partial<PettyCashVoucherItem>) {
     if (isReadonly) return;
+    updateField(
+      "items",
+      values.items.map((item) => (item.id === rowId ? calculateItem({ ...item, ...updates }) : item)),
+    );
+  }
 
-    const selectedParty =
-      partyDefaults ??
-      partyStore.records.find(
-        (party) => party.partyCodeNo === partyCode || getPartyDisplayName(party).trim().toLowerCase() === partyName.trim().toLowerCase(),
-      );
-    const vatType = getPartyDefaultVatCode(selectedParty, taxCodes);
-    const ewtCode = getPartyDefaultEwtCode(selectedParty, taxCodes);
-
-    setValues((current) => {
-      const next = {
-        ...current,
-        ewtCode,
-        partyCode,
-        partyName,
-        vatType,
-        vatable: vatType ? "True" : "False",
-      } satisfies PettyCashVoucherFormValues;
-
-      return {
-        ...next,
-        ...calculatePettyCashVoucherTaxFields(next.amount, next.vatType, next.ewtCode, taxCodes),
-      };
-    });
-    setErrors((current) => ({
-      ...current,
-      ewtCode: undefined,
-      partyCode: undefined,
-      partyName: undefined,
-      vatType: undefined,
-      vatable: undefined,
-    }));
+  function updateItems(items: PettyCashVoucherItem[]) {
+    updateField("items", items);
   }
 
   async function updateCurrency(currencyCode: string) {
@@ -201,11 +148,57 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
     try {
       const exchangeRate = await transactionCurrency.loadExchangeRate(currencyCode);
       if (exchangeRate != null) {
-        updateField("exchangeRate", String(exchangeRate));
+        updateField("exchangeRate", formatLoadedExchangeRate(exchangeRate));
       }
     } catch {
       toast.error("Could not load exchange rate.");
     }
+  }
+
+  function addItem() {
+    if (isReadonly) return;
+    updateField("items", [...values.items, createBlankPettyCashVoucherItem()]);
+  }
+
+  function addItems(count: number) {
+    updateItems([...values.items, ...Array.from({ length: count }, createBlankPettyCashVoucherItem)]);
+  }
+
+  function duplicateItem(rowId: string) {
+    const target = values.items.find((i) => i.id === rowId);
+    if (target) {
+      updateItems([...values.items, { ...target, id: `item-${Date.now()}` }]);
+    }
+  }
+
+  function insertItem(rowId: string, position: "above" | "below" = "below") {
+    const index = values.items.findIndex((i) => i.id === rowId);
+    if (index === -1) return;
+    const next = [...values.items];
+    next.splice(position === "above" ? index : index + 1, 0, createBlankPettyCashVoucherItem());
+    updateItems(next);
+  }
+
+  function moveItem(fromRowId: string, toRowId: string) {
+    const fromIndex = values.items.findIndex((item) => item.id === fromRowId);
+    const toIndex = values.items.findIndex((item) => item.id === toRowId);
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
+    const next = [...values.items];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
+    updateItems(next);
+  }
+
+  function removeItem(rowId: string) {
+    if (isReadonly) return;
+    if (values.items.length <= 1) {
+      updateField("items", [createBlankPettyCashVoucherItem()]);
+      return;
+    }
+    updateField(
+      "items",
+      values.items.filter((item) => item.id !== rowId),
+    );
   }
 
   const saveMutation = useMutation({
@@ -216,7 +209,7 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
       return await updatePettyCashVoucherApi(params.recordId!, submitValues);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PettyCashVoucherQueryKeys.vouchers() });
+      queryClient.invalidateQueries({ queryKey: PettyCashVoucherQueryKeys.all });
       draft.clearDraft();
       toast.success(`Petty Cash Voucher ${mode === PettyCashVoucherActionModes.Add ? "created" : "updated"} successfully.`);
       if (options.onSaved) {
@@ -236,8 +229,8 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
       return await updatePettyCashVoucherStatusApi(params.recordId!, status);
     },
     onSuccess: (updatedRecord, status) => {
-      queryClient.invalidateQueries({ queryKey: PettyCashVoucherQueryKeys.vouchers() });
-      queryClient.setQueryData([...PettyCashVoucherQueryKeys.vouchers(), params.recordId], updatedRecord);
+      queryClient.invalidateQueries({ queryKey: PettyCashVoucherQueryKeys.all });
+      queryClient.setQueryData(PettyCashVoucherQueryKeys.record(params.recordId), updatedRecord);
       setValues((cur) => ({ ...cur, status }));
       toast.success(`Petty Cash Voucher marked as ${status}.`);
     },
@@ -247,17 +240,18 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
   });
 
   async function submit(status?: PettyCashVoucherStatus) {
-    const nextValues = status ? { ...values, status } : values;
-    const nextErrors = nextValues.status === "Draft" ? {} : validatePettyCashVoucherForm(nextValues);
-    setErrors(nextErrors);
+    if (isReadonly) return false;
+    const valuesToValidate = status ? { ...values, status } : values;
+    const validationErrors = valuesToValidate.status === "Draft" ? {} : validatePettyCashVoucherForm(valuesToValidate);
+    setErrors(validationErrors);
 
-    if (Object.keys(nextErrors).length > 0) {
-      toast.error("Please Fill Up the Required Fields!");
+    if (Object.keys(validationErrors).length > 0) {
+      toast.error("Please fill in all required fields correctly.");
       return false;
     }
 
     try {
-      await saveMutation.mutateAsync(nextValues);
+      await saveMutation.mutateAsync(valuesToValidate);
       return true;
     } catch {
       return false;
@@ -271,18 +265,6 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
     } catch {
       return false;
     }
-  }
-
-  function handleCreateParty(party: PartyInformationRecord) {
-    const displayName = getPartyDisplayName(party);
-    handlePartyChange(party.partyCodeNo, displayName);
-    setIsPartyDrawerOpen(false);
-  }
-
-  function handleSaveResponsibilityCenter(center: ResponsibilityCenter) {
-    updateField("responsibilityCenterCode", center.code);
-    updateField("responsibilityCenter", center.name);
-    setIsResponsibilityCenterDrawerOpen(false);
   }
 
   async function resetAddValuesWithNextTransactionNo() {
@@ -315,49 +297,47 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
 
   return {
     activeTab,
-    handleSubmit: () => submit("For Approval"),
-    handleSaveAsDraft: () => submit("Draft"),
-    closePartyDrawer: () => setIsPartyDrawerOpen(false),
-    closePreview: () => setIsReportPreviewOpen(false),
-    closeReportPreview: () => setIsReportPreviewOpen(false),
-    closeResponsibilityCenterDrawer: () => setIsResponsibilityCenterDrawerOpen(false),
+    addItem,
+    addItems,
+    closePreview: () => setIsPreviewOpen(false),
     currencyOptions: transactionCurrency.currencyOptions,
     discardDraft,
     draft,
+    duplicateItem,
     errors,
-    ewtOptions,
-    existingVoucher: record,
-    handleCreateParty,
-    handlePartyChange,
-    handleSaveResponsibilityCenter,
     handleUpdateStatus,
     hasDiscardableChanges: isDirty,
+    insertItem,
     isDirty,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
-    isLoading: voucherQuery.isLoading,
-    isPartyDrawerOpen,
-    isPreviewOpen: isReportPreviewOpen,
+    isLoading: recordQuery.isLoading,
+    isPreviewOpen,
     isReadonly,
-    isRecordMissing: mode !== PettyCashVoucherActionModes.Add && !voucherQuery.isLoading && !record,
-    isReportPreviewOpen,
-    isResponsibilityCenterDrawerOpen,
+    isRecordMissing: mode !== PettyCashVoucherActionModes.Add && !recordQuery.isLoading && !record,
     isSubmitting: saveMutation.isPending || updateStatusMutation.isPending,
     mode,
-    needsRecord: mode !== PettyCashVoucherActionModes.Add,
-    openPartyDrawer: () => setIsPartyDrawerOpen(true),
-    openPreview: () => setIsReportPreviewOpen(true),
-    openReportPreview: () => setIsReportPreviewOpen(true),
-    openResponsibilityCenterDrawer: () => setIsResponsibilityCenterDrawerOpen(true),
-    partyStore,
+    moveItem,
+    openPreview: () => setIsPreviewOpen(true),
     record,
-    responsibilityCenterStore,
+    removeItem,
     save: submit,
     saveDraft: draft.saveDraft,
     setActiveTab,
-    setIsPreviewOpen: setIsReportPreviewOpen,
+    setIsPreviewOpen,
     submit,
+    totals: {
+      ...totals,
+      formattedAmount: formatPettyCashVoucherAmount(totals.amount),
+      formattedDisburseAmount: formatPettyCashVoucherAmount(totals.disburseAmount),
+      formattedEwtAmount: formatPettyCashVoucherAmount(totals.ewtAmount),
+      formattedGrossAmount: formatPettyCashVoucherAmount(totals.grossAmount),
+      formattedNetAmount: formatPettyCashVoucherAmount(totals.netAmount),
+      formattedVatAmount: formatPettyCashVoucherAmount(totals.vatAmount),
+    },
     updateCurrency,
     updateField,
+    updateItem,
+    updateItems,
     updateStatus: handleUpdateStatus,
     validate: (status?: PettyCashVoucherStatus) => {
       const nextValues = status ? { ...values, status } : values;
@@ -365,9 +345,6 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
       setErrors(errs);
       return Object.keys(errs).length === 0;
     },
-    vatOptions,
-    vatTypeOptions: vatOptions,
-    vatableOptions,
     values,
   };
 }

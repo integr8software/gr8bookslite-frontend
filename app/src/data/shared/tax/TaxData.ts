@@ -64,16 +64,45 @@ export function getVatPercentFromRate(taxRate: string): number {
   return parsePercentage(taxRate);
 }
 
+function normalizeTaxLookupValue(value: string) {
+  return value.trim().toUpperCase().replace(/\s+/g, "");
+}
+
+function stripTrailingTaxRate(value: string) {
+  return value.replace(/\s*\(?\d+(?:\.\d+)?%\)?\s*$/u, "").trim();
+}
+
+function formatTaxRate(taxRate: string | number | null | undefined) {
+  return taxRate != null && taxRate !== "" ? `${taxRate}%`.replace(/%%+/, "%") : "";
+}
+
+function buildVatDisplayName(row: AlphanumericTaxCode) {
+  const rawName = row.taxDescription || row.taxCode;
+  const cleanName = stripTrailingTaxRate(rawName);
+  const rate = formatTaxRate(row.taxRate);
+
+  return rate ? `${cleanName} (${rate})` : cleanName;
+}
+
+function taxLookupValues(...values: Array<string | number | null | undefined>) {
+  return values.map((value) => normalizeTaxLookupValue(String(value ?? ""))).filter(Boolean);
+}
+
 export function getEwtPercentFromCode(value: string, taxCodes: AlphanumericTaxCode[]): number {
   if (!value) return 0;
   const clean = value.trim();
-  const normalized = clean.toUpperCase().replace(/\s+/g, "");
+  const normalized = normalizeTaxLookupValue(clean);
 
   const row =
     taxCodes.find((item) => {
-      const itemCode = (item.taxCode || "").toUpperCase().replace(/\s+/g, "");
-      const itemAtc = (item.officialAtcCode || item.atc || "").toUpperCase().replace(/\s+/g, "");
-      const matchesCode = itemCode === normalized || itemAtc === normalized;
+      const matchesCode = taxLookupValues(
+        item.taxCode,
+        item.officialAtcCode,
+        item.atc,
+        item.taxDescription,
+        stripTrailingTaxRate(item.taxDescription),
+        `${item.officialAtcCode || item.atc || item.taxCode} (${formatTaxRate(item.taxRate)})`,
+      ).includes(normalized);
       const isWithholding =
         !item.taxType ||
         item.taxType === PurchaseTaxTypeEwt ||
@@ -83,9 +112,14 @@ export function getEwtPercentFromCode(value: string, taxCodes: AlphanumericTaxCo
       return matchesCode && isWithholding;
     }) ??
     taxCodes.find((item) => {
-      const itemCode = (item.taxCode || "").toUpperCase().replace(/\s+/g, "");
-      const itemAtc = (item.officialAtcCode || item.atc || "").toUpperCase().replace(/\s+/g, "");
-      return itemCode === normalized || itemAtc === normalized;
+      return taxLookupValues(
+        item.taxCode,
+        item.officialAtcCode,
+        item.atc,
+        item.taxDescription,
+        stripTrailingTaxRate(item.taxDescription),
+        `${item.officialAtcCode || item.atc || item.taxCode} (${formatTaxRate(item.taxRate)})`,
+      ).includes(normalized);
     });
 
   if (row && row.taxRate != null) {
@@ -140,13 +174,21 @@ export function getEwtPercentFromCode(value: string, taxCodes: AlphanumericTaxCo
 
 export function getVatRateFromCode(vatCode: string, taxCodes: AlphanumericTaxCode[]): string {
   if (!vatCode) return "0%";
+  const normalized = normalizeTaxLookupValue(vatCode);
 
   const row = taxCodes.find(
-    (item) => item.transactionType === "Purchases" && item.taxType === PurchaseTaxTypeInputVat && item.taxCode === vatCode,
+    (item) =>
+      item.transactionType === "Purchases" &&
+      item.taxType === PurchaseTaxTypeInputVat &&
+      taxLookupValues(item.taxCode, item.taxDescription, stripTrailingTaxRate(item.taxDescription), buildVatDisplayName(item)).includes(
+        normalized,
+      ),
   );
-  if (row) return `${row.taxRate}%`;
+  if (row) return formatTaxRate(row.taxRate) || "0%";
   if (vatCode === "VAT-5") return "5%";
   if (vatCode === "VAT-12") return "12%";
+  const parsedRate = parsePercentage(vatCode);
+  if (parsedRate > 0) return `${parsedRate}%`;
   return "0%";
 }
 
@@ -176,10 +218,7 @@ export function createVatOptions(taxCodes: AlphanumericTaxCode[], transactionTyp
     })
     .forEach((row) => {
       if (!options.has(row.taxCode)) {
-        const rawName = row.taxDescription || row.taxCode;
-        const rate = row.taxRate != null && row.taxRate !== "" ? `${row.taxRate}%`.replace(/%%+/, "%") : "";
-        const cleanName = rawName.replace(/\s*\(?\d+(?:\.\d+)?%\)?\s*$/u, "").trim();
-        const name = rate ? `${cleanName} (${rate})` : cleanName;
+        const name = buildVatDisplayName(row);
 
         options.set(row.taxCode, {
           description: "",
@@ -212,7 +251,7 @@ export function createEwtOptions(taxCodes: AlphanumericTaxCode[], transactionTyp
     const displayCode = row.officialAtcCode || row.taxCode;
     if (options.has(displayCode)) return;
 
-    const rate = row.taxRate != null && row.taxRate !== "" ? `${row.taxRate}%`.replace(/%%+/, "%") : "";
+    const rate = formatTaxRate(row.taxRate);
     const codeRateName = [displayCode, rate ? `(${rate})` : ""].filter(Boolean).join(" ");
     const rawDescription =
       row.natureOfIncome?.trim() || row.taxDescription.replace(/^[A-Z]{1,3}\s?\d{0,3}(?:\.\d+)?\s*\|\s*/, "").trim() || row.taxDescription;
@@ -236,8 +275,8 @@ export function createVatOptionsFromDefaultAccounts(taxOptions: TaxDefaultAccoun
   taxOptions.forEach((taxOption) => {
     if (options.has(taxOption.taxCode)) return;
 
-    const rate = taxOption.taxRate != null && taxOption.taxRate !== "" ? `${taxOption.taxRate}%`.replace(/%%+/, "%") : "";
-    const cleanName = taxOption.taxDescription.replace(/\s*\(?\d+(?:\.\d+)?%\)?\s*$/u, "").trim();
+    const rate = formatTaxRate(taxOption.taxRate);
+    const cleanName = stripTrailingTaxRate(taxOption.taxDescription);
     const name = rate && !taxOption.taxExempt ? `${cleanName} (${rate})` : cleanName;
 
     options.set(taxOption.taxCode, {
@@ -266,7 +305,7 @@ export function createEwtOptionsFromDefaultAccounts(taxOptions: TaxDefaultAccoun
     const displayCode = taxOption.displayCode || taxOption.taxCode;
     if (options.has(displayCode)) return;
 
-    const rate = taxOption.taxRate != null && taxOption.taxRate !== "" ? `${taxOption.taxRate}%`.replace(/%%+/, "%") : "";
+    const rate = formatTaxRate(taxOption.taxRate);
     const name = [displayCode, rate ? `(${rate})` : ""].filter(Boolean).join(" ");
     const description =
       taxOption.natureOfIncome?.trim() ||

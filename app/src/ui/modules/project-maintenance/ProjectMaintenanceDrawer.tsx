@@ -10,7 +10,7 @@ import type { ProjectMaintenanceDrawerProps } from "@/app/src/types/modules/proj
 import { ProjectMaintenanceFields } from "@/app/src/ui/modules/project-maintenance/ProjectMaintenanceFields";
 import { ModuleDrawer, getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 
-export function ProjectMaintenanceDrawer({ initialValues, isOpen, mode, onClose, project }: ProjectMaintenanceDrawerProps) {
+export function ProjectMaintenanceDrawer({ initialValues, isOpen, mode, onClose, onSaved, project }: ProjectMaintenanceDrawerProps) {
   const formKey = initialValues ? `${initialValues.projectName}-${initialValues.status}` : "new";
 
   return (
@@ -20,18 +20,22 @@ export function ProjectMaintenanceDrawer({ initialValues, isOpen, mode, onClose,
       isOpen={isOpen}
       mode={mode}
       onClose={onClose}
+      onSaved={onSaved}
       project={project}
     />
   );
 }
 
-function ProjectMaintenanceDrawerPanel({ initialValues, isOpen, mode, onClose, project }: ProjectMaintenanceDrawerProps) {
+function ProjectMaintenanceDrawerPanel({ initialValues, isOpen, mode, onClose, onSaved, project }: ProjectMaintenanceDrawerProps) {
   const page = useProjectMaintenanceFormPage({
     existingProject: project,
     initialValues,
     isOpen,
     mode,
-    onSaved: onClose,
+    onSaved: (savedProject) => {
+      onSaved?.(savedProject);
+      onClose();
+    },
   });
   const copy = ProjectMaintenanceActionCopy[mode];
 

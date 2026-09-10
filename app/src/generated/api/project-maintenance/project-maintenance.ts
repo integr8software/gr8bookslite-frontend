@@ -28,7 +28,9 @@ import type {
   CreateProjectMaintenanceDto,
   ProjectMaintenanceContainerResponseDto,
   ProjectMaintenanceControllerFindAllV1Params,
+  ProjectMaintenanceControllerFindOptionsV1Params,
   ProjectMaintenanceListResponseDto,
+  ProjectMaintenanceOptionsResponseDto,
   SaveProjectMaintenanceResponseDto,
   UpdateProjectMaintenanceDto
 } from '../gR8BooksNeoAPI.schemas';
@@ -212,6 +214,99 @@ export const useProjectMaintenanceControllerCreateV1 = <TError = unknown,
       return useMutation(getProjectMaintenanceControllerCreateV1MutationOptions(options), queryClient);
     }
     /**
+ * @summary Get project options
+ */
+export const projectMaintenanceControllerFindOptionsV1 = (
+    params?: ProjectMaintenanceControllerFindOptionsV1Params,
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<ProjectMaintenanceOptionsResponseDto>(
+      {url: `/api/v1/maintenance/project-maintenance/options`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getProjectMaintenanceControllerFindOptionsV1QueryKey = (params?: ProjectMaintenanceControllerFindOptionsV1Params,) => {
+    return [
+    `/api/v1/maintenance/project-maintenance/options`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getProjectMaintenanceControllerFindOptionsV1QueryOptions = <TData = Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>, TError = unknown>(params?: ProjectMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getProjectMaintenanceControllerFindOptionsV1QueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>> = ({ signal }) => projectMaintenanceControllerFindOptionsV1(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ProjectMaintenanceControllerFindOptionsV1QueryResult = NonNullable<Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>>
+export type ProjectMaintenanceControllerFindOptionsV1QueryError = unknown
+
+
+export function useProjectMaintenanceControllerFindOptionsV1<TData = Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>, TError = unknown>(
+ params: undefined |  ProjectMaintenanceControllerFindOptionsV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>,
+          TError,
+          Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useProjectMaintenanceControllerFindOptionsV1<TData = Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>, TError = unknown>(
+ params?: ProjectMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>,
+          TError,
+          Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useProjectMaintenanceControllerFindOptionsV1<TData = Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>, TError = unknown>(
+ params?: ProjectMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get project options
+ */
+
+export function useProjectMaintenanceControllerFindOptionsV1<TData = Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>, TError = unknown>(
+ params?: ProjectMaintenanceControllerFindOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof projectMaintenanceControllerFindOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getProjectMaintenanceControllerFindOptionsV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
  * @summary Get project details by ID
  */
 export const projectMaintenanceControllerFindOneV1 = (

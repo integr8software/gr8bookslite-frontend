@@ -38,7 +38,7 @@ import {
   validateCashVoucherDetails,
   validateCashVoucherEntries,
 } from "@/app/src/validations/modules/cash-disbursement/cash-voucher/CashVoucherValidation";
-import { useDefaultAccountStore } from "@/app/src/hooks/modules/financial-maintenance/default-account/useDefaultAccount";
+import { useDisbursementTypeStore } from "@/app/src/hooks/modules/financial-maintenance/disbursement-type/useDisbursementType";
 import { useCashVoucherDefaultAccounts } from "@/app/src/hooks/modules/cash-disbursement/cash-voucher/useCashVoucherDefaultAccounts";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
@@ -152,7 +152,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const [errors, setErrors] = useState<CashVoucherFormErrors>({});
   const [pendingSubmitValues, setPendingSubmitValues] = useState<CashVoucherFormValues | null>(null);
   const [activeTab, setActiveTab] = useState<CashVoucherActionTab>("details");
-  const [isDefaultAccountDrawerOpen, setIsDefaultAccountDrawerOpen] = useState(false);
+  const [isDisbursementTypeDrawerOpen, setIsDisbursementTypeDrawerOpen] = useState(false);
   const [isPartyNameDrawerOpen, setIsPartyNameDrawerOpen] = useState(false);
   const [isProjectNameDrawerOpen, setIsProjectNameDrawerOpen] = useState(false);
   const [isReportPreviewOpen, setIsReportPreviewOpen] = useState(false);
@@ -165,10 +165,10 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
   const isSubmittingRef = useRef(false);
   const submitLockReleaseRef = useRef<null | (() => void)>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const defaultAccountStore = useDefaultAccountStore();
+  const defaultAccountStore = useDisbursementTypeStore(undefined, { kind: "disbursement" });
   const partyStore = usePartyManagementStore();
   const responsibilityCenterStore = useResponsibilityCenterStore();
-  const defaultAccounts = defaultAccountStore.defaultAccounts;
+  const defaultAccounts = defaultAccountStore.disbursementTypes;
   const taxCodesQuery = useAlphanumericTaxCodes();
   const taxDefaultAccountOptionsQuery = useTaxDefaultAccountOptionGroups();
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
@@ -1817,7 +1817,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     defaultAccountStore,
     errors,
     existingVoucher,
-    isDefaultAccountDrawerOpen,
+    isDisbursementTypeDrawerOpen,
     isExchangeRateLoading: transactionCurrency.isExchangeRateLoading,
     isLoading: recordQuery.isLoading,
     isPartyNameDrawerOpen,
@@ -1856,7 +1856,7 @@ export function useCashVoucherActionPage(mode: CashVoucherActionMode) {
     handleUpdateEntryFields,
     handleUpdateStatus,
     setActiveTab,
-    setIsDefaultAccountDrawerOpen,
+    setIsDisbursementTypeDrawerOpen,
     setIsPartyNameDrawerOpen,
     setIsProjectNameDrawerOpen,
     setIsReportPreviewOpen,

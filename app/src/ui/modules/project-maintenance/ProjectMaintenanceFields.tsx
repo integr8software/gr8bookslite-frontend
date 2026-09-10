@@ -4,16 +4,20 @@ import { AppSwitch } from "@/app/src/ui/shared/app/AppSwitch";
 import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
 import { MaintenanceActiveStatusSwitchOption, MaintenanceInactiveStatusSwitchOption } from "@/app/src/utils/status.util";
 
-export function ProjectMaintenanceFields({
-  errors,
-  isReadonly,
-  values,
-  onInputChange,
-  onStatusChange,
-}: ProjectMaintenanceFieldsProps) {
+export function ProjectMaintenanceFields({ errors, isReadonly, values, onInputChange, onStatusChange }: ProjectMaintenanceFieldsProps) {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <FormField label="Project Name" error={errors.projectName} className="lg:col-span-2" required>
+      <FormField label="Project Code" error={errors.projectCode}>
+        <input
+          name="projectCode"
+          value={values.projectCode}
+          onChange={onInputChange}
+          readOnly={isReadonly}
+          placeholder="Enter Project Code..."
+        />
+      </FormField>
+
+      <FormField label="Project Name" error={errors.projectName} required>
         <input
           name="projectName"
           value={values.projectName}
@@ -23,11 +27,11 @@ export function ProjectMaintenanceFields({
         />
       </FormField>
 
-      <FormField label="Project Description" error={errors.projectDescription} className="lg:col-span-2">
+      <FormField label="Description" error={errors.description} className="lg:col-span-2">
         <AppLimitedTextarea
-          name="projectDescription"
+          name="description"
           maxLength={500}
-          value={values.projectDescription}
+          value={values.description}
           onChange={onInputChange}
           readOnly={isReadonly}
           showCounter={false}

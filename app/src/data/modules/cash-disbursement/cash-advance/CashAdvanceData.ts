@@ -1,168 +1,265 @@
-import {
-  createTaxDetails,
-  syncTaxDetailsAmount,
-} from "@/app/src/data/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherData";
-import { formatMoneyNumberDisplayValue } from "@/app/src/data/shared/money/MoneyNumberData";
 import { CashAdvanceStatuses } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
+import { ResponsibilityCenterInitialFormValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import type {
+  CashAdvanceAccountingEntry,
   CashAdvanceFormValues,
+  CashAdvanceItem,
   CashAdvanceRecord,
   CashAdvanceStatus,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
-import { formatCurrency } from "@/app/src/utils/currency.util";
+import type {
+  ResponsibilityCenter,
+  ResponsibilityCenterClassification,
+  ResponsibilityCenterFormValues,
+  ResponsibilityCenterTypeOption,
+} from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import { formatAmount } from "@/app/src/utils/currency.util";
+import { parseFiniteNumber } from "@/app/src/utils/number.util";
 
-export function createCashAdvanceFormValues(baseCurrency = "PHP"): CashAdvanceFormValues {
+export function createBlankCashAdvanceItem(values: Partial<CashAdvanceItem> = {}): CashAdvanceItem {
+  const particulars = values.particulars ?? values.remarks ?? "";
   return {
-    accountId: "",
-    accountCode: "",
-    accountTitle: "",
     amount: "",
-    attachments: [],
-    costCenterId: "",
-    costCenter: "",
-    availableCashAdvance: "",
+    cashAdvanceBalance: "",
     cashAdvanceLimit: "",
-    currency: baseCurrency,
-    documentDate: new Date().toISOString().slice(0, 10),
-    fxRate: "1.00",
-    partyId: "",
+    id: `ca-item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    particulars,
+    remarks: particulars,
     partyCode: "",
     partyName: "",
-    projectId: "",
-    referenceFields: {
-      accountCode: "",
-      costCenterCode: "",
-      partyCode: "",
-      projectCode: "",
-      projectName: "",
-      refNo: "",
-      projectRef: "",
-      importationRefNo: "",
-    },
+    responsibilityCenter: "",
+    ...values,
+  };
+}
+
+export function createBlankCashAdvanceAccountingEntry(
+  values: Partial<CashAdvanceAccountingEntry> = {},
+): CashAdvanceAccountingEntry {
+  const particulars = values.particulars ?? values.remarks ?? "";
+  return {
+    accountCode: "",
+    accountTitle: "",
+    credit: "",
+    debit: "",
+    id: `ca-accounting-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    particulars,
+    remarks: particulars,
+    partyCode: "",
+    partyName: "",
+    responsibilityCenter: "",
+    ...values,
+  };
+}
+
+export function createCashAdvanceFormValues(baseCurrencyCode = "PHP"): CashAdvanceFormValues {
+  const today = new Date().toISOString().slice(0, 10);
+
+  return {
+    accountCode: "",
+    accountTitle: "",
+    accountingEntries: [createBlankCashAdvanceAccountingEntry()],
+    attachments: [],
+    contractNo: "",
+    costCenter: "",
+    currency: baseCurrencyCode,
+    documentDate: today,
+    exchangeRate: "1.00",
+    items: [createBlankCashAdvanceItem()],
+    partyCode: "",
+    partyName: "",
+    projectCode: "",
+    projectName: "",
+    projectRef: "",
     remarks: "",
-    status: CashAdvanceStatuses.Draft,
-    taxValue: {
-      taxDetails: createTaxDetails(0, "0%"),
-      taxRate: "0%",
-    },
+    status: CashAdvanceStatuses.Open,
+    totalAmount: "",
     transNo: "",
   };
 }
 
-export function createCashAdvanceFormValuesFromRecord(record: CashAdvanceRecord): CashAdvanceFormValues {
+export function createCashAdvanceFormValuesFromRecord(
+  record: CashAdvanceRecord,
+): CashAdvanceFormValues {
   if (record.formValues) {
-    const legacyFormValues = record.formValues as CashAdvanceFormValues & { cashAdvanceBalance?: string };
-
     return {
       ...createCashAdvanceFormValues(),
       ...record.formValues,
-      accountId: record.formValues.accountId,
-      accountCode: record.accountCode || record.formValues.accountCode,
-      accountTitle: record.accountTitle || record.formValues.accountTitle,
-      availableCashAdvance: record.formValues.availableCashAdvance ?? legacyFormValues.cashAdvanceBalance ?? "",
-      cashAdvanceLimit: record.formValues.cashAdvanceLimit ?? "",
-      costCenterId: record.formValues.costCenterId,
-      costCenter: record.costCenter || record.formValues.costCenter,
+      items: (record.formValues.items ?? []).map((item) => ({
+        ...item,
+        cashAdvanceBalance: item.cashAdvanceBalance ?? "",
+      })),
+      accountingEntries: record.formValues.accountingEntries ?? [],
+      projectCode: record.formValues.projectCode ?? record.projectCode ?? "",
+      projectName: record.formValues.projectName ?? record.formValues.projectRef ?? record.projectName ?? record.projectRef ?? "",
+      projectRef: record.formValues.projectName ?? record.formValues.projectRef ?? record.projectName ?? record.projectRef ?? "",
       currency: record.currency ?? record.formValues.currency ?? "PHP",
-      fxRate: String(record.fxRate ?? record.formValues.fxRate ?? "1.00"),
-      partyId: record.partyId ?? record.formValues.partyId,
-      partyCode: record.partyCode || record.formValues.partyCode,
-      partyName: record.partyName || record.formValues.partyName,
-      projectId: record.formValues.projectId,
-      referenceFields: {
-        ...record.formValues.referenceFields,
-        accountCode: record.accountCode || record.formValues.referenceFields?.accountCode || "",
-        costCenterCode: record.costCenterCode || record.formValues.referenceFields?.costCenterCode || "",
-        partyCode: record.partyCode || record.formValues.referenceFields?.partyCode || "",
-        projectCode: record.projectCode || record.formValues.referenceFields?.projectCode || "",
-        projectName:
-          record.projectName ||
-          record.projectRef ||
-          record.formValues.referenceFields?.projectName ||
-          record.formValues.referenceFields?.projectRef ||
-          "",
-        projectRef:
-          record.projectName ||
-          record.projectRef ||
-          record.formValues.referenceFields?.projectName ||
-          record.formValues.referenceFields?.projectRef ||
-          "",
-      },
+      exchangeRate: String(record.exchangeRate ?? record.formValues.exchangeRate ?? "1.00"),
       status: normalizeCashAdvanceStatus(record.formValues.status),
       transNo: record.formValues.transNo || record.transNo,
     };
   }
 
-  const recordWithBalances = record as CashAdvanceRecord & {
-    availableCashAdvance?: string;
-    cashAdvanceBalance?: string;
-    cashAdvanceLimit?: string;
-  };
-
   return {
     ...createCashAdvanceFormValues(),
-    accountId: "",
     accountCode: record.accountCode,
-    accountTitle: record.accountTitle || "",
-    amount: formatMoneyNumberDisplayValue(record.amount || ""),
-    availableCashAdvance: recordWithBalances.availableCashAdvance ?? recordWithBalances.cashAdvanceBalance ?? "",
-    cashAdvanceLimit: recordWithBalances.cashAdvanceLimit ?? "",
-    costCenterId: "",
+    accountTitle: record.accountTitle,
     costCenter: record.costCenter,
     currency: record.currency ?? "PHP",
     documentDate: record.documentDate,
-    fxRate: String(record.fxRate ?? "1.00"),
-    partyId: record.partyId ?? "",
+    exchangeRate: String(record.exchangeRate ?? "1.00"),
     partyCode: record.partyCode,
     partyName: record.partyName,
-    projectId: "",
-    referenceFields: {
-      accountCode: record.accountCode,
-      costCenterCode: record.costCenterCode || "",
-      partyCode: record.partyCode,
-      projectCode: record.projectCode || "",
-      projectName: record.projectName || record.projectRef || "",
-      refNo: "",
-      projectRef: record.projectName || record.projectRef || "",
-      importationRefNo: "",
-    },
+    projectCode: record.projectCode ?? "",
+    projectName: record.projectName ?? record.projectRef ?? "",
+    projectRef: record.projectName ?? record.projectRef ?? "",
     remarks: record.remarks,
     status: normalizeCashAdvanceStatus(record.status),
-    taxValue: {
-      taxDetails: syncTaxDetailsAmount(createTaxDetails(0, "0%"), record.amount, "0%"),
-      taxRate: "0%",
-    },
+    totalAmount: String(record.amount || ""),
     transNo: record.transNo,
   };
+}
+
+export function calculateCashAdvanceTotal(rows: CashAdvanceItem[]) {
+  return rows.reduce((total, row) => total + parseFiniteNumber(row.amount), 0);
+}
+
+export function formatCashAdvanceAmount(value: number | string) {
+  return formatAmount(parseFiniteNumber(value));
 }
 
 export function countCashAdvancesByStatus(records: CashAdvanceRecord[], status: CashAdvanceStatus) {
   return records.filter((record) => record.status === status).length;
 }
 
-export function formatCashAdvanceCurrency(value: number) {
-  return formatCurrency(value);
+export function createCashAdvanceSelectOptions(
+  options: readonly { label: string; value: string }[],
+): AppAdvancedDropdownOption[] {
+  return options
+    .filter((option) => option.value)
+    .map((option) => ({
+      label: option.value,
+      name: option.label,
+      value: option.value,
+    }));
 }
 
-export function getCashAdvanceStatusLabel(status: CashAdvanceStatus) {
-  return status;
+export function createCashAdvanceProjectOptions({
+  centers,
+  currentProjectCode,
+  currentProjectName,
+}: {
+  centers: ResponsibilityCenter[];
+  currentProjectCode: string;
+  currentProjectName: string;
+}): AppAdvancedDropdownOption[] {
+  const options: AppAdvancedDropdownOption[] = [];
+
+  centers
+    .filter((center) => center.status === "Active" && center.category === "Project")
+    .forEach((center) => {
+      addUniqueDropdownOption(options, {
+        description: center.financialType,
+        label: center.code,
+        name: center.name,
+        value: center.name,
+      });
+    });
+
+  if (currentProjectName.trim() || currentProjectCode.trim()) {
+    addUniqueDropdownOption(options, {
+      description: "Current Cash Advance value",
+      label: currentProjectCode || currentProjectName,
+      name: currentProjectName || currentProjectCode,
+      value: currentProjectName || currentProjectCode,
+    });
+  }
+
+  return options;
+}
+
+export function createCashAdvanceResponsibilityCenterDropdownOptions({
+  centers,
+}: {
+  centers: ResponsibilityCenter[];
+}): AppAdvancedDropdownOption[] {
+  const options: AppAdvancedDropdownOption[] = [];
+
+  centers
+    .filter((center) => center.status === "Active")
+    .forEach((center) => {
+      addUniqueDropdownOption(options, {
+        description: center.financialType,
+        label: center.code,
+        name: center.name,
+        value: center.name,
+      });
+    });
+
+  return options;
+}
+
+export function createCashAdvanceProjectInitialValues(
+  classifications: ResponsibilityCenterClassification[],
+  types: ResponsibilityCenterTypeOption[],
+): ResponsibilityCenterFormValues {
+  const projectType = types.find((type) => type.name === "Project");
+  const projectClassification = classifications.find((classification) => classification.id === projectType?.classificationId);
+  const costCenterClassification = classifications.find((classification) => classification.name === "Cost Center");
+  const classification = projectClassification ?? costCenterClassification;
+
+  return {
+    ...ResponsibilityCenterInitialFormValues,
+    category: "Project",
+    classificationId: classification?.id ?? "",
+    financialType: classification?.name ?? "Cost Center",
+    typeId: projectType?.id ?? "",
+  };
+}
+
+export function createCashAdvanceResponsibilityCenterInitialValues(
+  classifications: ResponsibilityCenterClassification[],
+  types: ResponsibilityCenterTypeOption[],
+): ResponsibilityCenterFormValues {
+  const responsibilityCenterClassification =
+    classifications.find((classification) => classification.name === "Cost Center") ?? classifications[0];
+  const responsibilityCenterType = types.find((type) => type.classificationId === responsibilityCenterClassification?.id);
+
+  return {
+    ...ResponsibilityCenterInitialFormValues,
+    classificationId: responsibilityCenterClassification?.id ?? "",
+    financialType: responsibilityCenterClassification?.name ?? "",
+    typeId: responsibilityCenterType?.id ?? "",
+  };
+}
+
+export function createCashAdvanceApprovalRecord(record: CashAdvanceRecord | null): CashAdvanceRecord | null {
+  if (!record) {
+    return null;
+  }
+
+  return {
+    accountCode: record.accountCode,
+    accountTitle: record.accountTitle,
+    amount: record.amount,
+    costCenter: record.costCenter,
+    createdAt: record.createdAt,
+    createdBy: record.createdBy,
+    documentDate: record.documentDate,
+    id: record.id,
+    partyCode: record.partyCode,
+    partyName: record.partyName,
+    remarks: record.remarks,
+    status: record.status,
+    transNo: record.transNo,
+    updatedAt: record.updatedAt,
+    updatedBy: record.updatedBy,
+  };
 }
 
 function normalizeCashAdvanceStatus(value: string): CashAdvanceStatus {
   if (value === CashAdvanceStatuses.Open) {
-    return CashAdvanceStatuses.Draft;
-  }
-
-  if (value === "Approved") {
-    return CashAdvanceStatuses.Posted;
-  }
-
-  if (value === "Pending Review") {
     return CashAdvanceStatuses.ForApproval;
-  }
-
-  if (value === "Rejected") {
-    return CashAdvanceStatuses.Disapproved;
   }
 
   const statuses: CashAdvanceStatus[] = [
@@ -173,5 +270,13 @@ function normalizeCashAdvanceStatus(value: string): CashAdvanceStatus {
     CashAdvanceStatuses.Posted,
   ];
 
-  return statuses.includes(value as CashAdvanceStatus) ? (value as CashAdvanceStatus) : CashAdvanceStatuses.Draft;
+  return statuses.includes(value as CashAdvanceStatus) ? (value as CashAdvanceStatus) : CashAdvanceStatuses.ForApproval;
+}
+
+function addUniqueDropdownOption(options: AppAdvancedDropdownOption[], option: AppAdvancedDropdownOption) {
+  if (!option.value.trim() || options.some((currentOption) => currentOption.value === option.value)) {
+    return;
+  }
+
+  options.push(option);
 }

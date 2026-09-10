@@ -54,12 +54,14 @@ function ProjectMaintenanceCellContent({
   const statusActionLabel = project.status === ProjectMaintenanceStatuses.Active ? "Deactivate" : "Activate";
 
   switch (columnId) {
+    case "projectCode":
+      return <span className="font-semibold text-darknavy/85">{project.projectCode}</span>;
     case "projectName":
       return <span className="font-medium text-darknavy">{project.projectName}</span>;
-    case "projectDescription":
+    case "description":
       return (
-        <span className="block truncate text-darknavy/75" title={project.projectDescription}>
-          {project.projectDescription || ""}
+        <span className="block truncate text-darknavy/75" title={project.description}>
+          {project.description || ""}
         </span>
       );
     case "status":

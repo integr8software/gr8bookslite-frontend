@@ -12,8 +12,10 @@ import {
   pettyCashVoucherControllerUpdateV1,
 } from "@/app/src/generated/api/petty-cash-voucher/petty-cash-voucher";
 import { fetchTransactionNumber } from "@/app/src/services/shared/transaction-number/TransactionNumberApi";
+import { PettyCashVoucherStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import type {
   CreatePettyCashVoucherDto,
+  PettyCashVoucherDetailDto,
   PettyCashVoucherListResponseDto,
   PettyCashVoucherResponseDto,
   UpdatePettyCashVoucherDto,
@@ -21,10 +23,12 @@ import type {
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type {
   PettyCashVoucherFormValues,
+  PettyCashVoucherItem,
   PettyCashVoucherRecord,
   PettyCashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
+import { calculatePettyCashVoucherTotals } from "@/app/src/data/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherData";
 
 type AuditUserSnapshot = {
   firstName?: string | null;
@@ -33,7 +37,12 @@ type AuditUserSnapshot = {
 
 type PettyCashVoucherResponseExtras = {
   createdByUser?: AuditUserSnapshot | null;
+  disburseAmount?: number | string | null;
   updatedByUser?: AuditUserSnapshot | null;
+};
+
+type PettyCashVoucherDetailExtras = {
+  type?: string | null;
 };
 
 type PettyCashVoucherQueryParams = NonNullable<Parameters<typeof pettyCashVoucherControllerFindAllV1>[0]>;
@@ -46,6 +55,31 @@ export type PettyCashVoucherCopyFromCandidate = {
   consumedAmount: number;
   consumedGrossAmount: number;
   currency: string;
+  details: Array<{
+    date?: string | null;
+    disburseAmount: number;
+    availableAmount: number;
+    availableGrossAmount: number;
+    consumedAmount: number;
+    consumedGrossAmount: number;
+    ewtAmount: number;
+    ewtCode?: string | null;
+    ewtPercent: number;
+    grossAmount: number;
+    id: string;
+    lineNumber: number;
+    netAmount: number;
+    particulars?: string | null;
+    remarks?: string | null;
+    responsibilityCenter?: string | null;
+    responsibilityCenterCode?: string | null;
+    responsibilityCenterId?: string | null;
+    supplierCode?: string | null;
+    supplierName?: string | null;
+    vatAmount: number;
+    vatPercent: number;
+    vatType?: string | null;
+  }>;
   disburseAmount: number;
   documentDate: string;
   exchangeRate: number;
@@ -84,7 +118,7 @@ type MappedPettyCashVoucherListResponse = Omit<PettyCashVoucherListResponseDto, 
 };
 
 export const StatusFromApi: Record<string, PettyCashVoucherStatus> = {
-  DRAFT: "Draft",
+  DRAFT: PettyCashVoucherStatuses.Draft,
   FOR_APPROVAL: "For Approval",
   APPROVED: "Posted",
   POSTED: "Posted",
@@ -104,14 +138,56 @@ export const StatusToApi: Record<PettyCashVoucherStatus, string> = {
 
 export function mapPettyCashVoucherRecordFromDto(dto: PettyCashVoucherResponseDto): PettyCashVoucherRecord {
   const dtoExtras = dto as PettyCashVoucherResponseDto & PettyCashVoucherResponseExtras;
+  const items: PettyCashVoucherItem[] = (dto.details ?? []).map((d: PettyCashVoucherDetailDto & PettyCashVoucherDetailExtras, index: number) => ({
+    id: d.id ? String(d.id) : `item-${index + 1}`,
+    date: d.itemDate || d.date ? String(d.itemDate || d.date).split("T")[0] : "",
+    supplierCode: d.supplierCodeSnapshot ?? "",
+    supplierName: d.supplierNameSnapshot ?? "",
+    orNo: d.orNo ?? "",
+    tinNo: d.tinNo ?? "",
+    particulars: d.particulars ?? "",
+    remarks: d.remarks ?? "",
+    amount: String(d.grossAmount ?? 0),
+    netAmount: String(d.netAmount ?? 0),
+    vatPercent: String(d.vatPercent ?? 0),
+    vatAmount: String(d.vatAmount ?? 0),
+    ewtCode: d.ewtCode ?? "",
+    ewtPercent: String(d.ewtPercent ?? 0),
+    ewtAmount: String(d.ewtAmount ?? 0),
+    disburseAmount: String(d.disburseAmount ?? d.grossAmount ?? 0),
+    type: d.type ?? "",
+    vatType: d.vatType ?? "",
+    grossAmount: String(d.grossAmount ?? 0),
+    responsibilityCenterCode: d.responsibilityCenterCodeSnapshot ?? "",
+    responsibilityCenterName: d.responsibilityCenterSnapshot ?? "",
+  }));
+
+  const formValues: PettyCashVoucherFormValues = {
+    transactionNo: dto.transactionNo,
+    documentDate: dto.documentDate,
+    status: StatusFromApi[dto.status] ?? PettyCashVoucherStatuses.Draft,
+    partyCode: dto.partyCodeSnapshot ?? "",
+    partyName: dto.partyNameSnapshot ?? "",
+    responsibilityCenter: dto.responsibilityCenterSnapshot ?? "",
+    responsibilityCenterCode: dto.responsibilityCenterCodeSnapshot ?? "",
+    projectCode: dto.projectCode ?? "",
+    projectName: dto.projectName ?? "",
+    accountCode: dto.accountCodeSnapshot ?? "",
+    accountTitle: dto.accountTitleSnapshot ?? "",
+    currency: dto.currencyCode,
+    exchangeRate: dto.exchangeRate !== undefined && dto.exchangeRate !== null ? String(dto.exchangeRate) : "1.00",
+    remarks: dto.remarks ?? "",
+    items,
+    attachments: [],
+  };
+
   const createdUser = dtoExtras.createdByUser;
   const updatedUser = dtoExtras.updatedByUser;
-  const grossAmount = Number(dto.grossAmount ?? dto.amount ?? 0);
-  const disburseAmount = Number(dto.netAmount ?? dto.amount ?? grossAmount);
+  const totals = calculatePettyCashVoucherTotals(items);
 
   return {
     id: dto.id,
-    voucherNo: dto.voucherNo,
+    transactionNo: dto.transactionNo,
     documentDate: dto.documentDate,
     partyCode: dto.partyCodeSnapshot ?? "",
     partyName: dto.partyNameSnapshot ?? "",
@@ -119,28 +195,44 @@ export function mapPettyCashVoucherRecordFromDto(dto: PettyCashVoucherResponseDt
     accountTitle: dto.accountTitleSnapshot ?? "",
     currency: dto.currencyCode,
     exchangeRate: dto.exchangeRate !== undefined && dto.exchangeRate !== null ? String(dto.exchangeRate) : "1.00",
-    amount: grossAmount,
-    disburseAmount,
-    ewtAmount: dto.ewtAmount,
-    ewtCode: dto.ewtCode ?? "",
-    ewtRate: dto.ewtRate ?? `${dto.ewtPercent ?? 0}%`,
+    amount: totals.grossAmount || (typeof dto.amount === "number" ? dto.amount : Number(dto.amount ?? 0)),
+    disburseAmount: totals.disburseAmount || Number(dtoExtras.disburseAmount ?? dto.amount ?? 0),
     remarks: dto.remarks ?? "",
-    status: StatusFromApi[dto.status] ?? "Draft",
-    netAmount: dto.netAmount,
-    vatable: dto.vatable as PettyCashVoucherRecord["vatable"],
-    vatAmount: dto.vatAmount,
-    vatRate: dto.vatRate ?? `${dto.vatPercent ?? 0}%`,
-    vatType: dto.vatType ?? "",
+    status: StatusFromApi[dto.status] ?? PettyCashVoucherStatuses.Draft,
     createdBy: createdUser ? `${createdUser.firstName ?? ""} ${createdUser.lastName ?? ""}`.trim() : "",
-    dateCreated: dto.createdAt,
+    createdAt: dto.createdAt,
     updatedBy: updatedUser ? `${updatedUser.firstName ?? ""} ${updatedUser.lastName ?? ""}`.trim() : "",
-    dateModified: dto.updatedAt,
+    updatedAt: dto.updatedAt,
+    formValues,
   };
 }
 
 export function mapPettyCashVoucherFormValuesToCreateDto(values: PettyCashVoucherFormValues): CreatePettyCashVoucherDto {
+  const items =
+    values.status === PettyCashVoucherStatuses.Draft ? (values.items ?? []).filter(isPettyCashVoucherItemPopulated) : (values.items ?? []);
+  const details = items.map((item, index) => ({
+    lineNumber: index + 1,
+    itemDate: item.date || undefined,
+    supplierCode: item.supplierCode,
+    supplierName: item.supplierName,
+    particulars: item.particulars,
+    responsibilityCenterCode: item.responsibilityCenterCode,
+    responsibilityCenter: item.responsibilityCenterName,
+    grossAmount: parseMoneyNumberInput(item.grossAmount),
+    vatType: item.vatType,
+    vatPercent: parseMoneyNumberInput(item.vatPercent),
+    vatAmount: parseMoneyNumberInput(item.vatAmount),
+    netAmount: parseMoneyNumberInput(item.netAmount),
+    ewtCode: item.ewtCode,
+    ewtPercent: parseMoneyNumberInput(item.ewtPercent),
+    ewtAmount: parseMoneyNumberInput(item.ewtAmount),
+    disburseAmount: parseMoneyNumberInput(item.disburseAmount),
+  }));
+
+  const totalAmount = details.reduce((sum, d) => sum + (d.grossAmount || 0), 0);
+
   return {
-    voucherNo: values.transactionNo,
+    transactionNo: values.transactionNo,
     documentDate: values.documentDate,
     partyCode: values.partyCode,
     partyName: values.partyName,
@@ -148,22 +240,28 @@ export function mapPettyCashVoucherFormValuesToCreateDto(values: PettyCashVouche
     accountTitle: values.accountTitle,
     responsibilityCenterCode: values.responsibilityCenterCode,
     responsibilityCenter: values.responsibilityCenter,
+    projectCode: values.projectCode,
+    projectName: values.projectName,
     currencyCode: values.currency || "PHP",
     exchangeRate: parseMoneyNumberInput(values.exchangeRate) || 1.0,
-    amount: parseMoneyNumberInput(values.amount),
-    vatType: values.vatType,
-    vatable: values.vatable as CreatePettyCashVoucherDto["vatable"],
-    vatPercent: parseMoneyNumberInput(values.vatRate),
-    vatAmount: parseMoneyNumberInput(values.vatAmount),
-    ewtCode: values.ewtCode,
-    ewtPercent: parseMoneyNumberInput(values.ewtRate),
-    ewtAmount: parseMoneyNumberInput(values.ewtAmount),
-    netAmount: parseMoneyNumberInput(values.netAmount),
+    amount: totalAmount,
     remarks: values.remarks,
     status: (values.status && values.status !== "Open"
       ? StatusToApi[values.status as PettyCashVoucherStatus]
       : "DRAFT") as CreatePettyCashVoucherDto["status"],
+    details,
   };
+}
+
+function isPettyCashVoucherItemPopulated(item: PettyCashVoucherItem) {
+  return Boolean(
+    item.supplierCode.trim() ||
+    item.supplierName.trim() ||
+    item.particulars.trim() ||
+    item.amount.trim() ||
+    item.grossAmount.trim() ||
+    item.disburseAmount.trim(),
+  );
 }
 
 export function mapPettyCashVoucherFormValuesToUpdateDto(values: PettyCashVoucherFormValues): UpdatePettyCashVoucherDto {
@@ -185,7 +283,7 @@ export async function fetchPettyCashVoucherList(params?: FetchPettyCashVoucherLi
     sortOrder: params?.sortOrder,
   };
 
-  if (params?.status && params.status !== "all") {
+  if (params?.status && params.status !== "all" && params.status !== "All") {
     queryParams.status = (StatusToApi[params.status as PettyCashVoucherStatus] ?? params.status) as PettyCashVoucherQueryParams["status"];
   }
 

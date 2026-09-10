@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
-  applyPettyCashFundToReplenishmentForm,
+  applyPettyCashVoucherToReplenishmentForm,
   calculatePettyCashReplenishmentItemTaxFields,
   calculatePettyCashReplenishmentTotals,
   createBlankPettyCashReplenishmentEntry,
@@ -34,9 +34,7 @@ import {
 } from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentApi";
 import { PettyCashReplenishmentQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentQueryKeys";
 import { fetchPettyCashVoucherCopyFromCandidates } from "@/app/src/services/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherApi";
-import { fetchPettyCashFundCopyFromCandidates } from "@/app/src/services/modules/cash-disbursement/petty-cash-fund/PettyCashFundApi";
 import { PettyCashVoucherQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherQueryKeys";
-import { PettyCashFundQueryKeys } from "@/app/src/services/modules/cash-disbursement/petty-cash-fund/PettyCashFundQueryKeys";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import {
   buildCashDisbursementCopyRecordSet,
@@ -131,17 +129,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
       }),
     enabled: activeCompanyId !== null && mode === PettyCashReplenishmentActionModes.Add,
   });
-  const pettyCashFundCandidatesQuery = useQuery({
-    queryKey: [...PettyCashFundQueryKeys.all, "copy-from", "petty-cash-replenishment", activeCompanyId, activeBranchId, selectedPartyCode],
-    queryFn: () =>
-      fetchPettyCashFundCopyFromCandidates({
-        branchUnitId: activeBranchId,
-        partyCode: selectedPartyCode,
-      }),
-    enabled: activeCompanyId !== null && mode === PettyCashReplenishmentActionModes.Add,
-  });
   const pettyCashVoucherCandidates = useMemo(() => pettyCashVoucherCandidatesQuery.data ?? [], [pettyCashVoucherCandidatesQuery.data]);
-  const pettyCashFundCandidates = useMemo(() => pettyCashFundCandidatesQuery.data ?? [], [pettyCashFundCandidatesQuery.data]);
   const copiedPettyCashReferences = useMemo(
     () => new Set(values.entries.map((entry) => entry.pettyCashNo.trim()).filter(Boolean)),
     [values.entries],
@@ -154,14 +142,8 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
         prefix: PaymentVoucherCopyPrefixes.PettyCashVoucher,
         source: "Petty Cash Voucher",
       }),
-      ...buildCashDisbursementCopyRecordSet({
-        candidates: pettyCashFundCandidates,
-        copiedReferences: copiedPettyCashReferences,
-        prefix: PaymentVoucherCopyPrefixes.PettyCashFund,
-        source: "Petty Cash Fund",
-      }),
     ],
-    [copiedPettyCashReferences, pettyCashFundCandidates, pettyCashVoucherCandidates],
+    [copiedPettyCashReferences, pettyCashVoucherCandidates],
   );
 
   useEffect(() => {
@@ -368,8 +350,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
       PaymentVoucherCopyPrefixes.PettyCashVoucher,
       recordIds,
     );
-    const selectedFunds = findPaymentVoucherCopyCandidates(pettyCashFundCandidates, PaymentVoucherCopyPrefixes.PettyCashFund, recordIds);
-    const selectedSources = [...selectedVouchers, ...selectedFunds];
+    const selectedSources = selectedVouchers;
     if (selectedSources.length === 0) {
       toast.error("No valid Petty Cash records selected.");
       return;
@@ -378,10 +359,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     const duplicateVoucher = selectedVouchers.some(
       (record) => copiedPettyCashReferences.has(`PCV:${record.transactionNo}`) || copiedPettyCashReferences.has(record.transactionNo),
     );
-    const duplicateFund = selectedFunds.some(
-      (record) => copiedPettyCashReferences.has(`PCF:${record.transactionNo}`) || copiedPettyCashReferences.has(record.transactionNo),
-    );
-    if (duplicateVoucher || duplicateFund) {
+    if (duplicateVoucher) {
       toast.error("The selected Petty Cash record has already been added.");
       return;
     }
@@ -398,27 +376,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
       return;
     }
 
-    const voucherEntries = selectedVouchers.map((record) =>
-      createCopiedPettyCashReplenishmentEntry({
-        amount: String(record.availableGrossAmount || record.amount || 0),
-        disburseAmount: String(record.availableAmount || record.disburseAmount || 0),
-        ewtAmount: "0",
-        ewtCode: "",
-        ewtPercent: "0",
-        netAmount: String(record.availableAmount || record.disburseAmount || record.amount || 0),
-        particulars: record.remarks || `Replenishment for ${record.transactionNo}`,
-        pettyCashDate: record.documentDate,
-        pettyCashNo: `PCV:${record.transactionNo}`,
-        responsibilityCenterCode: record.responsibilityCenterCode || "",
-        responsibilityCenterName: record.responsibilityCenter || "",
-        supplierCode: record.partyCode || "",
-        supplierName: record.partyName || "",
-        vatAmount: "0",
-        vatPercent: "0",
-        vatType: "",
-      }),
-    );
-    const fundEntries = selectedFunds.flatMap((record) => {
+    const copiedEntries = selectedVouchers.flatMap((record) => {
       return record.details.map((detail) => {
         const grossAmount = Number(detail.grossAmount || 0);
         const availableGrossAmount = Number(detail.availableGrossAmount ?? detail.grossAmount ?? 0);
@@ -433,7 +391,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
           netAmount: String(scalePaymentVoucherCopyAmount(detail.netAmount, ratio)),
           particulars: detail.particulars || detail.remarks || record.remarks || `Replenishment for ${record.transactionNo}`,
           pettyCashDate: detail.date || record.documentDate,
-          pettyCashNo: `PCF:${record.transactionNo}`,
+          pettyCashNo: `PCV:${record.transactionNo}`,
           responsibilityCenterCode: detail.responsibilityCenterCode || record.responsibilityCenterCode || "",
           responsibilityCenterName: detail.responsibilityCenter || record.responsibilityCenter || "",
           supplierCode: detail.supplierCode || record.partyCode || "",
@@ -444,7 +402,6 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
         });
       });
     });
-    const copiedEntries = [...voucherEntries, ...fundEntries];
     const firstSource = selectedSources[0];
 
     setValues((current) => {
@@ -481,14 +438,14 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
     moveEntry,
     addEntries,
     addEntry,
-    applyFundRecord: (fund: Parameters<typeof applyPettyCashFundToReplenishmentForm>[1]) => {
-      const nextValues = applyPettyCashFundToReplenishmentForm(values, fund);
+    applyVoucherRecord: (voucher: Parameters<typeof applyPettyCashVoucherToReplenishmentForm>[1]) => {
+      const nextValues = applyPettyCashVoucherToReplenishmentForm(values, voucher);
       setValues(nextValues);
     },
     closePreview: () => setIsPreviewOpen(false),
     copyFromRecords,
-    pettyCashFundCopyFromRecords: copyFromRecords,
-    copyFromPettyCashFund: copyFromPettyCash,
+    pettyCashVoucherCopyFromRecords: copyFromRecords,
+    copyFromPettyCashVoucher: copyFromPettyCash,
     currencyOptions: transactionCurrency.currencyOptions,
     discardDraft,
     draft,

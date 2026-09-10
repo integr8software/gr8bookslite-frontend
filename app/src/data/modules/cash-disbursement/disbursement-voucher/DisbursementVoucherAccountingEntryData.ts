@@ -20,8 +20,8 @@ import type {
   DisbursementLineEntry,
   DisbursementVoucherBankAccount,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
-import type { DefaultAccountOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type { DisbursementType } from "@/app/src/types/modules/financial-maintenance/disbursement-type/DisbursementTypeTypes";
+import type { DisbursementTypeOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import { calculateFitColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 import { formatAmount } from "@/app/src/utils/currency.util";
@@ -35,9 +35,9 @@ export function createAccountingChartAccountOptions(
 }
 
 export function createDefaultAccountExpenseOptions(
-  defaultAccounts: DefaultAccount[] | DefaultAccountOptionResponseDto[] = [],
+  defaultAccounts: DisbursementType[] | DisbursementTypeOptionResponseDto[] = [],
 ): ModuleChartAccount[] {
-  return (defaultAccounts as Array<DefaultAccount | DefaultAccountOptionResponseDto>).flatMap((account) => {
+  return (defaultAccounts as Array<DisbursementType | DisbursementTypeOptionResponseDto>).flatMap((account) => {
     if ("generatedAccounts" in account && Array.isArray(account.generatedAccounts)) {
       if (account.status !== "Active" || account.type !== "EXPENSE") {
         return [];
@@ -49,7 +49,7 @@ export function createDefaultAccountExpenseOptions(
           accountName: generatedAccount.accountTitle,
           accountNumber: generatedAccount.accountCode,
           accountType: generatedAccount.accountType ?? "Expenses",
-          description: account.defaultAccountName,
+          description: account.disbursementTypeName,
           id: generatedAccount.chartAccountId,
           normalBalance: "Debit",
           statementGroup: "Income Statement",
@@ -58,7 +58,7 @@ export function createDefaultAccountExpenseOptions(
         }));
     }
 
-    const dto = account as DefaultAccountOptionResponseDto;
+    const dto = account as DisbursementTypeOptionResponseDto;
     if (dto.status === "ACTIVE" && dto.type === "EXPENSE" && dto.chartAccountId && dto.accountCode && dto.accountTitle) {
       return [
         {

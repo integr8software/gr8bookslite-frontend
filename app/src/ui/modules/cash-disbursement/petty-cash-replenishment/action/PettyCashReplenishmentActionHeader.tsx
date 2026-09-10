@@ -78,10 +78,10 @@ export function PettyCashReplenishmentActionHeader({
             {page.mode === "add" ? (
               <AppCopyFromDropdown
                 enableSourceSearch
-                records={page.pettyCashFundCopyFromRecords}
+                records={page.pettyCashVoucherCopyFromRecords}
                 selectionMode="multiple"
-                sources={["Petty Cash Voucher", "Petty Cash Fund"]}
-                onApply={page.copyFromPettyCashFund}
+                sources={["Petty Cash Voucher"]}
+                onApply={page.copyFromPettyCashVoucher}
               />
             ) : null}
             {page.mode !== "add" ? <PettyCashReplenishmentActionHistory record={page.record} /> : null}

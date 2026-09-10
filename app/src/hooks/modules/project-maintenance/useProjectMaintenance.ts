@@ -8,6 +8,7 @@ import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { ResolveAuthProfileEffectiveRole } from "@/app/src/services/auth/AuthProfileAccess";
 import {
   createProject,
+  fetchProjectOptions,
   fetchProjects,
   updateProject,
 } from "@/app/src/services/modules/project-maintenance/ProjectMaintenanceApi";
@@ -135,4 +136,16 @@ export function useProjectMaintenanceStore<TSelected = ProjectMaintenanceStoreSt
   ]);
 
   return selector ? selector(state) : (state as TSelected);
+}
+
+export function useProjectMaintenanceLookup() {
+  const activeCompanyId = useAppStore((state) => state.activeCompanyId);
+
+  return useQuery({
+    enabled: activeCompanyId !== null,
+    queryFn: fetchProjectOptions,
+    queryKey: ProjectMaintenanceQueryKeys.options(activeCompanyId),
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  });
 }

@@ -20,7 +20,7 @@ import type {
   CashVoucherLineEntry,
   CashVoucherBankAccount,
 } from "@/app/src/types/modules/cash-disbursement/cash-voucher/CashVoucherTypes";
-import type { DefaultAccount } from "@/app/src/types/modules/financial-maintenance/default-account/DefaultAccountTypes";
+import type { DisbursementType } from "@/app/src/types/modules/financial-maintenance/disbursement-type/DisbursementTypeTypes";
 import type { ModuleDataEntryClearAction } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import { calculateFitColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
 import { formatAmount } from "@/app/src/utils/currency.util";
@@ -33,7 +33,7 @@ export function createAccountingChartAccountOptions(
   return chartAccounts;
 }
 
-export function createDefaultAccountExpenseOptions(defaultAccounts: DefaultAccount[]): ModuleChartAccount[] {
+export function createDefaultAccountExpenseOptions(defaultAccounts: DisbursementType[]): ModuleChartAccount[] {
   return defaultAccounts
     .filter((account) => account.status === "Active" && account.type === "EXPENSE")
     .flatMap((account) =>
@@ -44,7 +44,7 @@ export function createDefaultAccountExpenseOptions(defaultAccounts: DefaultAccou
           accountName: generatedAccount.accountTitle,
           accountNumber: generatedAccount.accountCode,
           accountType: generatedAccount.accountType ?? "Expenses",
-          description: account.defaultAccountName,
+          description: account.disbursementTypeName,
           id: generatedAccount.chartAccountId,
           normalBalance: "Debit",
           statementGroup: "Income Statement",

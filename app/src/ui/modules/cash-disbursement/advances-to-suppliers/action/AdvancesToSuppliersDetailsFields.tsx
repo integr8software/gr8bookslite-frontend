@@ -80,7 +80,7 @@ export function AdvancesToSuppliersDetailsFields({
               value={page.values.accountCode}
               options={page.accountOptions}
               readOnly={page.isReadonly}
-              placeholder={page.isLookupLoading ? "Loading Default Accounts" : "Select Default Account Title"}
+              placeholder={page.isLookupLoading ? "Loading Disbursement Types" : "Select Disbursement Type Title"}
               searchPlaceholder="Search Default Account"
               onChange={(code, name) => {
                 const selectedAccount = page.accountOptions.find((option) => option.value === code) as

@@ -9,10 +9,12 @@ import type {
   ProjectMaintenanceResponseDto,
   ProjectMaintenanceResponseDtoStatus,
 } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import type {
   ProjectMaintenance,
   ProjectMaintenanceFormValues,
   ProjectMaintenanceListResult,
+  ProjectMaintenanceLookupOption,
   ProjectMaintenanceStatus,
 } from "@/app/src/types/modules/project-maintenance/ProjectMaintenanceTypes";
 
@@ -27,6 +29,31 @@ export async function fetchProjects(): Promise<ProjectMaintenanceListResult> {
       canImport: response.permissions.canImport ?? false,
     },
   };
+}
+
+export async function fetchProjectOptions(): Promise<ProjectMaintenanceLookupOption[]> {
+  const response = await ApiClient.get<{
+    projects: Array<{
+      id: string;
+      projectCode?: string | null;
+      projectName: string;
+      name?: string | null;
+      description?: string | null;
+      status: ProjectMaintenanceResponseDtoStatus;
+    }>;
+  }>("/maintenance/project-maintenance/options");
+
+  return response.data.projects.map((project) => ({
+    id: project.id,
+    projectId: project.id,
+    projectCode: project.projectCode ?? "",
+    projectName: project.projectName,
+    name: project.name?.trim() || project.projectName,
+    label: project.projectCode ?? "",
+    value: project.projectName,
+    description: project.description ?? "",
+    status: mapStatusFromApi(project.status),
+  }));
 }
 
 export async function createProject(values: ProjectMaintenanceFormValues): Promise<ProjectMaintenance> {
@@ -44,8 +71,9 @@ export async function updateProject(project: ProjectMaintenance): Promise<Projec
 function mapApiProject(project: ProjectMaintenanceResponseDto): ProjectMaintenance {
   return {
     id: project.id,
+    projectCode: project.projectCode ?? "",
     projectName: project.projectName,
-    projectDescription: project.projectDescription ?? "",
+    description: project.description ?? "",
     status: mapStatusFromApi(project.status),
     createdBy: project.createdBy ?? "-",
     createdAt: project.createdAt,
@@ -56,8 +84,9 @@ function mapApiProject(project: ProjectMaintenanceResponseDto): ProjectMaintenan
 
 function toApiProjectPayload(project: ProjectMaintenance | ProjectMaintenanceFormValues): CreateProjectMaintenanceDto {
   return {
+    projectCode: project.projectCode.trim(),
     projectName: project.projectName.trim(),
-    projectDescription: project.projectDescription.trim(),
+    description: project.description.trim(),
     status: mapStatusToApi(project.status),
   };
 }

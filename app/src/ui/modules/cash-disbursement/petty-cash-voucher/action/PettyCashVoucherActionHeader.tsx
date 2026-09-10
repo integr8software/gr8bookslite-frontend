@@ -2,71 +2,166 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CreditCard, Edit3 } from "lucide-react";
+import { ArrowLeft, Edit3 } from "lucide-react";
 import {
-  PettyCashVoucherActionDescriptions,
+  PettyCashVoucherConfirmationDialogConfirmLabels,
+  PettyCashVoucherConfirmationDialogTitles,
   PettyCashVoucherLink,
   PettyCashVoucherStatuses,
-  canEditPettyCashVoucherStatus,
-  getPettyCashVoucherStatusDialogCopy,
+  canEditPettyCashVoucher,
   getPettyCashVoucherEditLink,
-  getPettyCashVoucherActionTitle,
-  getPettyCashVoucherSaveDialogCopy,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import type {
   PettyCashVoucherActionPageState,
-  PettyCashVoucherConfirmation,
+  PettyCashVoucherConfirmationAction,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
-import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
-import { ModuleDraftDiscardAction } from "@/app/src/ui/shared/module/ModuleDraftDiscardAction";
-import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 import { PettyCashVoucherActionHistory } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherActionHistory";
 import { PettyCashVoucherStatusActions } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/action/PettyCashVoucherStatusActions";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { ModuleActionButton } from "@/app/src/ui/shared/module/ModuleActionButton";
+import { ModuleDraftDiscardAction } from "@/app/src/ui/shared/module/ModuleDraftDiscardAction";
+import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
+import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
+import { ReportPreviewAction } from "@/app/src/ui/shared/reports/Reports";
 
-export function PettyCashVoucherActionHeader({ page }: { page: PettyCashVoucherActionPageState }) {
-  const [confirmation, setConfirmation] = useState<PettyCashVoucherConfirmation | null>(null);
-  const recordLabel = page.values.transactionNo || "this petty cash voucher";
-  const isDraftEdit = page.mode === "edit" && page.existingVoucher?.status === PettyCashVoucherStatuses.Draft;
+export function PettyCashVoucherActionHeader({ onPreview, page }: { onPreview: () => void; page: PettyCashVoucherActionPageState }) {
+  const [confirmation, setConfirmation] = useState<PettyCashVoucherConfirmationAction | null>(null);
+  const transactionNo = page.record?.transactionNo ?? page.values.transactionNo;
+  const isDraftEdit = page.mode === "edit" && page.record?.status === PettyCashVoucherStatuses.Draft;
   const isSaveAction = page.mode === "add" || isDraftEdit;
-  const dialogCopy = confirmation
-    ? confirmation.action === "status"
-      ? getPettyCashVoucherStatusDialogCopy(confirmation.status, recordLabel)
-      : getPettyCashVoucherSaveDialogCopy(confirmation.action, isDraftEdit ? "add" : page.mode, recordLabel)
-    : null;
+  const title =
+    page.mode === "add" ? (
+      "Add Petty Cash Voucher"
+    ) : (
+      <span className="inline-flex flex-wrap items-center gap-2">
+        <span>
+          {page.mode === "view" ? "View" : "Edit"} Petty Cash Voucher | {transactionNo}
+        </span>
+        <ModuleStatusBadge status={page.values.status} />
+      </span>
+    );
 
   return (
     <>
       <ModuleHeader
         variant="panel"
+        title={title}
         titleAs="h1"
-        title={getPettyCashVoucherActionTitle(page.mode, page.existingVoucher?.voucherNo)}
-        description={PettyCashVoucherActionDescriptions[page.mode]}
+        description={
+          page.mode === "view"
+            ? "Review the voucher details, entries, and supporting files."
+            : "Set up a custodian, default account, and petty cash transactions."
+        }
         actionsClassName="items-center justify-end gap-2"
-        eyebrow={<PettyCashVoucherHeaderEyebrow />}
         actions={
-          <PettyCashVoucherHeaderActions
-            isSaveAction={isSaveAction}
-            page={page}
-            onRequestConfirmation={setConfirmation}
-          />
+          <>
+            <Link href={PettyCashVoucherLink} className={moduleHeaderActionClassNames.secondary} onClick={page.saveDraft}>
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+              Back
+            </Link>
+            {page.mode !== "view" ? (
+              <ModuleDraftDiscardAction
+                hasChanges={page.hasDiscardableChanges}
+                href={PettyCashVoucherLink}
+                mode={page.mode}
+                onDiscard={page.discardDraft}
+              />
+            ) : null}
+            <ReportPreviewAction onPreview={onPreview} />
+            {page.mode !== "add" ? <PettyCashVoucherActionHistory record={page.record} /> : null}
+            {page.mode === "view" && page.record ? (
+              <>
+                <PettyCashVoucherStatusActions record={page.record} onRequestConfirmation={setConfirmation} />
+                {canEditPettyCashVoucher(page.record.status) ? (
+                  <Link href={getPettyCashVoucherEditLink(page.record.id)} className={moduleHeaderActionClassNames.primary}>
+                    <Edit3 className="h-4 w-4" aria-hidden="true" />
+                    Edit
+                  </Link>
+                ) : null}
+              </>
+            ) : null}
+            {page.mode !== "view" ? (
+              <ModuleActionButton
+                disabled={page.isSubmitting}
+                label={isSaveAction ? "Save" : "Update"}
+                onAction={() => {
+                  if (page.validate(PettyCashVoucherStatuses.ForApproval)) {
+                    setConfirmation("save");
+                  }
+                }}
+                menuItems={
+                  isSaveAction
+                    ? [
+                        {
+                          label: "Save As Draft",
+                          onSelect: () => {
+                            if (page.validate(PettyCashVoucherStatuses.Draft)) {
+                              setConfirmation("draft");
+                            }
+                          },
+                        },
+                      ]
+                    : []
+                }
+              />
+            ) : null}
+          </>
         }
       />
-      {dialogCopy && confirmation ? (
+      {confirmation ? (
         <AppDialog
           isOpen
+          title={
+            confirmation === "save" && !isSaveAction
+              ? "Update Petty Cash Voucher?"
+              : PettyCashVoucherConfirmationDialogTitles[confirmation]
+          }
+          description={
+            confirmation === "save"
+              ? !isSaveAction
+                ? `This will update ${transactionNo}.`
+                : `This will save and submit ${transactionNo}.`
+              : confirmation === "draft"
+                ? `This will save ${transactionNo} as draft.`
+                : confirmation === "approve"
+                  ? `This will approve ${transactionNo}.`
+                  : confirmation === "disapprove"
+                    ? `This will mark ${transactionNo} as disapproved.`
+                    : `This will mark ${transactionNo} as cancelled.`
+          }
+          confirmLabel={
+            confirmation === "save" && !isSaveAction
+              ? "Update"
+              : PettyCashVoucherConfirmationDialogConfirmLabels[confirmation]
+          }
           cancelLabel="Cancel"
-          confirmLabel={dialogCopy.confirmLabel}
-          description={dialogCopy.description}
-          iconTone={dialogCopy.iconTone}
+          iconTone={confirmation === "save" ? (isSaveAction ? "save" : "update") : confirmation === "draft" ? "save" : undefined}
           isPending={page.isSubmitting}
-          pendingLabel={dialogCopy.pendingLabel}
-          title={dialogCopy.title}
-          tone={dialogCopy.tone}
+          pendingLabel={confirmation === "save" && !isSaveAction ? "Updating..." : "Saving..."}
+          tone={
+            confirmation === "approve"
+              ? "success"
+              : confirmation === "disapprove"
+                ? "danger"
+                : confirmation === "cancel"
+                  ? "warning"
+                  : "default"
+          }
           onCancel={() => setConfirmation(null)}
           onConfirm={async () => {
-            const isSuccessful = await runConfirmedAction(page, confirmation);
+            let isSuccessful = false;
+
+            if (confirmation === "save") {
+              isSuccessful = await page.save(PettyCashVoucherStatuses.ForApproval);
+            } else if (confirmation === "draft") {
+              isSuccessful = await page.save(PettyCashVoucherStatuses.Draft);
+            } else if (confirmation === "approve") {
+              isSuccessful = await page.updateStatus(PettyCashVoucherStatuses.Posted);
+            } else if (confirmation === "disapprove") {
+              isSuccessful = await page.updateStatus(PettyCashVoucherStatuses.Disapproved);
+            } else {
+              isSuccessful = await page.updateStatus(PettyCashVoucherStatuses.Cancelled);
+            }
 
             if (isSuccessful) {
               setConfirmation(null);
@@ -76,91 +171,4 @@ export function PettyCashVoucherActionHeader({ page }: { page: PettyCashVoucherA
       ) : null}
     </>
   );
-}
-
-function PettyCashVoucherHeaderEyebrow() {
-  return (
-    <span className="contents">
-      <CreditCard className="h-3.5 w-3.5" aria-hidden="true" />
-      Cash disbursement
-    </span>
-  );
-}
-
-function PettyCashVoucherHeaderActions({
-  isSaveAction,
-  onRequestConfirmation,
-  page,
-}: {
-  isSaveAction: boolean;
-  onRequestConfirmation: (confirmation: PettyCashVoucherConfirmation) => void;
-  page: PettyCashVoucherActionPageState;
-}) {
-  return (
-    <span className="contents">
-      <Link href={PettyCashVoucherLink} className={moduleHeaderActionClassNames.secondary} onClick={page.saveDraft}>
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-        Back
-      </Link>
-      {page.mode !== "view" ? (
-        <ModuleDraftDiscardAction
-          hasChanges={page.hasDiscardableChanges}
-          href={PettyCashVoucherLink}
-          mode={page.mode}
-          onDiscard={page.discardDraft}
-        />
-      ) : null}
-      <ReportPreviewAction onPreview={page.openReportPreview} />
-      {page.mode === "view" ? <PettyCashVoucherActionHistory page={page} /> : null}
-      {page.mode !== "add" ? (
-        <PettyCashVoucherStatusActions
-          status={page.values.status}
-          onRequestStatus={(status) => onRequestConfirmation({ action: "status", status })}
-        />
-      ) : null}
-      {page.mode === "view" && page.existingVoucher && canEditPettyCashVoucherStatus(page.existingVoucher.status) ? (
-        <Link href={getPettyCashVoucherEditLink(page.existingVoucher.id)} className={moduleHeaderActionClassNames.primary}>
-          <Edit3 className="h-4 w-4" aria-hidden="true" />
-          Edit
-        </Link>
-      ) : null}
-      {page.isReadonly ? null : (
-        <ModuleActionButton
-          disabled={page.isSubmitting}
-          label={isSaveAction ? "Save" : "Update"}
-          onAction={() => {
-            if (page.validate(PettyCashVoucherStatuses.ForApproval)) {
-              onRequestConfirmation({ action: "submit" });
-            }
-          }}
-          menuItems={
-            isSaveAction
-              ? [
-                  {
-                    label: "Save As Draft",
-                    onSelect: () => {
-                      if (page.validate(PettyCashVoucherStatuses.Draft)) {
-                        onRequestConfirmation({ action: "draft" });
-                      }
-                    },
-                  },
-                ]
-              : []
-          }
-        />
-      )}
-    </span>
-  );
-}
-
-function runConfirmedAction(page: PettyCashVoucherActionPageState, confirmation: PettyCashVoucherConfirmation) {
-  if (confirmation.action === "status") {
-    return page.handleUpdateStatus(confirmation.status);
-  }
-
-  if (confirmation.action === "submit") {
-    return page.handleSubmit();
-  }
-
-  return page.handleSaveAsDraft();
 }

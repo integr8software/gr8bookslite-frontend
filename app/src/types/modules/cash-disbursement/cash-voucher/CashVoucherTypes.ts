@@ -69,7 +69,7 @@ export type CashVoucherCopySource =
   | "Cash Advance Liquidation"
   | "Cash Advance Multiple Entry"
   | "Cash Advance Multiple Entry Liquidation"
-  | "Petty Cash Fund"
+  | "Petty Cash Voucher"
   | "Petty Cash Replenishment"
   | "Revolving Fund"
   | "Revolving Fund Replenishment"
@@ -373,13 +373,13 @@ export type CashVoucherGeneratedAccountOptions = {
   withholdingTaxAccount?: CashVoucherGeneratedAccount | null;
 };
 
-export type CashVoucherDefaultAccount = {
+export type CashVoucherDisbursementType = {
   accountId: string;
   accountCode: string;
   accountTitle: string;
 };
 
 export type CashVoucherDefaultAccounts = {
-  defaultCashAccount: CashVoucherDefaultAccount;
-  creditAccount?: CashVoucherDefaultAccount;
+  defaultCashAccount: CashVoucherDisbursementType;
+  creditAccount?: CashVoucherDisbursementType;
 };

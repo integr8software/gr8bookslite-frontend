@@ -152,7 +152,9 @@ function getAccessKey(item: AuthUserModuleItem): MainAccessKey {
   if (item.key.includes("approval")) return "maintenance.approval";
   if (item.key.includes("charts-of-accounts")) return "maintenance.chartOfAccounts";
   if (item.key.includes("bank-masterfile")) return "maintenance.bankMasterfile";
-  if (item.key.includes("default-account")) return "maintenance.defaultAccount";
+  if (item.key.includes("disbursement-type") || item.key.includes("collection-type")) {
+    return "maintenance.defaultAccount";
+  }
   if (item.key.includes("services-maintenance")) return "maintenance.servicesMaintenance";
   if (item.key.includes("discount-maintenance")) return "maintenance.discount";
   if (item.key.includes("payment-type")) return "maintenance.paymentType";

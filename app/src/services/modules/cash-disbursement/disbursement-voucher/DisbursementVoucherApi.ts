@@ -1,4 +1,3 @@
-import { defaultAccountControllerFindOptionsByTypeV1 } from "@/app/src/generated/api/default-account/default-account";
 import {
   disbursementVoucherControllerCreateV1,
   disbursementVoucherControllerFindAllV1,
@@ -11,7 +10,7 @@ import {
 import type {
   CreateDisbursementVoucherDto,
   CreateDisbursementVoucherDtoStatus,
-  DefaultAccountOptionResponseDto,
+  DisbursementTypeOptionResponseDto,
   DisbursementVoucherControllerFindAllV1Params,
   DisbursementVoucherListResponseDto,
   DisbursementVoucherRecordResponseDto,
@@ -28,6 +27,7 @@ import type {
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
 import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
+import { fetchDisbursementTypeOptions } from "@/app/src/services/modules/financial-maintenance/disbursement-type/DisbursementTypeApi";
 
 type ApiDisbursementVoucherStatus = CreateDisbursementVoucherDtoStatus | UpdateDisbursementVoucherDtoStatus | string;
 type ApiDisbursementVoucherLineAmountSource = Partial<DisbursementLineEntry> & {
@@ -86,10 +86,8 @@ export async function fetchNextDisbursementVoucherTransactionNo(branchUnitId?: n
   return response.transactionNo;
 }
 
-export async function fetchDisbursementVoucherExpenseAccountOptions(): Promise<DefaultAccountOptionResponseDto[]> {
-  const response = await defaultAccountControllerFindOptionsByTypeV1("expense", { status: "ACTIVE" });
-
-  return response.options;
+export async function fetchDisbursementVoucherExpenseAccountOptions(): Promise<DisbursementTypeOptionResponseDto[]> {
+  return fetchDisbursementTypeOptions("disbursement");
 }
 
 export async function fetchDisbursementVoucherAccountTitleOptions(): Promise<ModuleChartAccount[]> {

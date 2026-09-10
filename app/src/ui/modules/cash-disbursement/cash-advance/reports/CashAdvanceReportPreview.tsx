@@ -1,38 +1,53 @@
 "use client";
 
-import { formatCashAdvanceCurrency } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
+import {
+  calculateCashAdvanceTotal,
+  formatCashAdvanceAmount,
+} from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
 import type {
   CashAdvanceFormValues,
+  CashAdvanceItem,
   CashAdvanceReportPreviewProps,
 } from "@/app/src/types/modules/cash-disbursement/cash-advance/CashAdvanceTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { ReportPreviewDrawer } from "@/app/src/ui/shared/reports/Reports";
 import { formatDate } from "@/app/src/utils/date.util";
 
-export function CashAdvanceReportPreview({ isOpen, onClose, onGeneratePdf, values }: CashAdvanceReportPreviewProps) {
+export function CashAdvanceReportPreview({
+  isOpen,
+  onClose,
+  onGeneratePdf,
+  responsibilityCenterOptions,
+  values,
+}: CashAdvanceReportPreviewProps) {
   return (
     <ReportPreviewDrawer
       isOpen={isOpen}
       eyebrow="Cash disbursement"
-      title="Cash Advance PDF Preview"
-      description="Review the printable cash advance document."
+      title="Cash Advance Preview"
+      description="Review the cash advance request and cash advance entries."
       onClose={onClose}
       onGeneratePdf={onGeneratePdf}
-      printLabel="Open PDF"
     >
-      <CashAdvanceReportDocument values={values} />
+      <CashAdvanceReportDocument responsibilityCenterOptions={responsibilityCenterOptions} values={values} />
     </ReportPreviewDrawer>
   );
 }
 
-function CashAdvanceReportDocument({ values }: { values: CashAdvanceFormValues }) {
-  const amount = Number(values.amount || 0);
-  const accountTitle = values.accountTitle || getCashAdvanceAccountTitle(values.accountCode);
-  const purpose = [accountTitle, values.remarks].filter(Boolean).join(" - ");
+function CashAdvanceReportDocument({
+  responsibilityCenterOptions,
+  values,
+}: {
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
+  values: CashAdvanceFormValues;
+}) {
+  const totalAmount = calculateCashAdvanceTotal(values.items || []);
+  const responsibilityCenterNames = getResponsibilityCenterNames(values.items || [], responsibilityCenterOptions);
 
   return (
-    <div className="mx-auto min-w-[56rem] max-w-[56rem] bg-white p-6 text-[13px] leading-normal text-black shadow-sm">
+    <div className="mx-auto min-w-[68rem] max-w-[68rem] bg-white p-6 text-[12px] leading-normal text-black shadow-sm">
       <div className="border-2 border-black">
-        <div className="grid min-h-36 grid-cols-[10rem_1fr_10rem] items-start px-7 py-4">
+        <div className="grid min-h-32 grid-cols-[10rem_1fr_10rem] items-start px-7 py-4">
           <div className="grid h-24 w-28 place-items-center text-4xl font-black tracking-tighter text-skyblue">integr8</div>
           <div className="text-center">
             <p className="text-lg font-bold">Your Company Name Here</p>
@@ -43,43 +58,103 @@ function CashAdvanceReportDocument({ values }: { values: CashAdvanceFormValues }
           <div />
         </div>
 
-        <div className="grid grid-cols-[1fr_21rem] items-end border-b-2 border-black px-3 pb-1">
-          <h2 className="text-3xl font-black uppercase tracking-tight">Cash Advance Request Form</h2>
-          <p className="pb-0.5 font-bold">
+        <div className="grid grid-cols-[1fr_18rem] items-end border-y-2 border-black px-3 py-1">
+          <h2 className="text-2xl font-black uppercase tracking-tight">Cash Advance</h2>
+          <p className="font-bold">
             Document Date: <span className="font-normal">{formatCompactDate(values.documentDate)}</span>
           </p>
         </div>
 
-        <RequestLine label="Name Requesting Cash Advance" value={values.partyName} />
-        <RequestLine label="Responsibility Center" value={values.costCenter} />
-        <RequestLine label="Amount of Cash Advance" value={formatCashAdvanceCurrency(amount)} />
-        <RequestLine label="Amount in Words" value={amountToWords(amount)} />
-        <RequestLine label="Project Name" value={values.referenceFields.projectName} minHeightClassName="min-h-16" />
-        <RequestLine label="Purpose of Cash Advance" value={purpose} minHeightClassName="min-h-14" />
+        <div className="grid grid-cols-4 border-b-2 border-black">
+          <PreviewField label="CA No." value={values.transNo} />
+          <PreviewField label="Employee Name" value={values.partyName} />
+          <PreviewField label="Project" value={values.projectName || values.projectCode} />
+          <PreviewField label="Total Amount" value={formatCashAdvanceAmount(totalAmount)} />
+        </div>
+        <div className="grid grid-cols-2 border-b-2 border-black">
+          <PreviewField label="Responsibility Center" value={responsibilityCenterNames} />
+          <PreviewField label="Status" value={values.status} />
+        </div>
+        <div className="min-h-12 border-b-2 border-black px-2 py-1">
+          <span className="font-bold uppercase">Remarks: </span>
+          <span>{values.remarks || "\u00a0"}</span>
+        </div>
 
-        <div className="grid min-h-16 grid-cols-[1fr_1fr_10.75rem] border-t-2 border-black">
-          <div className="border-r-2 border-black px-2 py-1">Prepared by:</div>
-          <div className="border-r-2 border-black px-2 py-1">Approved by:</div>
-          <div className="px-2 py-1">
-            <p className="font-bold">CA NO.:</p>
-            <p className="text-right text-3xl font-black">{values.transNo || "-"}</p>
-          </div>
+        <ReportSectionTitle title="Cash Advance Entries" />
+        <table className="w-full table-fixed border-b-2 border-black text-left">
+          <thead>
+            <tr className="border-b-2 border-black text-[11px] uppercase">
+              <TableHeader className="w-10 text-center">#</TableHeader>
+              <TableHeader>Employee Name</TableHeader>
+              <TableHeader>Responsibility Center</TableHeader>
+              <TableHeader>Remarks</TableHeader>
+              <TableHeader className="w-32 text-right">Amount</TableHeader>
+            </tr>
+          </thead>
+          <tbody>
+            {(values.items || []).map((row, index) => (
+              <ItemRow key={row.id} index={index} responsibilityCenterOptions={responsibilityCenterOptions} row={row} />
+            ))}
+            <tr className="border-t-2 border-black font-bold">
+              <td className="px-2 py-2" colSpan={4}>
+                Total
+              </td>
+              <td className="px-2 py-2 text-right">{formatCashAdvanceAmount(totalAmount)}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div className="grid min-h-20 grid-cols-3 border-t-2 border-black">
+          <SignatureBox label="Prepared by:" />
+          <SignatureBox label="Checked by:" />
+          <SignatureBox label="Approved by:" />
         </div>
       </div>
-
-      <div className="mt-3 border-t-2 border-black pt-2">RECEIVED BY:</div>
-      <div className="mt-3 border-t-2 border-black" />
     </div>
   );
 }
 
-function RequestLine({ label, minHeightClassName = "min-h-7", value }: { label: string; minHeightClassName?: string; value?: string }) {
+function PreviewField({ label, value }: { label: string; value?: string }) {
   return (
-    <div className={`border-b-2 border-black px-2 py-1 ${minHeightClassName}`}>
-      <span className="font-bold uppercase">{label}: </span>
-      <span>{value || "\u00a0"}</span>
+    <div className="min-h-11 border-r-2 border-black px-2 py-1 last:border-r-0">
+      <p className="text-[10px] font-bold uppercase">{label}</p>
+      <p className="mt-1 font-medium">{value || "\u00a0"}</p>
     </div>
   );
+}
+
+function ReportSectionTitle({ title }: { title: string }) {
+  return <h3 className="border-b-2 border-black px-2 py-1 text-sm font-black uppercase">{title}</h3>;
+}
+
+function TableHeader({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <th className={`border-r-2 border-black px-2 py-1 last:border-r-0 ${className}`}>{children}</th>;
+}
+
+function ItemRow({
+  index,
+  responsibilityCenterOptions,
+  row,
+}: {
+  index: number;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
+  row: CashAdvanceItem;
+}) {
+  return (
+    <tr className="border-b border-black/45">
+      <td className="border-r border-black/45 px-2 py-2 text-center">{index + 1}</td>
+      <td className="border-r border-black/45 px-2 py-2">{row.partyName || "\u00a0"}</td>
+      <td className="border-r border-black/45 px-2 py-2">
+        {getResponsibilityCenterName(row.responsibilityCenter, responsibilityCenterOptions) || "\u00a0"}
+      </td>
+      <td className="border-r border-black/45 px-2 py-2">{row.remarks || "\u00a0"}</td>
+      <td className="px-2 py-2 text-right">{formatCashAdvanceAmount(row.amount)}</td>
+    </tr>
+  );
+}
+
+function SignatureBox({ label }: { label: string }) {
+  return <div className="border-r-2 border-black px-2 py-1 last:border-r-0">{label}</div>;
 }
 
 function formatCompactDate(value: string) {
@@ -92,61 +167,14 @@ function formatCompactDate(value: string) {
   return year && month && day ? `${month}/${day}/${year}` : formatDate(value, { locale: "en-US" });
 }
 
-function getCashAdvanceAccountTitle(accountCode: string) {
-  const accountTitles: Record<string, string> = {
-    "1130-CA": "Cash Advance",
-    "1130-EA": "Employee Advance",
-    "1135-OA": "Officer Advance",
-  };
-
-  return accountTitles[accountCode] ?? accountCode;
+function getResponsibilityCenterNames(rows: CashAdvanceItem[], options: AppAdvancedDropdownOption[]) {
+  return Array.from(new Set(rows.map((row) => getResponsibilityCenterName(row.responsibilityCenter, options)).filter(Boolean))).join(", ");
 }
 
-function amountToWords(value: number) {
-  if (!Number.isFinite(value) || value <= 0) {
+function getResponsibilityCenterName(value: string, options: AppAdvancedDropdownOption[]) {
+  if (!value) {
     return "";
   }
 
-  const wholeAmount = Math.floor(value);
-
-  return `${integerToWords(wholeAmount)} Only`;
-}
-
-function integerToWords(value: number): string {
-  const ones = [
-    "Zero",
-    "One",
-    "Two",
-    "Three",
-    "Four",
-    "Five",
-    "Six",
-    "Seven",
-    "Eight",
-    "Nine",
-    "Ten",
-    "Eleven",
-    "Twelve",
-    "Thirteen",
-    "Fourteen",
-    "Fifteen",
-    "Sixteen",
-    "Seventeen",
-    "Eighteen",
-    "Nineteen",
-  ];
-  const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
-
-  if (value < 20) return ones[value];
-  if (value < 100) {
-    return `${tens[Math.floor(value / 10)]}${value % 10 ? ` ${ones[value % 10]}` : ""}`;
-  }
-  if (value < 1000) {
-    return `${ones[Math.floor(value / 100)]} Hundred${value % 100 ? ` ${integerToWords(value % 100)}` : ""}`;
-  }
-  if (value < 1000000) {
-    return `${integerToWords(Math.floor(value / 1000))} Thousand${value % 1000 ? ` ${integerToWords(value % 1000)}` : ""}`;
-  }
-
-  return `${integerToWords(Math.floor(value / 1000000))} Million${value % 1000000 ? ` ${integerToWords(value % 1000000)}` : ""}`;
+  return options.find((option) => option.value === value || option.label === value || option.name === value)?.name ?? value;
 }

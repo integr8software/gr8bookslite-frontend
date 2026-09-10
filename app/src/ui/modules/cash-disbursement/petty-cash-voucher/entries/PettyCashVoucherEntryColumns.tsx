@@ -1,0 +1,311 @@
+import { calculatePettyCashVoucherItemTaxFields } from "@/app/src/data/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherData";
+import type {
+  PettyCashVoucherActionPageState,
+  PettyCashVoucherAccountingColumnId,
+  PettyCashVoucherAccountingEntry,
+  PettyCashVoucherItem,
+  PettyCashVoucherItemColumnId,
+  PettyCashVoucherOpenResponsibilityCenterDrawerHandler,
+  PettyCashVoucherOpenSupplierDrawerHandler,
+} from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
+import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import { ModuleDataEntryDropdownCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryDropdownCell";
+import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
+import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
+import { ModuleDataEntryReadonlyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryReadonlyCell";
+
+export function createPettyCashVoucherItemColumns(
+  page: PettyCashVoucherActionPageState,
+  labels: Record<PettyCashVoucherItemColumnId, string>,
+  widths: Record<PettyCashVoucherItemColumnId, number>,
+  supplierOptions: AppAdvancedDropdownOption[],
+  vatOptions: AppAdvancedDropdownOption[] = [],
+  ewtOptions: AppAdvancedDropdownOption[] = [],
+  taxCodes: AlphanumericTaxCode[] = [],
+  responsibilityCenterOptions: AppAdvancedDropdownOption[] = [],
+  onOpenResponsibilityCenterDrawer?: PettyCashVoucherOpenResponsibilityCenterDrawerHandler,
+  onOpenSupplierDrawer?: PettyCashVoucherOpenSupplierDrawerHandler,
+): Record<PettyCashVoucherItemColumnId, ModuleDataEntryColumn<PettyCashVoucherItem>> {
+  const text = (id: PettyCashVoucherItemColumnId, type: "text" | "date" = "text"): ModuleDataEntryColumn<PettyCashVoucherItem> => ({
+    header: labels[id],
+    id,
+    width: widths[id],
+    widthClassName: "w-auto",
+    renderCell: (row, _index, context) => (
+      <ModuleDataEntryInputCell
+        id={context.fieldId}
+        name={context.fieldName}
+        type={type}
+        value={String(row[id])}
+        readOnly={page.isReadonly}
+        placeholder={`Enter ${labels[id]}`}
+        onChange={(value) => page.updateItem(row.id, { [id]: value })}
+      />
+    ),
+  });
+
+  const money = (
+    id: PettyCashVoucherItemColumnId,
+    onChange?: (row: PettyCashVoucherItem, value: string) => void,
+  ): ModuleDataEntryColumn<PettyCashVoucherItem> => ({
+    header: labels[id],
+    id,
+    width: widths[id],
+    widthClassName: "w-auto",
+    renderCell: (row, _index, context) => (
+      <ModuleDataEntryMoneyCell
+        id={context.fieldId}
+        name={context.fieldName}
+        value={row[id]}
+        readOnly={page.isReadonly}
+        placeholder="0.00"
+        onChange={(value) => (onChange ? onChange(row, value) : page.updateItem(row.id, { [id]: value }))}
+      />
+    ),
+  });
+
+  const dropdown = (
+    id: PettyCashVoucherItemColumnId,
+    options: AppAdvancedDropdownOption[],
+  ): ModuleDataEntryColumn<PettyCashVoucherItem> => ({
+    header: labels[id],
+    id,
+    width: widths[id],
+    widthClassName: "w-auto",
+    renderCell: (row, _index, context) => (
+      <ModuleDataEntryDropdownCell
+        id={context.fieldId}
+        name={context.fieldName}
+        value={String(row[id])}
+        readOnly={page.isReadonly}
+        options={options}
+        placeholder={`Select ${labels[id]}`}
+        searchPlaceholder={`Search ${labels[id]}`}
+        onChange={(value) => page.updateItem(row.id, { [id]: value })}
+      />
+    ),
+  });
+
+  const calculatedMoney = (id: PettyCashVoucherItemColumnId): ModuleDataEntryColumn<PettyCashVoucherItem> => ({
+    header: labels[id],
+    id,
+    width: widths[id],
+    widthClassName: "w-auto",
+    renderCell: (row) => <ModuleDataEntryReadonlyCell align="right" value={String(row[id] ?? "")} />,
+  });
+
+  return {
+    date: text("date", "date"),
+    supplierCode: {
+      header: labels.supplierCode,
+      id: "supplierCode",
+      width: widths.supplierCode,
+      widthClassName: "w-auto",
+      renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.supplierCode} />,
+    },
+    supplierName: {
+      header: labels.supplierName,
+      id: "supplierName",
+      width: widths.supplierName,
+      widthClassName: "w-auto",
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryDropdownCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={row.supplierCode || row.supplierName}
+          readOnly={page.isReadonly}
+          options={supplierOptions}
+          placeholder="Select Supplier Name"
+          searchPlaceholder="Search Supplier Name"
+          addAction={
+            !page.isReadonly && onOpenSupplierDrawer
+              ? { label: "Add Vendor", onClick: () => onOpenSupplierDrawer(row.id) }
+              : undefined
+          }
+          onChange={(value) => {
+            const selectedSupplier = supplierOptions.find(
+              (option) => option.value === value || option.name === value || option.label === value,
+            );
+            const vatType = getDefaultVatType(selectedSupplier, row.vatType, vatOptions);
+            const ewtCode = getDefaultEwtCode(selectedSupplier, row.ewtCode, ewtOptions);
+            page.updateItem(row.id, {
+              supplierCode: String(selectedSupplier?.label ?? selectedSupplier?.value ?? ""),
+              supplierName: selectedSupplier?.name ?? String(value),
+              vatType,
+              ewtCode,
+              ...calculatePettyCashVoucherItemTaxFields(row.amount, vatType, ewtCode, taxCodes),
+            });
+          }}
+        />
+      ),
+    },
+    orNo: text("orNo"),
+    tinNo: text("tinNo"),
+    particulars: text("particulars"),
+    amount: money("amount", (row, value) =>
+      page.updateItem(row.id, {
+        amount: value,
+        ...calculatePettyCashVoucherItemTaxFields(value, row.vatType, row.ewtCode, taxCodes),
+      }),
+    ),
+    type: text("type"),
+    vatType: {
+      ...dropdown("vatType", vatOptions),
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryDropdownCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={row.vatType}
+          readOnly={page.isReadonly}
+          options={vatOptions}
+          placeholder="Select VAT Type"
+          searchPlaceholder="Search VAT Type"
+          onChange={(value) =>
+            page.updateItem(row.id, {
+              vatType: value,
+              ...calculatePettyCashVoucherItemTaxFields(row.amount, value, row.ewtCode, taxCodes),
+            })
+          }
+        />
+      ),
+    },
+    vatPercent: calculatedMoney("vatPercent"),
+    vatAmount: calculatedMoney("vatAmount"),
+    ewtCode: {
+      ...dropdown("ewtCode", ewtOptions),
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryDropdownCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={row.ewtCode}
+          readOnly={page.isReadonly}
+          options={ewtOptions}
+          optionViewToggle
+          placeholder="Select EWT Code"
+          searchPlaceholder="Search tax name, code, rate, or description"
+          onChange={(value) =>
+            page.updateItem(row.id, {
+              ewtCode: value,
+              ...calculatePettyCashVoucherItemTaxFields(row.amount, row.vatType, value, taxCodes),
+            })
+          }
+        />
+      ),
+    },
+    ewtPercent: calculatedMoney("ewtPercent"),
+    ewtAmount: calculatedMoney("ewtAmount"),
+    netAmount: calculatedMoney("netAmount"),
+    disburseAmount: calculatedMoney("disburseAmount"),
+    grossAmount: money("grossAmount"),
+    responsibilityCenterCode: {
+      header: labels.responsibilityCenterCode,
+      id: "responsibilityCenterCode",
+      width: widths.responsibilityCenterCode,
+      widthClassName: "w-auto",
+      renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.responsibilityCenterCode} />,
+    },
+    responsibilityCenterName: {
+      header: labels.responsibilityCenterName,
+      id: "responsibilityCenterName",
+      width: widths.responsibilityCenterName,
+      widthClassName: "w-auto",
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryDropdownCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={row.responsibilityCenterCode}
+          readOnly={page.isReadonly}
+          options={responsibilityCenterOptions}
+          placeholder="Select Responsibility Center"
+          searchPlaceholder="Search Responsibility Center"
+          addAction={
+            !page.isReadonly && onOpenResponsibilityCenterDrawer
+              ? { label: "Add Responsibility Center", onClick: () => onOpenResponsibilityCenterDrawer(row.id) }
+              : undefined
+          }
+          onChange={(value) => {
+            const selectedCenter = responsibilityCenterOptions.find((option) => option.value === value);
+            page.updateItem(row.id, {
+              responsibilityCenterCode: String(selectedCenter?.value ?? ""),
+              responsibilityCenterName: selectedCenter?.name ?? "",
+            });
+          }}
+        />
+      ),
+    },
+  };
+}
+
+function getDefaultVatType(
+  option: AppAdvancedDropdownOption | undefined,
+  fallback: string,
+  vatOptions: AppAdvancedDropdownOption[],
+) {
+  const taxOption = option as (AppAdvancedDropdownOption & {
+    defaultPurchaseInputVatTaxSourceKey?: string;
+    vatCode?: string;
+    vatType?: string;
+  }) | undefined;
+  const rawValue = taxOption?.vatType || taxOption?.vatCode || taxOption?.defaultPurchaseInputVatTaxSourceKey || "";
+  const normalized = rawValue.toLowerCase();
+  const matchedOption = vatOptions.find(
+    (vatOption) =>
+      vatOption.value.toLowerCase() === normalized ||
+      vatOption.name.toLowerCase() === normalized ||
+      (normalized.includes("12") && vatOption.value.toLowerCase().includes("12")) ||
+      (normalized.includes("zero") && vatOption.value.toLowerCase().includes("zero")) ||
+      (normalized.includes("exempt") && vatOption.value.toLowerCase().includes("exempt")),
+  );
+
+  return matchedOption?.value ?? fallback;
+}
+
+function getDefaultEwtCode(
+  option: AppAdvancedDropdownOption | undefined,
+  fallback: string,
+  ewtOptions: AppAdvancedDropdownOption[],
+) {
+  const taxOption = option as (AppAdvancedDropdownOption & {
+    defaultPurchaseEwtTaxSourceKey?: string;
+    ewtCode?: string;
+  }) | undefined;
+  const rawValue = taxOption?.ewtCode || taxOption?.defaultPurchaseEwtTaxSourceKey || "";
+  const normalized = rawValue.toLowerCase();
+  const matchedOption = ewtOptions.find(
+    (ewtOption) =>
+      ewtOption.value.toLowerCase() === normalized ||
+      ewtOption.name.toLowerCase() === normalized ||
+      ewtOption.name.toLowerCase().startsWith(`${normalized} `),
+  );
+
+  return matchedOption?.value ?? fallback;
+}
+
+export function createPettyCashVoucherAccountingColumns(
+  labels: Record<PettyCashVoucherAccountingColumnId, string>,
+  widths: Record<PettyCashVoucherAccountingColumnId, number>,
+): Record<PettyCashVoucherAccountingColumnId, ModuleDataEntryColumn<PettyCashVoucherAccountingEntry>> {
+  const column = (id: PettyCashVoucherAccountingColumnId): ModuleDataEntryColumn<PettyCashVoucherAccountingEntry> => ({
+    header: labels[id],
+    id,
+    width: widths[id],
+    widthClassName: "w-auto",
+    renderCell: (row) => (
+      <span className={`block ${id === "debit" || id === "credit" ? "text-right tabular-nums" : ""}`}>
+        {row[id]}
+      </span>
+    ),
+  });
+
+  return {
+    accountCode: column("accountCode"),
+    accountTitle: column("accountTitle"),
+    debit: column("debit"),
+    credit: column("credit"),
+    partyCode: column("partyCode"),
+    partyName: column("partyName"),
+    particulars: column("particulars"),
+  };
+}

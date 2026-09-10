@@ -71,7 +71,7 @@ export type DisbursementVoucherCopySource =
   | "Cash Advance Liquidation"
   | "Cash Advance Multiple Entry"
   | "Cash Advance Multiple Entry Liquidation"
-  | "Petty Cash Fund"
+  | "Petty Cash Voucher"
   | "Petty Cash Replenishment"
   | "Revolving Fund"
   | "Revolving Fund Replenishment"

@@ -1,26 +1,17 @@
 "use client";
 
-import {
-  useState } from "react";
-import { Ban,
-  Edit3,
-  Eye,
-  ThumbsDown,
-  ThumbsUp,
-  Undo2 } from "lucide-react";
+import { useState } from "react";
+import { Ban, Edit3, Eye, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import {
   PettyCashVoucherStatuses,
-  canApprovePettyCashVoucherStatus,
-  canCancelPettyCashVoucherStatus,
-  canDisapprovePettyCashVoucherStatus,
-  canEditPettyCashVoucherStatus,
-  getPettyCashVoucherStatusDialogCopy,
+  canEditPettyCashVoucher,
   getPettyCashVoucherEditLink,
   getPettyCashVoucherViewLink,
 } from "@/app/src/constants/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherConstants";
 import type {
-  PettyCashVoucherRecordActionsProps,
+  PettyCashVoucherRecord,
   PettyCashVoucherStatus,
+  PettyCashVoucherUpdateStatusHandler,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
 import { ModuleActionMenu, type ModuleActionMenuItem } from "@/app/src/ui/shared/module/ModuleActionMenu";
@@ -30,39 +21,44 @@ import {
   ModuleTableActions,
 } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 
-export function PettyCashVoucherRecordActions({ onUpdateStatus, record }: PettyCashVoucherRecordActionsProps) {
-  const [statusToConfirm, setStatusToConfirm] = useState<PettyCashVoucherStatus | null>(null);
+export function PettyCashVoucherRecordActions({
+  onUpdateStatus,
+  record,
+}: {
+  onUpdateStatus: PettyCashVoucherUpdateStatusHandler;
+  record: PettyCashVoucherRecord;
+}) {
+  const [status, setStatus] = useState<PettyCashVoucherStatus | null>(null);
   const isPosted = record.status === PettyCashVoucherStatuses.Posted;
   const isDisapproved = record.status === PettyCashVoucherStatuses.Disapproved;
   const isCancelled = record.status === PettyCashVoucherStatuses.Cancelled;
-  const undoStatus: PettyCashVoucherStatus = PettyCashVoucherStatuses.ForApproval;
-  const canEdit = canEditPettyCashVoucherStatus(record.status);
-  const actionItems: ModuleActionMenuItem[] = [
+  const canEdit = canEditPettyCashVoucher(record.status);
+  const items: ModuleActionMenuItem[] = [
     {
-      disabled: !canApprovePettyCashVoucherStatus(record.status),
+      type: "button",
       icon: isPosted ? Undo2 : ThumbsUp,
       label: isPosted ? "Undo Approved" : "Approve",
-      onSelect: () => setStatusToConfirm(isPosted ? undoStatus : PettyCashVoucherStatuses.Posted),
-      type: "button",
+      disabled: record.status !== PettyCashVoucherStatuses.ForApproval && !isPosted,
+      onSelect: () => (isPosted ? onUpdateStatus(record, PettyCashVoucherStatuses.ForApproval) : setStatus(PettyCashVoucherStatuses.Posted)),
     },
     {
-      disabled: !canDisapprovePettyCashVoucherStatus(record.status),
+      type: "button",
       icon: isDisapproved ? Undo2 : ThumbsDown,
       label: isDisapproved ? "Undo Disapproved" : "Disapprove",
-      onSelect: () => setStatusToConfirm(isDisapproved ? undoStatus : PettyCashVoucherStatuses.Disapproved),
+      disabled: record.status !== PettyCashVoucherStatuses.ForApproval && !isDisapproved,
       tone: isDisapproved ? "default" : "danger",
-      type: "button",
+      onSelect: () =>
+        isDisapproved ? onUpdateStatus(record, PettyCashVoucherStatuses.ForApproval) : setStatus(PettyCashVoucherStatuses.Disapproved),
     },
     {
-      disabled: !canCancelPettyCashVoucherStatus(record.status),
+      type: "button",
       icon: isCancelled ? Undo2 : Ban,
       label: isCancelled ? "Undo Cancelled" : "Cancel",
-      onSelect: () => setStatusToConfirm(isCancelled ? undoStatus : PettyCashVoucherStatuses.Cancelled),
+      disabled: record.status === PettyCashVoucherStatuses.Posted || record.status === PettyCashVoucherStatuses.Disapproved,
       tone: isCancelled ? "default" : "danger",
-      type: "button",
+      onSelect: () => (isCancelled ? onUpdateStatus(record, PettyCashVoucherStatuses.Draft) : setStatus(PettyCashVoucherStatuses.Cancelled)),
     },
   ];
-  const dialogCopy = statusToConfirm ? getPettyCashVoucherStatusDialogCopy(statusToConfirm, record.voucherNo) : null;
 
   return (
     <>
@@ -70,7 +66,7 @@ export function PettyCashVoucherRecordActions({ onUpdateStatus, record }: PettyC
         <ModuleTableActionLink
           href={getPettyCashVoucherViewLink(record.id)}
           icon={Eye}
-          label={`View petty cash voucher ${record.voucherNo}`}
+          label={`View petty cash voucher ${record.transactionNo}`}
           title="View"
           variant="view"
         />
@@ -78,7 +74,7 @@ export function PettyCashVoucherRecordActions({ onUpdateStatus, record }: PettyC
           <ModuleTableActionLink
             href={getPettyCashVoucherEditLink(record.id)}
             icon={Edit3}
-            label={`Edit petty cash voucher ${record.voucherNo}`}
+            label={`Edit petty cash voucher ${record.transactionNo}`}
             title="Edit"
             variant="edit"
           />
@@ -86,31 +82,28 @@ export function PettyCashVoucherRecordActions({ onUpdateStatus, record }: PettyC
           <ModuleTableActionButton
             disabled
             icon={Edit3}
-            label={`Edit petty cash voucher ${record.voucherNo}`}
+            label={`Edit petty cash voucher ${record.transactionNo}`}
             title="Edit"
             variant="edit"
           />
         )}
         <ModuleActionMenu
           className="[&>button]:h-9 [&>button]:w-9"
-          items={actionItems}
-          label={`More actions for petty cash voucher ${record.voucherNo}`}
+          items={items}
+          label={`More actions for petty cash voucher ${record.transactionNo}`}
         />
       </ModuleTableActions>
-      {dialogCopy && statusToConfirm ? (
+      {status ? (
         <AppDialog
           isOpen
-          cancelLabel="Keep Current Status"
-          confirmLabel={dialogCopy.confirmLabel}
-          description={dialogCopy.description}
-          iconTone={dialogCopy.iconTone}
-          pendingLabel={dialogCopy.pendingLabel}
-          title={dialogCopy.title}
-          tone={dialogCopy.tone}
-          onCancel={() => setStatusToConfirm(null)}
-          onConfirm={async () => {
-            await onUpdateStatus(record, statusToConfirm);
-            setStatusToConfirm(null);
+          title={`Mark as ${status}?`}
+          description={`This will update ${record.transactionNo} to ${status}.`}
+          confirmLabel={`Mark as ${status}`}
+          tone={status === PettyCashVoucherStatuses.Posted ? "success" : "danger"}
+          onCancel={() => setStatus(null)}
+          onConfirm={() => {
+            onUpdateStatus(record, status);
+            setStatus(null);
           }}
         />
       ) : null}

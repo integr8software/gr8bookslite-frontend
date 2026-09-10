@@ -6,8 +6,9 @@ import type {
 } from "@/app/src/types/modules/project-maintenance/ProjectMaintenanceTypes";
 
 const ProjectMaintenanceFormSchema = z.object({
+  projectCode: z.string().trim().max(80, "Project code must be 80 characters or fewer."),
   projectName: z.string().trim().min(1, "Enter a project name.").max(150, "Project name must be 150 characters or fewer."),
-  projectDescription: z.string().trim().max(500, "Project description must be 500 characters or fewer."),
+  description: z.string().trim().max(500, "Description must be 500 characters or fewer."),
   status: z.enum(ProjectMaintenanceStatusOptions, {
     message: "Select a status.",
   }),

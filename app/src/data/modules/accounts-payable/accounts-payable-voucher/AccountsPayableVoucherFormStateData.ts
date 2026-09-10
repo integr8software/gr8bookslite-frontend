@@ -296,7 +296,7 @@ export function createManualInputVatAccountingEntry(
   }
 
   const inputVatAccount = getTaxAccountingAccount("inputTaxAccountId", taxAccountingContext);
-  const vatAmount = getManualAccountingTaxAmount(sourceEntry, vatPercent);
+  const vatAmount = getManualAccountingTaxAmount(sourceEntry, vatPercent, vatPercent);
   const vatEntryAmounts = getSignedAccountingEntryAmounts(vatAmount, AccountsPayableVoucherAccountingDebitSide);
 
   return createAccountsPayableVoucherAccountingEntry(sourceEntry.lineNumber + 1, {
@@ -328,7 +328,8 @@ export function createManualEwtAccountingEntry(
   }
 
   const ewtAccount = getTaxAccountingAccount("expandedWithholdingTaxAccountId", taxAccountingContext);
-  const ewtAmount = getManualAccountingTaxAmount(sourceEntry, ewtPercent);
+  const vatPercent = getManualAccountingVatPercent(sourceEntry.vatType, taxAccountingContext);
+  const ewtAmount = getManualAccountingTaxAmount(sourceEntry, ewtPercent, vatPercent);
   const ewtEntryAmounts = getSignedAccountingEntryAmounts(ewtAmount, AccountsPayableVoucherAccountingCreditSide);
 
   return createAccountsPayableVoucherAccountingEntry(sourceEntry.lineNumber + 1, {
@@ -660,8 +661,14 @@ export function getManualAccountingEwtPercent(atcCode: string, context: Accounts
   return taxCode ? Number(taxCode.taxRate || 0) : getExplicitEwtPercent(atcValue);
 }
 
-export function getManualAccountingTaxAmount(sourceEntry: AccountsPayableVoucherAccountingEntry, taxPercent: number) {
-  return roundAccountingAmount((getManualAccountingEntryAmount(sourceEntry) * taxPercent) / 100);
+export function getManualAccountingTaxAmount(
+  sourceEntry: AccountsPayableVoucherAccountingEntry,
+  taxPercent: number,
+  vatPercent = 0,
+) {
+  const amount = getManualAccountingEntryAmount(sourceEntry);
+  const taxBaseAmount = vatPercent === 12 ? amount / 1.12 : amount;
+  return roundAccountingAmount(vatPercent === 12 && taxPercent === 12 ? taxBaseAmount * 0.12 : (taxBaseAmount * taxPercent) / 100);
 }
 
 export function getManualAccountingEntryAmount(entry: AccountsPayableVoucherAccountingEntry | null | undefined) {

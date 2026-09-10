@@ -12,7 +12,6 @@ export const PaymentVoucherCopyPrefixes = {
   CashAdvance: "CA",
   CashAdvanceMultipleEntry: "CAME",
   JournalVoucher: "JV",
-  PettyCashFund: "PCF",
   PettyCashReplenishment: "PCR",
   PettyCashVoucher: "PCV",
   PurchaseOrder: "PO",

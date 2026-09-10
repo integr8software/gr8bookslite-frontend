@@ -1,8 +1,8 @@
 import { PettyCashReplenishmentStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentConstants";
-import { calculatePettyCashFundTotals } from "@/app/src/data/modules/cash-disbursement/petty-cash-fund/PettyCashFundData";
+import { calculatePettyCashVoucherTotals } from "@/app/src/data/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherData";
 import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
 import { getEwtPercentFromCode } from "@/app/src/data/shared/tax/TaxData";
-import type { PettyCashFundRecord } from "@/app/src/types/modules/cash-disbursement/petty-cash-fund/PettyCashFundTypes";
+import type { PettyCashVoucherRecord } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import type {
   PettyCashReplenishmentEntry,
   PettyCashReplenishmentFormValues,
@@ -117,21 +117,21 @@ export function calculatePettyCashReplenishmentTotals(entries: PettyCashReplenis
   );
 }
 
-export function createPettyCashReplenishmentCopyFromRecords(records: PettyCashFundRecord[]): AppCopyFromRecord[] {
+export function createPettyCashReplenishmentCopyFromRecords(records: PettyCashVoucherRecord[]): AppCopyFromRecord[] {
   return records.map((record) => ({
     amount: formatPettyCashReplenishmentAmount(getPettyCashReplenishmentSourceTotals(record).totalAmount),
     documentDate: record.documentDate,
     id: record.id,
     partyName: record.partyName,
     remarks: record.remarks,
-    source: "Petty Cash Fund",
+    source: "Petty Cash Voucher",
     sourceNo: record.transactionNo,
   }));
 }
 
-export function applyPettyCashFundToReplenishmentForm(
+export function applyPettyCashVoucherToReplenishmentForm(
   values: PettyCashReplenishmentFormValues,
-  source: PettyCashFundRecord,
+  source: PettyCashVoucherRecord,
 ): PettyCashReplenishmentFormValues {
   const totals = getPettyCashReplenishmentSourceTotals(source);
   const sourceValues = source.formValues;
@@ -232,8 +232,9 @@ export function calculatePettyCashReplenishmentEntryTaxFields(
   const amount = roundCurrency(parseMoneyNumberInput(amountValue));
   const vatPercent = getPettyCashReplenishmentVatPercent(vatType);
   const ewtPercent = getEwtPercentFromCode(ewtCode, taxCodes);
-  const vatAmount = roundCurrency((amount * vatPercent) / 100);
-  const ewtAmount = roundCurrency((amount * ewtPercent) / 100);
+  const taxBaseAmount = vatPercent === 12 ? amount / 1.12 : amount;
+  const vatAmount = roundCurrency(vatPercent === 12 ? taxBaseAmount * 0.12 : (amount * vatPercent) / 100);
+  const ewtAmount = roundCurrency((taxBaseAmount * ewtPercent) / 100);
 
   return {
     netAmount: formatPettyCashReplenishmentAmount(Math.max(amount - vatAmount, 0)),
@@ -248,7 +249,7 @@ export function calculatePettyCashReplenishmentEntryTaxFields(
 export const calculatePettyCashReplenishmentItemTaxFields = calculatePettyCashReplenishmentEntryTaxFields;
 
 
-function getPettyCashReplenishmentSourceTotals(record: PettyCashFundRecord) {
+function getPettyCashReplenishmentSourceTotals(record: PettyCashVoucherRecord) {
   if (!record.formValues) {
     return {
       netAmount: record.amount,
@@ -257,7 +258,7 @@ function getPettyCashReplenishmentSourceTotals(record: PettyCashFundRecord) {
     };
   }
 
-  const totals = calculatePettyCashFundTotals(record.formValues.items);
+  const totals = calculatePettyCashVoucherTotals(record.formValues.items);
 
   return {
     netAmount: totals.netAmount,

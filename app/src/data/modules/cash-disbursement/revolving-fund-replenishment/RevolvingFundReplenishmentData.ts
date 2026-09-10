@@ -167,8 +167,9 @@ export function calculateRevolvingFundReplenishmentEntryTaxFields(
   const amount = roundCurrency(parseMoneyNumberInput(amountValue));
   const vatPercent = getRevolvingFundReplenishmentVatPercent(vatType, taxCodes);
   const ewtPercent = getEwtPercentFromCode(ewtCode, taxCodes);
-  const vatAmount = roundCurrency((amount * vatPercent) / 100);
-  const ewtAmount = roundCurrency((amount * ewtPercent) / 100);
+  const taxBaseAmount = vatPercent === 12 ? amount / 1.12 : amount;
+  const vatAmount = roundCurrency(vatPercent === 12 ? taxBaseAmount * 0.12 : (amount * vatPercent) / 100);
+  const ewtAmount = roundCurrency((taxBaseAmount * ewtPercent) / 100);
 
   return {
     netAmount: formatRevolvingFundReplenishmentAmount(Math.max(amount - vatAmount, 0)),

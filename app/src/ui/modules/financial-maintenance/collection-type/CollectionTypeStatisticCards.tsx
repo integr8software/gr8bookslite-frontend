@@ -1,0 +1,52 @@
+"use client";
+
+import { useMemo } from "react";
+import { CheckCircle2, CirclePause, FileCog, ReceiptText, WalletCards } from "lucide-react";
+import type { CollectionTypeStatisticCardsProps } from "@/app/src/types/modules/financial-maintenance/collection-type/CollectionTypeTypes";
+import { ModuleStatisticCards, type ModuleStatisticCardItem } from "@/app/src/ui/shared/module/ModuleStatisticCards";
+
+export function CollectionTypeStatisticCards({ isLoading, statistics }: CollectionTypeStatisticCardsProps) {
+  const statisticCards = useMemo<ModuleStatisticCardItem[]>(
+    () => [
+      {
+        className: "sm:col-span-2 lg:col-span-1 xl:col-span-1",
+        icon: FileCog,
+        iconClassName: "bg-skyblue/20 text-skyblue",
+        label: "Total",
+        summary: "All collection types",
+        value: statistics.totalCollectionTypes,
+      },
+      {
+        icon: CheckCircle2,
+        iconClassName: "bg-emerald-50 text-emerald-700",
+        label: "Active",
+        summary: "Available for setup",
+        value: statistics.activeCollectionTypes,
+      },
+      {
+        icon: CirclePause,
+        iconClassName: "bg-amber-50 text-amber-700",
+        label: "Inactive",
+        summary: "Hidden from selection",
+        value: statistics.inactiveCollectionTypes,
+      },
+      {
+        icon: ReceiptText,
+        iconClassName: "bg-cyan-50 text-cyan-700",
+        label: "Collections",
+        summary: "Revenue templates",
+        value: statistics.collectionCollectionTypes,
+      },
+      {
+        icon: WalletCards,
+        iconClassName: "bg-rose-50 text-rose-700",
+        label: "Expenses",
+        summary: "Expense templates",
+        value: statistics.expenseCollectionTypes,
+      },
+    ],
+    [statistics],
+  );
+
+  return <ModuleStatisticCards items={statisticCards} isLoading={isLoading} className="sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-5" />;
+}

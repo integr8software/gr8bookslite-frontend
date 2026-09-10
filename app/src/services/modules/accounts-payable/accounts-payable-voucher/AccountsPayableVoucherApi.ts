@@ -17,6 +17,7 @@ import {
   accountsPayableVoucherControllerUpdateStatusV1,
   accountsPayableVoucherControllerUpdateV1,
 } from "@/app/src/generated/api/accounts-payable-voucher/accounts-payable-voucher";
+import { fetchDisbursementTypeOptions } from "@/app/src/services/modules/financial-maintenance/disbursement-type/DisbursementTypeApi";
 import type {
   AccountsPayableVoucherFormValues,
   AccountsPayableVoucherLookupAccount,
@@ -270,11 +271,20 @@ export async function fetchAccountsPayableVoucherResponsibilityCenterOptions() {
 }
 
 export async function fetchAccountsPayableVoucherExpenseTypeOptions() {
-  const response = await ApiClient.get<AccountsPayableVoucherAccountOptionsResponse>(
-    `${AccountsPayableVoucherLookupApiPath}/expense-types`,
-  );
+  const options = await fetchDisbursementTypeOptions("disbursement");
 
-  return response.data.accounts;
+  return options.map((option): AccountsPayableVoucherLookupAccount => ({
+    id: option.chartAccountId ?? option.id,
+    accountCategory: option.accountType ?? "Expenses",
+    accountName: option.accountTitle ?? option.defaultAccountName,
+    accountNumber: option.accountCode ?? "",
+    accountType: option.accountType ?? "Expenses",
+    description: option.description || option.defaultAccountName,
+    normalBalance: option.accountNature === "CREDIT" ? "Credit" : "Debit",
+    statementGroup: "Income Statement",
+    statementSection: option.accountType ?? "Expenses",
+    status: option.status === "ACTIVE" ? "Active" : "Inactive",
+  }));
 }
 
 export async function fetchAccountsPayableVoucherPostingAccountOptions() {

@@ -74,7 +74,7 @@ export function useRevolvingFundReplenishmentDetailsLookups(values: RevolvingFun
         name: values.responsibilityCenter || values.responsibilityCenterCode,
         label: values.responsibilityCenterCode,
         value: values.responsibilityCenterCode,
-        description: values.responsibilityCenter,
+        description: "",
       });
     }
     return options;

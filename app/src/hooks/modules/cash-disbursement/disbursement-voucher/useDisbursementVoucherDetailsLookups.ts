@@ -62,7 +62,8 @@ export function useDisbursementVoucherDetailsLookups(values: DisbursementVoucher
         label: rc.code,
         name: rc.name,
         value: rc.name,
-        description: rc.code,
+        description: rc.typeName || rc.classificationName || "",
+        selectedDetails: rc.code,
       }));
   }, [rcQuery.data]);
 

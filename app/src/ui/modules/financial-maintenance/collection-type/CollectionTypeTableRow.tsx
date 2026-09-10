@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { formatDateTime } from "@/app/src/utils/date.util";
 import { CollectionTypeStatuses } from "@/app/src/constants/modules/financial-maintenance/collection-type/CollectionTypeConstants";
-import { getCollectionTypeTypeLabel } from "@/app/src/data/modules/financial-maintenance/collection-type/CollectionTypeData";
 import type {
   CollectionType,
   CollectionTypePermissions,
@@ -51,7 +50,8 @@ function CollectionTypeCellContent({
   onToggleStatus: (account: CollectionType) => void;
   onViewCollectionType: (account: CollectionType) => void;
 }) {
-  const nextStatus = collectionType.status === CollectionTypeStatuses.Active ? CollectionTypeStatuses.Inactive : CollectionTypeStatuses.Active;
+  const nextStatus =
+    collectionType.status === CollectionTypeStatuses.Active ? CollectionTypeStatuses.Inactive : CollectionTypeStatuses.Active;
   const statusActionLabel = collectionType.status === CollectionTypeStatuses.Active ? "Inactivate" : "Activate";
 
   switch (columnId) {
@@ -63,8 +63,6 @@ function CollectionTypeCellContent({
           {collectionType.description || "-"}
         </span>
       );
-    case "type":
-      return <TypeBadge type={collectionType.type} />;
     case "accountCode":
       return (
         <div className="grid gap-1.5">
@@ -134,12 +132,4 @@ function CollectionTypeCellContent({
 
 function CollectionTypeTableCell({ className = "text-left", children }: { className?: string; children: ReactNode }) {
   return <td className={`px-4 py-4 align-middle text-sm text-darknavy ${className}`}>{children}</td>;
-}
-
-function TypeBadge({ type }: { type: CollectionType["type"] }) {
-  return (
-    <span className="inline-flex rounded-full bg-[var(--skyblue)] px-2.5 py-1 text-xs font-semibold text-white">
-      {getCollectionTypeTypeLabel(type)}
-    </span>
-  );
 }

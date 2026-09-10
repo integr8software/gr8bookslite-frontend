@@ -17,7 +17,6 @@ import {
   CollectionTypeTablePreferencesModuleKey,
   CollectionTypeTablePreferencesStorageKey,
 } from "@/app/src/constants/modules/financial-maintenance/collection-type/CollectionTypeConstants";
-import { getCollectionTypeTypeLabel } from "@/app/src/data/modules/financial-maintenance/collection-type/CollectionTypeData";
 import { useTablePreferences } from "@/app/src/hooks/shared/table-preferences/useTablePreferences";
 import type {
   CollectionType,
@@ -103,16 +102,6 @@ function createCollectionTypeColumn(
     return {
       id: key,
       accessorFn: (row) => row.generatedAccounts.map((account) => account.accountTitle).join(" "),
-      header,
-      sortingFn: "alphanumeric",
-      meta: columnMeta,
-    };
-  }
-
-  if (key === "type") {
-    return {
-      id: key,
-      accessorFn: (row) => getCollectionTypeTypeLabel(row.type),
       header,
       sortingFn: "alphanumeric",
       meta: columnMeta,

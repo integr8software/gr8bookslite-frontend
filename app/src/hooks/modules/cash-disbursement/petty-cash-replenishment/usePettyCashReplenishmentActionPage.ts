@@ -16,6 +16,7 @@ import {
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { hasModuleDraftChanges } from "@/app/src/hooks/shared/module/useModuleDraftChanges";
+import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import type {
   PettyCashReplenishmentActionMode,
   PettyCashReplenishmentActionTab,
@@ -60,9 +61,11 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   });
 
   const record = recordQuery.data;
+  const taxCodesQuery = useAlphanumericTaxCodes();
+  const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
 
   const [values, setValues] = useState<PettyCashReplenishmentFormValues>(() =>
-    createPettyCashReplenishmentFormValues(record, "", transactionCurrency.baseCurrencyCode),
+    createPettyCashReplenishmentFormValues(record, "", transactionCurrency.baseCurrencyCode, taxCodes),
   );
   const [errors, setErrors] = useState<PettyCashReplenishmentFormErrors>({});
   const [activeTab, setActiveTab] = useState<PettyCashReplenishmentActionTab>("details");
@@ -88,13 +91,13 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
 
   useEffect(() => {
     if (record) {
-      const formVals = createPettyCashReplenishmentFormValues(record, record.transactionNo, record.currency || "PHP");
+      const formVals = createPettyCashReplenishmentFormValues(record, record.transactionNo, record.currency || "PHP", taxCodes);
       queueMicrotask(() => {
         setValues(formVals);
         setInitialValues(formVals);
       });
     }
-  }, [record]);
+  }, [record, taxCodes]);
 
   useEffect(() => {
     if (mode === PettyCashReplenishmentActionModes.Add) {
@@ -168,7 +171,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   }
 
   function calculateEntry(entry: PettyCashReplenishmentEntry): PettyCashReplenishmentEntry {
-    const taxFields = calculatePettyCashReplenishmentItemTaxFields(entry.amount, entry.vatType, entry.ewtCode);
+    const taxFields = calculatePettyCashReplenishmentItemTaxFields(entry.amount, entry.vatType, entry.ewtCode, taxCodes);
     return { ...entry, ...taxFields };
   }
 
@@ -313,7 +316,7 @@ export function usePettyCashReplenishmentActionPage(options: { mode: PettyCashRe
   }
 
   async function resetAddValuesWithNextTransactionNo() {
-    const nextValues = createPettyCashReplenishmentFormValues(undefined, "", transactionCurrency.baseCurrencyCode);
+    const nextValues = createPettyCashReplenishmentFormValues(undefined, "", transactionCurrency.baseCurrencyCode, taxCodes);
 
     try {
       const nextNo = await fetchNextPettyCashReplenishmentNo();

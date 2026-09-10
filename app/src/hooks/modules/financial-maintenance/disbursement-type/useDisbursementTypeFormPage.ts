@@ -1,19 +1,19 @@
 "use client";
 
-import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
+import { usePostingAccountLookup } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartOfAccountsLookup";
 import { useDisbursementTypeStore } from "@/app/src/hooks/modules/financial-maintenance/disbursement-type/useDisbursementType";
 import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
-import {
-  fetchDisbursementTypeAccountOptions,
-  fetchDisbursementTypeExpenseParentOptions,
-} from "@/app/src/services/modules/financial-maintenance/disbursement-type/DisbursementTypeApi";
+import { fetchDisbursementTypeExpenseParentOptions } from "@/app/src/services/modules/financial-maintenance/disbursement-type/DisbursementTypeApi";
 import { DisbursementTypeQueryKeys } from "@/app/src/services/modules/financial-maintenance/disbursement-type/DisbursementTypeQueryKeys";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { ApiClientError } from "@/app/src/services/shared/api/ApiClient";
+import type { PostingAccountLookupOption } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartOfAccountsLookupTypes";
 import type {
   DisbursementTypeFormErrors,
   DisbursementTypeFormPageOptions,
@@ -26,7 +26,7 @@ const EmptyDisbursementTypeFormValues: DisbursementTypeFormValues = {
   disbursementTypeName: "",
   description: "",
   status: "Active",
-  accountSetupMode: "Auto",
+  accountSetupMode: "Existing",
   expenseCoaId: "",
   expenseParentCoaId: "",
 };
@@ -45,19 +45,15 @@ export function useDisbursementTypeFormPage({ existingDisbursementType, isOpen =
     enabled: Boolean(companyId && kind !== "collection"),
     retry: false,
   });
-  const accountOptionsQuery = useQuery({
-    queryKey: DisbursementTypeQueryKeys.accountOptions(companyId, kind),
-    queryFn: () => fetchDisbursementTypeAccountOptions(kind),
-    enabled: Boolean(companyId && kind !== "collection"),
-    retry: false,
-  });
+  const postingAccountsQuery = usePostingAccountLookup({}, { enabled: Boolean(companyId) });
+  const accountOptions = useMemo(() => createPostingAccountOptions(postingAccountsQuery.data ?? []), [postingAccountsQuery.data]);
   const initialValues: DisbursementTypeFormValues = existingDisbursementType
     ? {
         type: existingDisbursementType.type,
         disbursementTypeName: existingDisbursementType.disbursementTypeName,
         description: existingDisbursementType.description,
         status: existingDisbursementType.status,
-        accountSetupMode: "Existing",
+        accountSetupMode: existingDisbursementType.accountSetupMode ?? "Existing",
         expenseCoaId: existingDisbursementType.expenseCoaId ?? "",
         expenseParentCoaId: existingDisbursementType.expenseParentCoaId ?? "",
       }
@@ -217,7 +213,7 @@ export function useDisbursementTypeFormPage({ existingDisbursementType, isOpen =
     clearDraft: draft.clearDraft,
     discardDraft: draft.discardDraft,
     saveDraft: draft.saveDraft,
-    accountOptions: accountOptionsQuery.data ?? [],
+    accountOptions,
     errors,
     expenseParentOptions: expenseParentOptionsQuery.data ?? [],
     handleAccountSetupModeChange,
@@ -233,4 +229,19 @@ export function useDisbursementTypeFormPage({ existingDisbursementType, isOpen =
     validateBeforeSubmit,
     values,
   };
+}
+
+function createPostingAccountOptions(accounts: PostingAccountLookupOption[]): ModuleChartAccount[] {
+  return accounts.map((account) => ({
+    accountCategory: "SPECIFIC",
+    accountName: account.accountTitle,
+    accountNumber: account.accountCode,
+    accountType: String(account.accountType ?? ""),
+    description: account.description || account.accountTitle,
+    id: account.accountId,
+    normalBalance: account.accountNature === "CREDIT" ? "Credit" : "Debit",
+    statementGroup: "",
+    statementSection: "",
+    status: "Active",
+  }));
 }

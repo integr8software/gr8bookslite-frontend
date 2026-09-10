@@ -20,8 +20,8 @@ const CashAdvanceSchema = z.object({
     .string()
     .trim()
     .refine((value) => Number(value) > 0, "Exchange Rate must be greater than zero."),
-  partyCode: z.string().trim().min(1, "Employee Code is required."),
-  partyName: z.string().trim().min(1, "Employee Name is required."),
+  partyCode: z.string().trim().min(1, "Party Code is required."),
+  partyName: z.string().trim().min(1, "Party Name is required."),
   transNo: z.string().trim().min(1, "CA No. is required."),
 });
 

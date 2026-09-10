@@ -39,7 +39,7 @@ import { OfficialReceiptNotFound } from "@/app/src/ui/modules/cash-receipt/offic
 import { openOfficialReceiptPdf } from "@/app/src/ui/modules/cash-receipt/official-receipt/reports/OfficialReceiptPdf";
 import { OfficialReceiptReportPreview } from "@/app/src/ui/modules/cash-receipt/official-receipt/reports/OfficialReceiptReportPreview";
 import { ReceiptFileAttachmentFields } from "@/app/src/ui/modules/cash-receipt/shared/ReceiptFileAttachmentFields";
-import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/dialogs/PartyManagementDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
 const AppPaymentTypeDialog = dynamic(

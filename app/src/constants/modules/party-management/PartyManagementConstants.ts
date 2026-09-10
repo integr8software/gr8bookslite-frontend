@@ -59,6 +59,8 @@ export const PartyClassificationOptions = ["Individual", "Non-Individual"] as co
 
 export const PartyTypeOptions = ["Vendor", "Customer", "Employee", "Member"] as const satisfies readonly PartyType[];
 
+export const PartyPurchaseTypeOptions = ["Goods", "Services", "Assets"] as const;
+
 export const PartyEntityTypeOptions = [
   {
     name: "Individual / Sole Proprietor",
@@ -328,6 +330,7 @@ export const PartyInformationExportColumns: ModuleTableExportColumn<PartyInforma
   { header: "Default Customer Advance Account", value: "customerAdvanceAccount" },
   { header: "Default Payable Account", value: "defaultPayableAccount" },
   { header: "Default Vendor Advance Account", value: "vendorAdvanceAccount" },
+  { header: "Purchase Type", value: "purchaseType" },
   { header: "Default Employee Advance Account", value: "employeeAdvanceAccount" },
   { header: "Default Employee Payable Account", value: "employeePayableAccount" },
   { header: "Cash Advance Limit", value: "cashAdvanceLimit" },

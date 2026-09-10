@@ -1,24 +1,24 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
-import toast from "react-hot-toast";
+import { PartyAccountingAccountFieldLabels } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { useChartsOfAccounts } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartsOfAccounts";
 import { usePartyManagementAction } from "@/app/src/hooks/modules/party-management/usePartyManagementAction";
+import { useAppDialogFormSubmit } from "@/app/src/hooks/shared/app/useAppDialogFormSubmit";
 import type { ChartAccount } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartsOfAccountsTypes";
 import type { PartyAccountingAccountField } from "@/app/src/types/modules/party-management/PartyManagementTypes";
-import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
-import { useAppDialogFormSubmit } from "@/app/src/hooks/shared/app/useAppDialogFormSubmit";
-import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
-import { PartyInformationActionHeader } from "@/app/src/ui/modules/party-management/PartyInformationActionHeader";
-import { PartyInformationDetailsFields } from "@/app/src/ui/modules/party-management/PartyInformationDetailsFields";
-import { PartyInformationNotFound } from "@/app/src/ui/modules/party-management/PartyInformationNotFound";
-import { ChartAccountQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartAccountQuickAddDialog";
-import { TermsMaintenanceQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/terms-maintenance/TermsMaintenanceQuickAddDialog";
-import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
-import { PaymentTypeDrawer } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeDrawer";
 import { BankMasterfileDrawer } from "@/app/src/ui/modules/financial-maintenance/bank-masterfile/BankMasterfileDrawer";
-import { PartyAccountingAccountFieldLabels } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
+import { ChartAccountQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/charts-of-accounts/ChartAccountQuickAddDialog";
+import { PaymentTypeDrawer } from "@/app/src/ui/modules/financial-maintenance/payment-type/PaymentTypeDrawer";
+import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
+import { TermsMaintenanceQuickAddDialog } from "@/app/src/ui/modules/financial-maintenance/terms-maintenance/TermsMaintenanceQuickAddDialog";
+import { PartyInformationActionHeader } from "@/app/src/ui/modules/party-management/forms/PartyInformationActionHeader";
+import { PartyInformationDetailsFields } from "@/app/src/ui/modules/party-management/forms/PartyInformationDetailsFields";
+import { PartyInformationNotFound } from "@/app/src/ui/modules/party-management/forms/PartyInformationNotFound";
+import { AppDialog } from "@/app/src/ui/shared/app/AppDialog";
+import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
+import { Suspense, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 
 const PartyManagementFormId = "party-management-form";
 
@@ -34,8 +34,7 @@ function PartyManagementFormPageInner() {
   const page = usePartyManagementAction();
   const chartAccounts = useChartsOfAccounts();
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
-  const [accountTitleDialog, setAccountTitleDialog] =
-    useState<ChartAccountQuickAddDialogState>(null);
+  const [accountTitleDialog, setAccountTitleDialog] = useState<ChartAccountQuickAddDialogState>(null);
   const [isTermDialogOpen, setIsTermDialogOpen] = useState(false);
   const [isRcDialogOpen, setIsRcDialogOpen] = useState(false);
   const [isPaymentTypeDialogOpen, setIsPaymentTypeDialogOpen] = useState(false);
@@ -64,9 +63,7 @@ function PartyManagementFormPageInner() {
   function openAccountTitleDialog(field: PartyAccountingAccountField) {
     const selectedAccountId = page.values[field] || page.accountOptions[field][0]?.id || "";
     const selectedAccount = chartAccountById.get(selectedAccountId);
-    const parentAccount = selectedAccount?.parentId
-      ? chartAccountById.get(selectedAccount.parentId)
-      : null;
+    const parentAccount = selectedAccount?.parentId ? chartAccountById.get(selectedAccount.parentId) : null;
 
     if (!selectedAccount || !parentAccount) {
       toast.error("Select an account first.");
@@ -78,12 +75,7 @@ function PartyManagementFormPageInner() {
 
   return (
     <>
-      <form
-        id={PartyManagementFormId}
-        onSubmit={page.handleSubmit}
-        noValidate
-        className="grid gap-5"
-      >
+      <form id={PartyManagementFormId} onSubmit={page.handleSubmit} noValidate className="grid gap-5">
         <PartyInformationActionHeader
           canSave={page.canSave}
           editHref={page.editHref}
@@ -170,11 +162,7 @@ function PartyManagementFormPageInner() {
       />
 
       <ChartAccountQuickAddDialog
-        accountLabel={
-          accountTitleDialog
-            ? PartyAccountingAccountFieldLabels[accountTitleDialog.field]
-            : "Account"
-        }
+        accountLabel={accountTitleDialog ? PartyAccountingAccountFieldLabels[accountTitleDialog.field] : "Account"}
         isOpen={Boolean(accountTitleDialog)}
         parentAccount={accountTitleDialog?.parentAccount ?? null}
         onClose={() => setAccountTitleDialog(null)}

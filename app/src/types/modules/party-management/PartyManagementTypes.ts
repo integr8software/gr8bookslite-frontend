@@ -68,6 +68,7 @@ export type PartyInformationRecord = {
   customerAdvanceAccount: string;
   defaultPayableAccount: string;
   vendorAdvanceAccount: string;
+  purchaseType?: string;
   employeeAdvanceAccount: string;
   employeePayableAccount: string;
   cashAdvanceLimit?: string;
@@ -122,6 +123,7 @@ export type PartyInformationFormValues = {
   customerAdvanceAccount: string;
   defaultPayableAccount: string;
   vendorAdvanceAccount: string;
+  purchaseType: string;
   employeeAdvanceAccount: string;
   employeePayableAccount: string;
   cashAdvanceLimit: string;
@@ -181,6 +183,7 @@ export type PartyInformationFormErrors = Partial<{
   customerAdvanceAccount: string;
   defaultPayableAccount: string;
   vendorAdvanceAccount: string;
+  purchaseType: string;
   employeeAdvanceAccount: string;
   employeePayableAccount: string;
   cashAdvanceLimit: string;

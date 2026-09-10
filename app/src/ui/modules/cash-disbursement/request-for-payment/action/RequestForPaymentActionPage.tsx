@@ -12,7 +12,7 @@ import { usePartyManagementStore } from "@/app/src/hooks/modules/party-managemen
 import type { RequestForPaymentActionMode } from "@/app/src/types/modules/cash-disbursement/request-for-payment/RequestForPaymentTypes";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
-import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/PartyManagementDrawer";
+import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/dialogs/PartyManagementDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import { RequestForPaymentActionHeader } from "@/app/src/ui/modules/cash-disbursement/request-for-payment/action/RequestForPaymentActionHeader";
@@ -74,10 +74,7 @@ export function RequestForPaymentActionPage({ mode }: { mode: RequestForPaymentA
               onOpenProjectDrawer={() => undefined}
               onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
             />
-            <RequestForPaymentEntrySection
-              page={page}
-              onOpenResponsibilityCenterDrawer={handleOpenEntryResponsibilityCenterDrawer}
-            />
+            <RequestForPaymentEntrySection page={page} onOpenResponsibilityCenterDrawer={handleOpenEntryResponsibilityCenterDrawer} />
           </>
         ) : (
           <RequestForPaymentFileAttachmentFields page={page} />

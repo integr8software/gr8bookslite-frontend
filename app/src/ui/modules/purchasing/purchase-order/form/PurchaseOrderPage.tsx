@@ -62,6 +62,9 @@ function PurchaseOrderActionPageInner() {
           page.updateField("contactNo", party?.contactNo ?? "");
           page.updateField("termId", party?.termId ?? "");
           page.updateField("termsOfPayment", party?.termName ?? "");
+          if (party?.purchaseType) {
+            page.updateField("purchaseType", party.purchaseType);
+          }
         }}
         onUpdateField={page.updateField}
       />

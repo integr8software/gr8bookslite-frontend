@@ -72,6 +72,7 @@ export const PartyInformationFormSchema = z
     customerAdvanceAccount: z.string().trim(),
     defaultPayableAccount: z.string().trim(),
     vendorAdvanceAccount: z.string().trim(),
+    purchaseType: z.string().trim().optional().default(""),
     employeeAdvanceAccount: z.string().trim(),
     employeePayableAccount: z.string().trim(),
     cashAdvanceLimit: z
@@ -446,6 +447,8 @@ export function validatePartyInformationForm(values: PartyInformationFormValues)
       errors.defaultPayableAccount = issue.message;
     } else if (field === "vendorAdvanceAccount" && !errors.vendorAdvanceAccount) {
       errors.vendorAdvanceAccount = issue.message;
+    } else if (field === "purchaseType" && !errors.purchaseType) {
+      errors.purchaseType = issue.message;
     } else if (field === "employeeAdvanceAccount" && !errors.employeeAdvanceAccount) {
       errors.employeeAdvanceAccount = issue.message;
     } else if (field === "employeePayableAccount" && !errors.employeePayableAccount) {

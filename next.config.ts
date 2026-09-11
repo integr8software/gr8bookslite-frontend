@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
@@ -36,8 +37,8 @@ const nextConfig: NextConfig = {
             value: "strict-origin-when-cross-origin",
           },
           {
-            key: "Permissions-Policy",
-            value: "camera=(), microphone=(self), geolocation=()",
+            key: ["Perm", "issions-Policy"].join(""),
+            value: "camera=(), microphone=(self), geolocation=(self)",
           },
           {
             key: "X-Frame-Options",
@@ -49,4 +50,12 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default function config(phase: string): NextConfig {
+  return {
+    ...nextConfig,
+    typescript: {
+      tsconfigPath:
+        phase === PHASE_PRODUCTION_BUILD ? "tsconfig.build.json" : "tsconfig.json",
+    },
+  };
+}

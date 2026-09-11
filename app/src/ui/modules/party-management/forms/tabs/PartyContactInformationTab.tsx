@@ -27,11 +27,15 @@ import { Field } from "@/app/src/ui/modules/party-management/forms/PartyInformat
 import { AppAddressAutocomplete } from "@/app/src/ui/shared/address/AppAddressAutocomplete";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { FormField } from "@/app/src/ui/shared/field-management/ModuleFormField";
-import type {
-  ChangeEventHandler,
-  MouseEvent as ReactMouseEvent,
-  ReactNode,
+import {
+  useState,
+  type ChangeEventHandler,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode,
 } from "react";
+import { MapPin } from "lucide-react";
+import { AppAddressMapModal } from "@/app/src/ui/shared/address/AppAddressMapModal";
+import { useLandlineInput } from "@/app/src/hooks/shared/useLandlineInput";
 
 export function PartyContactInformationTab({
   errors,
@@ -49,6 +53,8 @@ export function PartyContactInformationTab({
   onUpdateField,
   isDetailsDisabled,
 }: PartyContactInformationTabProps) {
+  const landlineInput = useLandlineInput(values.landline, (value) => onUpdateField("landline", value));
+
   return (
     <div className="grid gap-5">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -98,13 +104,12 @@ export function PartyContactInformationTab({
           <input
             name="landline"
             type="tel"
-            value={values.landline}
-            onChange={onInputChange}
+            inputMode="numeric"
+            {...landlineInput}
             readOnly={isReadonly}
             disabled={isDetailsDisabled}
-            maxLength={40}
             className={PartyManagementFieldClassName}
-            placeholder="(02) 8123 4567"
+            placeholder="(02) 1231-1223"
           />
         </Field>
       </div>
@@ -369,6 +374,8 @@ function AddressFields({
     addressId?: string,
   ) => void;
 }) {
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+
   return (
     <div className="grid gap-4">
       {disabled ? (
@@ -394,6 +401,17 @@ function AddressFields({
           required
           syncDetailsOnQueryChange
           value={address}
+          action={
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => setIsMapModalOpen(true)}
+              className="inline-flex items-center gap-1 rounded-md border border-skyblue/40 bg-skyblue/10 px-2 py-0.5 text-xs font-medium text-darknavy transition hover:border-skyblue hover:bg-skyblue/20 disabled:opacity-40"
+            >
+              <MapPin className="size-3.5 text-skyblue" />
+              <span>Select on Map</span>
+            </button>
+          }
           onDetailsChange={(details) =>
             onSyncAutocompleteAddressDetails?.(details, address.id)
           }
@@ -402,6 +420,40 @@ function AddressFields({
           }
         />
       )}
+      {!address.isForeign ? (
+        <AppAddressMapModal
+          isOpen={isMapModalOpen}
+          onClose={() => setIsMapModalOpen(false)}
+          initialProvince={address.province}
+          initialCity={address.cityMunicipality}
+          initialBarangay={address.barangay}
+          onApplyAddress={({ addressLine1, psgcItem, rawOsm, details }) => {
+            if (psgcItem) {
+              onSelectAutocompleteAddress(
+                psgcItem,
+                { addressLine1: addressLine1 || details?.addressLine1 },
+                address.id,
+              );
+            } else {
+              const matchedProv = options.provinceOptions.find(
+                (p) =>
+                  p.name.toLowerCase() === rawOsm.province.toLowerCase() ||
+                  rawOsm.province.toLowerCase().includes(p.name.toLowerCase()),
+              );
+              if (matchedProv) {
+                onSelectProvince(matchedProv.value, address.id, matchedProv);
+              }
+              if (addressLine1) {
+                const fakeEvent = {
+                  target: { name: "addressLine1", value: addressLine1 },
+                  currentTarget: { dataset: { addressId: address.id } },
+                } as unknown as React.ChangeEvent<HTMLInputElement>;
+                onAddressInputChange(fakeEvent);
+              }
+            }
+          }}
+        />
+      ) : null}
       {!address.isForeign ? (
         <div className="grid gap-4">
           <div className="grid gap-3 md:grid-cols-3">

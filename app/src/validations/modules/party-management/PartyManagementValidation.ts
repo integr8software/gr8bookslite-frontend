@@ -5,6 +5,7 @@ import {
   PartyClassificationOptions,
   PartyEntityTypeOptions,
   PartyInformationStatusOptions,
+  PartyPurchaseTypeOptions,
   PartyTypeOptions,
 } from "@/app/src/constants/modules/party-management/PartyManagementConstants";
 import { getPartyEntityTypeOption } from "@/app/src/data/modules/party-management/PartyManagementData";
@@ -81,7 +82,7 @@ export const PartyInformationFormSchema = z
     customerAdvanceAccount: z.string().trim(),
     defaultPayableAccount: z.string().trim(),
     vendorAdvanceAccount: z.string().trim(),
-    purchaseType: z.string().trim().optional().default(""),
+    purchaseType: z.array(z.enum(PartyPurchaseTypeOptions)).default([]),
     employeeAdvanceAccount: z.string().trim(),
     employeePayableAccount: z.string().trim(),
     cashAdvanceLimit: z

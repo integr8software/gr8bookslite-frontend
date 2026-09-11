@@ -174,15 +174,18 @@ function AccountFields({
             id="party-purchase-type"
             disabled={isAccountingDisabled}
             emptyMessage="No matching purchase type found."
+            isSearchable={false}
             options={PartyPurchaseTypeOptions.map((option) => ({
               name: option,
               value: option,
             }))}
-            placeholder="--Select Option--"
-            searchPlaceholder="Search purchase type"
+            placeholder="--Select Purchase Type--"
+            removeSelectionOnSelectedOptionClick
+            selectionMode="multiple"
+            showSelectionRemoveButton={false}
             value={values.purchaseType}
             onChange={(value) =>
-              onUpdateField("purchaseType", getSingleSelectedValue(value))
+              onUpdateField("purchaseType", Array.isArray(value) ? value : value ? [value] : [])
             }
           />
         </Field>

@@ -213,7 +213,7 @@ function mapApiParty(party: PartyResponseDto): PartyInformationRecord {
     customerAdvanceAccount: party.customerAdvanceAccount ?? "",
     defaultPayableAccount: party.defaultPayableAccount ?? "",
     vendorAdvanceAccount: party.vendorAdvanceAccount ?? "",
-    purchaseType: party.purchaseType ?? "",
+    purchaseType: party.purchaseType ?? [],
     employeeAdvanceAccount: party.employeeAdvanceAccount ?? "",
     employeePayableAccount: party.employeePayableAccount ?? "",
     cashAdvanceLimit: party.cashAdvanceLimit ?? "",
@@ -293,7 +293,7 @@ function toApiPartyPayload(record: PartyInformationRecord, options: { branchUnit
     customerAdvanceAccount: record.partyTypes.includes(CustomerPartyType) ? normalizeOptionalText(record.customerAdvanceAccount) : null,
     defaultPayableAccount: record.partyTypes.includes(VendorPartyType) ? normalizeOptionalText(record.defaultPayableAccount) : null,
     vendorAdvanceAccount: record.partyTypes.includes(VendorPartyType) ? normalizeOptionalText(record.vendorAdvanceAccount) : null,
-    purchaseType: record.partyTypes.includes(VendorPartyType) ? normalizeOptionalText(record.purchaseType) : null,
+    purchaseType: record.partyTypes.includes(VendorPartyType) ? record.purchaseType : null,
     employeeAdvanceAccount: record.partyTypes.includes(EmployeePartyType) ? normalizeOptionalText(record.employeeAdvanceAccount) : null,
     employeePayableAccount: record.partyTypes.includes(EmployeePartyType) ? normalizeOptionalText(record.employeePayableAccount) : null,
     cashAdvanceLimit:

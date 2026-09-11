@@ -13,6 +13,8 @@ export type PartyManagementAllFilter = "All";
 
 export type PartyType = "Vendor" | "Customer" | "Employee" | "Member";
 
+export type PartyPurchaseType = "Goods" | "Services" | "Assets";
+
 export type PartyEntityType = string;
 
 export type ApiPartyClassification = "INDIVIDUAL" | "NON_INDIVIDUAL";
@@ -68,7 +70,7 @@ export type PartyInformationRecord = {
   customerAdvanceAccount: string;
   defaultPayableAccount: string;
   vendorAdvanceAccount: string;
-  purchaseType?: string;
+  purchaseType?: PartyPurchaseType[];
   employeeAdvanceAccount: string;
   employeePayableAccount: string;
   cashAdvanceLimit?: string;
@@ -123,7 +125,7 @@ export type PartyInformationFormValues = {
   customerAdvanceAccount: string;
   defaultPayableAccount: string;
   vendorAdvanceAccount: string;
-  purchaseType: string;
+  purchaseType: PartyPurchaseType[];
   employeeAdvanceAccount: string;
   employeePayableAccount: string;
   cashAdvanceLimit: string;

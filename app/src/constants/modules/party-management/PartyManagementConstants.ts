@@ -8,6 +8,7 @@ import type {
   PartyEntityType,
   PartyInformationStatus,
   PartyInformationTableRecord,
+  PartyPurchaseType,
   PartyType,
 } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
@@ -59,7 +60,7 @@ export const PartyClassificationOptions = ["Individual", "Non-Individual"] as co
 
 export const PartyTypeOptions = ["Vendor", "Customer", "Employee", "Member"] as const satisfies readonly PartyType[];
 
-export const PartyPurchaseTypeOptions = ["Goods", "Services", "Assets"] as const;
+export const PartyPurchaseTypeOptions = ["Goods", "Services", "Assets"] as const satisfies readonly PartyPurchaseType[];
 
 export const PartyEntityTypeOptions = [
   {

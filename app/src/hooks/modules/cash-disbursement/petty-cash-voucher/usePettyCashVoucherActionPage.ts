@@ -24,6 +24,7 @@ import { validatePettyCashVoucherForm } from "@/app/src/validations/modules/cash
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { hasModuleDraftChanges } from "@/app/src/hooks/shared/module/useModuleDraftChanges";
+import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import {
   createPettyCashVoucherApi,
   fetchNextPettyCashVoucherNo,
@@ -48,9 +49,11 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
   });
 
   const record = recordQuery.data;
+  const taxCodesQuery = useAlphanumericTaxCodes();
+  const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
 
   const [values, setValues] = useState<PettyCashVoucherFormValues>(() =>
-    createPettyCashVoucherFormValues(record, "", transactionCurrency.baseCurrencyCode),
+    createPettyCashVoucherFormValues(record, "", transactionCurrency.baseCurrencyCode, taxCodes),
   );
   const [errors, setErrors] = useState<PettyCashVoucherFormErrors>({});
   const [activeTab, setActiveTab] = useState<PettyCashVoucherActionTab>("details");
@@ -75,13 +78,13 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
 
   useEffect(() => {
     if (record) {
-      const formVals = createPettyCashVoucherFormValues(record, record.transactionNo, record.currency || "PHP");
+      const formVals = createPettyCashVoucherFormValues(record, record.transactionNo, record.currency || "PHP", taxCodes);
       queueMicrotask(() => {
         setValues(formVals);
         setInitialValues(formVals);
       });
     }
-  }, [record]);
+  }, [record, taxCodes]);
 
   useEffect(() => {
     if (mode === PettyCashVoucherActionModes.Add) {
@@ -124,7 +127,7 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
   }
 
   function calculateItem(item: PettyCashVoucherItem): PettyCashVoucherItem {
-    const taxFields = calculatePettyCashVoucherItemTaxFields(item.amount, item.vatType, item.ewtCode);
+    const taxFields = calculatePettyCashVoucherItemTaxFields(item.amount, item.vatType, item.ewtCode, taxCodes);
     return { ...item, ...taxFields };
   }
 
@@ -268,7 +271,7 @@ export function usePettyCashVoucherActionPage(options: { mode: PettyCashVoucherA
   }
 
   async function resetAddValuesWithNextTransactionNo() {
-    const nextValues = createPettyCashVoucherFormValues(undefined, "", transactionCurrency.baseCurrencyCode);
+    const nextValues = createPettyCashVoucherFormValues(undefined, "", transactionCurrency.baseCurrencyCode, taxCodes);
 
     try {
       const nextNo = await fetchNextPettyCashVoucherNo();

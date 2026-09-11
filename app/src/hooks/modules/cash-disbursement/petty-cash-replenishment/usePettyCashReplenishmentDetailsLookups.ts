@@ -74,7 +74,7 @@ export function usePettyCashReplenishmentDetailsLookups(values: PettyCashRepleni
         name: values.responsibilityCenter || values.responsibilityCenterCode,
         label: values.responsibilityCenterCode,
         value: values.responsibilityCenterCode,
-        description: values.responsibilityCenter,
+        description: "",
       });
     }
     return options;

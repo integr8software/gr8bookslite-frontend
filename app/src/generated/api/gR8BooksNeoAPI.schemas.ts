@@ -5255,6 +5255,14 @@ export const CollectionTypeResponseDtoStatus = {
   INACTIVE: 'INACTIVE',
 } as const;
 
+export type CollectionTypeResponseDtoAccountSetupMode = typeof CollectionTypeResponseDtoAccountSetupMode[keyof typeof CollectionTypeResponseDtoAccountSetupMode];
+
+
+export const CollectionTypeResponseDtoAccountSetupMode = {
+  AUTO: 'AUTO',
+  EXISTING: 'EXISTING',
+} as const;
+
 export interface CollectionTypeResponseDto {
   id: string;
   companyId: number;
@@ -5262,8 +5270,11 @@ export interface CollectionTypeResponseDto {
   defaultAccountName: string;
   description: string;
   status: CollectionTypeResponseDtoStatus;
+  accountSetupMode: CollectionTypeResponseDtoAccountSetupMode;
   /** @nullable */
   expenseParentCoaId: string | null;
+  /** @nullable */
+  revenueCoaId: string | null;
   generatedAccounts: GeneratedCollectionTypeResponseDto[];
   /** @nullable */
   createdBy: string | null;
@@ -5369,6 +5380,23 @@ export interface CollectionTypeOptionsResponseDto {
   options: CollectionTypeOptionResponseDto[];
 }
 
+export interface CollectionTypeAccountOptionResponseDto {
+  id: string;
+  accountNumber: string;
+  accountName: string;
+  accountType: string;
+  statementGroup: string;
+  statementSection: string;
+  normalBalance: string;
+  accountCategory: string;
+  description: string;
+  status: string;
+}
+
+export interface CollectionTypeAccountOptionsResponseDto {
+  accounts: CollectionTypeAccountOptionResponseDto[];
+}
+
 export interface CollectionTypeContainerResponseDto {
   defaultAccount: CollectionTypeResponseDto;
   permissions: CollectionTypePermissionsResponseDto;
@@ -5391,6 +5419,14 @@ export const CreateCollectionTypeTemplateDtoStatus = {
   INACTIVE: 'INACTIVE',
 } as const;
 
+export type CreateCollectionTypeTemplateDtoAccountSetupMode = typeof CreateCollectionTypeTemplateDtoAccountSetupMode[keyof typeof CreateCollectionTypeTemplateDtoAccountSetupMode];
+
+
+export const CreateCollectionTypeTemplateDtoAccountSetupMode = {
+  AUTO: 'AUTO',
+  EXISTING: 'EXISTING',
+} as const;
+
 export interface CreateCollectionTypeTemplateDto {
   type: CreateCollectionTypeTemplateDtoType;
   /** @maxLength 250 */
@@ -5398,6 +5434,9 @@ export interface CreateCollectionTypeTemplateDto {
   /** @maxLength 500 */
   description?: string;
   status?: CreateCollectionTypeTemplateDtoStatus;
+  accountSetupMode: CreateCollectionTypeTemplateDtoAccountSetupMode;
+  /** @nullable */
+  revenueCoaId?: string | null;
   expenseParentCoaId?: string;
 }
 
@@ -5423,6 +5462,14 @@ export const UpdateCollectionTypeTemplateDtoStatus = {
   INACTIVE: 'INACTIVE',
 } as const;
 
+export type UpdateCollectionTypeTemplateDtoAccountSetupMode = typeof UpdateCollectionTypeTemplateDtoAccountSetupMode[keyof typeof UpdateCollectionTypeTemplateDtoAccountSetupMode];
+
+
+export const UpdateCollectionTypeTemplateDtoAccountSetupMode = {
+  AUTO: 'AUTO',
+  EXISTING: 'EXISTING',
+} as const;
+
 export interface UpdateCollectionTypeTemplateDto {
   type?: UpdateCollectionTypeTemplateDtoType;
   /** @maxLength 250 */
@@ -5430,6 +5477,9 @@ export interface UpdateCollectionTypeTemplateDto {
   /** @maxLength 500 */
   description?: string;
   status?: UpdateCollectionTypeTemplateDtoStatus;
+  accountSetupMode?: UpdateCollectionTypeTemplateDtoAccountSetupMode;
+  /** @nullable */
+  revenueCoaId?: string | null;
   expenseParentCoaId?: string;
 }
 

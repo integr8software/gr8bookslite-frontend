@@ -1,5 +1,6 @@
 import type { ChangeEventHandler } from "react";
 import type { Row, Table } from "@tanstack/react-table";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import type {
   CollectionTypeResponseDtoStatus,
@@ -10,6 +11,7 @@ import type {
 export type CollectionTypeType = CollectionTypeResponseDtoType;
 export type CollectionTypeStatus = "Active" | "Inactive";
 export type CollectionTypeMaintenanceKind = "disbursement" | "collection";
+export type CollectionTypeAccountSetupMode = "Existing" | "Auto";
 
 export type GeneratedCollectionTypeRole = GeneratedCollectionTypeResponseDtoRole;
 
@@ -30,6 +32,8 @@ export type CollectionType = {
   collectionTypeName: string;
   description: string;
   status: CollectionTypeStatus;
+  accountSetupMode?: CollectionTypeAccountSetupMode;
+  revenueCoaId?: string;
   expenseParentCoaId?: string;
   generatedAccounts: GeneratedCollectionType[];
   createdBy?: string | null;
@@ -43,6 +47,8 @@ export type CollectionTypeFormValues = {
   collectionTypeName: string;
   description: string;
   status: CollectionTypeStatus;
+  accountSetupMode: CollectionTypeAccountSetupMode;
+  revenueCoaId: string;
   expenseParentCoaId: string;
 };
 
@@ -54,6 +60,7 @@ export type CollectionTypeFieldsProps = {
   canAddExpenseTypeSubAccount?: boolean;
   canCancelStatus?: boolean;
   errors: CollectionTypeFormErrors;
+  accountOptions?: ModuleChartAccount[];
   expenseParentOptions?: AppAdvancedDropdownOption[];
   generatedAccounts?: GeneratedCollectionType[];
   hideTypeField?: boolean;
@@ -62,6 +69,8 @@ export type CollectionTypeFieldsProps = {
   nameLabel?: string;
   mode: CollectionTypeActionMode;
   nextExpenseSubAccountLevel?: string | null;
+  onAccountSetupModeChange?: (value: CollectionTypeAccountSetupMode) => void;
+  onRevenueAccountChange?: (value: string) => void;
   onExpenseParentChange?: (value: string | string[]) => void;
   onInputChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
   onOpenExpenseSubAccountDialog?: () => void;
@@ -86,16 +95,7 @@ export type CollectionTypeStatusFilter = "" | CollectionTypeStatus;
 export type CollectionTypeTypeFilter = "" | CollectionTypeType;
 
 export type CollectionTypeTableColumnKey =
-  | "collectionTypeName"
-  | "description"
-  | "type"
-  | "accountCode"
-  | "accountName"
-  | "status"
-  | "createdBy"
-  | "createdAt"
-  | "updatedBy"
-  | "updatedAt";
+  "collectionTypeName" | "description" | "accountCode" | "accountName" | "status" | "createdBy" | "createdAt" | "updatedBy" | "updatedAt";
 
 export type CollectionTypeColumnMeta = {
   className: string;

@@ -1,11 +1,16 @@
 "use client";
 
-import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { useAuthProfileQuery } from "@/app/src/hooks/auth/useAuthProfileQuery";
+import { usePostingAccountLookup } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartOfAccountsLookup";
 import { useCollectionTypeStore } from "@/app/src/hooks/modules/financial-maintenance/collection-type/useCollectionType";
+import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { acquireModuleActionLock } from "@/app/src/hooks/shared/module/ModuleActionLock";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
+import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
 import { ApiClientError } from "@/app/src/services/shared/api/ApiClient";
+import type { PostingAccountLookupOption } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartOfAccountsLookupTypes";
 import type {
   CollectionTypeFormErrors,
   CollectionTypeFormPageOptions,
@@ -18,20 +23,35 @@ const EmptyCollectionTypeFormValues: CollectionTypeFormValues = {
   collectionTypeName: "",
   description: "",
   status: "Active",
+  accountSetupMode: "Existing",
+  revenueCoaId: "",
   expenseParentCoaId: "",
 };
 
-export function useCollectionTypeFormPage({ existingCollectionType, isOpen = true, kind = "collection", mode, onSaved }: CollectionTypeFormPageOptions) {
+export function useCollectionTypeFormPage({
+  existingCollectionType,
+  isOpen = true,
+  kind = "collection",
+  mode,
+  onSaved,
+}: CollectionTypeFormPageOptions) {
   const { addCollectionType, isMutating, updateCollectionType } = useCollectionTypeStore(undefined, {
     kind,
     refetchOnMount: false,
   });
+  const accessToken = useAppStore((state) => state.accessToken);
+  const authProfileQuery = useAuthProfileQuery({ accessToken });
+  const companyId = authProfileQuery.data?.activeCompanyId ?? null;
+  const postingAccountsQuery = usePostingAccountLookup({}, { enabled: Boolean(companyId) });
+  const accountOptions = useMemo(() => createPostingAccountOptions(postingAccountsQuery.data ?? []), [postingAccountsQuery.data]);
   const initialValues: CollectionTypeFormValues = existingCollectionType
     ? {
         type: existingCollectionType.type,
         collectionTypeName: existingCollectionType.collectionTypeName,
         description: existingCollectionType.description,
         status: existingCollectionType.status,
+        accountSetupMode: existingCollectionType.accountSetupMode ?? "Existing",
+        revenueCoaId: existingCollectionType.revenueCoaId ?? "",
         expenseParentCoaId: existingCollectionType.expenseParentCoaId ?? "",
       }
     : {
@@ -63,6 +83,7 @@ export function useCollectionTypeFormPage({ existingCollectionType, isOpen = tru
       ...current,
       [name]: value,
       ...(name === "type" && value !== "EXPENSE" ? { expenseParentCoaId: "" } : {}),
+      ...(name === "accountSetupMode" && value === "Auto" ? { revenueCoaId: "" } : {}),
     }));
     setErrors((current) => ({ ...current, [name]: undefined }));
   }
@@ -82,6 +103,31 @@ export function useCollectionTypeFormPage({ existingCollectionType, isOpen = tru
 
     setValues((current) => ({ ...current, status }));
     setErrors((current) => ({ ...current, status: undefined }));
+  }
+
+  function handleAccountSetupModeChange(value: CollectionTypeFormValues["accountSetupMode"]) {
+    if (isReadonly) {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      accountSetupMode: value,
+      ...(value === "Auto" ? { revenueCoaId: "" } : {}),
+    }));
+    setErrors((current) => ({ ...current, accountSetupMode: undefined, revenueCoaId: undefined }));
+  }
+
+  function handleRevenueAccountChange(value: string) {
+    if (isReadonly) {
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      revenueCoaId: value,
+    }));
+    setErrors((current) => ({ ...current, revenueCoaId: undefined }));
   }
 
   function validate() {
@@ -163,9 +209,12 @@ export function useCollectionTypeFormPage({ existingCollectionType, isOpen = tru
     clearDraft: draft.clearDraft,
     discardDraft: draft.discardDraft,
     saveDraft: draft.saveDraft,
+    accountOptions,
     errors,
     expenseParentOptions: [],
+    handleAccountSetupModeChange,
     handleInputChange,
+    handleRevenueAccountChange,
     handleStatusChange,
     handleExpenseParentChange,
     handleSubmit,
@@ -176,4 +225,19 @@ export function useCollectionTypeFormPage({ existingCollectionType, isOpen = tru
     validateBeforeSubmit,
     values,
   };
+}
+
+function createPostingAccountOptions(accounts: PostingAccountLookupOption[]): ModuleChartAccount[] {
+  return accounts.map((account) => ({
+    accountCategory: "SPECIFIC",
+    accountName: account.accountTitle,
+    accountNumber: account.accountCode,
+    accountType: String(account.accountType ?? ""),
+    description: account.description || account.accountTitle,
+    id: account.accountId,
+    normalBalance: account.accountNature === "CREDIT" ? "Credit" : "Debit",
+    statementGroup: "",
+    statementSection: "",
+    status: "Active",
+  }));
 }

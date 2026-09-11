@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
+import { createProjectCodeLookupOptions } from "@/app/src/data/modules/project-maintenance/ProjectMaintenanceLookupData";
 import { usePartyLookup } from "@/app/src/hooks/modules/party-management/usePartyLookup";
 import { usePostingAccountLookup } from "@/app/src/hooks/modules/financial-maintenance/charts-of-accounts/useChartOfAccountsLookup";
 import { useResponsibilityCenterLookup } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenterLookup";
+import { useProjectMaintenanceLookup } from "@/app/src/hooks/modules/project-maintenance/useProjectMaintenance";
 import type { AdvancesToSuppliersFormValues } from "@/app/src/types/modules/cash-disbursement/advances-to-suppliers/AdvancesToSuppliersTypes";
 import type { PartyLookupOption } from "@/app/src/types/modules/party-management/PartyLookupTypes";
 import type { PostingAccountLookupOption } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartOfAccountsLookupTypes";
@@ -25,6 +27,7 @@ export function useAdvancesToSuppliersDetailsLookups(values: AdvancesToSuppliers
   const partyQuery = usePartyLookup({ detail: "complete" });
   const accountQuery = usePostingAccountLookup();
   const responsibilityCenterQuery = useResponsibilityCenterLookup();
+  const projectQuery = useProjectMaintenanceLookup();
 
   const partyOptions = useMemo<PartyLookupOption[]>(() => {
     const options = [...(partyQuery.data ?? [])];
@@ -52,7 +55,14 @@ export function useAdvancesToSuppliersDetailsLookups(values: AdvancesToSuppliers
       return title.includes("advance") || title.includes("supplier") || title.includes("deposit");
     });
     const base = supplierAdvanceAccounts.length > 0 ? supplierAdvanceAccounts : accounts;
-    const options = [...base];
+    const options = base.map((account) => ({
+      ...account,
+      name: account.accountTitle || account.name,
+      label: account.accountCode || account.label,
+      value: account.accountCode || account.value,
+      description: "",
+      selectedDetails: account.accountCode || account.label,
+    }));
 
     if (
       values.accountCode &&
@@ -65,7 +75,8 @@ export function useAdvancesToSuppliersDetailsLookups(values: AdvancesToSuppliers
         name: values.accountTitle || values.accountCode,
         label: values.accountCode,
         value: values.accountCode,
-        description: values.accountTitle,
+        description: "",
+        selectedDetails: values.accountCode,
       });
     }
     return options;
@@ -88,40 +99,28 @@ export function useAdvancesToSuppliersDetailsLookups(values: AdvancesToSuppliers
         name: values.responsibilityCenter || values.responsibilityCenterCode,
         label: values.responsibilityCenterCode,
         value: values.responsibilityCenterCode,
-        description: values.responsibilityCenter,
+        description: "",
       });
     }
     return options;
   }, [responsibilityCenterQuery.data, values.responsibilityCenter, values.responsibilityCenterCode]);
 
-  const projectOptions = useMemo<ResponsibilityCenterLookupOption[]>(() => {
-    const projectCenters = (responsibilityCenterQuery.data ?? []).filter(
-      (opt) => Boolean(opt.name?.toLowerCase().includes("project")),
-    );
-    const base = projectCenters.length > 0 ? projectCenters : (responsibilityCenterQuery.data ?? []);
-    const options = [...base];
-    if (
-      values.projectCode &&
-      !options.some((opt) => opt.value === values.projectCode || opt.label === values.projectCode)
-    ) {
-      options.unshift({
-        centerId: values.projectCode,
-        code: values.projectCode,
-        name: values.projectName || values.projectCode,
-        label: values.projectCode,
-        value: values.projectCode,
-        description: values.projectName,
-      });
-    }
-    return options;
-  }, [responsibilityCenterQuery.data, values.projectCode, values.projectName]);
+  const projectOptions = useMemo(
+    () =>
+      createProjectCodeLookupOptions({
+        currentProjectCode: values.projectCode,
+        currentProjectName: values.projectName,
+        options: projectQuery.data ?? [],
+      }),
+    [projectQuery.data, values.projectCode, values.projectName],
+  );
 
   const isPartyLookupLoading = partyQuery.isLoading;
   const isAccountLookupLoading = accountQuery.isLoading;
   const isResponsibilityCenterLookupLoading = responsibilityCenterQuery.isLoading;
-  const isProjectLookupLoading = responsibilityCenterQuery.isLoading;
+  const isProjectLookupLoading = projectQuery.isLoading;
   const isLookupLoading =
-    isPartyLookupLoading || isAccountLookupLoading || isResponsibilityCenterLookupLoading;
+    isPartyLookupLoading || isAccountLookupLoading || isResponsibilityCenterLookupLoading || isProjectLookupLoading;
 
   return {
     accountOptions,

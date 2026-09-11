@@ -25,8 +25,6 @@ import type {
   DisbursementVoucherPaymentDetails,
   DisbursementAttachment,
 } from "@/app/src/types/modules/cash-disbursement/disbursement-voucher/DisbursementVoucherTypes";
-import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleChartAccountsData";
-import { ApiClient } from "@/app/src/services/shared/api/ApiClient";
 import { fetchDisbursementTypeOptions } from "@/app/src/services/modules/financial-maintenance/disbursement-type/DisbursementTypeApi";
 
 type ApiDisbursementVoucherStatus = CreateDisbursementVoucherDtoStatus | UpdateDisbursementVoucherDtoStatus | string;
@@ -88,14 +86,6 @@ export async function fetchNextDisbursementVoucherTransactionNo(branchUnitId?: n
 
 export async function fetchDisbursementVoucherExpenseAccountOptions(): Promise<DisbursementTypeOptionResponseDto[]> {
   return fetchDisbursementTypeOptions("disbursement");
-}
-
-export async function fetchDisbursementVoucherAccountTitleOptions(): Promise<ModuleChartAccount[]> {
-  const response = await ApiClient.get<CashDisbursementAccountTitleOptionsResponse>(
-    "/cash-disbursement/disbursement-voucher/account-title-options",
-  );
-
-  return (response.data.accounts ?? []).map(mapAccountTitleOption);
 }
 
 export async function createDisbursementVoucherApi(payload: {
@@ -520,43 +510,3 @@ function cleanOptional(value?: string | null) {
   return trimmed ? trimmed : undefined;
 }
 
-type CashDisbursementAccountTitleOptionsResponse = {
-  accounts: CashDisbursementAccountTitleOption[];
-};
-
-type CashDisbursementAccountTitleOption = {
-  id: string;
-  accountCode: string;
-  accountTitle: string;
-  accountType?: string | null;
-  accountNature?: string | null;
-  status?: string | null;
-};
-
-function mapAccountTitleOption(account: CashDisbursementAccountTitleOption): ModuleChartAccount {
-  const accountType = mapChartAccountType(account.accountType);
-  const accountNature = account.accountNature ?? "DEBIT";
-
-  return {
-    accountCategory: accountNature,
-    accountName: account.accountTitle,
-    accountNumber: account.accountCode,
-    accountType,
-    description: account.accountTitle,
-    id: account.id,
-    normalBalance: accountNature === "CREDIT" ? "Credit" : "Debit",
-    statementGroup: accountType === "Expenses" ? "Income Statement" : "Balance Sheet",
-    statementSection: accountNature,
-    status: account.status === "INACTIVE" ? "Inactive" : "Active",
-  };
-}
-
-function mapChartAccountType(accountType?: string | null) {
-  if (accountType === "EXPENSE") return "Expenses";
-  if (accountType === "ASSET") return "Assets";
-  if (accountType === "LIABILITY") return "Liabilities";
-  if (accountType === "REVENUE") return "Revenues";
-  if (accountType === "EQUITY") return "Equity";
-
-  return accountType ?? "";
-}

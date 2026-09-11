@@ -6,7 +6,7 @@ import type {
   PettyCashVoucherStatus,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
-import { getEwtPercentFromCode } from "@/app/src/data/shared/tax/TaxData";
+import { getEwtPercentFromCode, getVatPercentFromRate, getVatRateFromCode } from "@/app/src/data/shared/tax/TaxData";
 import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 import { todayDateValue } from "@/app/src/utils/date.util";
 
@@ -40,11 +40,12 @@ export function createPettyCashVoucherFormValues(
   record?: PettyCashVoucherRecord,
   transactionNo = "",
   baseCurrencyCode = "PHP",
+  taxCodes: AlphanumericTaxCode[] = [],
 ): PettyCashVoucherFormValues {
   if (record?.formValues) {
     return {
       ...record.formValues,
-      items: record.formValues.items.map(normalizePettyCashVoucherItem),
+      items: record.formValues.items.map((item) => normalizePettyCashVoucherItem(item, taxCodes)),
       attachments: record.formValues.attachments.map((item) => ({ ...item })),
     };
   }
@@ -66,7 +67,7 @@ export function createPettyCashVoucherFormValues(
       projectName: record.projectName ?? "",
       remarks: record.remarks,
       items: record.items?.length
-        ? record.items.map(normalizePettyCashVoucherItem)
+        ? record.items.map((item) => normalizePettyCashVoucherItem(item, taxCodes))
         : [
             {
               ...createBlankPettyCashVoucherItem(),
@@ -122,7 +123,7 @@ export function calculatePettyCashVoucherItemTaxFields(
   taxCodes: AlphanumericTaxCode[] = [],
 ): Pick<PettyCashVoucherItem, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "disburseAmount" | "grossAmount"> {
   const amount = roundPettyCashTaxAmount(parseMoneyNumberInput(amountValue));
-  const vatPercent = getPettyCashVoucherVatPercent(vatType);
+  const vatPercent = getPettyCashVoucherVatPercent(vatType, taxCodes);
   const ewtPercent = getEwtPercentFromCode(ewtCode, taxCodes);
   const taxBaseAmount = vatPercent === 12 ? amount / 1.12 : amount;
   const vatAmount = roundPettyCashTaxAmount(vatPercent === 12 ? taxBaseAmount * 0.12 : (amount * vatPercent) / 100);
@@ -183,7 +184,10 @@ export function formatPettyCashVoucherAmount(value: number) {
   return formatMoneyNumberDisplayValue(value.toFixed(2));
 }
 
-function getPettyCashVoucherVatPercent(vatType: string) {
+function getPettyCashVoucherVatPercent(vatType: string, taxCodes: AlphanumericTaxCode[]) {
+  const catalogRate = getVatPercentFromRate(getVatRateFromCode(vatType, taxCodes));
+  if (catalogRate) return catalogRate;
+
   const normalized = vatType.toLowerCase();
   const match = normalized.match(/(\d+(?:\.\d+)?)/);
   if (match) return Number.parseFloat(match[1]);
@@ -194,13 +198,13 @@ function roundPettyCashTaxAmount(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-function normalizePettyCashVoucherItem(item: Partial<PettyCashVoucherItem>): PettyCashVoucherItem {
+function normalizePettyCashVoucherItem(item: Partial<PettyCashVoucherItem>, taxCodes: AlphanumericTaxCode[] = []): PettyCashVoucherItem {
   const amount = item.amount ?? item.grossAmount ?? "";
 
   return {
     ...createBlankPettyCashVoucherItem(),
     ...item,
     amount,
-    ...calculatePettyCashVoucherItemTaxFields(amount, item.vatType ?? "", item.ewtCode ?? ""),
+    ...calculatePettyCashVoucherItemTaxFields(amount, item.vatType ?? "", item.ewtCode ?? "", taxCodes),
   };
 }

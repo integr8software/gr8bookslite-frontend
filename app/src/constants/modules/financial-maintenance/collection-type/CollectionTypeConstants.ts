@@ -5,6 +5,7 @@ import type {
   CollectionTypeImportColumnId,
   CollectionTypeImportColumnWidths,
   CollectionTypeStatus,
+  CollectionTypeAccountSetupMode,
   CollectionTypeType,
 } from "@/app/src/types/modules/financial-maintenance/collection-type/CollectionTypeTypes";
 import { AppMaxFileUploadSizeBytes } from "@/app/src/constants/shared/app/AppConstants";
@@ -32,11 +33,6 @@ export const CollectionTypeTableColumns = [
     key: "description",
     label: "Description",
     className: "w-[24%]",
-  },
-  {
-    key: "type",
-    label: "Type",
-    className: "w-[14%] text-center",
   },
   {
     key: "accountCode",
@@ -80,6 +76,8 @@ export const CollectionTypeTypeOptions = [
   { value: "EXPENSE", label: "Expenses" },
   { value: "COLLECTION", label: "Collections" },
 ] as const satisfies readonly { value: CollectionTypeType; label: string }[];
+
+export const CollectionTypeAccountSetupModeOptions = ["Existing", "Auto"] as const satisfies readonly CollectionTypeAccountSetupMode[];
 
 export const CollectionTypeTypeLabels: Record<CollectionTypeType, string> = {
   EXPENSE: "Expenses",
@@ -163,11 +161,6 @@ export const CollectionTypeExportColumns: ModuleTableExportColumn<CollectionType
     value: "collectionTypeName",
   },
   { header: "Description", id: "description", value: "description" },
-  {
-    header: "Type",
-    id: "type",
-    value: (row) => CollectionTypeTypeLabels[row.type] ?? row.type,
-  },
   { header: "Status", id: "status", value: "status" },
   {
     header: "Account Code",

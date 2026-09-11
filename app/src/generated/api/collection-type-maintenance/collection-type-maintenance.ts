@@ -25,6 +25,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  CollectionTypeAccountOptionsResponseDto,
   CollectionTypeContainerResponseDto,
   CollectionTypeControllerFindAllV1Params,
   CollectionTypeControllerFindOptionsV1Params,
@@ -296,6 +297,98 @@ export function useCollectionTypeControllerFindOptionsV1<TData = Awaited<ReturnT
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getCollectionTypeControllerFindOptionsV1QueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+/**
+ * @summary Get collection type revenue account options
+ */
+export const collectionTypeControllerFindAccountOptionsV1 = (
+
+ options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
+) => {
+
+
+      return OrvalApiClient<CollectionTypeAccountOptionsResponseDto>(
+      {url: `/api/v1/maintenance/financial-management/collection-types/account-options`, method: 'GET', signal
+    },
+      options);
+    }
+
+
+
+
+export const getCollectionTypeControllerFindAccountOptionsV1QueryKey = () => {
+    return [
+    `/api/v1/maintenance/financial-management/collection-types/account-options`
+    ] as const;
+    }
+
+
+export const getCollectionTypeControllerFindAccountOptionsV1QueryOptions = <TData = Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getCollectionTypeControllerFindAccountOptionsV1QueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>> = ({ signal }) => collectionTypeControllerFindAccountOptionsV1(requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type CollectionTypeControllerFindAccountOptionsV1QueryResult = NonNullable<Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>>
+export type CollectionTypeControllerFindAccountOptionsV1QueryError = unknown
+
+
+export function useCollectionTypeControllerFindAccountOptionsV1<TData = Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>,
+          TError,
+          Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCollectionTypeControllerFindAccountOptionsV1<TData = Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>,
+          TError,
+          Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useCollectionTypeControllerFindAccountOptionsV1<TData = Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get collection type revenue account options
+ */
+
+export function useCollectionTypeControllerFindAccountOptionsV1<TData = Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof collectionTypeControllerFindAccountOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getCollectionTypeControllerFindAccountOptionsV1QueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

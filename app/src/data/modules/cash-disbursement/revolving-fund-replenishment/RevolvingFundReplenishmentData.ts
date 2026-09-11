@@ -38,11 +38,12 @@ export function createRevolvingFundReplenishmentFormValues(
   record?: RevolvingFundReplenishmentRecord,
   transactionNo = "",
   baseCurrencyCode = "PHP",
+  taxCodes: AlphanumericTaxCode[] = [],
 ): RevolvingFundReplenishmentFormValues {
   if (record?.formValues) {
     return {
       ...record.formValues,
-      entries: record.formValues.entries.map(normalizeRevolvingFundReplenishmentEntry),
+      entries: record.formValues.entries.map((entry) => normalizeRevolvingFundReplenishmentEntry(entry, taxCodes)),
       attachments: record.formValues.attachments.map((attachment) => ({ ...attachment })),
     };
   }
@@ -64,7 +65,7 @@ export function createRevolvingFundReplenishmentFormValues(
       exchangeRate: record.exchangeRate ?? "1.00",
       remarks: record.remarks,
       entries: record.entries?.length
-        ? record.entries.map(normalizeRevolvingFundReplenishmentEntry)
+        ? record.entries.map((entry) => normalizeRevolvingFundReplenishmentEntry(entry, taxCodes))
         : [
             {
               ...createBlankRevolvingFundReplenishmentEntry(),
@@ -187,6 +188,7 @@ function normalizeRevolvingFundReplenishmentEntry(
     accountTitle?: string;
     totalAmount?: string;
   },
+  taxCodes: AlphanumericTaxCode[] = [],
 ): RevolvingFundReplenishmentEntry {
   return {
     ...createBlankRevolvingFundReplenishmentEntry(),
@@ -196,7 +198,12 @@ function normalizeRevolvingFundReplenishmentEntry(
     supplierName: entry.supplierName ?? entry.accountTitle ?? "",
     vatType: entry.vatType ?? "",
     ewtCode: entry.ewtCode ?? "",
-    ...calculateRevolvingFundReplenishmentEntryTaxFields(entry.amount ?? entry.totalAmount ?? "", entry.vatType ?? "", entry.ewtCode ?? ""),
+    ...calculateRevolvingFundReplenishmentEntryTaxFields(
+      entry.amount ?? entry.totalAmount ?? "",
+      entry.vatType ?? "",
+      entry.ewtCode ?? "",
+      taxCodes,
+    ),
   };
 }
 

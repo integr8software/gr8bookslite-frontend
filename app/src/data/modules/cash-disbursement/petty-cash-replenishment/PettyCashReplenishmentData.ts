@@ -1,7 +1,7 @@
 import { PettyCashReplenishmentStatuses } from "@/app/src/constants/modules/cash-disbursement/petty-cash-replenishment/PettyCashReplenishmentConstants";
 import { calculatePettyCashVoucherTotals } from "@/app/src/data/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherData";
 import { formatMoneyNumberDisplayValue, parseMoneyNumberInput } from "@/app/src/data/shared/money/MoneyNumberData";
-import { getEwtPercentFromCode } from "@/app/src/data/shared/tax/TaxData";
+import { getEwtPercentFromCode, getVatPercentFromRate, getVatRateFromCode } from "@/app/src/data/shared/tax/TaxData";
 import type { PettyCashVoucherRecord } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import type {
   PettyCashReplenishmentEntry,
@@ -41,11 +41,12 @@ export function createPettyCashReplenishmentFormValues(
   record?: PettyCashReplenishmentRecord,
   transactionNo = "",
   baseCurrencyCode = "PHP",
+  taxCodes: AlphanumericTaxCode[] = [],
 ): PettyCashReplenishmentFormValues {
   if (record?.formValues) {
     return {
       ...record.formValues,
-      entries: record.formValues.entries.map(normalizePettyCashReplenishmentEntry),
+      entries: record.formValues.entries.map((entry) => normalizePettyCashReplenishmentEntry(entry, taxCodes)),
       attachments: record.formValues.attachments.map((attachment) => ({ ...attachment })),
     };
   }
@@ -67,7 +68,7 @@ export function createPettyCashReplenishmentFormValues(
       exchangeRate: record.exchangeRate ?? "1.00",
       remarks: record.remarks,
       entries: record.entries?.length
-        ? record.entries.map(normalizePettyCashReplenishmentEntry)
+        ? record.entries.map((entry) => normalizePettyCashReplenishmentEntry(entry, taxCodes))
         : [
             {
               ...createBlankPettyCashReplenishmentEntry(),
@@ -230,7 +231,7 @@ export function calculatePettyCashReplenishmentEntryTaxFields(
   taxCodes: AlphanumericTaxCode[] = [],
 ): Pick<PettyCashReplenishmentEntry, "netAmount" | "vatPercent" | "vatAmount" | "ewtPercent" | "ewtAmount" | "disburseAmount"> {
   const amount = roundCurrency(parseMoneyNumberInput(amountValue));
-  const vatPercent = getPettyCashReplenishmentVatPercent(vatType);
+  const vatPercent = getPettyCashReplenishmentVatPercent(vatType, taxCodes);
   const ewtPercent = getEwtPercentFromCode(ewtCode, taxCodes);
   const taxBaseAmount = vatPercent === 12 ? amount / 1.12 : amount;
   const vatAmount = roundCurrency(vatPercent === 12 ? taxBaseAmount * 0.12 : (amount * vatPercent) / 100);
@@ -273,6 +274,7 @@ function normalizePettyCashReplenishmentEntry(
     accountTitle?: string;
     totalAmount?: string;
   },
+  taxCodes: AlphanumericTaxCode[] = [],
 ): PettyCashReplenishmentEntry {
   return {
     ...createBlankPettyCashReplenishmentEntry(),
@@ -282,11 +284,19 @@ function normalizePettyCashReplenishmentEntry(
     supplierName: entry.supplierName ?? entry.accountTitle ?? "",
     vatType: entry.vatType ?? "",
     ewtCode: entry.ewtCode ?? "",
-    ...calculatePettyCashReplenishmentEntryTaxFields(entry.amount ?? entry.totalAmount ?? "", entry.vatType ?? "", entry.ewtCode ?? ""),
+    ...calculatePettyCashReplenishmentEntryTaxFields(
+      entry.amount ?? entry.totalAmount ?? "",
+      entry.vatType ?? "",
+      entry.ewtCode ?? "",
+      taxCodes,
+    ),
   };
 }
 
-function getPettyCashReplenishmentVatPercent(vatType: string) {
+function getPettyCashReplenishmentVatPercent(vatType: string, taxCodes: AlphanumericTaxCode[]) {
+  const catalogRate = getVatPercentFromRate(getVatRateFromCode(vatType, taxCodes));
+  if (catalogRate) return catalogRate;
+
   const match = vatType.match(/(\d+(?:\.\d+)?)/);
   if (match) return Number.parseFloat(match[1]);
   return 0;

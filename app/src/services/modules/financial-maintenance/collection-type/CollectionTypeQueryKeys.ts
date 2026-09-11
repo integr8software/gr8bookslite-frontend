@@ -5,6 +5,8 @@ export const CollectionTypeQueryKeys = {
     ["collection-type", kind, companyId ?? "no-company"] as const,
   list: (companyId?: number | null, kind: CollectionTypeMaintenanceKind = "collection") =>
     [...CollectionTypeQueryKeys.all(companyId, kind), "list"] as const,
+  accountOptions: (companyId?: number | null, kind: CollectionTypeMaintenanceKind = "collection") =>
+    [...CollectionTypeQueryKeys.all(companyId, kind), "account-options"] as const,
   expenseParentOptions: (companyId?: number | null, kind: CollectionTypeMaintenanceKind = "collection") =>
     [...CollectionTypeQueryKeys.all(companyId, kind), "expense-parent-options"] as const,
 };

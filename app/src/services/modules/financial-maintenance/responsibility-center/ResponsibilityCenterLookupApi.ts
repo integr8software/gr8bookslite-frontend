@@ -37,12 +37,15 @@ export async function fetchResponsibilityCenterLookupOptionsByType(
 }
 
 function mapCenterToLookupOption(center: ResponsibilityCenterBackendResponse): ResponsibilityCenterLookupOption {
+  const centerType = center.typeName || center.classificationName || "";
+
   return {
     ...center,
     name: center.name,
     label: center.code,
     value: center.code,
-    description: center.name,
+    description: centerType,
+    selectedDetails: center.code,
     centerId: center.id,
     code: center.code,
     typeName: center.typeName,

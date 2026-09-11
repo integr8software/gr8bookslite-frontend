@@ -3899,7 +3899,7 @@ export interface PartyResponseDto {
   customerAdvanceAccount: string;
   defaultPayableAccount: string;
   vendorAdvanceAccount: string;
-  purchaseType: string;
+  purchaseType: string[];
   employeeAdvanceAccount: string;
   employeePayableAccount: string;
   cashAdvanceLimit: string;
@@ -4196,6 +4196,15 @@ export const CreatePartyDtoStatus = {
   INACTIVE: 'INACTIVE',
 } as const;
 
+export type CreatePartyDtoPurchaseTypeItem = typeof CreatePartyDtoPurchaseTypeItem[keyof typeof CreatePartyDtoPurchaseTypeItem];
+
+
+export const CreatePartyDtoPurchaseTypeItem = {
+  Goods: 'Goods',
+  Services: 'Services',
+  Assets: 'Assets',
+} as const;
+
 export interface CreatePartyDto {
   /** @minimum 1 */
   branchUnitId?: number;
@@ -4284,11 +4293,8 @@ export interface CreatePartyDto {
      * @nullable
      */
   vendorAdvanceAccount?: string | null;
-  /**
-     * @maxLength 50
-     * @nullable
-     */
-  purchaseType?: string | null;
+  /** @nullable */
+  purchaseType?: CreatePartyDtoPurchaseTypeItem[] | null;
   /**
      * @maxLength 80
      * @nullable
@@ -4430,6 +4436,15 @@ export const UpdatePartyDtoStatus = {
   INACTIVE: 'INACTIVE',
 } as const;
 
+export type UpdatePartyDtoPurchaseTypeItem = typeof UpdatePartyDtoPurchaseTypeItem[keyof typeof UpdatePartyDtoPurchaseTypeItem];
+
+
+export const UpdatePartyDtoPurchaseTypeItem = {
+  Goods: 'Goods',
+  Services: 'Services',
+  Assets: 'Assets',
+} as const;
+
 export interface UpdatePartyDto {
   /** @minimum 1 */
   branchUnitId?: number;
@@ -4518,11 +4533,8 @@ export interface UpdatePartyDto {
      * @nullable
      */
   vendorAdvanceAccount?: string | null;
-  /**
-     * @maxLength 50
-     * @nullable
-     */
-  purchaseType?: string | null;
+  /** @nullable */
+  purchaseType?: UpdatePartyDtoPurchaseTypeItem[] | null;
   /**
      * @maxLength 80
      * @nullable
@@ -22803,4 +22815,3 @@ page?: number;
  */
 limit?: number;
 };
-

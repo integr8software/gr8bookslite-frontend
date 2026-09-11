@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { PurchaseRequestHref } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
 import { ResponsibilityCenterInitialFormValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
+import { getDefaultPartyPurchaseType } from "@/app/src/data/modules/party-management/PartyPurchaseTypeData";
 import { createProjectCodeLookupOptions } from "@/app/src/data/modules/project-maintenance/ProjectMaintenanceLookupData";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
@@ -76,7 +77,7 @@ function PurchaseRequestActionPageInner() {
 
     if (selectedParty) {
       page.updateField("vendorAddress", formatPartyAddress(getPurchaseRequestPartyAddress(selectedParty)));
-      page.updateField("purchaseType", selectedParty.purchaseType || "");
+      page.updateField("purchaseType", getDefaultPartyPurchaseType(selectedParty.purchaseType));
     } else {
       page.updateField("vendorAddress", "");
       page.updateField("purchaseType", "");
@@ -156,7 +157,7 @@ function PurchaseRequestActionPageInner() {
           page.updateField("vceCode", record.partyCodeNo);
           page.updateField("vceName", getPartyDisplayName(record));
           page.updateField("vendorAddress", formatPartyAddress(getPurchaseRequestPartyAddress(record)));
-          page.updateField("purchaseType", record.purchaseType || "");
+          page.updateField("purchaseType", getDefaultPartyPurchaseType(record.purchaseType));
           setIsPartyDrawerOpen(false);
         }}
       />
@@ -284,4 +285,3 @@ function createHeaderResponsibilityCenterOptions({
 
   return options;
 }
-

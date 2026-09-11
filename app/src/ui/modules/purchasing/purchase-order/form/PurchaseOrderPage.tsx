@@ -7,6 +7,7 @@ import { PurchaseOrderHref } from "@/app/src/constants/modules/purchasing/purcha
 import { usePurchaseOrderFormPage } from "@/app/src/hooks/modules/purchasing/purchase-order/usePurchaseOrderFormPage";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
+import { getDefaultPartyPurchaseType } from "@/app/src/data/modules/party-management/PartyPurchaseTypeData";
 import type { PartyAddress, PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { PurchaseOrderDetailsForm } from "@/app/src/ui/modules/purchasing/purchase-order/form/PurchaseOrderFieldContent";
@@ -63,7 +64,7 @@ function PurchaseOrderActionPageInner() {
           page.updateField("termId", party?.termId ?? "");
           page.updateField("termsOfPayment", party?.termName ?? "");
           if (party?.purchaseType) {
-            page.updateField("purchaseType", party.purchaseType);
+            page.updateField("purchaseType", getDefaultPartyPurchaseType(party.purchaseType));
           }
         }}
         onUpdateField={page.updateField}

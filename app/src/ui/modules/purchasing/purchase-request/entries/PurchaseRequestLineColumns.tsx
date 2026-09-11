@@ -3,6 +3,7 @@ import type { PurchaseRequestItem } from "@/app/src/types/modules/purchasing/pur
 import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { ItemRecord } from "@/app/src/types/modules/item-management/items/ItemManagementTypes";
 import type { ServiceMaintenanceOptionResponseDto } from "@/app/src/generated/api/gR8BooksNeoAPI.schemas";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { AppAdvancedDropdown } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import {
 	formatMoneyNumberInput,
@@ -38,15 +39,20 @@ export function createPurchaseRequestLineColumns(
 	itemDescriptionOptions: ItemRecord[] = [],
 	responsibilityCenters: ResponsibilityCenter[] = [],
 ): ModuleDataEntryColumn<PurchaseRequestItem>[] {
-	const isServices = purchaseType?.toLowerCase() === "services";
-	const usesItemMaintenance = ["goods", "assets"].includes(
-		purchaseType?.toLowerCase() ?? "",
-	);
-	const activeConfigs = isServices
-		? PurchaseRequestLineColumnConfigs.filter(
-				(column) => !["itemCode", "barcode", "uom"].includes(column.id),
-			)
-		: PurchaseRequestLineColumnConfigs;
+	const normalizedPurchaseType = (purchaseType ?? "").toLowerCase();
+	const hasGoods = normalizedPurchaseType.includes("goods");
+	const hasServices = normalizedPurchaseType.includes("services");
+	const hasAssets = normalizedPurchaseType.includes("assets");
+
+	const isServices = hasServices && !hasGoods && !hasAssets;
+	const isGoodsAndServices =
+		(hasGoods && hasServices) || normalizedPurchaseType.includes("&");
+	const usesItemMaintenance =
+		["goods", "assets"].includes(normalizedPurchaseType) ||
+		hasGoods ||
+		hasAssets ||
+		isGoodsAndServices;
+	const activeConfigs = PurchaseRequestLineColumnConfigs;
 
 	return activeConfigs.map((column) => ({
 		header: column.header,
@@ -60,6 +66,7 @@ export function createPurchaseRequestLineColumns(
 				fieldName={context.fieldName}
 				usesItemMaintenance={usesItemMaintenance}
 				isServices={isServices}
+				isGoodsAndServices={isGoodsAndServices}
 				isReadonly={isReadonly}
 				itemDescriptionOptions={itemDescriptionOptions}
 				responsibilityCenters={responsibilityCenters}
@@ -77,6 +84,7 @@ function PurchaseRequestLineCell({
 	fieldName,
 	usesItemMaintenance,
 	isServices,
+	isGoodsAndServices,
 	isReadonly,
 	itemDescriptionOptions,
 	responsibilityCenters,
@@ -89,6 +97,7 @@ function PurchaseRequestLineCell({
 	fieldName: string;
 	usesItemMaintenance: boolean;
 	isServices: boolean;
+	isGoodsAndServices: boolean;
 	isReadonly: boolean;
 	itemDescriptionOptions: ItemRecord[];
 	responsibilityCenters: ResponsibilityCenter[];
@@ -97,6 +106,36 @@ function PurchaseRequestLineCell({
 	serviceDescriptionOptions: ServiceMaintenanceOptionResponseDto[];
 }) {
 	const value = String(row[column.id] ?? "");
+	const isServiceRow =
+		Boolean(row.serviceMaintenanceId) || (isServices && !row.itemId);
+
+	if (isGoodsAndServices && column.id === "description") {
+		return (
+			<AppAdvancedDropdown
+				id={fieldId}
+				name={fieldName}
+				value={value}
+				readOnly={isReadonly}
+				options={createCombinedDescriptionDropdownOptions(
+					itemDescriptionOptions,
+					serviceDescriptionOptions,
+					value,
+				)}
+				placeholder=""
+				className={EntryDropdownClassName}
+				onChange={(nextValue) =>
+					onUpdateEntry(
+						row.id,
+						getPurchaseRequestCombinedUpdates(
+							itemDescriptionOptions,
+							serviceDescriptionOptions,
+							String(nextValue),
+						),
+					)
+				}
+			/>
+		);
+	}
 
 	if (usesItemMaintenance && column.id === "description") {
 		return (
@@ -141,7 +180,24 @@ function PurchaseRequestLineCell({
 		);
 	}
 
-	if (usesItemMaintenance && ["itemCode", "barcode", "uom"].includes(column.id)) {
+	if (isServiceRow && ["itemCode", "barcode", "uom", "lotNo"].includes(column.id)) {
+		return (
+			<input
+				id={fieldId}
+				name={fieldName}
+				type="text"
+				value="-"
+				disabled
+				readOnly
+				tabIndex={-1}
+				className={entryCellControlClassName(
+					"bg-offwhite/45 text-center text-darknavy/35 cursor-not-allowed select-none",
+				)}
+			/>
+		);
+	}
+
+	if (["itemCode", "barcode", "uom"].includes(column.id)) {
 		return (
 			<input
 				id={fieldId}
@@ -327,9 +383,13 @@ function getPurchaseRequestServiceUpdates(
 	);
 
 	return {
+		barcode: "",
 		description,
 		itemId: "",
+		itemCode: "",
+		lotNo: "",
 		serviceMaintenanceId: selectedService?.id ?? "",
+		uom: "",
 	};
 }
 
@@ -356,6 +416,87 @@ function createServiceDescriptionDropdownOptions(
 	}
 
 	return dropdownOptions;
+}
+
+function createCombinedDescriptionDropdownOptions(
+	itemOptions: ItemRecord[],
+	serviceOptions: ServiceMaintenanceOptionResponseDto[],
+	value: string,
+): AppAdvancedDropdownOption[] {
+	const itemDropdownOptions: AppAdvancedDropdownOption[] = itemOptions.map((item) => ({
+		description: "Item Master · Goods",
+		label: item.code ? `[Item] ${item.code} - ${item.name}` : `[Item] ${item.name}`,
+		name: item.name,
+		value: item.name,
+	}));
+
+	const serviceDropdownOptions: AppAdvancedDropdownOption[] = serviceOptions.map((service) => {
+		const serviceName = service.serviceName || service.name;
+		return {
+			description: "Service Maintenance · Services",
+			label: `[Service] ${serviceName}`,
+			name: serviceName,
+			value: serviceName,
+		};
+	});
+
+	const combined = [...itemDropdownOptions, ...serviceDropdownOptions];
+
+	if (
+		value &&
+		!combined.some(
+			(option) => option.value.trim().toLowerCase() === value.trim().toLowerCase(),
+		)
+	) {
+		return [{ label: value, name: value, value }, ...combined];
+	}
+
+	return combined;
+}
+
+function getPurchaseRequestCombinedUpdates(
+	itemOptions: ItemRecord[],
+	serviceOptions: ServiceMaintenanceOptionResponseDto[],
+	description: string,
+): Partial<PurchaseRequestItem> {
+	const trimmedDesc = description.trim().toLowerCase();
+
+	const selectedItem = itemOptions.find(
+		(item) => item.name.trim().toLowerCase() === trimmedDesc,
+	);
+	if (selectedItem) {
+		return {
+			barcode: selectedItem.barcode,
+			cost: selectedItem.costPrice,
+			description: selectedItem.name,
+			itemId: selectedItem.id,
+			itemCode: selectedItem.code,
+			responsibilityCenterId: selectedItem.responsibilityCenterId ?? "",
+			responsibilityCenter: selectedItem.responsibilityCenter,
+			serviceMaintenanceId: "",
+			uom: selectedItem.uom,
+		};
+	}
+
+	const selectedService = serviceOptions.find(
+		(service) =>
+			(service.serviceName || service.name).trim().toLowerCase() === trimmedDesc,
+	);
+	if (selectedService) {
+		const serviceName = selectedService.serviceName || selectedService.name;
+		return {
+			barcode: "",
+			cost: 0,
+			description: serviceName,
+			itemId: "",
+			itemCode: "",
+			lotNo: "",
+			serviceMaintenanceId: selectedService.id ?? "",
+			uom: "",
+		};
+	}
+
+	return { description };
 }
 
 function entryCellControlClassName(extraClassName?: string) {

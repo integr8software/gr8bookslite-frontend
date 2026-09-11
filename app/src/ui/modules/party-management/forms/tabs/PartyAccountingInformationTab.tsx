@@ -8,6 +8,7 @@ import {
   createAccountAddAction,
   getSingleSelectedValue,
 } from "@/app/src/data/modules/party-management/PartyInformationTabsData";
+import { mapPartyPurchaseTypesFromApi } from "@/app/src/data/modules/party-management/PartyPurchaseTypeData";
 import type {
   PartyAccountingFieldsProps,
   PartyAccountingInformationTabProps,
@@ -185,7 +186,7 @@ function AccountFields({
             showSelectionRemoveButton={false}
             value={values.purchaseType}
             onChange={(value) =>
-              onUpdateField("purchaseType", Array.isArray(value) ? value : value ? [value] : [])
+              onUpdateField("purchaseType", mapPartyPurchaseTypesFromApi(value))
             }
           />
         </Field>

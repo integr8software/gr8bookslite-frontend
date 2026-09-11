@@ -1,4 +1,5 @@
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
+import { mapPartyPurchaseTypesFromApi } from "@/app/src/data/modules/party-management/PartyPurchaseTypeData";
 import {
   partyMaintenanceControllerCreateV1,
   partyMaintenanceControllerFindAccountingOptionsV1,
@@ -213,7 +214,7 @@ function mapApiParty(party: PartyResponseDto): PartyInformationRecord {
     customerAdvanceAccount: party.customerAdvanceAccount ?? "",
     defaultPayableAccount: party.defaultPayableAccount ?? "",
     vendorAdvanceAccount: party.vendorAdvanceAccount ?? "",
-    purchaseType: party.purchaseType ?? [],
+    purchaseType: mapPartyPurchaseTypesFromApi(party.purchaseType),
     employeeAdvanceAccount: party.employeeAdvanceAccount ?? "",
     employeePayableAccount: party.employeePayableAccount ?? "",
     cashAdvanceLimit: party.cashAdvanceLimit ?? "",

@@ -56,3 +56,24 @@ export type AddressAutocompleteDetails = {
 	addressLine1?: string;
 	addressLine2?: string;
 };
+
+export type OsmReverseGeocodeResult = {
+	barangay: string;
+	cityMunicipality: string;
+	displayName: string;
+	lat: number;
+	lng: number;
+	placeId: number;
+	postcode: string;
+	province: string;
+	region: string;
+	road: string;
+};
+
+export type OsmSearchResult = {
+	displayName: string;
+	lat: number;
+	lng: number;
+	placeId: number;
+};
+

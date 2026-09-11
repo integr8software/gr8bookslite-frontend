@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { MapPin } from "lucide-react";
 import { GetAddressAutocomplete } from "@/app/src/services/shared/address/AddressReferenceApi";
 import type { AddressAutocompleteDetails, AddressAutocompleteItem } from "@/app/src/types/shared/address/AddressTypes";
@@ -21,6 +21,7 @@ export type AppAddressAutocompleteValue = {
 };
 
 export function AppAddressAutocomplete({
+  action,
   disabled = false,
   id,
   label = "Search Address",
@@ -32,6 +33,7 @@ export function AppAddressAutocomplete({
   onDetailsChange,
   onSelect,
 }: {
+  action?: ReactNode;
   disabled?: boolean;
   id: string;
   label?: string;
@@ -45,6 +47,7 @@ export function AppAddressAutocomplete({
 }) {
   return (
     <StatefulAddressAutocomplete
+      action={action}
       disabled={disabled}
       id={id}
       label={label}
@@ -60,6 +63,7 @@ export function AppAddressAutocomplete({
 }
 
 function StatefulAddressAutocomplete({
+  action,
   disabled,
   id,
   label,
@@ -71,6 +75,7 @@ function StatefulAddressAutocomplete({
   onDetailsChange,
   onSelect,
 }: {
+  action?: ReactNode;
   disabled: boolean;
   id: string;
   label: string;
@@ -147,10 +152,13 @@ function StatefulAddressAutocomplete({
 
   return (
     <div className="grid gap-2">
-      <label htmlFor={id} className="text-sm font-semibold text-darknavy">
-        {label}
-        <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
-      </label>
+      <div className="flex items-center justify-between">
+        <label htmlFor={id} className="text-sm font-semibold text-darknavy">
+          {label}
+          <ModuleFieldRequiredMark className="text-coralpink" fallbackRequired={required} label={label} leadingSpace />
+        </label>
+        {action}
+      </div>
       <AppSearchSuggestions
         compact
         emptyMessage="No address options found."

@@ -4,19 +4,18 @@ import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { PurchaseRequestHref } from "@/app/src/constants/modules/purchasing/purchase-request/PurchaseRequestConstants";
-import {
-  ResponsibilityCenterInitialFormValues,
-  createProjectResponsibilityCenterInitialValues,
-} from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
+import { ResponsibilityCenterInitialFormValues } from "@/app/src/data/modules/financial-maintenance/responsibility-center/ResponsibilityCenterData";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { createProjectCodeLookupOptions } from "@/app/src/data/modules/project-maintenance/ProjectMaintenanceLookupData";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
 import { useProjectMaintenanceLookup } from "@/app/src/hooks/modules/project-maintenance/useProjectMaintenance";
+import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { PartyAddress, PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import type { ProjectMaintenance } from "@/app/src/types/modules/project-maintenance/ProjectMaintenanceTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { usePurchaseRequestFormPage } from "@/app/src/hooks/modules/purchasing/purchase-request/usePurchaseRequestFormPage";
+import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ProjectMaintenanceDrawer } from "@/app/src/ui/modules/project-maintenance/ProjectMaintenanceDrawer";
 import { ModuleHeader, moduleHeaderActionClassNames } from "@/app/src/ui/shared/module/ModuleHeader";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/dialogs/PartyManagementDrawer";
@@ -50,7 +49,6 @@ function PurchaseRequestActionPageInner() {
         options: projectOptionsQuery.data ?? [],
       }),
     [page.values.projectCode, page.values.projectName, projectOptionsQuery.data],
-    [page.values.projectCode, page.values.projectName, responsibilityCenterStore.centers],
   );
   const responsibilityCenterOptions = useMemo(
     () =>
@@ -60,10 +58,6 @@ function PurchaseRequestActionPageInner() {
         records: responsibilityCenterStore.centers,
       }),
     [page.values.responsibilityCenterId, page.values.responsibilityCenter, page.values.forDepartment, responsibilityCenterStore.centers],
-  );
-  const projectInitialValues = useMemo(
-    () => createProjectResponsibilityCenterInitialValues(responsibilityCenterStore.classifications, responsibilityCenterStore.types),
-    [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
   );
   const responsibilityCenterInitialValues = useMemo(
     () => ResponsibilityCenterInitialFormValues,

@@ -117,15 +117,27 @@ export function AppAdvancedDropdown({
 		() => Array.from(new Set(Array.isArray(value) ? value : value ? [value] : [])),
 		[value],
 	);
-	const selectedValueSet = useMemo(() => new Set(selectedValues), [selectedValues]);
 	const uniqueOptions = useMemo(() => sortOptionsByName(deduplicateOptions(options)), [options]);
 	const flatOptions = useMemo(() => flattenOptions(uniqueOptions), [uniqueOptions]);
 	const selectedOptions = selectedValues
 		.map(
 			(selectedValue) =>
-				flatOptions.find((option) => option.value === selectedValue || option.label === selectedValue),
+				flatOptions.find(
+					(option) =>
+						option.value === selectedValue ||
+						option.label === selectedValue ||
+						option.name === selectedValue,
+				),
 		)
 		.filter((option): option is AppAdvancedDropdownOption => Boolean(option));
+	const selectedValueSet = useMemo(
+		() =>
+			new Set([
+				...selectedValues,
+				...selectedOptions.map((option) => option.value),
+			]),
+		[selectedOptions, selectedValues],
+	);
 	const filteredOptions = useMemo(
 		() => filterOptions(uniqueOptions, query),
 		[query, uniqueOptions],

@@ -19,7 +19,24 @@ import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDraw
 import type { AppAdvancedDropdownOption } from "@/app/src/ui/shared/advanced-dropdown/AppAdvancedDropdown";
 import { getAccountLevelLabel } from "@/app/src/utils/accounts.util";
 
-export function DisbursementTypeDrawer({ disbursementType, isOpen, kind = "disbursement", mode, permissions, onClose }: DisbursementTypeDrawerProps) {
+const DefaultDisbursementTypeDrawerPermissions = {
+  canView: true,
+  canCreate: true,
+  canUpdate: true,
+  canCancel: true,
+  canExport: false,
+  canImport: false,
+};
+
+export function DisbursementTypeDrawer({
+  disbursementType,
+  isOpen,
+  kind = "disbursement",
+  mode,
+  permissions = DefaultDisbursementTypeDrawerPermissions,
+  onClose,
+  onSaved,
+}: DisbursementTypeDrawerProps) {
   return (
     <DisbursementTypeDrawerPanel
       key={`${mode}-${disbursementType?.id ?? "new"}`}
@@ -29,17 +46,29 @@ export function DisbursementTypeDrawer({ disbursementType, isOpen, kind = "disbu
       mode={mode}
       permissions={permissions}
       onClose={onClose}
+      onSaved={onSaved}
     />
   );
 }
 
-function DisbursementTypeDrawerPanel({ disbursementType, isOpen, kind = "disbursement", mode, permissions, onClose }: DisbursementTypeDrawerProps) {
+function DisbursementTypeDrawerPanel({
+  disbursementType,
+  isOpen,
+  kind = "disbursement",
+  mode,
+  permissions = DefaultDisbursementTypeDrawerPermissions,
+  onClose,
+  onSaved,
+}: DisbursementTypeDrawerProps) {
   const page = useDisbursementTypeFormPage({
     existingDisbursementType: disbursementType,
     isOpen,
     kind,
     mode,
-    onSaved: onClose,
+    onSaved: (savedRecord) => {
+      onSaved?.(savedRecord);
+      onClose();
+    },
   });
   const [expenseSubAccountDialog, setExpenseSubAccountDialog] = useState<DisbursementTypeExpenseSubAccountDialogState>(null);
   const copy = DisbursementTypeActionCopy[mode];
@@ -59,7 +88,7 @@ function DisbursementTypeDrawerPanel({ disbursementType, isOpen, kind = "disburs
   const nextExpenseSubAccountLevel = getExpenseSubAccountLevel(selectedExpenseParentAccount?.accountLevel);
   const canAddExpenseTypeSubAccount =
     !page.isReadonly &&
-    permissions.canCreate &&
+    (permissions?.canCreate ?? true) &&
     page.values.type === "EXPENSE" &&
     page.values.accountSetupMode === "Auto" &&
     Boolean(selectedExpenseParentAccount && nextExpenseSubAccountLevel);
@@ -94,7 +123,7 @@ function DisbursementTypeDrawerPanel({ disbursementType, isOpen, kind = "disburs
           <DisbursementTypeFields
             accountOptions={page.accountOptions}
             canAddExpenseTypeSubAccount={canAddExpenseTypeSubAccount}
-            canCancelStatus={permissions.canCancel}
+            canCancelStatus={permissions?.canCancel ?? true}
             errors={page.errors}
             expenseParentOptions={expenseParentOptions}
             generatedAccounts={disbursementType?.generatedAccounts}

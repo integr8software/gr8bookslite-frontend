@@ -138,29 +138,34 @@ export const StatusToApi: Record<PettyCashVoucherStatus, string> = {
 
 export function mapPettyCashVoucherRecordFromDto(dto: PettyCashVoucherResponseDto): PettyCashVoucherRecord {
   const dtoExtras = dto as PettyCashVoucherResponseDto & PettyCashVoucherResponseExtras;
-  const items: PettyCashVoucherItem[] = (dto.details ?? []).map((d: PettyCashVoucherDetailDto & PettyCashVoucherDetailExtras, index: number) => ({
-    id: d.id ? String(d.id) : `item-${index + 1}`,
-    date: d.itemDate || d.date ? String(d.itemDate || d.date).split("T")[0] : "",
-    supplierCode: d.supplierCodeSnapshot ?? "",
-    supplierName: d.supplierNameSnapshot ?? "",
-    orNo: d.orNo ?? "",
-    tinNo: d.tinNo ?? "",
-    particulars: d.particulars ?? "",
-    remarks: d.remarks ?? "",
-    amount: String(d.grossAmount ?? 0),
-    netAmount: String(d.netAmount ?? 0),
-    vatPercent: String(d.vatPercent ?? 0),
-    vatAmount: String(d.vatAmount ?? 0),
-    ewtCode: d.ewtCode ?? "",
-    ewtPercent: String(d.ewtPercent ?? 0),
-    ewtAmount: String(d.ewtAmount ?? 0),
-    disburseAmount: String(d.disburseAmount ?? d.grossAmount ?? 0),
-    type: d.type ?? "",
-    vatType: d.vatType ?? "",
-    grossAmount: String(d.grossAmount ?? 0),
-    responsibilityCenterCode: d.responsibilityCenterCodeSnapshot ?? "",
-    responsibilityCenterName: d.responsibilityCenterSnapshot ?? "",
-  }));
+  const items: PettyCashVoucherItem[] = (dto.details ?? []).map((d: PettyCashVoucherDetailDto & PettyCashVoucherDetailExtras, index: number) => {
+    const disbursementType = d.expenseType ?? d.type ?? "";
+    return {
+      id: d.id ? String(d.id) : `item-${index + 1}`,
+      disbursementType,
+      expenseType: disbursementType,
+      date: d.itemDate || d.date ? String(d.itemDate || d.date).split("T")[0] : "",
+      supplierCode: d.supplierCodeSnapshot ?? "",
+      supplierName: d.supplierNameSnapshot ?? "",
+      orNo: d.orNo ?? "",
+      tinNo: d.tinNo ?? "",
+      particulars: d.particulars ?? "",
+      remarks: d.remarks ?? "",
+      amount: String(d.grossAmount ?? 0),
+      netAmount: String(d.netAmount ?? 0),
+      vatPercent: String(d.vatPercent ?? 0),
+      vatAmount: String(d.vatAmount ?? 0),
+      ewtCode: d.ewtCode ?? "",
+      ewtPercent: String(d.ewtPercent ?? 0),
+      ewtAmount: String(d.ewtAmount ?? 0),
+      disburseAmount: String(d.disburseAmount ?? d.grossAmount ?? 0),
+      type: disbursementType,
+      vatType: d.vatType ?? "",
+      grossAmount: String(d.grossAmount ?? 0),
+      responsibilityCenterCode: d.responsibilityCenterCodeSnapshot ?? "",
+      responsibilityCenterName: d.responsibilityCenterSnapshot ?? "",
+    };
+  });
 
   const formValues: PettyCashVoucherFormValues = {
     transactionNo: dto.transactionNo,
@@ -218,7 +223,7 @@ export function mapPettyCashVoucherFormValuesToCreateDto(values: PettyCashVouche
     particulars: item.particulars,
     responsibilityCenterCode: item.responsibilityCenterCode,
     responsibilityCenter: item.responsibilityCenterName,
-    grossAmount: parseMoneyNumberInput(item.grossAmount),
+    grossAmount: parseMoneyNumberInput(item.grossAmount || item.amount),
     vatType: item.vatType,
     vatPercent: parseMoneyNumberInput(item.vatPercent),
     vatAmount: parseMoneyNumberInput(item.vatAmount),
@@ -227,6 +232,7 @@ export function mapPettyCashVoucherFormValuesToCreateDto(values: PettyCashVouche
     ewtPercent: parseMoneyNumberInput(item.ewtPercent),
     ewtAmount: parseMoneyNumberInput(item.ewtAmount),
     disburseAmount: parseMoneyNumberInput(item.disburseAmount),
+    expenseType: item.disbursementType || item.expenseType || item.type || undefined,
   }));
 
   const totalAmount = details.reduce((sum, d) => sum + (d.grossAmount || 0), 0);
@@ -255,6 +261,7 @@ export function mapPettyCashVoucherFormValuesToCreateDto(values: PettyCashVouche
 
 function isPettyCashVoucherItemPopulated(item: PettyCashVoucherItem) {
   return Boolean(
+    item.disbursementType?.trim() ||
     item.supplierCode.trim() ||
     item.supplierName.trim() ||
     item.particulars.trim() ||

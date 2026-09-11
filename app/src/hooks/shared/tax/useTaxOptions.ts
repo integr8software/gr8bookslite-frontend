@@ -186,7 +186,10 @@ function getPartyAtcClassifications(code: string): PartyClassification[] {
 }
 
 function getPartyAtcDescription(taxCode: TaxOptionDisplaySource) {
-  return taxCode.natureOfIncome?.trim() || taxCode.taxDescription.replace(/^[A-Z]{2}\s?\d{3}\s*\|\s*/, "").trim();
+  return (
+    taxCode.natureOfIncome?.trim() ||
+    taxCode.taxDescription.replace(/^[A-Z]{1,3}\s?\d{0,3}(?:\.\d+)?\s*\|\s*/, "").trim()
+  );
 }
 
 function getPartyAtcRowPriority(taxCode: Tax) {
@@ -267,20 +270,18 @@ export function createTaxDefaultAccountDropdownOption(
   const displayName = getPartyTaxDefaultDisplayName(tax, description);
   const showDescription = formatting.showDescription ?? true;
   const isVatDefault = isVatDefaultTaxType(tax.taxType);
-  const optionName = isVatDefault
-    ? tax.defaultAccountTitle ?? getTaxDefaultOptionName(tax, displayName, codeRateName, rate, formatting)
-    : getTaxDefaultOptionName(tax, displayName, codeRateName, rate, formatting);
+  const optionName = getTaxDefaultOptionName(tax, displayName, codeRateName, rate, formatting);
 
   return {
     code: tax.sourceKey,
     defaultAccountCode: tax.defaultAccountCode,
     defaultAccountRole: tax.defaultAccountRole,
     defaultAccountTitle: tax.defaultAccountTitle,
-    description: showDescription ? displayName : "",
+    description: isVatDefault ? "" : showDescription ? displayName : "",
     disabled: tax.status === "INACTIVE",
-    label: isVatDefault ? tax.defaultAccountCode ?? "" : "",
+    label: "",
     name: optionName,
-    selectedDetails: isVatDefault ? tax.defaultAccountCode ?? codeRateName : "",
+    selectedDetails: codeRateName,
     value: tax.sourceKey,
   };
 }
@@ -380,15 +381,16 @@ function getTaxDefaultOptionName(
     return codeRateName;
   }
 
-  if ((formatting.includeRateInName ?? false) && !tax.taxExempt) {
-    return `${displayName} (${rate})`;
+  if (formatting.includeRateInName ?? false) {
+    return rate ? `${displayName} (${rate})` : displayName;
   }
 
   return displayName;
 }
 
 function formatTaxDefaultCodeRateName(displayCode: string, rate: string) {
-  return rate ? `${displayCode} - (${rate})` : displayCode;
+  const cleanDisplayCode = displayCode.replace(/\s*\(?\d+(?:\.\d+)?%\)?\s*$/u, "").trim();
+  return rate ? `${cleanDisplayCode} (${rate})` : cleanDisplayCode;
 }
 
 function shouldUseTitleOnlyTaxDefault(classificationKey: string) {

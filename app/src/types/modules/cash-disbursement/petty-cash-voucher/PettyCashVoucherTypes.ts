@@ -1,6 +1,9 @@
+import type { ReactNode } from "react";
 import type { TransactionAttachment } from "@/app/src/types/shared/transaction-setup/TransactionAttachmentTypes";
 import type { usePettyCashVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherActionPage";
 import type { usePettyCashVoucherOverviewPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherOverviewPage";
+import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
+import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
 
 export type PettyCashVoucherStatus = "Draft" | "For Approval" | "Posted" | "Disapproved" | "Cancelled" | "Closed";
 export type PettyCashVoucherFormStatus = "Open" | PettyCashVoucherStatus;
@@ -9,20 +12,69 @@ export type PettyCashVoucherActionTab = "details" | "attachments";
 export type PettyCashVoucherConfirmationAction = "save" | "draft" | "approve" | "disapprove" | "cancel";
 export type PettyCashVoucherActionPageState = ReturnType<typeof usePettyCashVoucherActionPage>;
 
+export type PettyCashVoucherOpenDisbursementTypeDrawerHandler = (rowId: string) => void;
 export type PettyCashVoucherOpenResponsibilityCenterDrawerHandler = (rowId: string) => void;
 export type PettyCashVoucherOpenSupplierDrawerHandler = (rowId: string) => void;
 export type PettyCashVoucherEntrySectionProps = {
   page: PettyCashVoucherActionPageState;
+  onOpenDisbursementTypeDrawer?: PettyCashVoucherOpenDisbursementTypeDrawerHandler;
   onOpenResponsibilityCenterDrawer?: PettyCashVoucherOpenResponsibilityCenterDrawerHandler;
   onOpenSupplierDrawer?: PettyCashVoucherOpenSupplierDrawerHandler;
 };
-export type PettyCashVoucherDetailEntryTableProps = PettyCashVoucherEntrySectionProps;
-export type PettyCashVoucherAccountingEntryTableProps = { page: PettyCashVoucherActionPageState };
+export type PettyCashVoucherItemUpdater = (entryId: string, updates: Partial<PettyCashVoucherItem>) => void;
+export type PettyCashVoucherItemColumnsParams = {
+  columnLabels: Record<PettyCashVoucherItemColumnId, string>;
+  columnWidths: Record<PettyCashVoucherItemColumnId, number>;
+  disbursementTypeOptions: AppAdvancedDropdownOption[];
+  ewtOptions: AppAdvancedDropdownOption[];
+  isReadonly: boolean;
+  onOpenDisbursementTypeDrawer?: PettyCashVoucherOpenDisbursementTypeDrawerHandler;
+  onOpenResponsibilityCenterDrawer?: PettyCashVoucherOpenResponsibilityCenterDrawerHandler;
+  onOpenSupplierDrawer?: PettyCashVoucherOpenSupplierDrawerHandler;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
+  supplierOptions: AppAdvancedDropdownOption[];
+  taxCodes: AlphanumericTaxCode[];
+  updateItem: PettyCashVoucherItemUpdater;
+  vatOptions: AppAdvancedDropdownOption[];
+};
+export type PettyCashVoucherDetailEntryTableProps = {
+  disbursementTypeOptions: AppAdvancedDropdownOption[];
+  ewtOptions: AppAdvancedDropdownOption[];
+  errors: PettyCashVoucherFormErrors;
+  isReadonly: boolean;
+  items: PettyCashVoucherItem[];
+  onAddItems: (count: number) => void;
+  onClearItems: () => void;
+  onDuplicateItem: (rowId: string) => void;
+  onInsertItem: (rowId: string, position: "above" | "below") => void;
+  onMoveItem: (fromRowId: string, toRowId: string) => void;
+  onRemoveItem: (rowId: string) => void;
+  onUpdateItems: (items: PettyCashVoucherItem[]) => void;
+  onUpdateItem: PettyCashVoucherItemUpdater;
+  onOpenDisbursementTypeDrawer?: PettyCashVoucherOpenDisbursementTypeDrawerHandler;
+  onOpenResponsibilityCenterDrawer?: PettyCashVoucherOpenResponsibilityCenterDrawerHandler;
+  onOpenSupplierDrawer?: PettyCashVoucherOpenSupplierDrawerHandler;
+  responsibilityCenterOptions: AppAdvancedDropdownOption[];
+  supplierOptions: AppAdvancedDropdownOption[];
+  totals: PettyCashVoucherActionPageState["totals"];
+  taxCodes: AlphanumericTaxCode[];
+  title: ReactNode;
+  vatOptions: AppAdvancedDropdownOption[];
+};
+export type PettyCashVoucherAccountingEntryTableProps = {
+  rows: PettyCashVoucherAccountingEntry[];
+  title: ReactNode;
+  totalCredit: number;
+  totalDebit: number;
+  variance: number;
+};
 export type PettyCashVoucherOverviewPageState = ReturnType<typeof usePettyCashVoucherOverviewPage>;
 export type PettyCashVoucherEntryTab = "items" | "accounting";
 
 export type PettyCashVoucherItem = {
   id: string;
+  disbursementType: string;
+  expenseType?: string;
   date: string;
   supplierCode: string;
   supplierName: string;
@@ -45,7 +97,7 @@ export type PettyCashVoucherItem = {
   responsibilityCenterName: string;
 };
 
-export type PettyCashVoucherItemColumnId = Exclude<keyof PettyCashVoucherItem, "id" | "remarks">;
+export type PettyCashVoucherItemColumnId = Exclude<keyof PettyCashVoucherItem, "id" | "remarks" | "expenseType">;
 
 export type PettyCashVoucherFormValues = {
   transactionNo: string;

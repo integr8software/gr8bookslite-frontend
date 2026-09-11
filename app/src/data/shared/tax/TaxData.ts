@@ -306,7 +306,7 @@ export function createEwtOptionsFromDefaultAccounts(taxOptions: TaxDefaultAccoun
     if (options.has(displayCode)) return;
 
     const rate = formatTaxRate(taxOption.taxRate);
-    const name = rate ? `${displayCode} - (${rate})` : displayCode;
+    const name = rate ? `${displayCode} (${rate})` : displayCode;
     const description =
       taxOption.natureOfIncome?.trim() ||
       taxOption.taxDescription.replace(/^[A-Z]{1,3}\s?\d{0,3}(?:\.\d+)?\s*\|\s*/, "").trim() ||

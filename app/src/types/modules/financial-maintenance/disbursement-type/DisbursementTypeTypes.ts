@@ -83,7 +83,7 @@ export type DisbursementTypeFormPageOptions = {
   isOpen?: boolean;
   kind?: DisbursementTypeMaintenanceKind;
   mode: DisbursementTypeActionMode;
-  onSaved: () => void;
+  onSaved?: (savedRecord?: DisbursementType) => void;
 };
 
 export type DisbursementTypeStoreOptions = {
@@ -151,8 +151,9 @@ export type DisbursementTypeDrawerProps = {
   isOpen: boolean;
   kind?: DisbursementTypeMaintenanceKind;
   mode: DisbursementTypeActionMode;
-  permissions: DisbursementTypePermissions;
+  permissions?: DisbursementTypePermissions;
   onClose: () => void;
+  onSaved?: (record?: DisbursementType) => void;
 };
 
 export type DisbursementTypeTableProps = {

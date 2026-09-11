@@ -103,7 +103,7 @@ export function DisbursementTypeFields({
                   {option === "Existing" ? "Select Existing Account" : "Generate Account Automatically"}
                 </span>
                 <span className="mt-1 block text-xs text-darknavy/55">
-                  {option === "Existing" ? "Use an existing expense posting account." : "Create an expense account for this disbursement type."}
+                  {option === "Existing" ? "Use an existing posting account." : "Create an expense account for this disbursement type."}
                 </span>
               </button>
             ))}
@@ -144,7 +144,7 @@ export function DisbursementTypeFields({
                 <ChartAccountDropdown
                   accounts={accountOptions}
                   disabled={isReadonly}
-                  emptyMessage="No active expense accounts found."
+                  emptyMessage="No active posting accounts found."
                   placeholder="--Select Account Title--"
                   searchPlaceholder="Search account title or code"
                   value={values.expenseCoaId}

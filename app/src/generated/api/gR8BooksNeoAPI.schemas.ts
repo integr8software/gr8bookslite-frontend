@@ -2846,6 +2846,16 @@ export interface UpdateTermDto {
   status?: UpdateTermDtoStatus;
 }
 
+export type ProjectMaintenanceResponseDtoType = typeof ProjectMaintenanceResponseDtoType[keyof typeof ProjectMaintenanceResponseDtoType];
+
+
+export const ProjectMaintenanceResponseDtoType = {
+  DIVISION: 'DIVISION',
+  DEPARTMENT: 'DEPARTMENT',
+  SECTION: 'SECTION',
+  UNIT: 'UNIT',
+} as const;
+
 export type ProjectMaintenanceResponseDtoStatus = typeof ProjectMaintenanceResponseDtoStatus[keyof typeof ProjectMaintenanceResponseDtoStatus];
 
 
@@ -2859,6 +2869,7 @@ export interface ProjectMaintenanceResponseDto {
   /** @nullable */
   projectCode: string | null;
   projectName: string;
+  type: ProjectMaintenanceResponseDtoType;
   /** @nullable */
   description: string | null;
   status: ProjectMaintenanceResponseDtoStatus;
@@ -2898,6 +2909,16 @@ export interface ProjectMaintenanceListResponseDto {
   permissions: ProjectMaintenancePermissionsResponseDto;
 }
 
+export type ProjectMaintenanceOptionResponseDtoType = typeof ProjectMaintenanceOptionResponseDtoType[keyof typeof ProjectMaintenanceOptionResponseDtoType];
+
+
+export const ProjectMaintenanceOptionResponseDtoType = {
+  DIVISION: 'DIVISION',
+  DEPARTMENT: 'DEPARTMENT',
+  SECTION: 'SECTION',
+  UNIT: 'UNIT',
+} as const;
+
 export type ProjectMaintenanceOptionResponseDtoStatus = typeof ProjectMaintenanceOptionResponseDtoStatus[keyof typeof ProjectMaintenanceOptionResponseDtoStatus];
 
 
@@ -2911,6 +2932,7 @@ export interface ProjectMaintenanceOptionResponseDto {
   /** @nullable */
   projectCode: string | null;
   projectName: string;
+  type: ProjectMaintenanceOptionResponseDtoType;
   name: string;
   /** @nullable */
   description: string | null;
@@ -2921,10 +2943,24 @@ export interface ProjectMaintenanceOptionsResponseDto {
   projects: ProjectMaintenanceOptionResponseDto[];
 }
 
+export interface ProjectMaintenanceNextCodeResponseDto {
+  projectCode: string;
+}
+
 export interface ProjectMaintenanceContainerResponseDto {
   project: ProjectMaintenanceResponseDto;
   permissions: ProjectMaintenancePermissionsResponseDto;
 }
+
+export type CreateProjectMaintenanceDtoType = typeof CreateProjectMaintenanceDtoType[keyof typeof CreateProjectMaintenanceDtoType];
+
+
+export const CreateProjectMaintenanceDtoType = {
+  DIVISION: 'DIVISION',
+  DEPARTMENT: 'DEPARTMENT',
+  SECTION: 'SECTION',
+  UNIT: 'UNIT',
+} as const;
 
 export type CreateProjectMaintenanceDtoStatus = typeof CreateProjectMaintenanceDtoStatus[keyof typeof CreateProjectMaintenanceDtoStatus];
 
@@ -2939,6 +2975,7 @@ export interface CreateProjectMaintenanceDto {
   projectCode?: string;
   /** @maxLength 150 */
   projectName: string;
+  type: CreateProjectMaintenanceDtoType;
   /** @maxLength 500 */
   description?: string;
   status?: CreateProjectMaintenanceDtoStatus;
@@ -2948,6 +2985,16 @@ export interface SaveProjectMaintenanceResponseDto {
   message: string;
   project: ProjectMaintenanceResponseDto;
 }
+
+export type UpdateProjectMaintenanceDtoType = typeof UpdateProjectMaintenanceDtoType[keyof typeof UpdateProjectMaintenanceDtoType];
+
+
+export const UpdateProjectMaintenanceDtoType = {
+  DIVISION: 'DIVISION',
+  DEPARTMENT: 'DEPARTMENT',
+  SECTION: 'SECTION',
+  UNIT: 'UNIT',
+} as const;
 
 export type UpdateProjectMaintenanceDtoStatus = typeof UpdateProjectMaintenanceDtoStatus[keyof typeof UpdateProjectMaintenanceDtoStatus];
 
@@ -2962,6 +3009,7 @@ export interface UpdateProjectMaintenanceDto {
   projectCode?: string;
   /** @maxLength 150 */
   projectName?: string;
+  type?: UpdateProjectMaintenanceDtoType;
   /** @maxLength 500 */
   description?: string;
   status?: UpdateProjectMaintenanceDtoStatus;
@@ -21775,57 +21823,6 @@ export const CashVoucherControllerSuggestTransactionNumberV1SortDirection = {
   desc: 'desc',
 } as const;
 
-export type CashVoucherControllerFindAccountTitleOptionsV1Params = {
-/**
- * @maxLength 120
- */
-search?: string;
-accountLevel?: CashVoucherControllerFindAccountTitleOptionsV1AccountLevel;
-status?: CashVoucherControllerFindAccountTitleOptionsV1Status;
-accountType?: CashVoucherControllerFindAccountTitleOptionsV1AccountType;
-accountNature?: CashVoucherControllerFindAccountTitleOptionsV1AccountNature;
-postingOnly?: boolean;
-parentAccountId?: string;
-};
-
-export type CashVoucherControllerFindAccountTitleOptionsV1AccountLevel = typeof CashVoucherControllerFindAccountTitleOptionsV1AccountLevel[keyof typeof CashVoucherControllerFindAccountTitleOptionsV1AccountLevel];
-
-
-export const CashVoucherControllerFindAccountTitleOptionsV1AccountLevel = {
-  SUB3: 'SUB3',
-  SUB1: 'SUB1',
-  SUB2: 'SUB2',
-  MAJOR: 'MAJOR',
-  SPECIFIC: 'SPECIFIC',
-} as const;
-
-export type CashVoucherControllerFindAccountTitleOptionsV1Status = typeof CashVoucherControllerFindAccountTitleOptionsV1Status[keyof typeof CashVoucherControllerFindAccountTitleOptionsV1Status];
-
-
-export const CashVoucherControllerFindAccountTitleOptionsV1Status = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
-} as const;
-
-export type CashVoucherControllerFindAccountTitleOptionsV1AccountType = typeof CashVoucherControllerFindAccountTitleOptionsV1AccountType[keyof typeof CashVoucherControllerFindAccountTitleOptionsV1AccountType];
-
-
-export const CashVoucherControllerFindAccountTitleOptionsV1AccountType = {
-  ASSET: 'ASSET',
-  EXPENSE: 'EXPENSE',
-  REVENUE: 'REVENUE',
-  LIABILITY: 'LIABILITY',
-  EQUITY: 'EQUITY',
-} as const;
-
-export type CashVoucherControllerFindAccountTitleOptionsV1AccountNature = typeof CashVoucherControllerFindAccountTitleOptionsV1AccountNature[keyof typeof CashVoucherControllerFindAccountTitleOptionsV1AccountNature];
-
-
-export const CashVoucherControllerFindAccountTitleOptionsV1AccountNature = {
-  DEBIT: 'DEBIT',
-  CREDIT: 'CREDIT',
-} as const;
-
 export type CashVoucherControllerFindOneV1Params = {
 /**
  * Page number
@@ -22122,57 +22119,6 @@ export type DisbursementVoucherControllerSuggestTransactionNumberV1SortDirection
 export const DisbursementVoucherControllerSuggestTransactionNumberV1SortDirection = {
   asc: 'asc',
   desc: 'desc',
-} as const;
-
-export type DisbursementVoucherControllerFindAccountTitleOptionsV1Params = {
-/**
- * @maxLength 120
- */
-search?: string;
-accountLevel?: DisbursementVoucherControllerFindAccountTitleOptionsV1AccountLevel;
-status?: DisbursementVoucherControllerFindAccountTitleOptionsV1Status;
-accountType?: DisbursementVoucherControllerFindAccountTitleOptionsV1AccountType;
-accountNature?: DisbursementVoucherControllerFindAccountTitleOptionsV1AccountNature;
-postingOnly?: boolean;
-parentAccountId?: string;
-};
-
-export type DisbursementVoucherControllerFindAccountTitleOptionsV1AccountLevel = typeof DisbursementVoucherControllerFindAccountTitleOptionsV1AccountLevel[keyof typeof DisbursementVoucherControllerFindAccountTitleOptionsV1AccountLevel];
-
-
-export const DisbursementVoucherControllerFindAccountTitleOptionsV1AccountLevel = {
-  SUB3: 'SUB3',
-  SUB1: 'SUB1',
-  SUB2: 'SUB2',
-  MAJOR: 'MAJOR',
-  SPECIFIC: 'SPECIFIC',
-} as const;
-
-export type DisbursementVoucherControllerFindAccountTitleOptionsV1Status = typeof DisbursementVoucherControllerFindAccountTitleOptionsV1Status[keyof typeof DisbursementVoucherControllerFindAccountTitleOptionsV1Status];
-
-
-export const DisbursementVoucherControllerFindAccountTitleOptionsV1Status = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
-} as const;
-
-export type DisbursementVoucherControllerFindAccountTitleOptionsV1AccountType = typeof DisbursementVoucherControllerFindAccountTitleOptionsV1AccountType[keyof typeof DisbursementVoucherControllerFindAccountTitleOptionsV1AccountType];
-
-
-export const DisbursementVoucherControllerFindAccountTitleOptionsV1AccountType = {
-  ASSET: 'ASSET',
-  EXPENSE: 'EXPENSE',
-  REVENUE: 'REVENUE',
-  LIABILITY: 'LIABILITY',
-  EQUITY: 'EQUITY',
-} as const;
-
-export type DisbursementVoucherControllerFindAccountTitleOptionsV1AccountNature = typeof DisbursementVoucherControllerFindAccountTitleOptionsV1AccountNature[keyof typeof DisbursementVoucherControllerFindAccountTitleOptionsV1AccountNature];
-
-
-export const DisbursementVoucherControllerFindAccountTitleOptionsV1AccountNature = {
-  DEBIT: 'DEBIT',
-  CREDIT: 'CREDIT',
 } as const;
 
 export type DisbursementVoucherControllerFindOneV1Params = {

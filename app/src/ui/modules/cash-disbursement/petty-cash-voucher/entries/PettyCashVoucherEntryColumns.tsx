@@ -1,37 +1,37 @@
 import { calculatePettyCashVoucherItemTaxFields } from "@/app/src/data/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherData";
 import type {
-  PettyCashVoucherActionPageState,
   PettyCashVoucherAccountingColumnId,
   PettyCashVoucherAccountingEntry,
   PettyCashVoucherItem,
+  PettyCashVoucherItemColumnsParams,
   PettyCashVoucherItemColumnId,
-  PettyCashVoucherOpenResponsibilityCenterDrawerHandler,
-  PettyCashVoucherOpenSupplierDrawerHandler,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
-import type { AlphanumericTaxCode } from "@/app/src/types/shared/tax/AlphanumericTaxCodeTypes";
-import type { ModuleDataEntryColumn } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
+import type { ModuleDataEntryColumn } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 import { ModuleDataEntryDropdownCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryDropdownCell";
 import { ModuleDataEntryInputCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryInputCell";
 import { ModuleDataEntryMoneyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryMoneyCell";
 import { ModuleDataEntryReadonlyCell } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntryReadonlyCell";
 
-export function createPettyCashVoucherItemColumns(
-  page: PettyCashVoucherActionPageState,
-  labels: Record<PettyCashVoucherItemColumnId, string>,
-  widths: Record<PettyCashVoucherItemColumnId, number>,
-  supplierOptions: AppAdvancedDropdownOption[],
-  vatOptions: AppAdvancedDropdownOption[] = [],
-  ewtOptions: AppAdvancedDropdownOption[] = [],
-  taxCodes: AlphanumericTaxCode[] = [],
-  responsibilityCenterOptions: AppAdvancedDropdownOption[] = [],
-  onOpenResponsibilityCenterDrawer?: PettyCashVoucherOpenResponsibilityCenterDrawerHandler,
-  onOpenSupplierDrawer?: PettyCashVoucherOpenSupplierDrawerHandler,
-): Record<PettyCashVoucherItemColumnId, ModuleDataEntryColumn<PettyCashVoucherItem>> {
+export function createPettyCashVoucherItemColumns({
+  columnLabels,
+  columnWidths,
+  disbursementTypeOptions,
+  ewtOptions,
+  isReadonly,
+  onOpenDisbursementTypeDrawer,
+  onOpenResponsibilityCenterDrawer,
+  onOpenSupplierDrawer,
+  responsibilityCenterOptions,
+  supplierOptions,
+  taxCodes,
+  updateItem,
+  vatOptions,
+}: PettyCashVoucherItemColumnsParams): Record<PettyCashVoucherItemColumnId, ModuleDataEntryColumn<PettyCashVoucherItem>> {
   const text = (id: PettyCashVoucherItemColumnId, type: "text" | "date" = "text"): ModuleDataEntryColumn<PettyCashVoucherItem> => ({
-    header: labels[id],
+    header: columnLabels[id],
     id,
-    width: widths[id],
+    width: columnWidths[id],
     widthClassName: "w-auto",
     renderCell: (row, _index, context) => (
       <ModuleDataEntryInputCell
@@ -39,9 +39,9 @@ export function createPettyCashVoucherItemColumns(
         name={context.fieldName}
         type={type}
         value={String(row[id])}
-        readOnly={page.isReadonly}
-        placeholder={`Enter ${labels[id]}`}
-        onChange={(value) => page.updateItem(row.id, { [id]: value })}
+        readOnly={isReadonly}
+        placeholder={`Enter ${columnLabels[id]}`}
+        onChange={(value) => updateItem(row.id, { [id]: value })}
       />
     ),
   });
@@ -50,18 +50,18 @@ export function createPettyCashVoucherItemColumns(
     id: PettyCashVoucherItemColumnId,
     onChange?: (row: PettyCashVoucherItem, value: string) => void,
   ): ModuleDataEntryColumn<PettyCashVoucherItem> => ({
-    header: labels[id],
+    header: columnLabels[id],
     id,
-    width: widths[id],
+    width: columnWidths[id],
     widthClassName: "w-auto",
     renderCell: (row, _index, context) => (
       <ModuleDataEntryMoneyCell
         id={context.fieldId}
         name={context.fieldName}
         value={row[id]}
-        readOnly={page.isReadonly}
+        readOnly={isReadonly}
         placeholder="0.00"
-        onChange={(value) => (onChange ? onChange(row, value) : page.updateItem(row.id, { [id]: value }))}
+        onChange={(value) => (onChange ? onChange(row, value) : updateItem(row.id, { [id]: value }))}
       />
     ),
   });
@@ -70,67 +70,88 @@ export function createPettyCashVoucherItemColumns(
     id: PettyCashVoucherItemColumnId,
     options: AppAdvancedDropdownOption[],
   ): ModuleDataEntryColumn<PettyCashVoucherItem> => ({
-    header: labels[id],
+    header: columnLabels[id],
     id,
-    width: widths[id],
+    width: columnWidths[id],
     widthClassName: "w-auto",
     renderCell: (row, _index, context) => (
       <ModuleDataEntryDropdownCell
         id={context.fieldId}
         name={context.fieldName}
         value={String(row[id])}
-        readOnly={page.isReadonly}
+        readOnly={isReadonly}
         options={options}
-        placeholder={`Select ${labels[id]}`}
-        searchPlaceholder={`Search ${labels[id]}`}
-        onChange={(value) => page.updateItem(row.id, { [id]: value })}
+        placeholder={`Select ${columnLabels[id]}`}
+        searchPlaceholder={`Search ${columnLabels[id]}`}
+        onChange={(value) => updateItem(row.id, { [id]: value })}
       />
     ),
   });
 
   const calculatedMoney = (id: PettyCashVoucherItemColumnId): ModuleDataEntryColumn<PettyCashVoucherItem> => ({
-    header: labels[id],
+    header: columnLabels[id],
     id,
-    width: widths[id],
+    width: columnWidths[id],
     widthClassName: "w-auto",
     renderCell: (row) => <ModuleDataEntryReadonlyCell align="right" value={String(row[id] ?? "")} />,
   });
 
   return {
-    date: text("date", "date"),
-    supplierCode: {
-      header: labels.supplierCode,
-      id: "supplierCode",
-      width: widths.supplierCode,
-      widthClassName: "w-auto",
-      renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.supplierCode} />,
+    disbursementType: {
+      ...dropdown("disbursementType", disbursementTypeOptions),
+      renderCell: (row, _index, context) => (
+        <ModuleDataEntryDropdownCell
+          id={context.fieldId}
+          name={context.fieldName}
+          value={row.disbursementType || row.expenseType || row.type}
+          readOnly={isReadonly}
+          options={disbursementTypeOptions}
+          placeholder="Select Disbursement Type"
+          searchPlaceholder="Search Disbursement Type"
+          addAction={
+            !isReadonly && onOpenDisbursementTypeDrawer
+              ? { label: "Add Disbursement Type", onClick: () => onOpenDisbursementTypeDrawer(row.id) }
+              : undefined
+          }
+          onChange={(value) =>
+            updateItem(row.id, {
+              disbursementType: value,
+              expenseType: value,
+              type: value,
+            })
+          }
+        />
+      ),
     },
+    particulars: text("particulars"),
+    amount: money("amount", (row, value) =>
+      updateItem(row.id, {
+        amount: value,
+        ...calculatePettyCashVoucherItemTaxFields(value, row.vatType, row.ewtCode, taxCodes),
+      }),
+    ),
     supplierName: {
-      header: labels.supplierName,
+      header: columnLabels.supplierName,
       id: "supplierName",
-      width: widths.supplierName,
+      width: columnWidths.supplierName,
       widthClassName: "w-auto",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
           id={context.fieldId}
           name={context.fieldName}
           value={row.supplierCode || row.supplierName}
-          readOnly={page.isReadonly}
+          readOnly={isReadonly}
           options={supplierOptions}
-          placeholder="Select Supplier Name"
-          searchPlaceholder="Search Supplier Name"
-          addAction={
-            !page.isReadonly && onOpenSupplierDrawer
-              ? { label: "Add Vendor", onClick: () => onOpenSupplierDrawer(row.id) }
-              : undefined
-          }
+          placeholder="Select Supplier"
+          searchPlaceholder="Search Supplier"
+          addAction={!isReadonly && onOpenSupplierDrawer ? { label: "Add Vendor", onClick: () => onOpenSupplierDrawer(row.id) } : undefined}
           onChange={(value) => {
             const selectedSupplier = supplierOptions.find(
               (option) => option.value === value || option.name === value || option.label === value,
             );
             const vatType = getDefaultVatType(selectedSupplier, row.vatType, vatOptions);
             const ewtCode = getDefaultEwtCode(selectedSupplier, row.ewtCode, ewtOptions);
-            page.updateItem(row.id, {
+            updateItem(row.id, {
               supplierCode: String(selectedSupplier?.label ?? selectedSupplier?.value ?? ""),
               supplierName: selectedSupplier?.name ?? String(value),
               vatType,
@@ -141,16 +162,6 @@ export function createPettyCashVoucherItemColumns(
         />
       ),
     },
-    orNo: text("orNo"),
-    tinNo: text("tinNo"),
-    particulars: text("particulars"),
-    amount: money("amount", (row, value) =>
-      page.updateItem(row.id, {
-        amount: value,
-        ...calculatePettyCashVoucherItemTaxFields(value, row.vatType, row.ewtCode, taxCodes),
-      }),
-    ),
-    type: text("type"),
     vatType: {
       ...dropdown("vatType", vatOptions),
       renderCell: (row, _index, context) => (
@@ -158,12 +169,12 @@ export function createPettyCashVoucherItemColumns(
           id={context.fieldId}
           name={context.fieldName}
           value={row.vatType}
-          readOnly={page.isReadonly}
+          readOnly={isReadonly}
           options={vatOptions}
           placeholder="Select VAT Type"
           searchPlaceholder="Search VAT Type"
           onChange={(value) =>
-            page.updateItem(row.id, {
+            updateItem(row.id, {
               vatType: value,
               ...calculatePettyCashVoucherItemTaxFields(row.amount, value, row.ewtCode, taxCodes),
             })
@@ -172,7 +183,9 @@ export function createPettyCashVoucherItemColumns(
       ),
     },
     vatPercent: calculatedMoney("vatPercent"),
+    netAmount: calculatedMoney("netAmount"),
     vatAmount: calculatedMoney("vatAmount"),
+    date: text("date", "date"),
     ewtCode: {
       ...dropdown("ewtCode", ewtOptions),
       renderCell: (row, _index, context) => (
@@ -180,13 +193,13 @@ export function createPettyCashVoucherItemColumns(
           id={context.fieldId}
           name={context.fieldName}
           value={row.ewtCode}
-          readOnly={page.isReadonly}
+          readOnly={isReadonly}
           options={ewtOptions}
           optionViewToggle
-          placeholder="Select EWT Code"
-          searchPlaceholder="Search tax name, code, rate, or description"
+          placeholder="Select ATC"
+          searchPlaceholder="Search ATC name, code, rate, or description"
           onChange={(value) =>
-            page.updateItem(row.id, {
+            updateItem(row.id, {
               ewtCode: value,
               ...calculatePettyCashVoucherItemTaxFields(row.amount, row.vatType, value, taxCodes),
             })
@@ -196,38 +209,35 @@ export function createPettyCashVoucherItemColumns(
     },
     ewtPercent: calculatedMoney("ewtPercent"),
     ewtAmount: calculatedMoney("ewtAmount"),
-    netAmount: calculatedMoney("netAmount"),
-    disburseAmount: calculatedMoney("disburseAmount"),
-    grossAmount: money("grossAmount"),
     responsibilityCenterCode: {
-      header: labels.responsibilityCenterCode,
+      header: columnLabels.responsibilityCenterCode,
       id: "responsibilityCenterCode",
-      width: widths.responsibilityCenterCode,
+      width: columnWidths.responsibilityCenterCode,
       widthClassName: "w-auto",
       renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.responsibilityCenterCode} />,
     },
     responsibilityCenterName: {
-      header: labels.responsibilityCenterName,
+      header: columnLabels.responsibilityCenterName,
       id: "responsibilityCenterName",
-      width: widths.responsibilityCenterName,
+      width: columnWidths.responsibilityCenterName,
       widthClassName: "w-auto",
       renderCell: (row, _index, context) => (
         <ModuleDataEntryDropdownCell
           id={context.fieldId}
           name={context.fieldName}
           value={row.responsibilityCenterCode}
-          readOnly={page.isReadonly}
+          readOnly={isReadonly}
           options={responsibilityCenterOptions}
           placeholder="Select Responsibility Center"
           searchPlaceholder="Search Responsibility Center"
           addAction={
-            !page.isReadonly && onOpenResponsibilityCenterDrawer
+            !isReadonly && onOpenResponsibilityCenterDrawer
               ? { label: "Add Responsibility Center", onClick: () => onOpenResponsibilityCenterDrawer(row.id) }
               : undefined
           }
           onChange={(value) => {
             const selectedCenter = responsibilityCenterOptions.find((option) => option.value === value);
-            page.updateItem(row.id, {
+            updateItem(row.id, {
               responsibilityCenterCode: String(selectedCenter?.value ?? ""),
               responsibilityCenterName: selectedCenter?.name ?? "",
             });
@@ -235,19 +245,29 @@ export function createPettyCashVoucherItemColumns(
         />
       ),
     },
+    supplierCode: {
+      header: columnLabels.supplierCode,
+      id: "supplierCode",
+      width: columnWidths.supplierCode,
+      widthClassName: "w-auto",
+      renderCell: (row) => <ModuleDataEntryReadonlyCell value={row.supplierCode} />,
+    },
+    orNo: text("orNo"),
+    tinNo: text("tinNo"),
+    type: text("type"),
+    disburseAmount: calculatedMoney("disburseAmount"),
+    grossAmount: money("grossAmount"),
   };
 }
 
-function getDefaultVatType(
-  option: AppAdvancedDropdownOption | undefined,
-  fallback: string,
-  vatOptions: AppAdvancedDropdownOption[],
-) {
-  const taxOption = option as (AppAdvancedDropdownOption & {
-    defaultPurchaseInputVatTaxSourceKey?: string;
-    vatCode?: string;
-    vatType?: string;
-  }) | undefined;
+function getDefaultVatType(option: AppAdvancedDropdownOption | undefined, fallback: string, vatOptions: AppAdvancedDropdownOption[]) {
+  const taxOption = option as
+    | (AppAdvancedDropdownOption & {
+        defaultPurchaseInputVatTaxSourceKey?: string;
+        vatCode?: string;
+        vatType?: string;
+      })
+    | undefined;
   const rawValue = taxOption?.vatType || taxOption?.vatCode || taxOption?.defaultPurchaseInputVatTaxSourceKey || "";
   const normalized = rawValue.toLowerCase();
   const matchedOption = vatOptions.find(
@@ -262,15 +282,13 @@ function getDefaultVatType(
   return matchedOption?.value ?? fallback;
 }
 
-function getDefaultEwtCode(
-  option: AppAdvancedDropdownOption | undefined,
-  fallback: string,
-  ewtOptions: AppAdvancedDropdownOption[],
-) {
-  const taxOption = option as (AppAdvancedDropdownOption & {
-    defaultPurchaseEwtTaxSourceKey?: string;
-    ewtCode?: string;
-  }) | undefined;
+function getDefaultEwtCode(option: AppAdvancedDropdownOption | undefined, fallback: string, ewtOptions: AppAdvancedDropdownOption[]) {
+  const taxOption = option as
+    | (AppAdvancedDropdownOption & {
+        defaultPurchaseEwtTaxSourceKey?: string;
+        ewtCode?: string;
+      })
+    | undefined;
   const rawValue = taxOption?.ewtCode || taxOption?.defaultPurchaseEwtTaxSourceKey || "";
   const normalized = rawValue.toLowerCase();
   const matchedOption = ewtOptions.find(
@@ -292,11 +310,7 @@ export function createPettyCashVoucherAccountingColumns(
     id,
     width: widths[id],
     widthClassName: "w-auto",
-    renderCell: (row) => (
-      <span className={`block ${id === "debit" || id === "credit" ? "text-right tabular-nums" : ""}`}>
-        {row[id]}
-      </span>
-    ),
+    renderCell: (row) => <ModuleDataEntryReadonlyCell align={id === "debit" || id === "credit" ? "right" : "left"} value={row[id] ?? ""} />,
   });
 
   return {

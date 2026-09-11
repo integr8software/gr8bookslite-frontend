@@ -664,7 +664,7 @@ export function ModuleDataEntryTable<TRow extends { id: string }>({
 				{summaryCells ? (
 					<tfoot className="bg-offwhite/80 text-sm font-semibold text-darknavy">
 						<tr>
-							<td className="sticky left-0 z-30 border-t border-darknavy/10 bg-offwhite/90 px-3 py-3 text-center shadow-[6px_0_12px_rgba(33,39,56,0.08)]">
+							<td className="sticky left-0 z-30 w-[5rem] min-w-[5rem] max-w-[5rem] border-t border-darknavy/10 bg-offwhite/90 px-2 py-3 text-center shadow-[6px_0_12px_rgba(33,39,56,0.08)]">
 								{summaryRowHeader}
 							</td>
 							{displayColumns.map((column) => (

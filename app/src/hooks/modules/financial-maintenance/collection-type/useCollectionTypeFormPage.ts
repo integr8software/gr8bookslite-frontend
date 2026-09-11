@@ -42,7 +42,7 @@ export function useCollectionTypeFormPage({
   const accessToken = useAppStore((state) => state.accessToken);
   const authProfileQuery = useAuthProfileQuery({ accessToken });
   const companyId = authProfileQuery.data?.activeCompanyId ?? null;
-  const postingAccountsQuery = usePostingAccountLookup({}, { enabled: Boolean(companyId) });
+  const postingAccountsQuery = usePostingAccountLookup();
   const accountOptions = useMemo(() => createPostingAccountOptions(postingAccountsQuery.data ?? []), [postingAccountsQuery.data]);
   const initialValues: CollectionTypeFormValues = existingCollectionType
     ? {
@@ -234,10 +234,10 @@ function createPostingAccountOptions(accounts: PostingAccountLookupOption[]): Mo
     accountNumber: account.accountCode,
     accountType: String(account.accountType ?? ""),
     description: account.description || account.accountTitle,
-    id: account.accountId,
+    id: account.accountId || (account as unknown as { id?: string }).id || "",
     normalBalance: account.accountNature === "CREDIT" ? "Credit" : "Debit",
     statementGroup: "",
     statementSection: "",
-    status: "Active",
+    status: String(account.status ?? "").toLowerCase() === "inactive" ? "Inactive" : "Active",
   }));
 }

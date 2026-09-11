@@ -1353,6 +1353,10 @@ Selecting a Currency should resolve its configured Exchange Rate against the act
   generated system description only when both values are empty. When a source
   row Remarks override changes, regenerate the dependent accounting-row Remarks
   using the same source relationship.
+- Generated tax accounting rows must use the fetched tax default-account code
+  and title for the selected VAT Type or EWT Code. Do not hardcode tax account
+  titles such as Input VAT or withholding tax payable in feature data helpers.
+  Module cash/bank settlement fallback titles may remain module-specific.
 - Remarks-only synchronization must not recalculate Gross Amount, VAT, EWT,
   Debit, Credit, Amount Due, or other financial values. Preserve the source
   row's existing tax details and amounts while refreshing inherited or generated

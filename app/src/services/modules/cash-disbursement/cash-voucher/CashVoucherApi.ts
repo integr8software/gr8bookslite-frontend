@@ -132,6 +132,7 @@ export async function createCashVoucherApi(payload: {
   details: CashVoucherLineEntry[];
 }): Promise<CashVoucherRecord> {
   const details = getCashVoucherPayloadDetails(payload.details, payload.status);
+  const journalEntries = getCashVoucherPayloadJournalEntries(details, payload.status, payload.currency, payload.fxRate);
   const transformedPayload: CreateCashVoucherDto = {
     ...payload,
     amount: payload.amount === undefined ? undefined : Number(payload.amount),
@@ -162,6 +163,7 @@ export async function createCashVoucherApi(payload: {
       checkNo: detail.checkNo,
       checkStatus: detail.checkStatus,
     })),
+    ...(journalEntries ? { journalEntries } : {}),
     fxRate: payload.fxRate === undefined ? undefined : Number(payload.fxRate),
     status: payload.status ? (mapCashVoucherStatusToApi(payload.status) as CreateCashVoucherDtoStatus) : undefined,
   };
@@ -199,6 +201,7 @@ export async function updateCashVoucherApi(
   }>,
 ): Promise<CashVoucherRecord> {
   const details = payload.details ? getCashVoucherPayloadDetails(payload.details, payload.status) : undefined;
+  const journalEntries = details ? getCashVoucherPayloadJournalEntries(details, payload.status, payload.currency, payload.fxRate) : undefined;
   const { details: _frontendDetails, ...payloadWithoutDetails } = payload;
   void _frontendDetails;
   const transformedPayload: UpdateCashVoucherDto = {
@@ -233,6 +236,7 @@ export async function updateCashVoucherApi(
             checkNo: detail.checkNo,
             checkStatus: detail.checkStatus,
           })),
+          ...(journalEntries ? { journalEntries } : {}),
         }
       : {}),
     fxRate: payload.fxRate === undefined ? undefined : Number(payload.fxRate),
@@ -468,6 +472,37 @@ function getCashVoucherPayloadDetails(details: CashVoucherLineEntry[], status?: 
   }
 
   return details;
+}
+
+function getCashVoucherPayloadJournalEntries(
+  details: CashVoucherLineEntry[],
+  status?: CashVoucherStatus,
+  currency?: string,
+  fxRate?: string | number,
+): CreateCashVoucherDto["journalEntries"] | undefined {
+  if (status === "Draft" || status === "Open" || !status) {
+    return undefined;
+  }
+
+  const currencyCode = cleanOptional(currency) ?? "PHP";
+  const exchangeRate = Number(fxRate ?? 1) || 1;
+
+  return details.filter(cashVoucherLineEntryHasData).map((detail, index) => ({
+    lineNumber: index + 1,
+    accountCode: detail.accountCode,
+    accountTitle: detail.accountName,
+    currencyCode,
+    exchangeRate,
+    particulars: detail.particulars || detail.remarks || "",
+    debit: Number(detail.debit || 0),
+    credit: Number(detail.credit || 0),
+    vatType: detail.taxDetails?.vatType ?? detail.vatType ?? "",
+    atcCode: detail.taxDetails?.ewtCode ?? detail.ewtCode ?? "",
+    partyCode: detail.partyCode ?? "",
+    partyName: detail.partyName ?? "",
+    responsibilityCenter: detail.responsibilityCenter ?? "",
+    refNo: detail.refId ?? "",
+  }));
 }
 
 function cashVoucherLineEntryHasData(detail: CashVoucherLineEntry) {

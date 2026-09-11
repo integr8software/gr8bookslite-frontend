@@ -9,9 +9,12 @@ import {
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { usePettyCashVoucherActionPage } from "@/app/src/hooks/modules/cash-disbursement/petty-cash-voucher/usePettyCashVoucherActionPage";
 import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
+import { useDisbursementTypeStore } from "@/app/src/hooks/modules/financial-maintenance/disbursement-type/useDisbursementType";
 import type { PettyCashVoucherActionMode } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
+import type { DisbursementType } from "@/app/src/types/modules/financial-maintenance/disbursement-type/DisbursementTypeTypes";
 import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
+import { DisbursementTypeDrawer } from "@/app/src/ui/modules/financial-maintenance/disbursement-type/DisbursementTypeDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/dialogs/PartyManagementDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ProjectMaintenanceDrawer } from "@/app/src/ui/modules/project-maintenance/ProjectMaintenanceDrawer";
@@ -26,6 +29,8 @@ import { openPettyCashVoucherPdf } from "@/app/src/ui/modules/cash-disbursement/
 
 export function PettyCashVoucherActionPage({ mode }: { mode: PettyCashVoucherActionMode }) {
   const router = useRouter();
+  const [isDisbursementTypeDrawerOpen, setIsDisbursementTypeDrawerOpen] = useState(false);
+  const [pendingDisbursementTypeItemId, setPendingDisbursementTypeItemId] = useState<string | null>(null);
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const [isSupplierDrawerOpen, setIsSupplierDrawerOpen] = useState(false);
   const [pendingSupplierItemId, setPendingSupplierItemId] = useState<string | null>(null);
@@ -34,8 +39,33 @@ export function PettyCashVoucherActionPage({ mode }: { mode: PettyCashVoucherAct
   const [isEntryResponsibilityCenterDrawerOpen, setIsEntryResponsibilityCenterDrawerOpen] = useState(false);
   const [pendingResponsibilityCenterItemId, setPendingResponsibilityCenterItemId] = useState<string | null>(null);
   const partyStore = usePartyManagementStore();
+  const disbursementTypeStore = useDisbursementTypeStore(undefined, { kind: "disbursement" });
   const page = usePettyCashVoucherActionPage({ mode, onSaved: () => router.push(PettyCashVoucherLink) });
   if (page.isRecordMissing) return <PettyCashVoucherNotFound />;
+
+  function handleOpenDisbursementTypeDrawer(rowId: string) {
+    setPendingDisbursementTypeItemId(rowId);
+    setIsDisbursementTypeDrawerOpen(true);
+  }
+
+  function handleCreateDisbursementType(record?: DisbursementType) {
+    if (pendingDisbursementTypeItemId) {
+      const name =
+        record?.disbursementTypeName ||
+        (record as unknown as { defaultAccountName?: string })?.defaultAccountName ||
+        (record as unknown as { name?: string })?.name ||
+        "";
+      if (name) {
+        page.updateItem(pendingDisbursementTypeItemId, {
+          disbursementType: name,
+          expenseType: name,
+          type: name,
+        });
+      }
+    }
+    setPendingDisbursementTypeItemId(null);
+    setIsDisbursementTypeDrawerOpen(false);
+  }
   function handleCreateParty(record: PartyInformationRecord) {
     page.updateField("partyCode", record.partyCodeNo);
     page.updateField("partyName", getPartyDisplayName(record));
@@ -91,6 +121,7 @@ export function PettyCashVoucherActionPage({ mode }: { mode: PettyCashVoucherAct
             />
             <PettyCashVoucherEntrySection
               page={page}
+              onOpenDisbursementTypeDrawer={handleOpenDisbursementTypeDrawer}
               onOpenResponsibilityCenterDrawer={handleOpenEntryResponsibilityCenterDrawer}
               onOpenSupplierDrawer={handleOpenSupplierDrawer}
             />
@@ -148,6 +179,17 @@ export function PettyCashVoucherActionPage({ mode }: { mode: PettyCashVoucherAct
           setIsEntryResponsibilityCenterDrawerOpen(false);
         }}
         onSaved={handleCreateEntryResponsibilityCenter}
+      />
+      <DisbursementTypeDrawer
+        isOpen={!page.isReadonly && isDisbursementTypeDrawerOpen}
+        kind="disbursement"
+        mode="add"
+        permissions={disbursementTypeStore.permissions}
+        onClose={() => {
+          setPendingDisbursementTypeItemId(null);
+          setIsDisbursementTypeDrawerOpen(false);
+        }}
+        onSaved={handleCreateDisbursementType}
       />
       <PettyCashVoucherReportPreview
         isOpen={page.isPreviewOpen}

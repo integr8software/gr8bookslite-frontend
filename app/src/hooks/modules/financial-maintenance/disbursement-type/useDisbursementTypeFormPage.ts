@@ -15,6 +15,7 @@ import type { ModuleChartAccount } from "@/app/src/data/shared/accounts/ModuleCh
 import { ApiClientError } from "@/app/src/services/shared/api/ApiClient";
 import type { PostingAccountLookupOption } from "@/app/src/types/modules/financial-maintenance/charts-of-accounts/ChartOfAccountsLookupTypes";
 import type {
+  DisbursementType,
   DisbursementTypeFormErrors,
   DisbursementTypeFormPageOptions,
   DisbursementTypeFormValues,
@@ -45,7 +46,7 @@ export function useDisbursementTypeFormPage({ existingDisbursementType, isOpen =
     enabled: Boolean(companyId && kind !== "collection"),
     retry: false,
   });
-  const postingAccountsQuery = usePostingAccountLookup({}, { enabled: Boolean(companyId) });
+  const postingAccountsQuery = usePostingAccountLookup();
   const accountOptions = useMemo(() => createPostingAccountOptions(postingAccountsQuery.data ?? []), [postingAccountsQuery.data]);
   const initialValues: DisbursementTypeFormValues = existingDisbursementType
     ? {
@@ -177,10 +178,11 @@ export function useDisbursementTypeFormPage({ existingDisbursementType, isOpen =
     }
 
     try {
+      let savedRecord: DisbursementType | undefined;
       if (mode === "edit" && existingDisbursementType) {
-        await updateDisbursementType({ ...existingDisbursementType, ...values });
+        savedRecord = await updateDisbursementType({ ...existingDisbursementType, ...values });
       } else {
-        await addDisbursementType(values);
+        savedRecord = await addDisbursementType(values);
         setValues(EmptyDisbursementTypeFormValues);
         setErrors({});
       }
@@ -188,7 +190,7 @@ export function useDisbursementTypeFormPage({ existingDisbursementType, isOpen =
       isSubmittingRef.current = false;
       setIsSubmitting(false);
       releaseSubmitLock();
-      onSaved();
+      onSaved?.(savedRecord);
     } catch (error) {
       isSubmittingRef.current = false;
       setIsSubmitting(false);
@@ -238,10 +240,10 @@ function createPostingAccountOptions(accounts: PostingAccountLookupOption[]): Mo
     accountNumber: account.accountCode,
     accountType: String(account.accountType ?? ""),
     description: account.description || account.accountTitle,
-    id: account.accountId,
+    id: account.accountId || (account as unknown as { id?: string }).id || "",
     normalBalance: account.accountNature === "CREDIT" ? "Credit" : "Debit",
     statementGroup: "",
     statementSection: "",
-    status: "Active",
+    status: String(account.status ?? "").toLowerCase() === "inactive" ? "Inactive" : "Active",
   }));
 }

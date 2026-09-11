@@ -98,8 +98,10 @@ function flattenAccounts(accounts: ModuleChartAccount[]): ModuleChartAccount[] {
 }
 
 function isAccountSelectable(account: ModuleChartAccount) {
+	const status = account.status?.trim().toLowerCase();
+	const isActive = !status || status === "active";
 	return (
-		account.status === "Active" &&
+		isActive &&
 		!account.children?.length &&
 		account.accountCategory !== "Header"
 	);

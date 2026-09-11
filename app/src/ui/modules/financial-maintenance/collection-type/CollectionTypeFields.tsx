@@ -129,7 +129,7 @@ export function CollectionTypeFields({
                 </span>
                 <span className="mt-1 block text-xs text-darknavy/55">
                   {option === "Existing"
-                    ? "Use an existing revenue posting account."
+                    ? "Use an existing posting account."
                     : "Create a revenue account for this collection type."}
                 </span>
               </button>
@@ -145,7 +145,7 @@ export function CollectionTypeFields({
                 <ChartAccountDropdown
                   accounts={accountOptions}
                   disabled={isReadonly}
-                  emptyMessage="No active revenue accounts found."
+                  emptyMessage="No active posting accounts found."
                   placeholder="--Select Account Title--"
                   searchPlaceholder="Search account title or code"
                   value={values.revenueCoaId}

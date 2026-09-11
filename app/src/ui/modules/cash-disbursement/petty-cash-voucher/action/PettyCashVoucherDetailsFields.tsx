@@ -95,8 +95,8 @@ export function PettyCashVoucherDetailsFields({
               value={page.values.accountCode}
               options={accountOptions}
               readOnly={page.isReadonly}
-              placeholder="Select Default Account"
-              searchPlaceholder="Search Account"
+              placeholder="Select Default Account Title"
+              searchPlaceholder="Search Default Account"
               emptyMessage={isAccountLookupLoading ? "Loading Default Account options..." : "No Default Account options found."}
               onChange={(code, name) => {
                 page.updateField("accountCode", code);
@@ -152,7 +152,7 @@ export function PettyCashVoucherDetailsFields({
             label="Default Account Code"
             error={page.errors.accountCode}
             onValueChange={(value) => page.updateField("accountCode", value)}
-            placeholder="Account Code"
+            placeholder="Default Account Code"
           />
 
           <CurrencyExchangeRateRow

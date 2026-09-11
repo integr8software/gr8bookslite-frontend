@@ -3,7 +3,7 @@ import { CheckCircle2, ExternalLink, FileText, Route, ThumbsDown, XCircle } from
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { joinClasses, moduleAccentClassNames } from "@/app/src/ui/shared/module/module-table/utils";
 import { ApprovedStatus } from "@/app/src/constants/modules/approval-management/ApprovalTransactionConstants";
-import { formatApproverStatus } from "@/app/src/data/modules/approval-management/ApprovalTransactionData";
+import { formatApproverStatus, getApprovalTransactionSourceHref } from "@/app/src/data/modules/approval-management/ApprovalTransactionData";
 import type { ApprovalTransactionRow } from "@/app/src/types/modules/approval-management/ApprovalTransactionTypes";
 
 type Props = {
@@ -18,10 +18,7 @@ type Props = {
 export function ApprovalTransactionPreview({ isApproving, isDisapproving, onApprove, onClose, onDisapprove, record }: Props) {
   const isPending = isApproving || isDisapproving;
   const canAct = Boolean(record?.canAct && !isPending);
-  const isApv = record?.moduleScope === "APV";
-  const voucherHref = isApv
-    ? `/accounts-payable/accounts-payable-voucher/view/${record?.referenceId ?? record?.id}`
-    : null;
+  const voucherHref = record ? getApprovalTransactionSourceHref(record) : null;
 
   return (
     <ModuleDrawer
@@ -81,7 +78,7 @@ export function ApprovalTransactionPreview({ isApproving, isDisapproving, onAppr
               <div className="flex items-center gap-2.5">
                 <FileText className="h-5 w-5 text-skyblue" aria-hidden="true" />
                 <div>
-                  <div className="text-xs font-bold text-darknavy">Accounts Payable Voucher</div>
+                  <div className="text-xs font-bold text-darknavy">{record.moduleName}</div>
                   <div className="text-xs text-darknavy/60">View complete voucher entries and details</div>
                 </div>
               </div>

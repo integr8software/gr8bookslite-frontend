@@ -22,6 +22,8 @@ export const PettyCashVoucherActionModes = {
 } as const satisfies Record<string, PettyCashVoucherActionMode>;
 export const PettyCashVoucherStorageKey = "cash-disbursement-petty-cash-voucher-records";
 export const PettyCashVoucherPaginationStorageKey = "cash-disbursement-petty-cash-voucher-table";
+export const PettyCashVoucherDetailTablePreferencesStorageKey = "gr8books:petty-cash-voucher:detail-table-preferences";
+export const PettyCashVoucherAccountingTablePreferencesStorageKey = "gr8books:petty-cash-voucher:accounting-table-preferences";
 export const PettyCashVoucherCopyFromSources = ["Petty Cash Voucher"] as const;
 export const PettyCashVoucherColumnLabels = {
   transactionNo: "PCV No.",
@@ -103,76 +105,93 @@ export const PettyCashVoucherStatusFilterOptions = [
 ] as const;
 export const PettyCashVoucherStatusFilters = [PettyCashVoucherAllStatusFilter, ...PettyCashVoucherRecordStatuses] as const;
 export const PettyCashVoucherActionTabs: { id: PettyCashVoucherActionTab; label: string }[] = [
-  { id: "details", label: "Fund Details" },
+  { id: "details", label: "Voucher Details" },
   { id: "attachments", label: "File Attachments" },
 ];
 export const PettyCashVoucherEntryTabs: { id: PettyCashVoucherEntryTab; label: string }[] = [
-  { id: "items", label: "Items" },
+  { id: "items", label: "Fund Details" },
   { id: "accounting", label: "Accounting Entries" },
 ];
 export const PettyCashVoucherAccountingEntryTab: PettyCashVoucherEntryTab = "accounting";
 export const PettyCashVoucherDefaultItemColumnIds: PettyCashVoucherItemColumnId[] = [
-  "date",
+  "disbursementType",
+  "particulars",
+  "amount",
   "supplierCode",
   "supplierName",
-  "amount",
   "vatType",
   "vatPercent",
-  "vatAmount",
   "netAmount",
+  "vatAmount",
+  "date",
   "ewtCode",
   "ewtPercent",
   "ewtAmount",
   "disburseAmount",
   "responsibilityCenterCode",
   "responsibilityCenterName",
-  "particulars",
   "orNo",
+  "tinNo",
+  "grossAmount",
 ];
-export const PettyCashVoucherDefaultVisibleItemColumnIds: PettyCashVoucherItemColumnId[] = ["date", "supplierName", "amount", "disburseAmount"];
+export const PettyCashVoucherDefaultVisibleItemColumnIds: PettyCashVoucherItemColumnId[] = [
+  "disbursementType",
+  "particulars",
+  "amount",
+  "supplierName",
+  "disburseAmount",
+];
 export const PettyCashVoucherItemColumnLabels: Record<PettyCashVoucherItemColumnId, string> = {
-  date: "Date",
-  supplierCode: "Supplier Code",
-  supplierName: "Supplier Name",
-  orNo: "Reference No.",
-  tinNo: "TIN No.",
+  disbursementType: "Disbursement Type",
   particulars: "Particulars",
   amount: "Gross Amount",
-  type: "Type",
+  supplierCode: "Supplier Code",
+  supplierName: "Supplier Name",
   vatType: "VAT Type",
   vatPercent: "VAT %",
-  vatAmount: "VAT Amount",
   netAmount: "Net of VAT",
-  ewtCode: "EWT Code",
-  ewtPercent: "EWT %",
+  vatAmount: "VAT Amount",
+  date: "Date",
+  ewtCode: "ATC",
+  ewtPercent: "ATC %",
   ewtAmount: "EWT Amount",
-  disburseAmount: "Total Disbursed",
-  grossAmount: "Gross Amount",
   responsibilityCenterCode: "Responsibility Center Code",
   responsibilityCenterName: "Responsibility Center",
+  orNo: "Reference No.",
+  tinNo: "TIN No.",
+  type: "Disbursement Type",
+  disburseAmount: "Total Disbursed",
+  grossAmount: "Gross Amount",
 };
 export const PettyCashVoucherItemColumnWidths: Record<PettyCashVoucherItemColumnId, number> = {
-  date: 140,
+  disbursementType: 220,
+  particulars: 240,
+  amount: 170,
   supplierCode: 190,
   supplierName: 230,
+  vatType: 175,
+  vatPercent: 120,
+  netAmount: 160,
+  vatAmount: 160,
+  date: 140,
+  ewtCode: 175,
+  ewtPercent: 120,
+  ewtAmount: 160,
+  responsibilityCenterCode: 220,
+  responsibilityCenterName: 240,
   orNo: 190,
   tinNo: 150,
-  particulars: 240,
-  amount: 185,
-  type: 140,
-  vatType: 175,
-  vatPercent: 160,
-  vatAmount: 175,
-  netAmount: 180,
-  ewtCode: 175,
-  ewtPercent: 160,
-  ewtAmount: 175,
+  type: 220,
   disburseAmount: 165,
   grossAmount: 185,
-  responsibilityCenterCode: 250,
-  responsibilityCenterName: 240,
 };
-export const PettyCashVoucherProtectedItemColumnIds = new Set<PettyCashVoucherItemColumnId>(["supplierName", "amount"]);
+export const PettyCashVoucherProtectedItemColumnIds = new Set<PettyCashVoucherItemColumnId>([
+  "disbursementType",
+  "particulars",
+  "amount",
+  "supplierName",
+  "disburseAmount",
+]);
 export const PettyCashVoucherDefaultAccountingColumnIds: PettyCashVoucherAccountingColumnId[] = [
   "accountCode",
   "accountTitle",
@@ -180,6 +199,13 @@ export const PettyCashVoucherDefaultAccountingColumnIds: PettyCashVoucherAccount
   "credit",
   "partyCode",
   "partyName",
+  "particulars",
+];
+export const PettyCashVoucherDefaultVisibleAccountingColumnIds: PettyCashVoucherAccountingColumnId[] = [
+  "accountCode",
+  "accountTitle",
+  "debit",
+  "credit",
   "particulars",
 ];
 export const PettyCashVoucherAccountingColumnLabels: Record<PettyCashVoucherAccountingColumnId, string> = {
@@ -200,7 +226,12 @@ export const PettyCashVoucherAccountingColumnWidths: Record<PettyCashVoucherAcco
   partyName: 230,
   particulars: 260,
 };
-export const PettyCashVoucherProtectedAccountingColumnIds = new Set<PettyCashVoucherAccountingColumnId>(["accountCode", "debit", "credit"]);
+export const PettyCashVoucherProtectedAccountingColumnIds = new Set<PettyCashVoucherAccountingColumnId>([
+  "accountTitle",
+  "debit",
+  "credit",
+  "particulars",
+]);
 
 export function canEditPettyCashVoucher(status: PettyCashVoucherStatus) {
   return EditablePettyCashVoucherStatuses.includes(status);

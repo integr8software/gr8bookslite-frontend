@@ -68,9 +68,7 @@ export function ServicesMaintenanceAccountingSetupTab({
             </span>
             <span className="mt-1 block text-xs text-darknavy/55">
               {option === "Existing"
-                ? isPurchase
-                  ? "Use an existing posting account."
-                  : "Use an existing Service Revenues posting account."
+                ? "Use an existing posting account."
                 : isPurchase
                   ? "Create an expense account for this service."
                   : "Create a Service Revenues account for this service."}

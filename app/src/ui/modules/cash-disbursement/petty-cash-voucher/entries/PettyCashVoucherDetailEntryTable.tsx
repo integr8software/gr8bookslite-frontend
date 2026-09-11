@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   PettyCashVoucherDefaultItemColumnIds,
   PettyCashVoucherDefaultVisibleItemColumnIds,
+  PettyCashVoucherDetailTablePreferencesStorageKey,
   PettyCashVoucherItemColumnLabels,
   PettyCashVoucherItemColumnWidths,
   PettyCashVoucherProtectedItemColumnIds,
@@ -10,107 +11,86 @@ import {
   createBlankPettyCashVoucherItem,
   formatPettyCashVoucherAmount,
 } from "@/app/src/data/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherData";
-import {
-  getPartyDefaultEwtCode,
-  getPartyDefaultVatCode,
-} from "@/app/src/data/shared/tax/PartyTaxDefaultsData";
-import { createEwtOptions, createVatOptions } from "@/app/src/data/shared/tax/TaxData";
-import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
-import { usePartyManagementStore } from "@/app/src/hooks/modules/party-management/usePartyManagement";
-import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
-import { useResponsibilityCenterLookup } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenterLookup";
+import { useDataEntryTablePreferences } from "@/app/src/hooks/shared/module/useDataEntryTablePreferences";
 import type {
   PettyCashVoucherDetailEntryTableProps,
   PettyCashVoucherItemColumnId,
 } from "@/app/src/types/modules/cash-disbursement/petty-cash-voucher/PettyCashVoucherTypes";
-import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import { createPettyCashVoucherItemColumns } from "@/app/src/ui/modules/cash-disbursement/petty-cash-voucher/entries/PettyCashVoucherEntryColumns";
 import { ModuleDataEntry } from "@/app/src/ui/shared/module/module-data-entry/ModuleDataEntry";
-import {
-  buildColumnOptions,
-  calculateFitColumnWidth,
-  reorderColumnIds,
-  toggleVisibleColumnId,
-} from "@/app/src/ui/shared/module/module-data-entry/entryTableState.util";
-import { clampColumnWidth } from "@/app/src/ui/shared/module/module-data-entry/utils";
+import type { ModuleDataEntryColumnOption } from "@/app/src/types/shared/module/module-data-entry/DataEntryTypes";
 
 export function PettyCashVoucherDetailEntryTable({
+  disbursementTypeOptions,
+  ewtOptions,
+  onOpenDisbursementTypeDrawer,
   onOpenResponsibilityCenterDrawer,
   onOpenSupplierDrawer,
-  page,
+  errors,
+  isReadonly,
+  items,
+  onAddItems,
+  onClearItems,
+  onDuplicateItem,
+  onInsertItem,
+  onMoveItem,
+  onRemoveItem,
+  onUpdateItem,
+  onUpdateItems,
+  responsibilityCenterOptions,
+  supplierOptions,
+  taxCodes,
+  totals,
+  title,
+  vatOptions,
 }: PettyCashVoucherDetailEntryTableProps) {
-  const [columnOrder, setColumnOrder] = useState<PettyCashVoucherItemColumnId[]>([...PettyCashVoucherDefaultItemColumnIds]);
-  const [visibleColumnIds, setVisibleColumnIds] = useState<PettyCashVoucherItemColumnId[]>([...PettyCashVoucherDefaultVisibleItemColumnIds]);
-  const [columnWidths, setColumnWidths] = useState({ ...PettyCashVoucherItemColumnWidths });
-  const [columnLabels, setColumnLabels] = useState({ ...PettyCashVoucherItemColumnLabels });
-  const partyRecords = usePartyManagementStore((state) => state.records);
-  const taxCodesQuery = useAlphanumericTaxCodes();
-  const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
-
-  const vatOptions = useMemo(() => createVatOptions(taxCodes), [taxCodes]);
-  const ewtOptions = useMemo(() => createEwtOptions(taxCodes), [taxCodes]);
-
-  const responsibilityCentersQuery = useResponsibilityCenterLookup();
-  const responsibilityCenterOptions = useMemo(
-    () => responsibilityCentersQuery.data ?? [],
-    [responsibilityCentersQuery.data],
-  );
-
-  const supplierOptions = useMemo<AppAdvancedDropdownOption[]>(() => {
-    const vendorRecords = partyRecords.filter((r) => r.partyTypes.includes("Vendor"));
-    const options: AppAdvancedDropdownOption[] = vendorRecords.map((r) => ({
-      defaultPurchaseEwtTaxSourceKey: r.defaultPurchaseEwtTaxSourceKey,
-      defaultPurchaseInputVatTaxSourceKey: r.defaultPurchaseInputVatTaxSourceKey,
-      ewtCode: getPartyDefaultEwtCode(r, taxCodes),
-      label: r.partyCodeNo,
-      name: getPartyDisplayName(r),
-      vatCode: getPartyDefaultVatCode(r, taxCodes),
-      value: r.partyCodeNo,
-    }));
-
-    const existingCodes = new Set(options.map((opt) => opt.value));
-    const existingNames = new Set(options.map((opt) => opt.name.toLowerCase()));
-    const extraOptions: AppAdvancedDropdownOption[] = [];
-
-    page.values.items.forEach((item) => {
-      if (item.supplierName && !existingNames.has(item.supplierName.toLowerCase())) {
-        const code = item.supplierCode || item.supplierName;
-        if (!existingCodes.has(code)) {
-          existingCodes.add(code);
-          existingNames.add(item.supplierName.toLowerCase());
-          extraOptions.push({
-            label: item.supplierCode || code,
-            name: item.supplierName,
-            value: code,
-          });
-        }
-      }
-    });
-
-    return [...options, ...extraOptions];
-  }, [partyRecords, page.values.items, taxCodes]);
+  const {
+    columnOrder,
+    visibleColumnIds,
+    columnWidths,
+    columnLabels,
+    handleMoveColumn: moveColumn,
+    handleToggleColumnVisibility: toggleColumnVisibility,
+    handleUpdateColumnHeader: updateColumnHeader,
+    handleUpdateColumnWidth: updateColumnWidth,
+    handleFitColumnWidth: fitColumnWidth,
+    handleResetColumns,
+  } = useDataEntryTablePreferences<PettyCashVoucherItemColumnId>({
+    storageKey: PettyCashVoucherDetailTablePreferencesStorageKey,
+    defaultColumnOrder: PettyCashVoucherDefaultItemColumnIds,
+    defaultVisibleColumnIds: PettyCashVoucherDefaultVisibleItemColumnIds,
+    defaultColumnWidths: PettyCashVoucherItemColumnWidths,
+    defaultColumnLabels: PettyCashVoucherItemColumnLabels,
+    protectedColumnIds: PettyCashVoucherProtectedItemColumnIds,
+  });
 
   const allColumns = useMemo(
     () =>
-      createPettyCashVoucherItemColumns(
-        page,
+      createPettyCashVoucherItemColumns({
         columnLabels,
         columnWidths,
-        supplierOptions,
-        vatOptions,
+        disbursementTypeOptions,
         ewtOptions,
-        taxCodes,
-        responsibilityCenterOptions,
+        isReadonly,
+        onOpenDisbursementTypeDrawer,
         onOpenResponsibilityCenterDrawer,
         onOpenSupplierDrawer,
-      ),
+        responsibilityCenterOptions,
+        supplierOptions,
+        taxCodes,
+        updateItem: onUpdateItem,
+        vatOptions,
+      }),
     [
       columnLabels,
       columnWidths,
+      disbursementTypeOptions,
       ewtOptions,
+      isReadonly,
+      onOpenDisbursementTypeDrawer,
       onOpenResponsibilityCenterDrawer,
       onOpenSupplierDrawer,
-      page,
+      onUpdateItem,
       responsibilityCenterOptions,
       supplierOptions,
       taxCodes,
@@ -119,91 +99,90 @@ export function PettyCashVoucherDetailEntryTable({
   );
 
   const columns = useMemo(
-    () => columnOrder.filter((id) => visibleColumnIds.includes(id)).map((id) => allColumns[id]),
-    [allColumns, columnOrder, visibleColumnIds],
+    () =>
+      columnOrder
+        .filter((columnId) => visibleColumnIds.includes(columnId))
+        .map((columnId) => {
+          const col = allColumns[columnId];
+          if (!col) return null;
+          return {
+            ...col,
+            header: columnLabels[columnId] || col.header,
+            width: columnWidths[columnId] ?? col.width,
+          };
+        })
+        .filter((col): col is NonNullable<typeof col> => col !== null),
+    [allColumns, columnLabels, columnOrder, columnWidths, visibleColumnIds],
   );
 
-  const columnOptions = useMemo(
+  const columnOptions = useMemo<ModuleDataEntryColumnOption[]>(
     () =>
-      buildColumnOptions(
-        columnOrder,
-        columnLabels,
-        columnWidths,
-        visibleColumnIds,
-        PettyCashVoucherProtectedItemColumnIds,
-      ),
+      columnOrder.map((columnId) => ({
+        id: columnId,
+        isHideable: !PettyCashVoucherProtectedItemColumnIds.has(columnId),
+        isVisible: visibleColumnIds.includes(columnId),
+        label: columnLabels[columnId],
+        width: columnWidths[columnId],
+      })),
     [columnLabels, columnOrder, columnWidths, visibleColumnIds],
   );
 
   function handleMoveColumn(fromId: string, toId: string) {
     if (isItemColumnId(fromId) && isItemColumnId(toId)) {
-      setColumnOrder((order) => reorderColumnIds(order, fromId, toId));
+      moveColumn(fromId, toId);
     }
   }
 
   function handleToggleColumnVisibility(columnId: string, isVisible: boolean) {
-    if (isItemColumnId(columnId) && (!isVisible && PettyCashVoucherProtectedItemColumnIds.has(columnId))) {
-      return;
-    }
     if (isItemColumnId(columnId)) {
-      setVisibleColumnIds((ids) => toggleVisibleColumnId(ids, columnOrder, columnId, isVisible));
+      toggleColumnVisibility(columnId, isVisible);
     }
   }
 
   function handleUpdateColumnHeader(columnId: string, header: string) {
     if (isItemColumnId(columnId)) {
-      setColumnLabels((labels) => ({ ...labels, [columnId]: header }));
+      updateColumnHeader(columnId, header);
     }
   }
 
   function handleUpdateColumnWidth(columnId: string, width: number) {
     if (isItemColumnId(columnId)) {
-      setColumnWidths((widths) => ({ ...widths, [columnId]: clampColumnWidth(width) }));
+      updateColumnWidth(columnId, width);
     }
   }
 
   function handleFitColumnWidth(columnId: string) {
     if (isItemColumnId(columnId)) {
-      const fitWidth = calculateFitColumnWidth(columnLabels[columnId], page.values.items, columnId);
-      handleUpdateColumnWidth(columnId, fitWidth);
+      fitColumnWidth(columnId, items);
     }
   }
 
-  function handleResetColumns() {
-    setColumnOrder([...PettyCashVoucherDefaultItemColumnIds]);
-    setVisibleColumnIds([...PettyCashVoucherDefaultVisibleItemColumnIds]);
-    setColumnWidths({ ...PettyCashVoucherItemColumnWidths });
-    setColumnLabels({ ...PettyCashVoucherItemColumnLabels });
-  }
+  const effectiveItems = items.length > 0 ? items : [createBlankPettyCashVoucherItem()];
 
   return (
     <ModuleDataEntry
       addButtonLabel="Add Entry"
-      title="Petty Cash Voucher Entries"
-      emptyRowLabel="entry"
-      error={page.errors.items}
+      title={title}
+      emptyRowLabel="fund detail"
+      error={errors.items}
       footerDetails={
-        <span className="text-sm font-semibold text-darknavy">
-          Total Amount: {formatPettyCashVoucherAmount(page.totals.amount)}
-        </span>
+        <span className="text-sm font-semibold text-darknavy">Total Amount: {formatPettyCashVoucherAmount(totals.amount)}</span>
       }
       columns={columns}
       columnOptions={columnOptions}
-      rows={page.values.items}
+      rows={effectiveItems}
       canConfigureColumnsWhenReadonly
-      isDraggable={!page.isReadonly}
-      isReadonly={page.isReadonly}
-      onAddRows={page.addItems}
+      isDraggable={!isReadonly}
+      isReadonly={isReadonly}
+      onAddRows={onAddItems}
       onClearRow={(rowId) =>
-        page.updateItems(
-          page.values.items.map((row) => (row.id === rowId ? { ...createBlankPettyCashVoucherItem(), id: rowId } : row)),
-        )
+        onUpdateItems(items.map((row) => (row.id === rowId ? { ...createBlankPettyCashVoucherItem(), id: rowId } : row)))
       }
-      onClearRows={() => page.updateItems([createBlankPettyCashVoucherItem()])}
-      onDuplicateRow={page.duplicateItem}
-      onInsertRow={page.insertItem}
-      onMoveRow={page.moveItem}
-      onRemoveRow={page.removeItem}
+      onClearRows={onClearItems}
+      onDuplicateRow={onDuplicateItem}
+      onInsertRow={onInsertItem}
+      onMoveRow={onMoveItem}
+      onRemoveRow={onRemoveItem}
       onAutoColumnWidth={handleFitColumnWidth}
       onFitColumnWidth={handleFitColumnWidth}
       onMoveColumn={handleMoveColumn}
@@ -213,11 +192,11 @@ export function PettyCashVoucherDetailEntryTable({
       onUpdateColumnWidth={handleUpdateColumnWidth}
       summaryRowHeader="Totals"
       summaryCells={{
-        amount: formatPettyCashVoucherAmount(page.totals.amount),
-        netAmount: formatPettyCashVoucherAmount(page.totals.netAmount),
-        vatAmount: formatPettyCashVoucherAmount(page.totals.vatAmount),
-        ewtAmount: formatPettyCashVoucherAmount(page.totals.ewtAmount),
-        disburseAmount: formatPettyCashVoucherAmount(page.totals.disburseAmount),
+        amount: formatPettyCashVoucherAmount(totals.amount),
+        netAmount: formatPettyCashVoucherAmount(totals.netAmount),
+        vatAmount: formatPettyCashVoucherAmount(totals.vatAmount),
+        ewtAmount: formatPettyCashVoucherAmount(totals.ewtAmount),
+        disburseAmount: formatPettyCashVoucherAmount(totals.disburseAmount),
       }}
     />
   );

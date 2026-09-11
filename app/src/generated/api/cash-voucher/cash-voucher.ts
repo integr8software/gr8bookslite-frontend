@@ -25,7 +25,6 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  CashVoucherControllerFindAccountTitleOptionsV1Params,
   CashVoucherControllerFindAllV1Params,
   CashVoucherControllerFindOneV1Params,
   CashVoucherControllerRemoveV1200,
@@ -33,7 +32,6 @@ import type {
   CashVoucherDefaultAccountsResponseDto,
   CashVoucherListResponseDto,
   CashVoucherSingleResponseDto,
-  ChartAccountOptionsResponseDto,
   CreateCashVoucherDto,
   TransactionNumberSuggestionResponseDto,
   UpdateCashVoucherDto,
@@ -392,99 +390,6 @@ export function useCashVoucherControllerGetDefaultAccountsV1<TData = Awaited<Ret
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getCashVoucherControllerGetDefaultAccountsV1QueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
- * @summary Get cash voucher account title options
- */
-export const cashVoucherControllerFindAccountTitleOptionsV1 = (
-    params?: CashVoucherControllerFindAccountTitleOptionsV1Params,
- options?: SecondParameter<typeof OrvalApiClient>,signal?: AbortSignal
-) => {
-
-
-      return OrvalApiClient<ChartAccountOptionsResponseDto>(
-      {url: `/api/v1/cash-disbursement/cash-voucher/account-title-options`, method: 'GET',
-        params, signal
-    },
-      options);
-    }
-
-
-
-
-export const getCashVoucherControllerFindAccountTitleOptionsV1QueryKey = (params?: CashVoucherControllerFindAccountTitleOptionsV1Params,) => {
-    return [
-    `/api/v1/cash-disbursement/cash-voucher/account-title-options`, ...(params ? [params] : [])
-    ] as const;
-    }
-
-
-export const getCashVoucherControllerFindAccountTitleOptionsV1QueryOptions = <TData = Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>, TError = unknown>(params?: CashVoucherControllerFindAccountTitleOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getCashVoucherControllerFindAccountTitleOptionsV1QueryKey(params);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>> = ({ signal }) => cashVoucherControllerFindAccountTitleOptionsV1(params, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type CashVoucherControllerFindAccountTitleOptionsV1QueryResult = NonNullable<Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>>
-export type CashVoucherControllerFindAccountTitleOptionsV1QueryError = unknown
-
-
-export function useCashVoucherControllerFindAccountTitleOptionsV1<TData = Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>, TError = unknown>(
- params: undefined |  CashVoucherControllerFindAccountTitleOptionsV1Params, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>,
-          TError,
-          Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCashVoucherControllerFindAccountTitleOptionsV1<TData = Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>, TError = unknown>(
- params?: CashVoucherControllerFindAccountTitleOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>,
-          TError,
-          Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCashVoucherControllerFindAccountTitleOptionsV1<TData = Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>, TError = unknown>(
- params?: CashVoucherControllerFindAccountTitleOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get cash voucher account title options
- */
-
-export function useCashVoucherControllerFindAccountTitleOptionsV1<TData = Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>, TError = unknown>(
- params?: CashVoucherControllerFindAccountTitleOptionsV1Params, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof cashVoucherControllerFindAccountTitleOptionsV1>>, TError, TData>>, request?: SecondParameter<typeof OrvalApiClient>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getCashVoucherControllerFindAccountTitleOptionsV1QueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

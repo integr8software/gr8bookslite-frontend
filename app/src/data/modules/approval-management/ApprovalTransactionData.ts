@@ -8,12 +8,19 @@ import {
   DisapprovedStatus,
   DoneStatus,
 } from "@/app/src/constants/modules/approval-management/ApprovalTransactionConstants";
+import { MODULE_ROUTE_MAP } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type {
   ApprovalTransactionApiRecord,
   ApprovalTransactionApprover,
   ApprovalTransactionFilters,
   ApprovalTransactionRow,
 } from "@/app/src/types/modules/approval-management/ApprovalTransactionTypes";
+
+const ApprovalTransactionSourceRoutes: Record<string, string> = {
+  APV: MODULE_ROUTE_MAP.APV,
+  CV: MODULE_ROUTE_MAP.CV,
+  DV: MODULE_ROUTE_MAP.DV,
+};
 
 export const ApprovalTransactionColumns: ColumnDef<ApprovalTransactionRow>[] = [
   { accessorKey: "referenceNo", header: "Reference", meta: { className: "min-w-[12rem]" } },
@@ -124,6 +131,12 @@ export function matchesTransactionFilters(row: ApprovalTransactionRow, filters: 
     row.approvalPath,
     row.statusLabel,
   ].some((value) => value.toLowerCase().includes(query));
+}
+
+export function getApprovalTransactionSourceHref(record: Pick<ApprovalTransactionRow, "moduleScope" | "referenceId">) {
+  const baseHref = ApprovalTransactionSourceRoutes[record.moduleScope];
+
+  return baseHref && record.referenceId ? `${baseHref}/view/${record.referenceId}` : null;
 }
 
 export function formatApproverStatus(approver: ApprovalTransactionApprover) {

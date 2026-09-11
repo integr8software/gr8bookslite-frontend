@@ -81,8 +81,8 @@ export function useDisbursementTypeStore<TSelected = DisbursementTypeStoreState>
       const firstGenerated = savedAccount.generatedAccounts?.[0];
       toast.success(
         firstGenerated
-          ? `Disbursement type created successfully. Saved with Account Code - Account Title: ${firstGenerated.accountCode} - ${firstGenerated.accountTitle}.`
-          : "Disbursement type created successfully.",
+          ? `Disbursement Type Created Successfully. Saved with Account Code - Account Title: ${firstGenerated.accountCode} - ${firstGenerated.accountTitle}.`
+          : "Disbursement Type Created Successfully.",
       );
     },
     onError: (error) => {
@@ -93,7 +93,7 @@ export function useDisbursementTypeStore<TSelected = DisbursementTypeStoreState>
     mutationFn: (account: DisbursementType) => updateDisbursementType(account, kind),
     onSuccess: () => {
       refreshDisbursementTypes();
-      toast.success("Disbursement type updated successfully.");
+      toast.success("Disbursement Type Updated Successfully.");
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Could not update disbursement type. Please try again.");
@@ -103,10 +103,10 @@ export function useDisbursementTypeStore<TSelected = DisbursementTypeStoreState>
     mutationFn: (account: DisbursementType) => updateDisbursementTypeStatus(account, kind),
     onSuccess: (_, account) => {
       refreshDisbursementTypes();
-      toast.success(`Disbursement type ${account.status === DisbursementTypeStatuses.Active ? "activated" : "inactivated"} successfully.`);
+      toast.success(`Disbursement Type ${account.status === DisbursementTypeStatuses.Active ? "activated" : "inactivated"} successfully.`);
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Could not update disbursement type status. Please try again.");
+      toast.error(error instanceof Error ? error.message : "Could not update Disbursement Type status. Please try again.");
     },
   });
   const state = useMemo<DisbursementTypeStoreState>(() => {

@@ -142,7 +142,7 @@ function getPartyAtcClassifications(code: string): PartyClassification[] {
 function getPartyAtcDescription(taxCode: AlphanumericTaxCode) {
 	return (
 		taxCode.natureOfIncome?.trim() ||
-		taxCode.taxDescription.replace(/^[A-Z]{2}\s?\d{3}\s*\|\s*/, "").trim()
+		taxCode.taxDescription.replace(/^[A-Z]{1,3}\s?\d{0,3}(?:\.\d+)?\s*\|\s*/, "").trim()
 	);
 }
 

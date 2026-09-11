@@ -1,10 +1,15 @@
 import Link from "next/link";
 import { Eye, FileText, UserCheck } from "lucide-react";
 import { DoneStatus } from "@/app/src/constants/modules/approval-management/ApprovalTransactionConstants";
+import { getApprovalTransactionSourceHref } from "@/app/src/data/modules/approval-management/ApprovalTransactionData";
 import type { ApprovalTransactionRow } from "@/app/src/types/modules/approval-management/ApprovalTransactionTypes";
 import { ModuleStatusBadge } from "@/app/src/ui/shared/module/ModuleStatusBadge";
 import { ModuleTooltip } from "@/app/src/ui/shared/module/ModuleTooltip";
-import { ModuleTableActionButton, ModuleTableActionLink, ModuleTableActions } from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
+import {
+  ModuleTableActionButton,
+  ModuleTableActionLink,
+  ModuleTableActions,
+} from "@/app/src/ui/shared/module/module-table/ModuleTableActions";
 import { joinClasses, moduleAccentClassNames } from "@/app/src/ui/shared/module/module-table/utils";
 
 export function ApprovalTransactionTableRow({
@@ -14,19 +19,13 @@ export function ApprovalTransactionTableRow({
   onPreview: (record: ApprovalTransactionRow) => void;
   record: ApprovalTransactionRow;
 }) {
-  const isApv = record.moduleScope === "APV";
-  const voucherHref = isApv
-    ? `/accounts-payable/accounts-payable-voucher/view/${record.referenceId ?? record.id}`
-    : null;
+  const voucherHref = getApprovalTransactionSourceHref(record);
 
   return (
     <tr className="module-table-row">
       <td className="align-middle">
         {voucherHref ? (
-          <Link
-            href={voucherHref}
-            className="font-semibold text-skyblue transition hover:underline hover:text-skyblue/80"
-          >
+          <Link href={voucherHref} className="font-semibold text-skyblue transition hover:underline hover:text-skyblue/80">
             {record.referenceNo}
           </Link>
         ) : (
@@ -65,11 +64,11 @@ export function ApprovalTransactionTableRow({
       <td className="align-middle">
         <ModuleTableActions className="justify-center">
           {voucherHref ? (
-            <ModuleTooltip align="end" position="top" title="View Accounts Payable Voucher">
+            <ModuleTooltip align="end" position="top" title={`View ${record.moduleName}`}>
               <ModuleTableActionLink
                 href={voucherHref}
                 icon={FileText}
-                label={`View voucher ${record.referenceNo}`}
+                label={`View ${record.moduleName} ${record.referenceNo}`}
                 variant="view"
               />
             </ModuleTooltip>

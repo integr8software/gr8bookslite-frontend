@@ -19,7 +19,7 @@ export function PettyCashVoucherReportPreview({
       isOpen={isOpen}
       eyebrow="Cash disbursement"
       title="Petty Cash Voucher Preview"
-      description="Review the fund details and entries before printing."
+      description="Review the voucher details and entries before printing."
       onClose={onClose}
       onGeneratePdf={onGeneratePdf}
     >

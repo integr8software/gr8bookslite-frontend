@@ -39,7 +39,7 @@ export function usePettyCashVoucherDetailsLookups(values: PettyCashVoucherLookup
         name: values.partyName || values.partyCode,
         label: values.partyCode,
         value: values.partyCode,
-        description: values.partyName,
+        description: "",
       });
     }
     return options;
@@ -55,7 +55,7 @@ export function usePettyCashVoucherDetailsLookups(values: PettyCashVoucherLookup
         name: values.accountTitle || values.accountCode,
         label: values.accountCode,
         value: values.accountCode,
-        description: values.accountTitle,
+        description: "",
       });
     }
     return options;

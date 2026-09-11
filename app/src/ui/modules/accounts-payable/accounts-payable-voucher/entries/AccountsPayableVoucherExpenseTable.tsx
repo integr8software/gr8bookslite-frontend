@@ -6,6 +6,7 @@ import {
   AccountsPayableVoucherExpenseColumnWidths,
   AccountsPayableVoucherExpenseDefaultVisibleColumnIds,
   AccountsPayableVoucherExpenseProtectedColumnIds,
+  AccountsPayableVoucherExpenseReadonlyVisibleColumnIds,
   AccountsPayableVoucherPurchaseTransactionType,
 } from "@/app/src/constants/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherConstants";
 import { formatAccountsPayableVoucherAmount } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherData";
@@ -80,7 +81,7 @@ export function AccountsPayableVoucherExpenseTable({
   const [particularsEditorLineId, setParticularsEditorLineId] = useState<string | null>(null);
   const [columnOrder, setColumnOrder] = useState<AccountsPayableVoucherExpenseColumnId[]>([...AccountsPayableVoucherExpenseColumnIds]);
   const [visibleColumnIds, setVisibleColumnIds] = useState<AccountsPayableVoucherExpenseColumnId[]>([
-    ...AccountsPayableVoucherExpenseDefaultVisibleColumnIds,
+    ...(isReadonly ? AccountsPayableVoucherExpenseReadonlyVisibleColumnIds : AccountsPayableVoucherExpenseDefaultVisibleColumnIds),
   ]);
   const [columnLabels, setColumnLabels] = useState<Record<AccountsPayableVoucherExpenseColumnId, string>>({
     ...AccountsPayableVoucherExpenseColumnLabels,
@@ -204,7 +205,9 @@ export function AccountsPayableVoucherExpenseTable({
 
   function resetColumns() {
     setColumnOrder([...AccountsPayableVoucherExpenseColumnIds]);
-    setVisibleColumnIds([...AccountsPayableVoucherExpenseDefaultVisibleColumnIds]);
+    setVisibleColumnIds([
+      ...(isReadonly ? AccountsPayableVoucherExpenseReadonlyVisibleColumnIds : AccountsPayableVoucherExpenseDefaultVisibleColumnIds),
+    ]);
     setColumnLabels({ ...AccountsPayableVoucherExpenseColumnLabels });
     setColumnWidths({ ...AccountsPayableVoucherExpenseColumnWidths });
   }

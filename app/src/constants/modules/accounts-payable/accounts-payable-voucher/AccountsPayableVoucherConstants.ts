@@ -128,6 +128,7 @@ export const AccountsPayableVoucherActionCopy = {
 } as const;
 
 export const AccountsPayableVoucherExpenseColumnIds = [
+  "particulars",
   "expenseType",
   "amount",
   "netAmount",
@@ -140,31 +141,38 @@ export const AccountsPayableVoucherExpenseColumnIds = [
   "totalAmountDue",
   "partyCode",
   "partyName",
-  "particulars",
   "responsibilityCenter",
   "referenceNo",
 ] as const;
 
-export const AccountsPayableVoucherExpenseProtectedColumnIds = new Set<AccountsPayableVoucherExpenseColumnId>(["expenseType", "amount"]);
+export const AccountsPayableVoucherExpenseProtectedColumnIds = new Set<AccountsPayableVoucherExpenseColumnId>([
+  "particulars",
+  "expenseType",
+  "amount",
+]);
 
 export const AccountsPayableVoucherExpenseDefaultVisibleColumnIds = AccountsPayableVoucherExpenseColumnIds.filter(
-  (columnId) => !["vat", "vatPercent", "ewt", "ewtPercent", "partyCode"].includes(columnId),
+  (columnId) => !["vat", "vatPercent", "partyCode"].includes(columnId),
+);
+
+export const AccountsPayableVoucherExpenseReadonlyVisibleColumnIds = AccountsPayableVoucherExpenseDefaultVisibleColumnIds.filter(
+  (columnId) => columnId !== "expenseType",
 );
 
 export const AccountsPayableVoucherExpenseColumnLabels: Record<AccountsPayableVoucherExpenseColumnId, string> = {
   expenseType: "Payable Type",
   particulars: "Particulars",
   amount: "Gross Amount",
-  vatAmount: "VAT Amount",
+  vatAmount: "VAT",
   netAmount: "Net of VAT",
-  ewtAmount: "EWT Amount",
+  ewtAmount: "AWT",
   totalAmountDue: "Total Payable",
   partyCode: "Party Code",
   partyName: "Party Name",
   vat: "VAT Type",
   vatPercent: "VAT %",
-  ewt: "EWT Code",
-  ewtPercent: "EWT %",
+  ewt: "ATC",
+  ewtPercent: "EWT",
   responsibilityCenter: "Responsibility Center",
   referenceNo: "Reference No",
 };
@@ -208,6 +216,7 @@ export const AccountsPayableVoucherAccountingProtectedColumnIds = new Set<Accoun
 ]);
 
 export const AccountsPayableVoucherAccountingDefaultVisibleColumnIds = [
+  "accountCode",
   "accountTitle",
   "debit",
   "credit",

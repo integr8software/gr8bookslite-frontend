@@ -2,9 +2,9 @@
 
 import {
   formatAccountsPayableVoucherAmountInWords,
-  formatAccountsPayableVoucherReportAccount,
   formatAccountsPayableVoucherReportAmount,
   formatAccountsPayableVoucherReportDate,
+  getAccountsPayableVoucherReportParticulars,
   getAccountsPayableVoucherEntryPartyLabel,
   getAccountsPayableVoucherReportTotals,
 } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherReportData";
@@ -109,7 +109,7 @@ function AccountsPayableVoucherReportDocument({ values }: { values: AccountsPaya
           <MetaCell label="Ref No:" value={values.referenceNo || "-"} />
         </div>
         <div className="grid grid-cols-[1fr_20.25rem] border-t-2 border-black">
-          <LabeledLine label="PAYABLE TYPE:" value={values.payableType || "-"} />
+          <LabeledLine label="PARTICULARS:" value={getAccountsPayableVoucherReportParticulars(values)} />
           <MetaCell label="Due Date:" value={formatAccountsPayableVoucherReportDate(values.dueDate)} />
         </div>
         <div className="border-t-2 border-black px-2 py-2">
@@ -119,46 +119,57 @@ function AccountsPayableVoucherReportDocument({ values }: { values: AccountsPaya
         <ReportSectionTitle>Expense Details</ReportSectionTitle>
         <table className="w-full table-fixed border-collapse text-[9px]">
           <colgroup>
-            <col className="w-[24%]" />
             <col className="w-[18%]" />
-            <col className="w-[18%]" />
-            <col className="w-[14%]" />
-            <col className="w-[9%]" />
+            <col className="w-[12%]" />
+            <col className="w-[10%]" />
+            <col className="w-[10%]" />
+            <col className="w-[10%]" />
             <col className="w-[8%]" />
-            <col className="w-[9%]" />
+            <col className="w-[8%]" />
+            <col className="w-[6%]" />
+            <col className="w-[8%]" />
+            <col className="w-[10%]" />
           </colgroup>
           <thead>
             <tr>
-              <ReportTableHeader>Expense Account</ReportTableHeader>
-              <ReportTableHeader>Party</ReportTableHeader>
               <ReportTableHeader>Particulars</ReportTableHeader>
+              <ReportTableHeader>Party</ReportTableHeader>
               <ReportTableHeader>Cost Center</ReportTableHeader>
               <ReportTableHeader>Gross</ReportTableHeader>
+              <ReportTableHeader>Net of VAT</ReportTableHeader>
+              <ReportTableHeader>VAT</ReportTableHeader>
+              <ReportTableHeader>ATC</ReportTableHeader>
               <ReportTableHeader>EWT</ReportTableHeader>
+              <ReportTableHeader>AWT</ReportTableHeader>
               <ReportTableHeader>Total Payable</ReportTableHeader>
             </tr>
           </thead>
           <tbody>
             {values.expenseLines.map((line) => (
               <tr key={line.id} className="align-top">
-                <ReportTableCell>{formatAccountsPayableVoucherReportAccount(line.expenseAccountCode, line.expenseType)}</ReportTableCell>
-                <ReportTableCell>{line.partyName || line.partyCode || values.partyName || "-"}</ReportTableCell>
                 <ReportTableCell>{line.particulars || "-"}</ReportTableCell>
+                <ReportTableCell>{line.partyName || line.partyCode || values.partyName || "-"}</ReportTableCell>
                 <ReportTableCell>{line.responsibilityCenter || "-"}</ReportTableCell>
                 <ReportTableCell align="right">{formatAccountsPayableVoucherReportAmount(line.amount)}</ReportTableCell>
-                <ReportTableCell align="right">
-                  {line.ewtAmount ? formatAccountsPayableVoucherReportAmount(line.ewtAmount) : ""}
-                </ReportTableCell>
+                <ReportTableCell align="right">{formatAccountsPayableVoucherReportAmount(line.netAmount)}</ReportTableCell>
+                <ReportTableCell align="right">{line.vatAmount ? formatAccountsPayableVoucherReportAmount(line.vatAmount) : ""}</ReportTableCell>
+                <ReportTableCell>{line.ewt || "-"}</ReportTableCell>
+                <ReportTableCell align="right">{line.ewtPercent ? `${line.ewtPercent}%` : ""}</ReportTableCell>
+                <ReportTableCell align="right">{line.ewtAmount ? formatAccountsPayableVoucherReportAmount(line.ewtAmount) : ""}</ReportTableCell>
                 <ReportTableCell align="right">{formatAccountsPayableVoucherReportAmount(line.totalAmountDue)}</ReportTableCell>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr className="font-bold">
-              <td className="border-2 border-l-0 border-black px-2 py-1 text-right" colSpan={4}>
+              <td className="border-2 border-l-0 border-black px-2 py-1 text-right" colSpan={3}>
                 Total:
               </td>
               <td className="border-2 border-black px-2 py-1 text-right">{formatAccountsPayableVoucherReportAmount(totals.grossAmount)}</td>
+              <td className="border-2 border-black px-2 py-1 text-right">{formatAccountsPayableVoucherReportAmount(totals.netAmount)}</td>
+              <td className="border-2 border-black px-2 py-1 text-right">{formatAccountsPayableVoucherReportAmount(totals.vatAmount)}</td>
+              <td className="border-2 border-black px-2 py-1" />
+              <td className="border-2 border-black px-2 py-1" />
               <td className="border-2 border-black px-2 py-1 text-right">{formatAccountsPayableVoucherReportAmount(totals.ewtAmount)}</td>
               <td className="border-2 border-r-0 border-black px-2 py-1 text-right">
                 {formatAccountsPayableVoucherReportAmount(totals.totalAmountDue)}
@@ -170,16 +181,18 @@ function AccountsPayableVoucherReportDocument({ values }: { values: AccountsPaya
         <ReportSectionTitle>Accounting Entries</ReportSectionTitle>
         <table className="w-full table-fixed border-collapse text-[9px]">
           <colgroup>
-            <col className="w-[24%]" />
-            <col className="w-[18%]" />
-            <col className="w-[22%]" />
-            <col className="w-[14%]" />
-            <col className="w-[11%]" />
-            <col className="w-[11%]" />
+            <col className="w-[12%]" />
+            <col className="w-[20%]" />
+            <col className="w-[15%]" />
+            <col className="w-[20%]" />
+            <col className="w-[13%]" />
+            <col className="w-[10%]" />
+            <col className="w-[10%]" />
           </colgroup>
           <thead>
             <tr>
-              <ReportTableHeader>Account</ReportTableHeader>
+              <ReportTableHeader>Account Code</ReportTableHeader>
+              <ReportTableHeader>Account Title</ReportTableHeader>
               <ReportTableHeader>Party</ReportTableHeader>
               <ReportTableHeader>Particulars</ReportTableHeader>
               <ReportTableHeader>Cost Center</ReportTableHeader>
@@ -190,7 +203,8 @@ function AccountsPayableVoucherReportDocument({ values }: { values: AccountsPaya
           <tbody>
             {values.accountingEntries.map((entry) => (
               <tr key={entry.id} className="align-top">
-                <ReportTableCell>{formatAccountsPayableVoucherReportAccount(entry.accountCode, entry.accountTitle)}</ReportTableCell>
+                <ReportTableCell>{entry.accountCode || "-"}</ReportTableCell>
+                <ReportTableCell>{entry.accountTitle || "-"}</ReportTableCell>
                 <ReportTableCell>{getAccountsPayableVoucherEntryPartyLabel(entry, values)}</ReportTableCell>
                 <ReportTableCell>{entry.particulars || "-"}</ReportTableCell>
                 <ReportTableCell>{entry.responsibilityCenter || "-"}</ReportTableCell>
@@ -203,7 +217,7 @@ function AccountsPayableVoucherReportDocument({ values }: { values: AccountsPaya
           </tbody>
           <tfoot>
             <tr className="font-bold">
-              <td className="border-2 border-l-0 border-black px-2 py-1 text-right" colSpan={4}>
+              <td className="border-2 border-l-0 border-black px-2 py-1 text-right" colSpan={5}>
                 Total:
               </td>
               <td className="border-2 border-black px-2 py-1 text-right">{formatAccountsPayableVoucherReportAmount(totals.totalDebit)}</td>

@@ -99,6 +99,8 @@ type ApiAccountsPayableVoucher = {
   contactPerson?: string | null;
   projectCode?: string | null;
   projectName?: string | null;
+  responsibilityCenterId?: string | null;
+  responsibilityCenter?: string | null;
   currency: string;
   exchangeRate: number | string | null;
   amount: number | string | null;
@@ -519,6 +521,8 @@ function mapApiAccountsPayableVoucher(voucher: ApiAccountsPayableVoucher): Accou
     payableType: mapPayableTypeFromApi(voucher.payableType),
     projectCode: voucher.projectCode ?? "",
     projectName: voucher.projectName ?? "",
+    responsibilityCenterId: voucher.responsibilityCenterId ?? undefined,
+    responsibilityCenter: voucher.responsibilityCenter ?? "",
     referenceNo: voucher.referenceNo ?? "",
     remarks,
     status: mapStatusFromApi(voucher.status),
@@ -652,6 +656,8 @@ function toApiAccountsPayableVoucherPayload(
     payableType: mapPayableTypeToApi(values.payableType),
     projectCode: cleanOptional(values.projectCode),
     projectName: cleanOptional(values.projectName),
+    responsibilityCenterId: cleanOptionalPositiveIntegerId(values.responsibilityCenterId),
+    responsibilityCenter: cleanOptional(values.responsibilityCenter),
     referenceNo: cleanOptional(values.referenceNo),
     remarks,
     termId: values.termId.trim(),

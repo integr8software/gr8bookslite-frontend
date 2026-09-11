@@ -57,6 +57,8 @@ export type AccountsPayableVoucherLookupResponsibilityCenter = {
   id: string;
   code: string;
   name: string;
+  classificationName: string;
+  financialType: "COST_CENTER" | "PROFIT_CENTER" | "REVENUE_CENTER" | "INVESTMENT_CENTER";
   typeName: string;
   status: string;
 };
@@ -147,6 +149,8 @@ export type AccountsPayableVoucherRecord = {
   contactNo: string;
   projectCode: string;
   projectName: string;
+  responsibilityCenterId?: string;
+  responsibilityCenter: string;
   currency: string;
   exchangeRate: number;
   amount: number;

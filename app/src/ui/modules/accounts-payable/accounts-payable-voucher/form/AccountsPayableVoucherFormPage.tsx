@@ -8,6 +8,7 @@ import { useMemo, useState, type ChangeEventHandler, type ReactNode } from "reac
 import {
   useAccountsPayableVoucherPartyOptions,
   useAccountsPayableVoucherPayableAccountOptions,
+  useAccountsPayableVoucherResponsibilityCenterOptions,
   useAccountsPayableVoucherTermOptions,
 } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucher";
 import { useAccountsPayableVoucherFormPage } from "@/app/src/hooks/modules/accounts-payable/accounts-payable-voucher/useAccountsPayableVoucherFormPage";
@@ -56,6 +57,7 @@ const PurchaseTaxCodeQuery = {
 
 import {
   createLookupTermOptions,
+  createCostCenterOptions,
   createPartyOptions,
   createTermOptions,
   findPayableAccount,
@@ -78,6 +80,7 @@ export function AccountsPayableVoucherFormPage() {
   const partyOptionsQuery = useAccountsPayableVoucherPartyOptions();
   const payableAccountOptionsQuery = useAccountsPayableVoucherPayableAccountOptions();
   const projectOptionsQuery = useProjectMaintenanceLookup();
+  const responsibilityCenterOptionsQuery = useAccountsPayableVoucherResponsibilityCenterOptions();
   const termOptionsQuery = useAccountsPayableVoucherTermOptions();
   const taxCodesQuery = useTaxes(PurchaseTaxCodeQuery);
   const [partyAddTarget, setPartyAddTarget] = useState<"header" | AccountsPayableVoucherPartyAddTarget | null>(null);
@@ -88,6 +91,10 @@ export function AccountsPayableVoucherFormPage() {
   const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
   const partyRecords = useMemo(() => partyOptionsQuery.data ?? [], [partyOptionsQuery.data]);
   const projectRecords = useMemo(() => projectOptionsQuery.data ?? [], [projectOptionsQuery.data]);
+  const responsibilityCenters = useMemo(
+    () => responsibilityCenterOptionsQuery.data ?? [],
+    [responsibilityCenterOptionsQuery.data],
+  );
   const termRecords = useMemo(() => termOptionsQuery.data ?? [], [termOptionsQuery.data]);
   const defaultPayableAccounts = useMemo(
     () =>
@@ -113,6 +120,15 @@ export function AccountsPayableVoucherFormPage() {
   const termOptions = useMemo<AppAdvancedDropdownOption[]>(
     () => createTermOptions(createLookupTermOptions(termRecords), page.values.termId, page.values.terms),
     [page.values.termId, page.values.terms, termRecords],
+  );
+  const costCenterOptions = useMemo<AppAdvancedDropdownOption[]>(
+    () =>
+      createCostCenterOptions(
+        responsibilityCenters,
+        page.values.responsibilityCenterId ?? "",
+        page.values.responsibilityCenter,
+      ),
+    [page.values.responsibilityCenter, page.values.responsibilityCenterId, responsibilityCenters],
   );
   if (page.needsRecord && page.isRecordLoading) {
     return (
@@ -262,6 +278,13 @@ export function AccountsPayableVoucherFormPage() {
 
     page.updateHeaderField("projectName", projectName);
     page.updateHeaderField("projectCode", projectName ? (project?.label ?? page.values.projectCode) : "");
+  }
+
+  function selectCostCenter(responsibilityCenterId: string) {
+    const center = responsibilityCenters.find((option) => option.id === responsibilityCenterId);
+
+    page.updateHeaderField("responsibilityCenterId", responsibilityCenterId || undefined);
+    page.updateHeaderField("responsibilityCenter", center?.name ?? "");
   }
 
   return (
@@ -490,6 +513,23 @@ export function AccountsPayableVoucherFormPage() {
                   searchPlaceholder="Search Project Name"
                   emptyMessage={getProjectDropdownEmptyMessage(projectOptionsQuery)}
                   onChange={(value) => selectProject(String(value))}
+                />
+              </FieldShell>
+              <FieldShell
+                controlId="accounts-payable-voucher-cost-center"
+                label="Cost Center"
+                error={page.errors.responsibilityCenter}
+              >
+                <AppAdvancedDropdown
+                  id="accounts-payable-voucher-cost-center"
+                  className={AttachedDropdownClassName}
+                  value={page.values.responsibilityCenterId ?? ""}
+                  readOnly={page.isReadonly || responsibilityCenterOptionsQuery.isLoading}
+                  options={costCenterOptions}
+                  placeholder="Select Cost Center"
+                  searchPlaceholder="Search Cost Center"
+                  emptyMessage="No active cost centers found."
+                  onChange={(value) => selectCostCenter(String(value))}
                 />
               </FieldShell>
               <TextField

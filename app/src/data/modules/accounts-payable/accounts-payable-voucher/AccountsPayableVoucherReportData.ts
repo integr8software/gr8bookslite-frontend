@@ -48,6 +48,10 @@ export function formatAccountsPayableVoucherReportDate(value: string) {
   }).format(new Date(value));
 }
 
+export function getAccountsPayableVoucherReportParticulars(values: AccountsPayableVoucherFormValues) {
+  return values.expenseLines.find((line) => line.particulars.trim())?.particulars.trim() || values.remarks.trim() || "-";
+}
+
 export function formatAccountsPayableVoucherAmountInWords(amount: number, currencyCode: string) {
   if (!Number.isFinite(amount) || amount <= 0) {
     return "-";

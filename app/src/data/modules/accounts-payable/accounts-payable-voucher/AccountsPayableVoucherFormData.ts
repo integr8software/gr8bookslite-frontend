@@ -133,6 +133,30 @@ export function createProjectOptions(
   return options;
 }
 
+export function createCostCenterOptions(
+  responsibilityCenters: AccountsPayableVoucherLookupResponsibilityCenter[],
+  currentResponsibilityCenterId: string,
+  currentResponsibilityCenterName: string,
+): AppAdvancedDropdownOption[] {
+  const options = responsibilityCenters
+    .filter((center) => isActiveStatus(center.status) && center.financialType === "COST_CENTER")
+    .map((center) => ({
+      description: `${center.code} · ${center.typeName}`,
+      name: center.name,
+      value: center.id,
+    }));
+
+  if (currentResponsibilityCenterId.trim() && !options.some((option) => option.value === currentResponsibilityCenterId)) {
+    options.push({
+      description: "Current voucher value",
+      name: currentResponsibilityCenterName || currentResponsibilityCenterId,
+      value: currentResponsibilityCenterId,
+    });
+  }
+
+  return options;
+}
+
 export function createTermOptions(
   options: AppAdvancedDropdownOption[],
   currentTermId: string,

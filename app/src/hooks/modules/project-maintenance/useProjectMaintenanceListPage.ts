@@ -27,7 +27,7 @@ export function useProjectMaintenanceListPage() {
         return true;
       }
 
-      return [project.projectCode, project.projectName, project.description, project.status]
+      return [project.projectCode, project.projectName, project.type, project.description, project.status]
         .join(" ")
         .toLowerCase()
         .includes(normalizedQuery);

@@ -2,6 +2,7 @@ import type { ChangeEventHandler } from "react";
 import type { Row, Table } from "@tanstack/react-table";
 
 export type ProjectMaintenanceStatus = "Active" | "Inactive";
+export type ProjectMaintenanceType = "Division" | "Department" | "Section" | "Unit";
 
 export type ProjectMaintenanceStatusFilter = "" | ProjectMaintenanceStatus;
 
@@ -9,6 +10,7 @@ export type ProjectMaintenance = {
   id: string;
   projectCode: string;
   projectName: string;
+  type: ProjectMaintenanceType;
   description: string;
   status: ProjectMaintenanceStatus;
   createdBy?: string;
@@ -22,6 +24,7 @@ export type ProjectMaintenanceLookupOption = {
   projectId: string;
   projectCode: string;
   projectName: string;
+  type: ProjectMaintenanceType;
   name: string;
   label: string;
   value: string;
@@ -32,6 +35,7 @@ export type ProjectMaintenanceLookupOption = {
 export type ProjectMaintenanceFormValues = {
   projectCode: string;
   projectName: string;
+  type: ProjectMaintenanceType;
   description: string;
   status: ProjectMaintenanceStatus;
 };
@@ -73,10 +77,11 @@ export type ProjectMaintenanceFieldsProps = {
   values: ProjectMaintenanceFormValues;
   onInputChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
   onStatusChange: (value: ProjectMaintenanceFormValues["status"]) => void;
+  onTypeChange: (value: ProjectMaintenanceFormValues["type"]) => void;
 };
 
 export type ProjectMaintenanceTableColumnKey =
-  "projectCode" | "projectName" | "description" | "status" | "createdBy" | "createdAt" | "updatedBy" | "updatedAt";
+  "projectCode" | "projectName" | "type" | "description" | "status" | "createdBy" | "createdAt" | "updatedBy" | "updatedAt";
 
 export type ProjectMaintenancePermissions = {
   canView: boolean;

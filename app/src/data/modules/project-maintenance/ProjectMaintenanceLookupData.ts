@@ -11,7 +11,7 @@ export function createProjectNameLookupOptions({
   options: ProjectMaintenanceLookupOption[];
 }): AppAdvancedDropdownOption[] {
   const options: AppAdvancedDropdownOption[] = sourceOptions.map((project) => ({
-    description: project.description,
+    description: [project.type, project.description].filter(Boolean).join(" · "),
     label: project.projectCode,
     name: project.projectName,
     value: project.projectName,
@@ -41,7 +41,7 @@ export function createProjectCodeLookupOptions({
   options: ProjectMaintenanceLookupOption[];
 }): AppAdvancedDropdownOption[] {
   const options: AppAdvancedDropdownOption[] = sourceOptions.map((project) => ({
-    description: project.description,
+    description: [project.type, project.description].filter(Boolean).join(" · "),
     label: project.projectCode,
     name: project.projectName,
     value: project.projectCode || project.projectName,

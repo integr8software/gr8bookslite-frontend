@@ -58,6 +58,8 @@ function ProjectMaintenanceCellContent({
       return <span className="font-semibold text-darknavy/85">{project.projectCode}</span>;
     case "projectName":
       return <span className="font-medium text-darknavy">{project.projectName}</span>;
+    case "type":
+      return <span className="text-darknavy/75">{project.type}</span>;
     case "description":
       return (
         <span className="block truncate text-darknavy/75" title={project.description}>

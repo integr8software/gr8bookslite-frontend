@@ -1,5 +1,9 @@
 import type { SortingState, VisibilityState } from "@tanstack/react-table";
-import type { ProjectMaintenance, ProjectMaintenanceStatus } from "@/app/src/types/modules/project-maintenance/ProjectMaintenanceTypes";
+import type {
+  ProjectMaintenance,
+  ProjectMaintenanceStatus,
+  ProjectMaintenanceType,
+} from "@/app/src/types/modules/project-maintenance/ProjectMaintenanceTypes";
 import { getModuleRoute } from "@/app/src/data/shared/modules/ModuleCatalogData";
 import type { ModuleTableExportColumn } from "@/app/src/ui/shared/module/module-table/ModuleTableToolbar";
 
@@ -27,6 +31,11 @@ export const ProjectMaintenanceTableColumns = [
     key: "projectName",
     label: "Project Name",
     className: "w-[22%]",
+  },
+  {
+    key: "type",
+    label: "Type",
+    className: "w-[16%]",
   },
   {
     key: "description",
@@ -101,6 +110,13 @@ export const ProjectMaintenanceStatusOptions = [
   ProjectMaintenanceStatuses.Active,
   ProjectMaintenanceStatuses.Inactive,
 ] as const satisfies readonly ProjectMaintenanceStatus[];
+
+export const ProjectMaintenanceTypeOptions = [
+  "Division",
+  "Department",
+  "Section",
+  "Unit",
+] as const satisfies readonly ProjectMaintenanceType[];
 
 export const ProjectMaintenanceActionCopy = {
   add: {

@@ -13,6 +13,7 @@ import type { RequestForPaymentActionMode } from "@/app/src/types/modules/cash-d
 import type { ResponsibilityCenter } from "@/app/src/types/modules/financial-maintenance/responsibility-center/ResponsibilityCenterTypes";
 import type { PartyInformationRecord } from "@/app/src/types/modules/party-management/PartyManagementTypes";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/dialogs/PartyManagementDrawer";
+import { ProjectMaintenanceDrawer } from "@/app/src/ui/modules/project-maintenance/ProjectMaintenanceDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 import { RequestForPaymentActionHeader } from "@/app/src/ui/modules/cash-disbursement/request-for-payment/action/RequestForPaymentActionHeader";
@@ -27,6 +28,7 @@ export function RequestForPaymentActionPage({ mode }: { mode: RequestForPaymentA
   const router = useRouter();
   const [isPartyDrawerOpen, setIsPartyDrawerOpen] = useState(false);
   const [isResponsibilityCenterDrawerOpen, setIsResponsibilityCenterDrawerOpen] = useState(false);
+  const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
   const [isEntryResponsibilityCenterDrawerOpen, setIsEntryResponsibilityCenterDrawerOpen] = useState(false);
   const [pendingResponsibilityCenterItemId, setPendingResponsibilityCenterItemId] = useState<string | null>(null);
   const partyStore = usePartyManagementStore();
@@ -71,7 +73,7 @@ export function RequestForPaymentActionPage({ mode }: { mode: RequestForPaymentA
             <RequestForPaymentDetailsFields
               page={page}
               onOpenPartyDrawer={() => setIsPartyDrawerOpen(true)}
-              onOpenProjectDrawer={() => undefined}
+              onOpenProjectDrawer={() => setIsProjectDrawerOpen(true)}
               onOpenResponsibilityCenterDrawer={() => setIsResponsibilityCenterDrawerOpen(true)}
             />
             <RequestForPaymentEntrySection page={page} onOpenResponsibilityCenterDrawer={handleOpenEntryResponsibilityCenterDrawer} />
@@ -108,6 +110,17 @@ export function RequestForPaymentActionPage({ mode }: { mode: RequestForPaymentA
             page.updateField("responsibilityCenter", center.name);
             setIsResponsibilityCenterDrawerOpen(false);
           }
+        }}
+      />
+
+      <ProjectMaintenanceDrawer
+        isOpen={!page.isReadonly && isProjectDrawerOpen}
+        mode="add"
+        onClose={() => setIsProjectDrawerOpen(false)}
+        onSaved={(project) => {
+          page.updateField("projectCode", project.projectCode);
+          page.updateField("projectName", project.projectName);
+          setIsProjectDrawerOpen(false);
         }}
       />
 

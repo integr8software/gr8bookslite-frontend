@@ -18,6 +18,7 @@ import { AdvancesToSuppliersNotFound } from "@/app/src/ui/modules/cash-disbursem
 import { AdvancesToSuppliersReportPreview } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/reports/AdvancesToSuppliersReportPreview";
 import { openAdvancesToSuppliersPdf } from "@/app/src/ui/modules/cash-disbursement/advances-to-suppliers/reports/AdvancesToSuppliersPdf";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/dialogs/PartyManagementDrawer";
+import { ProjectMaintenanceDrawer } from "@/app/src/ui/modules/project-maintenance/ProjectMaintenanceDrawer";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
 
@@ -77,13 +78,13 @@ export function AdvancesToSuppliersActionPage({ mode }: { mode: AdvancesToSuppli
           setIsResponsibilityCenterDrawerOpen(false);
         }}
       />
-      <ResponsibilityCenterDrawer
+      <ProjectMaintenanceDrawer
         isOpen={!page.isReadonly && isProjectDrawerOpen}
         mode="add"
         onClose={() => setIsProjectDrawerOpen(false)}
-        onSaved={(center) => {
-          page.updateField("projectCode", center.code);
-          page.updateField("projectName", center.name);
+        onSaved={(project) => {
+          page.updateField("projectCode", project.projectCode);
+          page.updateField("projectName", project.projectName);
           setIsProjectDrawerOpen(false);
         }}
       />

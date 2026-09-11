@@ -45,15 +45,15 @@ export function CashAdvanceDetailsFields({
       <div className="grid gap-5 xl:grid-cols-3">
         {/* Column 1: Name & Lookup Fields */}
         <div className="grid min-w-0 content-start gap-5">
-          <TransactionField label="Employee Name" error={errors.partyName} isRequired>
+          <TransactionField label="Party Name" error={errors.partyName} isRequired>
             <AppLookupDropdown
               value={values.partyCode}
               options={partyOptions}
               readOnly={isReadonly}
-              placeholder="Select Employee Name"
-              searchPlaceholder="Search Employee Name"
-              emptyMessage={isPartyLookupLoading ? "Loading Employee options..." : "No Employee options found."}
-              addAction={!isReadonly ? { label: "Add Employee Name", onClick: onOpenPartyDrawer } : undefined}
+              placeholder="Select Party Name"
+              searchPlaceholder="Search Party Name"
+              emptyMessage={isPartyLookupLoading ? "Loading Party options..." : "No Party options found."}
+              addAction={!isReadonly ? { label: "Add Party Name", onClick: onOpenPartyDrawer } : undefined}
               onChange={(code, name) => {
                 const selectedParty = partyOptions.find((option) => option.value === code);
                 onUpdateField("partyCode", String(selectedParty?.partyCode ?? code));

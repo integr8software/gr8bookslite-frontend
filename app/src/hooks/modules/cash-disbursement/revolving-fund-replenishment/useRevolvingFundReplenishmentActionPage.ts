@@ -15,6 +15,7 @@ import { useAppStore } from "@/app/src/hooks/shared/app/useAppStore";
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { hasModuleDraftChanges } from "@/app/src/hooks/shared/module/useModuleDraftChanges";
+import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import type {
   RevolvingFundReplenishmentActionMode,
   RevolvingFundReplenishmentActionTab,
@@ -59,9 +60,11 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
   });
 
   const record = recordQuery.data;
+  const taxCodesQuery = useAlphanumericTaxCodes();
+  const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
 
   const [values, setValues] = useState<RevolvingFundReplenishmentFormValues>(() =>
-    createRevolvingFundReplenishmentFormValues(record, "", transactionCurrency.baseCurrencyCode),
+    createRevolvingFundReplenishmentFormValues(record, "", transactionCurrency.baseCurrencyCode, taxCodes),
   );
   const [errors, setErrors] = useState<RevolvingFundReplenishmentFormErrors>({});
   const [activeTab, setActiveTab] = useState<RevolvingFundReplenishmentActionTab>("details");
@@ -87,13 +90,13 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
 
   useEffect(() => {
     if (record) {
-      const formVals = createRevolvingFundReplenishmentFormValues(record, record.transactionNo, record.currency || "PHP");
+      const formVals = createRevolvingFundReplenishmentFormValues(record, record.transactionNo, record.currency || "PHP", taxCodes);
       queueMicrotask(() => {
         setValues(formVals);
         setInitialValues(formVals);
       });
     }
-  }, [record]);
+  }, [record, taxCodes]);
 
   useEffect(() => {
     if (mode === RevolvingFundReplenishmentActionModes.Add) {
@@ -309,7 +312,7 @@ export function useRevolvingFundReplenishmentActionPage(options: { mode: Revolvi
   }
 
   async function resetAddValuesWithNextTransactionNo() {
-    const nextValues = createRevolvingFundReplenishmentFormValues(undefined, "", transactionCurrency.baseCurrencyCode);
+    const nextValues = createRevolvingFundReplenishmentFormValues(undefined, "", transactionCurrency.baseCurrencyCode, taxCodes);
 
     try {
       const nextNo = await fetchNextRevolvingFundReplenishmentNo();

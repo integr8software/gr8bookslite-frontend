@@ -8,11 +8,11 @@ import {
   CashAdvanceStatuses,
 } from "@/app/src/constants/modules/cash-disbursement/cash-advance/CashAdvanceConstants";
 import {
-  createCashAdvanceProjectInitialValues,
-  createCashAdvanceProjectOptions,
   createCashAdvanceResponsibilityCenterDropdownOptions,
   createCashAdvanceResponsibilityCenterInitialValues,
 } from "@/app/src/data/modules/cash-disbursement/cash-advance/CashAdvanceData";
+import { createProjectNameLookupOptions } from "@/app/src/data/modules/project-maintenance/ProjectMaintenanceLookupData";
+import { useProjectMaintenanceLookup } from "@/app/src/hooks/modules/project-maintenance/useProjectMaintenance";
 import { getPartyDisplayName } from "@/app/src/data/modules/party-management/PartyManagementData";
 import { replaceCashAdvanceRow, useCashAdvanceActionForm } from "@/app/src/hooks/modules/cash-disbursement/cash-advance/useCashAdvance";
 import { useResponsibilityCenterStore } from "@/app/src/hooks/modules/financial-maintenance/responsibility-center/useResponsibilityCenter";
@@ -27,6 +27,7 @@ import { CashAdvanceReportPreview } from "@/app/src/ui/modules/cash-disbursement
 import { openCashAdvancePdf } from "@/app/src/ui/modules/cash-disbursement/cash-advance/reports/CashAdvancePdf";
 import { CashAdvanceFileAttachmentFields } from "@/app/src/ui/modules/cash-disbursement/cash-advance/action/CashAdvanceFileAttachmentFields";
 import { ResponsibilityCenterDrawer } from "@/app/src/ui/modules/financial-maintenance/responsibility-center/ResponsibilityCenterDrawer";
+import { ProjectMaintenanceDrawer } from "@/app/src/ui/modules/project-maintenance/ProjectMaintenanceDrawer";
 import { PartyManagementDrawer } from "@/app/src/ui/modules/party-management/dialogs/PartyManagementDrawer";
 import { AppSkeleton, AppSkeletonCard } from "@/app/src/ui/shared/app/AppSkeleton";
 import { ModuleTabs } from "@/app/src/ui/shared/module/module-tabs/ModuleTabs";
@@ -57,18 +58,15 @@ function CashAdvanceActionInner({ mode }: { mode: CashAdvanceActionMode }) {
   });
   const responsibilityCenterStore = useResponsibilityCenterStore();
   const partyStore = usePartyManagementStore();
+  const projectQuery = useProjectMaintenanceLookup();
   const projectOptions = useMemo(
     () =>
-      createCashAdvanceProjectOptions({
-        centers: responsibilityCenterStore.centers,
+      createProjectNameLookupOptions({
         currentProjectCode: form.values.projectCode,
         currentProjectName: form.values.projectName,
+        options: projectQuery.data ?? [],
       }),
-    [form.values.projectCode, form.values.projectName, responsibilityCenterStore.centers],
-  );
-  const projectInitialValues = useMemo(
-    () => createCashAdvanceProjectInitialValues(responsibilityCenterStore.classifications, responsibilityCenterStore.types),
-    [responsibilityCenterStore.classifications, responsibilityCenterStore.types],
+    [form.values.projectCode, form.values.projectName, projectQuery.data],
   );
   const responsibilityCenterOptions = useMemo(
     () =>
@@ -216,14 +214,13 @@ function CashAdvanceActionInner({ mode }: { mode: CashAdvanceActionMode }) {
           }}
         />
       ) : null}
-      <ResponsibilityCenterDrawer
-        initialValues={projectInitialValues}
+      <ProjectMaintenanceDrawer
         isOpen={!isReadonly && isProjectDrawerOpen}
         mode="add"
         onClose={() => setIsProjectDrawerOpen(false)}
-        onSaved={(center) => {
-          form.updateField("projectCode", center.code);
-          form.updateField("projectName", center.name);
+        onSaved={(project) => {
+          form.updateField("projectCode", project.projectCode);
+          form.updateField("projectName", project.projectName);
           setIsProjectDrawerOpen(false);
         }}
       />

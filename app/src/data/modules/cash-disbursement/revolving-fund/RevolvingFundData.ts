@@ -40,11 +40,12 @@ export function createRevolvingFundFormValues(
   record?: RevolvingFundRecord,
   transactionNo = "",
   baseCurrencyCode = "PHP",
+  taxCodes: AlphanumericTaxCode[] = [],
 ): RevolvingFundFormValues {
   if (record?.formValues) {
     return {
       ...record.formValues,
-      items: record.formValues.items.map(normalizeRevolvingFundItem),
+      items: record.formValues.items.map((item) => normalizeRevolvingFundItem(item, taxCodes)),
       attachments: record.formValues.attachments.map((item) => ({ ...item })),
     };
   }
@@ -66,7 +67,7 @@ export function createRevolvingFundFormValues(
       projectName: record.projectName ?? "",
       remarks: record.remarks,
       items: record.items?.length
-        ? record.items.map(normalizeRevolvingFundItem)
+        ? record.items.map((item) => normalizeRevolvingFundItem(item, taxCodes))
         : [
             {
               ...createBlankRevolvingFundItem(),
@@ -196,13 +197,13 @@ function roundRevolvingFundTaxAmount(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-function normalizeRevolvingFundItem(item: Partial<RevolvingFundItem>): RevolvingFundItem {
+function normalizeRevolvingFundItem(item: Partial<RevolvingFundItem>, taxCodes: AlphanumericTaxCode[] = []): RevolvingFundItem {
   const amount = item.amount ?? item.grossAmount ?? "";
 
   return {
     ...createBlankRevolvingFundItem(),
     ...item,
     amount,
-    ...calculateRevolvingFundItemTaxFields(amount, item.vatType ?? "", item.ewtCode ?? ""),
+    ...calculateRevolvingFundItemTaxFields(amount, item.vatType ?? "", item.ewtCode ?? "", taxCodes),
   };
 }

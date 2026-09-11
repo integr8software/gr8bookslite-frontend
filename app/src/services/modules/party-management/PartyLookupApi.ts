@@ -3,6 +3,8 @@ import type { PartyLookupOption, PartyLookupQuery } from "@/app/src/types/module
 
 type PartyLookupBackendItem = {
   id: string;
+  code?: string;
+  partyCode?: string;
   partyCodeNo: string;
   name: string;
   partyName?: string;
@@ -87,19 +89,33 @@ function formatPartyTypes(partyTypes?: string[] | string, classification?: strin
   return classification?.trim() || "";
 }
 
+function getPartyLookupCode(party: PartyLookupBackendItem): string {
+  return (party.partyCodeNo || party.partyCode || party.code || "").trim();
+}
+
+function getPartyLookupDisplayName(party: PartyLookupBackendItem, partyCode: string): string {
+  const individualName = [party.firstName, party.middleName, party.lastName, party.suffixName]
+    .map((name) => name?.trim())
+    .filter(Boolean)
+    .join(" ");
+
+  return (party.partyName?.trim() || individualName || party.name?.trim() || partyCode).trim();
+}
+
 function mapPartyToLookupOption(party: PartyLookupBackendItem): PartyLookupOption {
-  const displayName = party.name || party.partyName || party.partyCodeNo;
+  const partyCode = getPartyLookupCode(party);
+  const displayName = getPartyLookupDisplayName(party, partyCode);
   const partyTypes = formatPartyTypes(party.partyTypes, party.classification);
 
   return {
     ...party,
     name: displayName,
-    label: party.partyCodeNo,
-    value: party.partyCodeNo,
+    label: partyCode,
+    value: partyCode,
     description: partyTypes,
     partyId: party.id,
-    partyCode: party.partyCodeNo,
+    partyCode,
     partyName: displayName,
-    selectedDetails: party.partyCodeNo,
+    selectedDetails: partyCode,
   };
 }

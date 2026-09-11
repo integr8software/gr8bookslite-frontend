@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   RequestForPaymentBankOptions,
   RequestForPaymentPartyOptions,
@@ -5,6 +6,8 @@ import {
   RequestForPaymentProjectOptions,
   RequestForPaymentResponsibilityCenterLookupOptions,
 } from "@/app/src/constants/modules/cash-disbursement/request-for-payment/RequestForPaymentConstants";
+import { createProjectCodeLookupOptions } from "@/app/src/data/modules/project-maintenance/ProjectMaintenanceLookupData";
+import { useProjectMaintenanceLookup } from "@/app/src/hooks/modules/project-maintenance/useProjectMaintenance";
 import type {
   RequestForPaymentActionPageState,
   RequestForPaymentPaymentMethod,
@@ -31,6 +34,16 @@ export function RequestForPaymentDetailsFields({
   onOpenResponsibilityCenterDrawer: () => void;
   page: RequestForPaymentActionPageState;
 }) {
+  const projectQuery = useProjectMaintenanceLookup();
+  const projectOptions = useMemo(() => {
+    const dynamicOptions = createProjectCodeLookupOptions({
+      currentProjectCode: page.values.projectCode,
+      currentProjectName: page.values.projectName,
+      options: projectQuery.data ?? [],
+    });
+    return dynamicOptions.length > 0 ? dynamicOptions : RequestForPaymentProjectOptions;
+  }, [page.values.projectCode, page.values.projectName, projectQuery.data]);
+
   return (
     <section className="rounded-lg border border-darknavy/10 bg-white p-4 shadow-sm shadow-darknavy/5 sm:p-5">
       <div className="grid gap-5 xl:grid-cols-3">
@@ -73,10 +86,11 @@ export function RequestForPaymentDetailsFields({
           <TransactionField label="Project Name">
             <AppLookupDropdown
               value={page.values.projectCode}
-              options={RequestForPaymentProjectOptions}
+              options={projectOptions}
               readOnly={page.isReadonly}
               placeholder="Select Project Name"
-              searchPlaceholder="Search Project"
+              searchPlaceholder="Search Project Name"
+              emptyMessage={projectQuery.isLoading ? "Loading Project Name options..." : "No Project Name options found."}
               addAction={!page.isReadonly ? { label: "Add Project", onClick: onOpenProjectDrawer } : undefined}
               onChange={(code, name) => {
                 page.updateField("projectCode", code);

@@ -24,6 +24,7 @@ import { validateRevolvingFundForm } from "@/app/src/validations/modules/cash-di
 import { formatLoadedExchangeRate, useTransactionCurrency } from "@/app/src/hooks/shared/currency/useTransactionCurrency";
 import { createModuleDraftKey, useModuleDraft } from "@/app/src/hooks/shared/module/useModuleDraft";
 import { hasModuleDraftChanges } from "@/app/src/hooks/shared/module/useModuleDraftChanges";
+import { useAlphanumericTaxCodes } from "@/app/src/hooks/shared/tax/useAlphanumericTaxCodeOptions";
 import {
   createRevolvingFundApi,
   fetchNextRevolvingFundNo,
@@ -48,9 +49,11 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   });
 
   const record = recordQuery.data;
+  const taxCodesQuery = useAlphanumericTaxCodes();
+  const taxCodes = useMemo(() => taxCodesQuery.data ?? [], [taxCodesQuery.data]);
 
   const [values, setValues] = useState<RevolvingFundFormValues>(() =>
-    createRevolvingFundFormValues(record, "", transactionCurrency.baseCurrencyCode),
+    createRevolvingFundFormValues(record, "", transactionCurrency.baseCurrencyCode, taxCodes),
   );
   const [errors, setErrors] = useState<RevolvingFundFormErrors>({});
   const [activeTab, setActiveTab] = useState<RevolvingFundActionTab>("details");
@@ -75,13 +78,13 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
 
   useEffect(() => {
     if (record) {
-      const formVals = createRevolvingFundFormValues(record, record.transactionNo, record.currency || "PHP");
+      const formVals = createRevolvingFundFormValues(record, record.transactionNo, record.currency || "PHP", taxCodes);
       queueMicrotask(() => {
         setValues(formVals);
         setInitialValues(formVals);
       });
     }
-  }, [record]);
+  }, [record, taxCodes]);
 
   useEffect(() => {
     if (mode === RevolvingFundActionModes.Add) {
@@ -124,7 +127,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   }
 
   function calculateItem(item: RevolvingFundItem): RevolvingFundItem {
-    const taxFields = calculateRevolvingFundItemTaxFields(item.amount, item.vatType, item.ewtCode);
+    const taxFields = calculateRevolvingFundItemTaxFields(item.amount, item.vatType, item.ewtCode, taxCodes);
     return { ...item, ...taxFields };
   }
 
@@ -267,7 +270,7 @@ export function useRevolvingFundActionPage(options: { mode: RevolvingFundActionM
   }
 
   async function resetAddValuesWithNextTransactionNo() {
-    const nextValues = createRevolvingFundFormValues(undefined, "", transactionCurrency.baseCurrencyCode);
+    const nextValues = createRevolvingFundFormValues(undefined, "", transactionCurrency.baseCurrencyCode, taxCodes);
 
     try {
       const nextNo = await fetchNextRevolvingFundNo();

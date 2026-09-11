@@ -11,8 +11,6 @@ export const CashVoucherQueryKeys = {
   lookups: () => [...CashVoucherQueryKeys.all, QueryLookupScope] as const,
   parties: (companyId?: number | null) => [...CashVoucherQueryKeys.all, QueryLookupScope, "parties", companyId] as const,
   accounts: (companyId?: number | null) => [...CashVoucherQueryKeys.all, QueryLookupScope, "accounts", companyId] as const,
-  accountTitleOptions: (companyId?: number | null) =>
-    [...CashVoucherQueryKeys.all, QueryLookupScope, "account-title-options", companyId] as const,
   responsibilityCenters: (companyId?: number | null) =>
     [...CashVoucherQueryKeys.all, QueryLookupScope, "responsibility-centers", companyId] as const,
   terms: (companyId?: number | null) => [...CashVoucherQueryKeys.all, QueryLookupScope, "terms", companyId] as const,

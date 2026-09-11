@@ -277,7 +277,7 @@ export function createVatOptionsFromDefaultAccounts(taxOptions: TaxDefaultAccoun
 
     const rate = formatTaxRate(taxOption.taxRate);
     const cleanName = stripTrailingTaxRate(taxOption.taxDescription);
-    const name = rate && !taxOption.taxExempt ? `${cleanName} (${rate})` : cleanName;
+    const name = rate ? `${cleanName} (${rate})` : cleanName;
 
     options.set(taxOption.taxCode, {
       accountCode: taxOption.defaultAccountCode ?? undefined,
@@ -285,10 +285,10 @@ export function createVatOptionsFromDefaultAccounts(taxOptions: TaxDefaultAccoun
       defaultAccountCode: taxOption.defaultAccountCode ?? undefined,
       defaultAccountRole: taxOption.defaultAccountRole ?? undefined,
       defaultAccountTitle: taxOption.defaultAccountTitle ?? undefined,
-      description: taxOption.defaultAccountTitle ?? "",
+      description: "",
       label: "",
       name,
-      selectedDetails: taxOption.defaultAccountTitle ?? "",
+      selectedDetails: "",
       sourceKey: taxOption.sourceKey,
       taxCode: taxOption.taxCode,
       value: taxOption.taxCode,
@@ -306,7 +306,7 @@ export function createEwtOptionsFromDefaultAccounts(taxOptions: TaxDefaultAccoun
     if (options.has(displayCode)) return;
 
     const rate = formatTaxRate(taxOption.taxRate);
-    const name = [displayCode, rate ? `(${rate})` : ""].filter(Boolean).join(" ");
+    const name = rate ? `${displayCode} - (${rate})` : displayCode;
     const description =
       taxOption.natureOfIncome?.trim() ||
       taxOption.taxDescription.replace(/^[A-Z]{1,3}\s?\d{0,3}(?:\.\d+)?\s*\|\s*/, "").trim() ||
@@ -319,9 +319,9 @@ export function createEwtOptionsFromDefaultAccounts(taxOptions: TaxDefaultAccoun
       defaultAccountRole: taxOption.defaultAccountRole ?? undefined,
       defaultAccountTitle: taxOption.defaultAccountTitle ?? undefined,
       description,
-      label: taxOption.defaultAccountTitle ?? "",
+      label: "",
       name,
-      selectedDetails: taxOption.defaultAccountTitle ?? "",
+      selectedDetails: "",
       sourceKey: taxOption.sourceKey,
       taxCode: taxOption.taxCode,
       value: displayCode,

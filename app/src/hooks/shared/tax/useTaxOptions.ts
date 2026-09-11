@@ -266,6 +266,10 @@ export function createTaxDefaultAccountDropdownOption(
   const codeRateName = formatTaxDefaultCodeRateName(displayCode, rate);
   const displayName = getPartyTaxDefaultDisplayName(tax, description);
   const showDescription = formatting.showDescription ?? true;
+  const isVatDefault = isVatDefaultTaxType(tax.taxType);
+  const optionName = isVatDefault
+    ? tax.defaultAccountTitle ?? getTaxDefaultOptionName(tax, displayName, codeRateName, rate, formatting)
+    : getTaxDefaultOptionName(tax, displayName, codeRateName, rate, formatting);
 
   return {
     code: tax.sourceKey,
@@ -274,9 +278,9 @@ export function createTaxDefaultAccountDropdownOption(
     defaultAccountTitle: tax.defaultAccountTitle,
     description: showDescription ? displayName : "",
     disabled: tax.status === "INACTIVE",
-    label: tax.defaultAccountTitle ?? "",
-    name: getTaxDefaultOptionName(tax, displayName, codeRateName, rate, formatting),
-    selectedDetails: tax.defaultAccountTitle ?? codeRateName,
+    label: isVatDefault ? tax.defaultAccountCode ?? "" : "",
+    name: optionName,
+    selectedDetails: isVatDefault ? tax.defaultAccountCode ?? codeRateName : "",
     value: tax.sourceKey,
   };
 }
@@ -384,7 +388,7 @@ function getTaxDefaultOptionName(
 }
 
 function formatTaxDefaultCodeRateName(displayCode: string, rate: string) {
-  return [displayCode, rate ? `(${rate})` : ""].filter(Boolean).join(" ");
+  return rate ? `${displayCode} - (${rate})` : displayCode;
 }
 
 function shouldUseTitleOnlyTaxDefault(classificationKey: string) {

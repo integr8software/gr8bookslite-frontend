@@ -10,7 +10,14 @@ import { CollectionTypeFields } from "@/app/src/ui/modules/financial-maintenance
 import { ModuleDrawer } from "@/app/src/ui/shared/module/ModuleDrawer";
 import { getModuleSavePendingLabel } from "@/app/src/ui/shared/module/ModuleDrawer";
 
-export function CollectionTypeDrawer({ collectionType, isOpen, kind = "collection", mode, permissions, onClose }: CollectionTypeDrawerProps) {
+export function CollectionTypeDrawer({
+  collectionType,
+  isOpen,
+  kind = "collection",
+  mode,
+  permissions,
+  onClose,
+}: CollectionTypeDrawerProps) {
   return (
     <CollectionTypeDrawerPanel
       key={`${mode}-${collectionType?.id ?? "new"}`}
@@ -65,6 +72,7 @@ function CollectionTypeDrawerPanel({ collectionType, isOpen, kind = "collection"
         <CollectionTypeFields
           canAddExpenseTypeSubAccount={false}
           canCancelStatus={permissions.canCancel}
+          accountOptions={page.accountOptions}
           errors={page.errors}
           expenseParentOptions={[]}
           generatedAccounts={collectionType?.generatedAccounts}
@@ -74,8 +82,10 @@ function CollectionTypeDrawerPanel({ collectionType, isOpen, kind = "collection"
           mode={mode}
           nameLabel={`${singularTitle} Name`}
           nextExpenseSubAccountLevel={null}
+          onAccountSetupModeChange={page.handleAccountSetupModeChange}
           onExpenseParentChange={page.handleExpenseParentChange}
           onInputChange={page.handleInputChange}
+          onRevenueAccountChange={page.handleRevenueAccountChange}
           onStatusChange={page.handleStatusChange}
           values={page.values}
         />

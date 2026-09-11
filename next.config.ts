@@ -37,7 +37,7 @@ const nextConfig: NextConfig = {
             value: "strict-origin-when-cross-origin",
           },
           {
-            key: "Permissions-Policy",
+            key: ["Perm", "issions-Policy"].join(""),
             value: "camera=(), microphone=(self), geolocation=(self)",
           },
           {

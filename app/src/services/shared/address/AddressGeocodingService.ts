@@ -1,25 +1,10 @@
+import axios from "axios";
 import { GetAddressAutocomplete } from "@/app/src/services/shared/address/AddressReferenceApi";
-import type { AddressAutocompleteItem } from "@/app/src/types/shared/address/AddressTypes";
-
-export type OsmReverseGeocodeResult = {
-  placeId: number;
-  lat: number;
-  lng: number;
-  displayName: string;
-  road: string;
-  barangay: string;
-  cityMunicipality: string;
-  province: string;
-  region: string;
-  postcode: string;
-};
-
-export type OsmSearchResult = {
-  placeId: number;
-  lat: number;
-  lng: number;
-  displayName: string;
-};
+import type {
+  AddressAutocompleteItem,
+  OsmReverseGeocodeResult,
+  OsmSearchResult,
+} from "@/app/src/types/shared/address/AddressTypes";
 
 export function extractOsmAddressComponents(addressObj: Record<string, string | undefined>) {
   const road =
@@ -59,18 +44,26 @@ export async function reverseGeocodeOsm(
   lng: number,
 ): Promise<OsmReverseGeocodeResult | null> {
   try {
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=jsonv2&addressdetails=1`;
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/json",
+    const response = await axios.get(
+      "https://nominatim.openstreetmap.org/reverse",
+      {
+        params: {
+          lat,
+          lon: lng,
+          format: "jsonv2",
+          addressdetails: 1,
+        },
+        headers: {
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
-    if (!response.ok) {
+    const data = response.data;
+    if (!data || typeof data !== "object") {
       return null;
     }
 
-    const data = await response.json();
     const address = (data.address as Record<string, string | undefined>) || {};
     const extracted = extractOsmAddressComponents(address);
 
@@ -95,50 +88,52 @@ export async function searchPlacesOsm(query: string): Promise<OsmSearchResult[]>
 
   // 1. Try Photon (ultra-fast geocoding with typo tolerance, bbox for Philippines)
   try {
-    const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(
-      trimmed,
-    )}&limit=6&bbox=114.0,4.0,130.0,22.0`;
-    const photonRes = await fetch(photonUrl);
-    if (photonRes.ok) {
-      const data = (await photonRes.json()) as {
-        features?: Array<{
-          properties?: {
-            osm_id?: number;
-            name?: string;
-            street?: string;
-            locality?: string;
-            district?: string;
-            city?: string;
-            state?: string;
-            country?: string;
+    const photonRes = await axios.get("https://photon.komoot.io/api/", {
+      params: {
+        q: trimmed,
+        limit: 6,
+        bbox: "114.0,4.0,130.0,22.0",
+      },
+    });
+
+    const data = photonRes.data as {
+      features?: Array<{
+        properties?: {
+          osm_id?: number;
+          name?: string;
+          street?: string;
+          locality?: string;
+          district?: string;
+          city?: string;
+          state?: string;
+          country?: string;
+        };
+        geometry?: { coordinates?: [number, number] };
+      }>;
+    };
+
+    if (data?.features && data.features.length > 0) {
+      return data.features
+        .filter((f) => f.geometry?.coordinates && f.properties?.name)
+        .map((f) => {
+          const p = f.properties || {};
+          const parts = [
+            p.name,
+            p.street,
+            p.locality || p.district,
+            p.city,
+            p.state || p.country,
+          ]
+            .filter(Boolean)
+            .filter((val, idx, arr) => arr.indexOf(val) === idx);
+
+          return {
+            placeId: Number(p.osm_id ?? Math.random()),
+            lat: f.geometry!.coordinates![1],
+            lng: f.geometry!.coordinates![0],
+            displayName: parts.join(", "),
           };
-          geometry?: { coordinates?: [number, number] };
-        }>;
-      };
-
-      if (data.features && data.features.length > 0) {
-        return data.features
-          .filter((f) => f.geometry?.coordinates && f.properties?.name)
-          .map((f) => {
-            const p = f.properties || {};
-            const parts = [
-              p.name,
-              p.street,
-              p.locality || p.district,
-              p.city,
-              p.state || p.country,
-            ]
-              .filter(Boolean)
-              .filter((val, idx, arr) => arr.indexOf(val) === idx);
-
-            return {
-              placeId: Number(p.osm_id ?? Math.random()),
-              lat: f.geometry!.coordinates![1],
-              lng: f.geometry!.coordinates![0],
-              displayName: parts.join(", "),
-            };
-          });
-      }
+        });
     }
   } catch (photonError) {
     console.warn("Photon search fallback to Nominatim:", photonError);
@@ -146,20 +141,23 @@ export async function searchPlacesOsm(query: string): Promise<OsmSearchResult[]>
 
   // 2. Fallback to OpenStreetMap Nominatim
   try {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-      trimmed,
-    )}&format=jsonv2&countrycodes=ph&limit=5&addressdetails=1`;
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/json",
+    const response = await axios.get(
+      "https://nominatim.openstreetmap.org/search",
+      {
+        params: {
+          q: trimmed,
+          format: "jsonv2",
+          countrycodes: "ph",
+          limit: 5,
+          addressdetails: 1,
+        },
+        headers: {
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
-    if (!response.ok) {
-      return [];
-    }
-
-    const data = (await response.json()) as Array<Record<string, unknown>>;
+    const data = (response.data as Array<Record<string, unknown>>) || [];
     if (data.length > 0) {
       return data.map((item) => ({
         placeId: Number(item.place_id),

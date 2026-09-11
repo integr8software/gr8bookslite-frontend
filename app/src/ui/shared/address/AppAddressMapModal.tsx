@@ -19,13 +19,13 @@ import type {
 import type {
   AddressAutocompleteDetails,
   AddressAutocompleteItem,
+  OsmReverseGeocodeResult,
+  OsmSearchResult,
 } from "@/app/src/types/shared/address/AddressTypes";
 import {
   matchWithPsgcAddress,
   reverseGeocodeOsm,
   searchPlacesOsm,
-  type OsmReverseGeocodeResult,
-  type OsmSearchResult,
 } from "@/app/src/services/shared/address/AddressGeocodingService";
 
 export type AppAddressMapModalProps = {

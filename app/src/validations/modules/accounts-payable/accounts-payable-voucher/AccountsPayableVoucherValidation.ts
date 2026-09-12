@@ -22,6 +22,7 @@ const accountsPayableVoucherHeaderSchema = z.object({
   contactNo: z.string(),
   projectCode: z.string(),
   projectName: z.string(),
+  responsibilityCenter: z.string(),
   currency: z.string().trim().min(1, "Select a currency."),
   exchangeRate: z.number().positive("Enter an exchange rate greater than zero."),
   amount: z.number(),

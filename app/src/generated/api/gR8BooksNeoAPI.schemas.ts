@@ -7656,6 +7656,16 @@ export interface CreateAccountsPayableVoucherDto {
      */
   projectName?: string | null;
   /**
+     * @maxLength 40
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * @maxLength 150
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
+  /**
      * @maxLength 10
      * @nullable
      */
@@ -7756,6 +7766,16 @@ export interface UpdateAccountsPayableVoucherDto {
      * @nullable
      */
   projectName?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  responsibilityCenterId?: string | null;
+  /**
+     * @maxLength 150
+     * @nullable
+     */
+  responsibilityCenter?: string | null;
   /**
      * @maxLength 10
      * @nullable

@@ -1,8 +1,8 @@
 import {
   formatAccountsPayableVoucherAmountInWords,
-  formatAccountsPayableVoucherReportAccount,
   formatAccountsPayableVoucherReportAmount,
   formatAccountsPayableVoucherReportDate,
+  getAccountsPayableVoucherReportParticulars,
   getAccountsPayableVoucherEntryPartyLabel,
   getAccountsPayableVoucherReportTotals,
 } from "@/app/src/data/modules/accounts-payable/accounts-payable-voucher/AccountsPayableVoucherReportData";
@@ -42,7 +42,7 @@ function createAccountsPayableVoucherPdfDefinition(values: AccountsPayableVouche
             [createTitleAndDateRow(values)],
             [createPartyRow(values)],
             [createAmountRow(values)],
-            [createPayableTypeRow(values)],
+            [createParticularsRow(values)],
             [createForRow(values)],
             [createDetailsTable(values)],
             [createJournalEntriesTable(values)],
@@ -144,9 +144,9 @@ function createAmountRow(values: AccountsPayableVoucherFormValues): TableCell {
   );
 }
 
-function createPayableTypeRow(values: AccountsPayableVoucherFormValues): TableCell {
+function createParticularsRow(values: AccountsPayableVoucherFormValues): TableCell {
   return createTwoColumnInfoRow(
-    [{ text: "PAYABLE TYPE: ", bold: true }, values.payableType || "-"],
+    [{ text: "PARTICULARS: ", bold: true }, getAccountsPayableVoucherReportParticulars(values)],
     [{ text: "Due Date: ", bold: true }, formatAccountsPayableVoucherReportDate(values.dueDate)],
   );
 }
@@ -182,23 +182,29 @@ function createForRow(values: AccountsPayableVoucherFormValues): TableCell {
 function createDetailsTable(values: AccountsPayableVoucherFormValues): TableCell {
   const totals = getAccountsPayableVoucherReportTotals(values);
   const body: TableCell[][] = [
-    [sectionHeaderCell("Expense Details", 7), {}, {}, {}, {}, {}, {}],
+    [sectionHeaderCell("Expense Details", 10), {}, {}, {}, {}, {}, {}, {}, {}, {}],
     [
-      headerCell("Expense Account"),
-      headerCell("Party"),
       headerCell("Particulars"),
+      headerCell("Party"),
       headerCell("Cost Center"),
       headerCell("Gross", "right"),
+      headerCell("Net of VAT", "right"),
+      headerCell("VAT", "right"),
+      headerCell("ATC"),
       headerCell("EWT", "right"),
+      headerCell("AWT", "right"),
       headerCell("Total Payable", "right"),
     ],
     ...values.expenseLines.map(createDetailRow),
     [
-      totalLabelCell(4),
-      {},
+      totalLabelCell(3),
       {},
       {},
       totalAmountCell(totals.grossAmount),
+      totalAmountCell(totals.netAmount),
+      totalAmountCell(totals.vatAmount),
+      {},
+      {},
       totalAmountCell(totals.ewtAmount),
       totalAmountCell(totals.totalAmountDue),
     ],
@@ -207,7 +213,7 @@ function createDetailsTable(values: AccountsPayableVoucherFormValues): TableCell
   return {
     table: {
       headerRows: 2,
-      widths: [132, 88, "*", 70, 56, 50, 58],
+      widths: [90, 55, 50, 50, 50, 40, 40, 32, 40, 50],
       body,
     },
     layout: thinGridLayout,
@@ -216,11 +222,14 @@ function createDetailsTable(values: AccountsPayableVoucherFormValues): TableCell
 
 function createDetailRow(line: AccountsPayableVoucherExpenseLine): TableCell[] {
   return [
-    bodyCell(formatAccountsPayableVoucherReportAccount(line.expenseAccountCode, line.expenseType)),
-    bodyCell(line.partyName || line.partyCode || "-"),
     bodyCell(line.particulars || "-"),
+    bodyCell(line.partyName || line.partyCode || "-"),
     bodyCell(line.responsibilityCenter || "-"),
     bodyCell(formatAccountsPayableVoucherReportAmount(line.amount), "right"),
+    bodyCell(formatAccountsPayableVoucherReportAmount(line.netAmount), "right"),
+    bodyCell(line.vatAmount ? formatAccountsPayableVoucherReportAmount(line.vatAmount) : "", "right"),
+    bodyCell(line.ewt || "-"),
+    bodyCell(line.ewtPercent ? `${line.ewtPercent}%` : "", "right"),
     bodyCell(line.ewtAmount ? formatAccountsPayableVoucherReportAmount(line.ewtAmount) : "", "right"),
     bodyCell(formatAccountsPayableVoucherReportAmount(line.totalAmountDue), "right"),
   ];
@@ -229,9 +238,10 @@ function createDetailRow(line: AccountsPayableVoucherExpenseLine): TableCell[] {
 function createJournalEntriesTable(values: AccountsPayableVoucherFormValues): TableCell {
   const totals = getAccountsPayableVoucherReportTotals(values);
   const body: TableCell[][] = [
-    [sectionHeaderCell("Accounting Entries", 6), {}, {}, {}, {}, {}],
+    [sectionHeaderCell("Accounting Entries", 7), {}, {}, {}, {}, {}, {}],
     [
-      headerCell("Account"),
+      headerCell("Account Code"),
+      headerCell("Account Title"),
       headerCell("Party"),
       headerCell("Particulars"),
       headerCell("Cost Center"),
@@ -239,13 +249,13 @@ function createJournalEntriesTable(values: AccountsPayableVoucherFormValues): Ta
       headerCell("Credit", "right"),
     ],
     ...values.accountingEntries.map((entry) => createJournalEntryRow(entry, values)),
-    [totalLabelCell(4), {}, {}, {}, totalAmountCell(totals.totalDebit), totalAmountCell(totals.totalCredit)],
+    [totalLabelCell(5), {}, {}, {}, {}, totalAmountCell(totals.totalDebit), totalAmountCell(totals.totalCredit)],
   ];
 
   return {
     table: {
       headerRows: 2,
-      widths: [132, 88, "*", 70, 64, 64],
+      widths: [65, 95, 70, "*", 60, 55, 55],
       body,
     },
     layout: thinGridLayout,
@@ -254,7 +264,8 @@ function createJournalEntriesTable(values: AccountsPayableVoucherFormValues): Ta
 
 function createJournalEntryRow(entry: AccountsPayableVoucherAccountingEntry, values: AccountsPayableVoucherFormValues): TableCell[] {
   return [
-    bodyCell(formatAccountsPayableVoucherReportAccount(entry.accountCode, entry.accountTitle)),
+    bodyCell(entry.accountCode || "-"),
+    bodyCell(entry.accountTitle || "-"),
     bodyCell(getAccountsPayableVoucherEntryPartyLabel(entry, values)),
     bodyCell(entry.particulars || "-"),
     bodyCell(entry.responsibilityCenter || "-"),

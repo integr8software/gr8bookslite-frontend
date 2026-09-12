@@ -484,10 +484,11 @@ function purchaseRequestEntryHasData(entry: PurchaseRequestItem) {
 }
 
 function purchaseRequestEntryIsComplete(entry: PurchaseRequestItem, isServices = false) {
+  const isServiceRow = Boolean(entry.serviceMaintenanceId) || isServices;
   return Boolean(
-    (isServices || entry.itemCode.trim()) &&
+    (isServiceRow || entry.itemCode.trim()) &&
     entry.description.trim() &&
-    (isServices || entry.uom.trim()) &&
+    (isServiceRow || entry.uom.trim()) &&
     Number(entry.quantity) > 0 &&
     Number(entry.cost) >= 0,
   );

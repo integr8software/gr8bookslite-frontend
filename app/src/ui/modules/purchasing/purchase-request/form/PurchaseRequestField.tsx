@@ -14,6 +14,10 @@ import type {
 } from "@/app/src/types/modules/purchasing/purchase-request/PurchaseRequestTypes";
 import type { AppAdvancedDropdownOption } from "@/app/src/types/shared/advanced-dropdown/AppAdvancedDropdownTypes";
 import {
+  formatPurchaseTypesFromSelection,
+  parsePurchaseTypesToSelection,
+} from "@/app/src/data/modules/party-management/PartyPurchaseTypeData";
+import {
   PurchaseRequestDateField,
   PurchaseRequestFieldClassName,
   PurchaseRequestFieldShell,
@@ -113,15 +117,29 @@ export function PurchaseRequestSupplierFields({
           value={values.vceCode}
           onChange={(value) => onUpdateField("vceCode", value)}
         />
-        <PurchaseRequestSelectField
-          id="purchase-request-purchase-type"
-          label="Purchase Type"
-          isRequired
-          readOnly={isReadonly}
-          value={values.purchaseType}
-          options={PurchaseRequestTypeOptions}
-          onChange={(value) => onUpdateField("purchaseType", value)}
-        />
+        <PurchaseRequestFieldShell controlId="purchase-request-purchase-type" label="Purchase Type" isRequired>
+          <AppAdvancedDropdown
+            id="purchase-request-purchase-type"
+            disabled={isReadonly}
+            emptyMessage="No matching purchase type found."
+            isSearchable={false}
+            options={PurchaseRequestTypeOptions.map((option) => ({
+              name: option,
+              value: option,
+            }))}
+            placeholder="--Select Purchase Type--"
+            removeSelectionOnSelectedOptionClick
+            selectionMode="multiple"
+            showSelectionRemoveButton={false}
+            value={parsePurchaseTypesToSelection(values.purchaseType)}
+            onChange={(selected) =>
+              onUpdateField(
+                "purchaseType",
+                formatPurchaseTypesFromSelection(selected),
+              )
+            }
+          />
+        </PurchaseRequestFieldShell>
         <PurchaseRequestTextField
           id="purchase-request-project-code"
           label="Project Code"
